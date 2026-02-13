@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cosmic-900: #0a0a1a;
+  --color-cosmic-800: #0d1030;
+  --color-cosmic-700: #131650;
+  --color-cosmic-600: #1a1d6b;
+  --color-cosmic-500: #2a2d8b;
+  --color-warp-500: #a855f7;
+  --color-warp-400: #c084fc;
+  --color-warp-300: #d8b4fe;
+  --color-energy-500: #06b6d4;
+  --color-energy-400: #22d3ee;
+  --color-energy-300: #67e8f9;
+  --color-nebula-500: #ec4899;
+  --color-nebula-400: #f472b6;
+  --color-star-500: #eab308;
+  --color-star-400: #facc15;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-cosmic-900 text-gray-100 font-mono m-0;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.2); }
+}
+
+@keyframes warp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-warp-spin { animation: warp-spin 8s linear infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+.glass-panel {
+  background: rgba(13, 16, 48, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 0.75rem;
+}
+
+.warp-button {
+  @apply px-4 py-2 rounded-lg font-bold text-sm transition-all duration-200 cursor-pointer;
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #d8b4fe;
+}
+.warp-button:hover {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(192, 132, 252, 0.6);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+.warp-button:active { transform: scale(0.95); }
+.warp-button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.warp-input {
+  @apply w-full px-3 py-2 rounded-lg text-sm transition-all duration-200;
+  background: rgba(10, 10, 26, 0.8);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: #f3f4f6;
+}
+.warp-input::placeholder { color: #6b7280; }
+.warp-input:focus {
+  outline: none;
+  border-color: rgba(192, 132, 252, 0.5);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+}
