@@ -1,0 +1,42 @@
+; ═══════════════════════════════════════════════
+; reseau_mesh.cosmo — Maillage Réseau Cosmique
+; Crée un réseau de noeuds, tisse des connexions
+; et propage une onde à travers le maillage
+; ═══════════════════════════════════════════════
+
+; Init sur couche relationnelle
+WARP_INIT       NEXUS.RΩ, RΩ
+
+; Découverte de pairs
+PEER_DISCOVER   NEXUS.RΩ                 ; Pair 1
+PEER_DISCOVER   NEXUS.RΩ                 ; Pair 2
+PEER_DISCOVER   NEXUS.RΩ                 ; Pair 3
+
+; Connexion des noeuds
+NODE_CONNECT    NEXUS.RΩ, #1             ; Connecte noeud 1
+MESH_WEAVE      NEXUS.RΩ                 ; Tisse connexion
+NODE_CONNECT    NEXUS.RΩ, #2             ; Connecte noeud 2
+MESH_WEAVE      NEXUS.RΩ                 ; Tisse connexion
+NODE_CONNECT    NEXUS.RΩ, #3             ; Connecte noeud 3
+MESH_WEAVE      NEXUS.RΩ                 ; Tisse connexion
+
+; Ouverture de canal
+CHANNEL_OPEN    NEXUS.RΩ, #42            ; Canal 42
+
+; Synchronisation orbitale sur toutes les couches
+ORBIT_SYNC      GRID.RΩ                  ; Sync GRID
+ORBIT_SYNC      HELIX.RΩ                 ; Sync HELIX
+ORBIT_SYNC      COSMO.RΩ                 ; Sync COSMO
+
+; Propagation de l'onde
+ENERGY_LOAD     NEXUS.RΩ, #108           ; Valeur cosmique 108
+RELAY_CHAIN     NEXUS.RΩ                 ; Propage dans toutes les couches
+
+; Broadcast final
+BROADCAST_WAVE  LUMINA.RΩ                ; Diffuse partout
+
+; Émet le nombre de pairs découverts
+SIGNAL_BURST    NEXUS.R∞                 ; Émet R∞ (compteur)
+
+; Émet la somme du maillage
+SIGNAL_BURST    NEXUS.Rσ                 ; Émet Rσ (somme)

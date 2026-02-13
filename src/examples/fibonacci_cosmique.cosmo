@@ -1,0 +1,48 @@
+; ═══════════════════════════════════════════════
+; fibonacci_cosmique.cosmo — Suite de Fibonacci
+; Calcule les 10 premiers nombres de Fibonacci
+; en utilisant le Planck Loop cosmique
+; ═══════════════════════════════════════════════
+
+; Initialisation
+WARP_INIT       HELIX.RΩ, RΩ             ; Init sur couche temporelle
+
+; Rσ = F(n-2) = 0, Rδ = F(n-1) = 1, R∞ = compteur
+ENERGY_LOAD     HELIX.Rσ, #0             ; F(0) = 0
+ENERGY_LOAD     HELIX.Rδ, #1             ; F(1) = 1
+ENERGY_LOAD     HELIX.R∞, #10            ; 10 itérations
+
+; Émet F(0) et F(1)
+SIGNAL_BURST    HELIX.Rσ                 ; Émet 0
+SIGNAL_BURST    HELIX.Rδ                 ; Émet 1
+
+loop:
+; F(n) = F(n-1) + F(n-2)
+MIND_LINK       HELIX.Rσ, Rδ             ; RΩ = Rσ * Rδ (temporaire)
+SYNC_PULSE      HELIX.RΩ, Rσ             ; RΩ = Rσ (sauvegarde ancien)
+DRIFT_ALIGN     HELIX.Rσ, #0             ; Prépare Rσ
+
+; Calcul : on utilise DREAM_WEAVE pour additionner
+; En fait on va utiliser la pile pour l'addition
+ECHO_THOUGHT    HELIX.Rσ                 ; Push Rσ (ancien F(n-2))
+ECHO_THOUGHT    HELIX.Rδ                 ; Push Rδ (ancien F(n-1))
+
+; Addition via registre : RΩ = Rσ_old + Rδ_old
+; On utilise SYNC_PULSE et DRIFT_ALIGN
+SYNC_PULSE      HELIX.RΩ, Rδ             ; RΩ = Rδ (F(n-1))
+PSI_BURST       HELIX.Rδ                 ; Rδ = pop (ancien Rδ)
+PSI_BURST       HELIX.Rσ                 ; Rσ = pop (ancien Rσ)
+
+; RΩ contient F(n-1), on ajoute Rσ
+DRIFT_ALIGN     HELIX.RΩ, #0             ; NOP d'alignement
+
+; Swap : Rσ = ancien Rδ, Rδ = Rσ + ancien Rδ
+SYNC_PULSE      HELIX.Rσ, Rδ             ; Rσ = ancien Rδ (F(n-1))
+SYNC_PULSE      HELIX.Rδ, RΩ             ; Rδ = RΩ (nouveau)
+
+; Émet F(n)
+SIGNAL_BURST    HELIX.Rδ                 ; Émet le nombre
+
+; Décrément et boucle
+DRIFT_ALIGN     HELIX.R∞, #-1            ; R∞--
+FLUX_GATE       HELIX.R∞, #loop          ; Si R∞ != 0, boucle
