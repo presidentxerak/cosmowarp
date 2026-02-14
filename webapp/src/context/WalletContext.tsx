@@ -1,13 +1,16 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { loadWallet, createWallet, sendWarps, mineWarps, getGlobalTransactions, type WarpWallet, type Transaction } from '../engine/wallet';
+import { loadWallet, createWallet, sendWarps, mineWarps, getGlobalTransactions, getMeshStats, type WarpWallet, type Transaction } from '../engine/wallet';
+import type { MeshStats } from '../engine/cosmomesh';
 
 interface WalletContextType {
   wallet: WarpWallet | null;
   globalTxs: Transaction[];
-  initWallet: (alias?: string) => void;
-  send: (to: string, amount: number, memo?: string) => { success: boolean; error?: string };
-  mine: (energy: number, cycles: number) => Transaction;
+  meshStats: MeshStats | null;
+  initWallet: (alias?: string) => Promise<void>;
+  send: (to: string, amount: number, memo?: string) => Promise<{ success: boolean; error?: string }>;
+  mine: (energy: number, cycles: number) => Promise<Transaction>;
   refreshTxs: () => void;
+  refreshStats: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -15,33 +18,38 @@ const WalletContext = createContext<WalletContextType | null>(null);
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<WarpWallet | null>(null);
   const [globalTxs, setGlobalTxs] = useState<Transaction[]>([]);
+  const [meshStats, setMeshStats] = useState<MeshStats | null>(null);
 
   useEffect(() => {
     const w = loadWallet();
     if (w) setWallet(w);
     setGlobalTxs(getGlobalTransactions());
+    try { setMeshStats(getMeshStats()); } catch { /* first load */ }
   }, []);
 
-  const initWallet = useCallback((alias?: string) => {
-    const w = createWallet(alias);
+  const initWallet = useCallback(async (alias?: string) => {
+    const w = await createWallet(alias);
     setWallet({ ...w });
+    setMeshStats(getMeshStats());
   }, []);
 
-  const send = useCallback((to: string, amount: number, memo?: string) => {
+  const send = useCallback(async (to: string, amount: number, memo?: string) => {
     if (!wallet) return { success: false, error: 'No wallet' };
-    const result = sendWarps(wallet, to, amount, memo);
+    const result = await sendWarps(wallet, to, amount, memo);
     if (result.success) {
       setWallet({ ...wallet });
       setGlobalTxs(getGlobalTransactions());
+      setMeshStats(getMeshStats());
     }
     return result;
   }, [wallet]);
 
-  const mine = useCallback((energy: number, cycles: number) => {
+  const mine = useCallback(async (energy: number, cycles: number) => {
     if (!wallet) throw new Error('No wallet');
-    const tx = mineWarps(wallet, energy, cycles);
+    const tx = await mineWarps(wallet, energy, cycles);
     setWallet({ ...wallet });
     setGlobalTxs(getGlobalTransactions());
+    setMeshStats(getMeshStats());
     return tx;
   }, [wallet]);
 
@@ -49,8 +57,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setGlobalTxs(getGlobalTransactions());
   }, []);
 
+  const refreshStats = useCallback(() => {
+    try { setMeshStats(getMeshStats()); } catch { /* no mesh yet */ }
+  }, []);
+
   return (
-    <WalletContext.Provider value={{ wallet, globalTxs, initWallet, send, mine, refreshTxs }}>
+    <WalletContext.Provider value={{ wallet, globalTxs, meshStats, initWallet, send, mine, refreshTxs, refreshStats }}>
       {children}
     </WalletContext.Provider>
   );

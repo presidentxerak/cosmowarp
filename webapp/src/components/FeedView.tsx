@@ -1,8 +1,9 @@
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
+import { LAYER_NAMES } from '../engine/cosmomesh';
 
 export default function FeedView() {
-  const { globalTxs, wallet, refreshTxs } = useWallet();
+  const { globalTxs, wallet, meshStats, refreshTxs, refreshStats } = useWallet();
 
   const typeIcon = (type: string) => {
     switch (type) {
@@ -32,16 +33,31 @@ export default function FeedView() {
     return `${Math.floor(diff / 86400000)}d ago`;
   };
 
+  const handleRefresh = () => {
+    refreshTxs();
+    refreshStats();
+  };
+
   return (
     <div className="space-y-4">
       <div className="glass-panel p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-warp-300">{'\u25CE'} Transaction Feed</h2>
-          <button className="warp-button text-xs" onClick={refreshTxs}>Refresh</button>
+          <h2 className="text-lg font-bold text-warp-300">{'\u25CE'} CosmoMesh Feed</h2>
+          <button className="warp-button text-xs" onClick={handleRefresh}>Refresh</button>
         </div>
         <p className="text-xs text-gray-500">
-          {globalTxs.length} transactions on the CosmoWarp network
+          {globalTxs.length} transactions on the CosmoMesh DAG
         </p>
+
+        {/* Mesh Stats Summary */}
+        {meshStats && (
+          <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
+            <span>DAG: <span className="text-warp-400">{meshStats.totalTransactions}</span> nodes</span>
+            <span>Tips: <span className="text-energy-400">{meshStats.totalTips}</span></span>
+            <span>Resonance: <span className="text-star-400">{(meshStats.avgResonance * 100).toFixed(0)}%</span></span>
+            <span>Depth: <span className="text-nebula-400">{meshStats.maxDepth}</span></span>
+          </div>
+        )}
       </div>
 
       {globalTxs.length === 0 ? (
@@ -63,6 +79,11 @@ export default function FeedView() {
                        tx.type === 'send' ? 'Transfer' : tx.type}
                     </span>
                     <span className="text-[10px] text-gray-600">{timeAgo(tx.timestamp)}</span>
+                    {tx.layer !== undefined && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-warp-500/10 text-warp-400/70">
+                        {LAYER_NAMES[tx.layer]}
+                      </span>
+                    )}
                   </div>
 
                   <div className="text-[11px] text-gray-400 mt-1">
@@ -86,6 +107,27 @@ export default function FeedView() {
                       </span>
                     )}
                   </div>
+
+                  {/* Resonance & Confirmations */}
+                  {(tx.resonanceScore !== undefined || tx.confirmations !== undefined) && (
+                    <div className="flex gap-3 mt-1 text-[10px]">
+                      {tx.resonanceScore !== undefined && (
+                        <span className="text-energy-400/60">
+                          {(tx.resonanceScore * 100).toFixed(0)}% resonance
+                        </span>
+                      )}
+                      {tx.confirmations !== undefined && tx.confirmations > 0 && (
+                        <span className="text-green-400/60">
+                          {tx.confirmations} conf
+                        </span>
+                      )}
+                      {tx.meshDepth !== undefined && (
+                        <span className="text-gray-600">
+                          depth {tx.meshDepth}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {tx.memo && (
                     <p className="text-[10px] text-gray-500 mt-1 truncate">{tx.memo}</p>

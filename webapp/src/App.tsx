@@ -24,7 +24,7 @@ function App() {
         </main>
 
         <footer className="text-center text-[10px] text-gray-600 mt-6 pb-4">
-          CosmoWarp Terminal &middot; CosmoCode Protocol v0.1 &middot; {'\u2726'}
+          CosmoWarp Terminal &middot; CosmoMesh Protocol v1.0 &middot; Ed25519 + SHA-256 + AES-GCM &middot; {'\u2726'}
         </footer>
       </div>
     </WalletProvider>

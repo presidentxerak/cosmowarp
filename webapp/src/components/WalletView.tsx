@@ -1,19 +1,24 @@
 import { useState } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
+import { LAYER_NAMES } from '../engine/cosmomesh';
 
 export default function WalletView() {
-  const { wallet, initWallet } = useWallet();
+  const { wallet, meshStats, initWallet } = useWallet();
   const [alias, setAlias] = useState('');
   const [copied, setCopied] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
         <div className="text-5xl mb-4 animate-float">{'\u2726'}</div>
         <h2 className="text-xl font-bold text-warp-300 mb-2">Create Your Warp Wallet</h2>
-        <p className="text-sm text-gray-400 mb-6">
-          Generate a cosmic keypair and receive 100 {'\u03A9'} genesis bonus.
+        <p className="text-sm text-gray-400 mb-2">
+          Generate an Ed25519 keypair and receive 100 {'\u03A9'} genesis bonus.
+        </p>
+        <p className="text-xs text-gray-500 mb-6">
+          Powered by CosmoMesh DAG + Resonance Consensus
         </p>
         <div className="max-w-xs mx-auto space-y-3">
           <input
@@ -22,8 +27,26 @@ export default function WalletView() {
             value={alias}
             onChange={e => setAlias(e.target.value)}
           />
-          <button className="warp-button w-full text-base py-3" onClick={() => initWallet(alias || undefined)}>
-            {'\u2726'} Initialize Wallet
+          <button
+            className="warp-button w-full text-base py-3"
+            onClick={async () => {
+              setCreating(true);
+              try {
+                await initWallet(alias || undefined);
+              } finally {
+                setCreating(false);
+              }
+            }}
+            disabled={creating}
+          >
+            {creating ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-full animate-spin" />
+                Generating Ed25519 Keys...
+              </span>
+            ) : (
+              <>{'\u2726'} Initialize Wallet</>
+            )}
           </button>
         </div>
       </div>
@@ -53,7 +76,7 @@ export default function WalletView() {
 
       {/* Address */}
       <div className="glass-panel p-3">
-        <p className="text-[10px] text-gray-500 mb-1">YOUR ADDRESS</p>
+        <p className="text-[10px] text-gray-500 mb-1">YOUR ADDRESS (Ed25519)</p>
         <div className="flex items-center gap-2">
           <code className="text-xs text-energy-400 flex-1 truncate">{wallet.address}</code>
           <button
@@ -85,6 +108,39 @@ export default function WalletView() {
         </div>
       </div>
 
+      {/* Mesh Stats */}
+      {meshStats && (
+        <div className="glass-panel p-4">
+          <h3 className="text-sm font-bold text-gray-300 mb-3">CosmoMesh Status</h3>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span className="text-gray-500">DAG Nodes:</span>
+              <span className="text-warp-400 ml-1">{meshStats.totalTransactions}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Active Tips:</span>
+              <span className="text-energy-400 ml-1">{meshStats.totalTips}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Avg Resonance:</span>
+              <span className="text-star-400 ml-1">{(meshStats.avgResonance * 100).toFixed(1)}%</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Finalized:</span>
+              <span className="text-green-400 ml-1">{meshStats.finalizedCount}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Max Depth:</span>
+              <span className="text-nebula-400 ml-1">{meshStats.maxDepth}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">TPS:</span>
+              <span className="text-energy-400 ml-1">{meshStats.totalTps.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Recent Transactions */}
       <div className="glass-panel p-4">
         <h3 className="text-sm font-bold text-gray-300 mb-3">Recent Transactions</h3>
@@ -111,7 +167,14 @@ export default function WalletView() {
                      tx.type === 'send' ? `To ${shortAddress(tx.to)}` :
                      `From ${shortAddress(tx.from)}`}
                   </p>
-                  {tx.memo && <p className="text-gray-500 truncate">{tx.memo}</p>}
+                  <div className="flex gap-2 text-[10px] text-gray-500">
+                    {tx.layer !== undefined && (
+                      <span className="text-warp-400/60">{LAYER_NAMES[tx.layer]}</span>
+                    )}
+                    {tx.resonanceScore !== undefined && (
+                      <span className="text-energy-400/60">{(tx.resonanceScore * 100).toFixed(0)}% resonance</span>
+                    )}
+                  </div>
                 </div>
                 <span className={`font-bold shrink-0 ${
                   tx.type === 'send' ? 'text-nebula-400' : 'text-energy-400'

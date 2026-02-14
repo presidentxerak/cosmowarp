@@ -46,7 +46,6 @@ export default function MineView() {
     addLog(`\u25B6 Starting ${difficulty} mining program...`);
     addLog(`\u229A Loading CosmoASM bytecode...`);
 
-    // Simulate mining delay for UX
     await new Promise(r => setTimeout(r, 400));
     addLog('\u26A1 Executing Planck cycles...');
 
@@ -61,11 +60,18 @@ export default function MineView() {
     }
 
     await new Promise(r => setTimeout(r, 200));
+    addLog('\u229A Submitting to CosmoMesh DAG...');
 
     if (result.success) {
-      const tx = mine(result.energy, result.cycles);
-      setLastReward(tx.amount);
-      addLog(`\u2713 Mining complete! Reward: +${tx.amount} \u03A9`, 'success');
+      try {
+        const tx = await mine(result.energy, result.cycles);
+        setLastReward(tx.amount);
+        addLog(`\u229A Ed25519 signature generated`, 'energy');
+        addLog(`\u229A Resonance Consensus: validated`, 'energy');
+        addLog(`\u2713 Mining complete! Reward: +${tx.amount} \u03A9`, 'success');
+      } catch (err) {
+        addLog(`\u2717 Mining failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'info');
+      }
     } else {
       addLog('\u2717 Mining failed: cycle limit reached', 'info');
     }
@@ -80,6 +86,8 @@ export default function MineView() {
         <h2 className="text-lg font-bold text-warp-300 mb-1">{'\u26CF'} Warp Mining</h2>
         <p className="text-xs text-gray-500 mb-4">
           Execute CosmoCode programs to mine Warps via proof-of-computation.
+          <br />
+          <span className="text-warp-400/60">Validated by Resonance Consensus on CosmoMesh DAG</span>
         </p>
 
         {/* Difficulty Selector */}
