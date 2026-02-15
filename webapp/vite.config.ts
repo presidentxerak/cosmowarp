@@ -5,6 +5,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: '/cosmowarp/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -12,6 +13,6 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    allowedHosts: 'all',
+    allowedHosts: true,
   },
 })
