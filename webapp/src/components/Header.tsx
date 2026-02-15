@@ -7,6 +7,7 @@ export default function Header({ activeTab, setActiveTab }: {
     { id: 'send', label: '\u2197 Send' },
     { id: 'mine', label: '\u26CF Mine' },
     { id: 'feed', label: '\u25CE Feed' },
+    { id: 'admin', label: '\u26BF Admin' },
     { id: 'console', label: '> Console' },
   ];
 
@@ -21,7 +22,7 @@ export default function Header({ activeTab, setActiveTab }: {
           />
           <div>
             <h1 className="text-base font-bold text-warp-300 leading-tight">CosmoWarp</h1>
-            <p className="text-[10px] text-gray-500">Terminal v0.1</p>
+            <p className="text-[10px] text-gray-500">Terminal v0.2</p>
           </div>
         </div>
 

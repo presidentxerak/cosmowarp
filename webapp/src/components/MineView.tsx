@@ -5,18 +5,18 @@ import { runMiningProgram, MINING_PROGRAMS } from '../engine/miner';
 type Difficulty = 'basic' | 'crypto' | 'deep';
 
 const DIFFICULTY_INFO: Record<Difficulty, { label: string; reward: string; color: string }> = {
-  basic: { label: 'Basic', reward: '1-5 \u03A9', color: 'text-energy-400' },
-  crypto: { label: 'Crypto', reward: '5-20 \u03A9', color: 'text-warp-400' },
-  deep: { label: 'Deep', reward: '10-50 \u03A9', color: 'text-star-400' },
+  basic: { label: 'Basic', reward: 'Low', color: 'text-energy-400' },
+  crypto: { label: 'Crypto', reward: 'Medium', color: 'text-warp-400' },
+  deep: { label: 'Deep', reward: 'High', color: 'text-star-400' },
 };
 
 interface MiningLog {
   text: string;
-  type: 'info' | 'success' | 'energy';
+  type: 'info' | 'success' | 'energy' | 'level_up';
 }
 
 export default function MineView() {
-  const { wallet, mine } = useWallet();
+  const { wallet, mine, supplyInfo } = useWallet();
   const [difficulty, setDifficulty] = useState<Difficulty>('basic');
   const [mining, setMining] = useState(false);
   const [logs, setLogs] = useState<MiningLog[]>([]);
@@ -61,14 +61,20 @@ export default function MineView() {
 
     await new Promise(r => setTimeout(r, 200));
     addLog('\u229A Submitting to CosmoMesh DAG...');
+    addLog(`\u229A Reward multiplier: ${wallet.rewardMultiplier}x (Level: ${wallet.levelName})`);
 
     if (result.success) {
       try {
-        const tx = await mine(result.energy, result.cycles);
+        const { tx, levelUp } = await mine(result.energy, result.cycles);
         setLastReward(tx.amount);
         addLog(`\u229A Ed25519 signature generated`, 'energy');
         addLog(`\u229A Resonance Consensus: validated`, 'energy');
+        addLog(`\u229A Resonance Decay applied`, 'energy');
         addLog(`\u2713 Mining complete! Reward: +${tx.amount} \u03A9`, 'success');
+
+        if (levelUp) {
+          addLog(`\u2605 LEVEL UP! ${levelUp.levelDef.name}: ${levelUp.levelDef.title} (+${levelUp.airdropBonus} \u03A9 bonus)`, 'level_up');
+        }
       } catch (err) {
         addLog(`\u2717 Mining failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'info');
       }
@@ -84,11 +90,14 @@ export default function MineView() {
       {/* Mining Control */}
       <div className="glass-panel p-5">
         <h2 className="text-lg font-bold text-warp-300 mb-1">{'\u26CF'} Warp Mining</h2>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-gray-500 mb-2">
           Execute CosmoCode programs to mine Warps via proof-of-computation.
-          <br />
-          <span className="text-warp-400/60">Validated by Resonance Consensus on CosmoMesh DAG</span>
         </p>
+        <div className="flex gap-3 text-[10px] text-gray-500 mb-4">
+          <span>Current Reward: <span className="text-energy-400">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u03A9'}</span></span>
+          <span>Your Multiplier: <span className="text-star-400">{wallet.rewardMultiplier}x</span></span>
+          <span>Epoch: <span className="text-warp-400">{supplyInfo?.currentEpoch || 0}</span></span>
+        </div>
 
         {/* Difficulty Selector */}
         <div className="mb-4">
@@ -150,6 +159,7 @@ export default function MineView() {
               <div key={i} className={
                 log.type === 'success' ? 'text-green-400' :
                 log.type === 'energy' ? 'text-energy-400' :
+                log.type === 'level_up' ? 'text-amber-400 font-bold' :
                 'text-gray-400'
               }>
                 {log.text}

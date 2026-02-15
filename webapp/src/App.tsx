@@ -5,6 +5,7 @@ import WalletView from './components/WalletView';
 import SendView from './components/SendView';
 import MineView from './components/MineView';
 import FeedView from './components/FeedView';
+import AdminView from './components/AdminView';
 import ConsoleView from './components/ConsoleView';
 
 function App() {
@@ -20,11 +21,12 @@ function App() {
           {activeTab === 'send' && <SendView />}
           {activeTab === 'mine' && <MineView />}
           {activeTab === 'feed' && <FeedView />}
+          {activeTab === 'admin' && <AdminView />}
           {activeTab === 'console' && <ConsoleView />}
         </main>
 
         <footer className="text-center text-[10px] text-gray-600 mt-6 pb-4">
-          CosmoWarp Terminal &middot; CosmoMesh Protocol v1.0 &middot; Ed25519 + SHA-256 + AES-GCM &middot; {'\u2726'}
+          CosmoWarp Terminal &middot; CosmoMesh v1.0 &middot; Resonance Decay &middot; 69M Supply &middot; {'\u2726'}
         </footer>
       </div>
     </WalletProvider>
