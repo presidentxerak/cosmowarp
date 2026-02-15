@@ -14,7 +14,6 @@
 
 import { sha256, encryptData, decryptData, type EncryptedPayload } from './crypto';
 import type { SupplyState } from './tokenomics';
-import type { AccountProfile } from './hierarchy';
 
 // ─── Registry Entry Types ────────────────────────────────
 

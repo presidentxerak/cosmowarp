@@ -17,7 +17,7 @@
  * - Future: could use WebTorrent-style DHT for fully decentralized signaling
  */
 
-import { sha256, randomHex } from './crypto';
+import { randomHex } from './crypto';
 import type { MeshTransaction } from './cosmomesh';
 import type { ConsensusVote } from './consensus';
 
@@ -38,18 +38,20 @@ export type PeerState = 'connecting' | 'connected' | 'disconnected' | 'failed';
 
 // ─── Message Types ───────────────────────────────────────
 
-export enum MessageType {
-  HANDSHAKE         = 'handshake',
-  TX_ANNOUNCE       = 'tx_announce',
-  TX_REQUEST        = 'tx_request',
-  TX_RESPONSE       = 'tx_response',
-  VOTE_BROADCAST    = 'vote_broadcast',
-  PEER_LIST         = 'peer_list',
-  PING              = 'ping',
-  PONG              = 'pong',
-  SYNC_REQUEST      = 'sync_request',
-  SYNC_RESPONSE     = 'sync_response',
-}
+export const MessageType = {
+  HANDSHAKE:         'handshake',
+  TX_ANNOUNCE:       'tx_announce',
+  TX_REQUEST:        'tx_request',
+  TX_RESPONSE:       'tx_response',
+  VOTE_BROADCAST:    'vote_broadcast',
+  PEER_LIST:         'peer_list',
+  PING:              'ping',
+  PONG:              'pong',
+  SYNC_REQUEST:      'sync_request',
+  SYNC_RESPONSE:     'sync_response',
+} as const;
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType];
 
 export interface P2PMessage {
   type: MessageType;
@@ -87,8 +89,6 @@ export class CosmoP2P {
   private peers: Map<string, PeerConnection> = new Map();
   private handlers: P2PEventHandlers = {};
   private seenMessages: Set<string> = new Set(); // Dedup gossip
-  private maxPeers: number = 8;
-  private seenMessagesTTL: number = 60000; // 1 minute
   private isRunning: boolean = false;
 
   constructor(address: string) {

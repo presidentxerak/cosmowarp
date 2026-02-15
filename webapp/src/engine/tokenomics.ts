@@ -20,8 +20,6 @@
  * - Self-adjusting based on actual mining activity
  */
 
-import { sha256 } from './crypto';
-
 // ─── Constants ───────────────────────────────────────────
 
 export const TOTAL_SUPPLY = 69_000_000;
@@ -169,7 +167,6 @@ export function isRewardDay(): boolean {
 // ─── Tokenomics Engine ──────────────────────────────────
 
 const TOKENOMICS_STORAGE_KEY = 'cosmowarp_tokenomics';
-const STREAKS_STORAGE_KEY = 'cosmowarp_streaks';
 
 export class TokenomicsEngine {
   private state: SupplyState;

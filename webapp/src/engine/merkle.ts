@@ -6,7 +6,7 @@
  * This provides tamper-proof verification of the entire transaction history.
  */
 
-import { sha256, sha256Raw } from './crypto';
+import { sha256 } from './crypto';
 
 // ─── Merkle Node ─────────────────────────────────────────
 

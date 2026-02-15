@@ -82,3 +82,29 @@
   border-color: rgba(192, 132, 252, 0.5);
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
 }
+
+/* Smooth page transitions */
+main > * {
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile-optimized scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(168, 85, 247, 0.5); }
+
+/* Safe area padding for mobile notches */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* Touch-friendly targets on mobile */
+@media (max-width: 640px) {
+  .warp-button { min-height: 44px; }
+  .warp-input { min-height: 44px; font-size: 16px; }
+}

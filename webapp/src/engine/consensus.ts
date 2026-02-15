@@ -19,8 +19,8 @@
  * - Self-organizing (validators naturally specialize)
  */
 
-import { sha256, verifySignature } from './crypto';
-import { type MeshTransaction, MeshLayer, LAYER_NAMES } from './cosmomesh';
+import { sha256 } from './crypto';
+import { type MeshTransaction, MeshLayer } from './cosmomesh';
 
 // ─── Validator State ─────────────────────────────────────
 
@@ -69,10 +69,7 @@ export class ResonanceConsensus {
 
   // Consensus parameters
   private readonly RESONANCE_THRESHOLD = 0.67;     // 2/3 supermajority
-  private readonly MIN_VALIDATORS = 1;              // Minimum for consensus (1 for local mode)
-  private readonly ROUND_TIMEOUT_MS = 5000;         // 5 second timeout
   private readonly LAYER_WEIGHT_DECAY = 0.95;       // Affinity decay per round
-  private readonly GOLDEN_RATIO = 1.618033988749895;
 
   constructor() {}
 

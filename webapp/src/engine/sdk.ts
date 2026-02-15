@@ -13,9 +13,9 @@
  */
 
 import { generateKeyPair, sha256, shortAddress, isValidAddress, type CosmoKeyPair } from './crypto';
-import { TOTAL_SUPPLY, AIRDROP_AMOUNT, calculateMiningReward, type SupplyBreakdown } from './tokenomics';
-import { HIERARCHY_LEVELS, type HierarchyLevel } from './hierarchy';
-import { LAYER_NAMES, type MeshStats } from './cosmomesh';
+import { TOTAL_SUPPLY, AIRDROP_AMOUNT, calculateMiningReward } from './tokenomics';
+import { HIERARCHY_LEVELS } from './hierarchy';
+import { LAYER_NAMES } from './cosmomesh';
 
 // ─── SDK Wallet (Public Interface) ───────────────────────
 

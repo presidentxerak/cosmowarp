@@ -20,20 +20,22 @@
  * - CosmoASM programmable = smart contracts via VM
  */
 
-import { sha256, signTransaction, verifySignature, computeTxId, isValidAddress } from './crypto';
-import { MerkleDAG, type MerkleNode } from './merkle';
+import { signTransaction, verifySignature, computeTxId, isValidAddress } from './crypto';
+import { MerkleDAG } from './merkle';
 
 // ─── Fractal Layers ──────────────────────────────────────
 
-export enum MeshLayer {
-  GRID    = 0,  // Micro-transactions (< 10 Ω)
-  HELIX   = 1,  // Standard transfers (10-100 Ω)
-  GLYPH   = 2,  // Large transfers (100-1000 Ω)
-  COSMO   = 3,  // System operations (governance, staking)
-  CHRONOS = 4,  // Time-locked transactions
-  NEXUS   = 5,  // Cross-layer bridges
-  LUMINA  = 6,  // Genesis & epoch transitions
-}
+export const MeshLayer = {
+  GRID:    0,  // Micro-transactions (< 10 Ω)
+  HELIX:   1,  // Standard transfers (10-100 Ω)
+  GLYPH:   2,  // Large transfers (100-1000 Ω)
+  COSMO:   3,  // System operations (governance, staking)
+  CHRONOS: 4,  // Time-locked transactions
+  NEXUS:   5,  // Cross-layer bridges
+  LUMINA:  6,  // Genesis & epoch transitions
+} as const;
+
+export type MeshLayer = (typeof MeshLayer)[keyof typeof MeshLayer];
 
 export const LAYER_NAMES = ['GRID', 'HELIX', 'GLYPH', 'COSMO', 'CHRONOS', 'NEXUS', 'LUMINA'];
 
