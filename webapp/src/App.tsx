@@ -30,7 +30,7 @@ function App() {
         </main>
 
         <footer className="text-center text-[10px] text-gray-600 pb-6 space-y-1">
-          <p>CosmoWarp Terminal &middot; CosmoMesh v1.0 &middot; Resonance Decay &middot; 69M Supply</p>
+          <p>CosmoWarp Terminal v2.0 &middot; CosmoMesh v2.0 &middot; Resonance Decay &middot; 69M Supply</p>
           <p>
             <button
               onClick={() => setActiveTab('whitepaper')}

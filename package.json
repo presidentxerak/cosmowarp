@@ -1,6 +1,6 @@
 {
   "name": "cosmowarp",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "CosmoCode Protocol - Machine cosmique fractale avec CosmoASM",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

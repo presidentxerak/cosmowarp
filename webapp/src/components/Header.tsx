@@ -35,7 +35,7 @@ export default function Header({ activeTab, setActiveTab }: {
               onClick={() => setActiveTab('whitepaper')}>
               CosmoWarp
             </h1>
-            <p className="text-[10px] text-gray-500">Terminal v0.3</p>
+            <p className="text-[10px] text-gray-500">Terminal v2.0</p>
           </div>
         </div>
 

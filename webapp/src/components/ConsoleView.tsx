@@ -7,7 +7,7 @@ interface ConsoleLine {
 }
 
 const WELCOME = [
-  { text: '\u2726 CosmoWarp Console v0.1', type: 'info' as const },
+  { text: '\u2726 CosmoWarp Console v2.0', type: 'info' as const },
   { text: 'Type CosmoASM instructions or use /help for commands.', type: 'info' as const },
   { text: '', type: 'info' as const },
 ];

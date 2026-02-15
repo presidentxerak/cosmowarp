@@ -1,7 +1,7 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
  * ║                    COSMOWARP                              ║
- * ║           Protocole CosmoCode v0.1.0                      ║
+ * ║           Protocole CosmoCode v2.0.0                      ║
  * ║                                                           ║
  * ║  Machine cosmique fractale avec CosmoASM                  ║
  * ║  32 opcodes · 7 couches · 12 registres · Planck Loop      ║
