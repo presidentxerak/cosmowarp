@@ -93,7 +93,7 @@ export default function MineView() {
         <p className="text-xs text-gray-500 mb-2">
           Execute CosmoCode programs to mine Warps via proof-of-computation.
         </p>
-        <div className="flex gap-3 text-[10px] text-gray-500 mb-4">
+        <div className="flex gap-3 text-[10px] text-gray-500 mb-4 flex-wrap">
           <span>Current Reward: <span className="text-energy-400">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u03A9'}</span></span>
           <span>Your Multiplier: <span className="text-star-400">{wallet.rewardMultiplier}x</span></span>
           <span>Epoch: <span className="text-warp-400">{supplyInfo?.currentEpoch || 0}</span></span>

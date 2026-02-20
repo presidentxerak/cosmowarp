@@ -13,7 +13,7 @@ export default function WalletView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <div className="text-5xl mb-4 animate-float">{'\u2726'}</div>
+        <div className="text-5xl mb-4 animate-float">{'\u2B21'}</div>
         <h2 className="text-xl font-bold text-warp-300 mb-2">Create Your Warp Wallet</h2>
         <p className="text-sm text-gray-400 mb-2">
           Generate an Ed25519 keypair and receive 1,000 {'\u03A9'} airdrop.
@@ -46,7 +46,7 @@ export default function WalletView() {
                 Generating Ed25519 Keys...
               </span>
             ) : (
-              <>{'\u2726'} Initialize Wallet</>
+              <>{'\u2B21'} Initialize Wallet</>
             )}
           </button>
         </div>
@@ -135,7 +135,7 @@ export default function WalletView() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="glass-panel p-3 text-center">
           <p className="text-lg font-bold text-energy-400">{wallet.transactions.length}</p>
           <p className="text-[10px] text-gray-500">TXs</p>
@@ -162,7 +162,7 @@ export default function WalletView() {
       {supplyInfo && (
         <div className="glass-panel p-4">
           <h3 className="text-sm font-bold text-gray-300 mb-3">Tokenomics</h3>
-          <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
               <span className="text-gray-500">Total Supply:</span>
               <span className="text-warp-400 ml-1">{supplyInfo.total.toLocaleString()}</span>
@@ -195,7 +195,7 @@ export default function WalletView() {
       {meshStats && (
         <div className="glass-panel p-4">
           <h3 className="text-sm font-bold text-gray-300 mb-3">CosmoMesh Status</h3>
-          <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
               <span className="text-gray-500">DAG Nodes:</span>
               <span className="text-warp-400 ml-1">{meshStats.totalTransactions}</span>
@@ -242,7 +242,7 @@ export default function WalletView() {
                 }`}>
                   {tx.type === 'mine' ? '\u26CF' :
                    tx.type === 'send' ? '\u2197' :
-                   tx.type === 'genesis' || tx.type === 'airdrop' ? '\u2726' :
+                   tx.type === 'genesis' || tx.type === 'airdrop' ? '\u2B21' :
                    tx.type === 'level_up' ? '\u2605' : '\u2199'}
                 </span>
                 <div className="flex-1 min-w-0">

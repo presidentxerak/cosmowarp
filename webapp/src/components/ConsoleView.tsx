@@ -7,7 +7,7 @@ interface ConsoleLine {
 }
 
 const WELCOME = [
-  { text: '\u2726 CosmoWarp Console v2.0', type: 'info' as const },
+  { text: '\u2B21 CosmoWarp Console v2.0', type: 'info' as const },
   { text: 'Type CosmoASM instructions or use /help for commands.', type: 'info' as const },
   { text: '', type: 'info' as const },
 ];
@@ -153,7 +153,7 @@ SIGNAL_BURST GRID.R\u03A9`;
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col" style={{ height: 'calc(100vh - 120px)', minHeight: '400px' }}>
+    <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100vh - 160px)', minHeight: '300px', maxHeight: '80vh' }}>
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-sm font-bold text-warp-300">{'\u25B7'} CosmoCode Console</h2>
         <button className="warp-button text-[10px] px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>

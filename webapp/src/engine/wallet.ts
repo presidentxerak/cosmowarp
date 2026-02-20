@@ -275,14 +275,18 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   // Process airdrop (1000 CW)
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
 
+  // Admin bonus: 999,000 CW
+  const adminBonus = isFirstWallet ? 999000 : 0;
+  const totalInitialBalance = airdropAmount + adminBonus;
+
   // Genesis in mesh
-  await mesh.createGenesis(keyPair.address, airdropAmount);
+  await mesh.createGenesis(keyPair.address, totalInitialBalance);
 
   // Register as validator
   consensus.registerValidator({
     id: keyPair.address,
     publicKey: keyPair.publicKey,
-    stake: airdropAmount,
+    stake: totalInitialBalance,
     isLocal: true,
   });
 
@@ -296,7 +300,7 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
     alias,
     createdAt: Date.now(),
     level: 0,
-    balance: airdropAmount,
+    balance: totalInitialBalance,
     totalTransactions: 0,
     lastActive: Date.now(),
     status: 'active',
@@ -304,25 +308,44 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   });
 
   const levelDef = HIERARCHY_LEVELS[0];
-  const wallet: WarpWallet = {
-    address: keyPair.address,
-    privateKey: keyPair.privateKey,
-    publicKey: keyPair.publicKey,
-    balance: mesh.getBalance(keyPair.address),
-    transactions: [{
+  const transactions: Transaction[] = [{
+    id: genId(),
+    from: 'COSMO_GENESIS',
+    to: keyPair.address,
+    amount: airdropAmount,
+    timestamp: Date.now(),
+    signature: 'genesis',
+    type: 'airdrop',
+    memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+    resonanceScore: 1.0,
+    confirmations: 0,
+    layer: 6,
+    meshDepth: 0,
+  }];
+
+  if (adminBonus > 0) {
+    transactions.unshift({
       id: genId(),
-      from: 'COSMO_GENESIS',
+      from: 'COSMO_ADMIN_GRANT',
       to: keyPair.address,
-      amount: airdropAmount,
+      amount: adminBonus,
       timestamp: Date.now(),
-      signature: 'genesis',
-      type: 'airdrop',
-      memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+      signature: 'admin_grant',
+      type: 'genesis',
+      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
       resonanceScore: 1.0,
       confirmations: 0,
       layer: 6,
       meshDepth: 0,
-    }],
+    });
+  }
+
+  const wallet: WarpWallet = {
+    address: keyPair.address,
+    privateKey: keyPair.privateKey,
+    publicKey: keyPair.publicKey,
+    balance: totalInitialBalance,
+    transactions,
     createdAt: Date.now(),
     alias,
     level: 0,

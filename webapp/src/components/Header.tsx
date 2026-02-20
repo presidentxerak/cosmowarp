@@ -11,7 +11,7 @@ export default function Header({ activeTab, setActiveTab }: {
     { id: 'send', label: '\u2197 Send', group: 'main' },
     { id: 'mine', label: '\u26CF Mine', group: 'main' },
     { id: 'feed', label: '\u25CE Feed', group: 'main' },
-    { id: 'whitepaper', label: '\u2726 Paper', group: 'info' },
+    { id: 'whitepaper', label: '\u2B21 Paper', group: 'info' },
     { id: 'sdk', label: '\u269B SDK', group: 'info' },
     { id: 'admin', label: '\u26BF Admin', group: 'more' },
     { id: 'console', label: '> Console', group: 'more' },
@@ -21,7 +21,7 @@ export default function Header({ activeTab, setActiveTab }: {
   const moreTabs = tabs.filter(t => t.group !== 'main');
 
   return (
-    <header className="glass-panel mb-4 p-3 sm:p-4">
+    <header className="glass-panel mb-4 p-3 sm:p-4 relative z-50">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-full animate-warp-spin cursor-pointer"

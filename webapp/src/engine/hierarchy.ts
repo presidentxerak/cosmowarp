@@ -86,7 +86,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     id: 5,
     name: 'Cosmos',
     title: 'Cosmic Sovereign',
-    symbol: '\u2726',       // ✦
+    symbol: '\u2B21',       // ⬡
     minTransactions: 2000,
     minDaysActive: 180,
     rewardMultiplier: 3.5,

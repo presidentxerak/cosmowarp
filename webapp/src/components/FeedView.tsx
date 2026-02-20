@@ -9,7 +9,7 @@ export default function FeedView() {
     switch (type) {
       case 'mine': return '\u26CF';
       case 'send': return '\u2197';
-      case 'genesis': return '\u2726';
+      case 'genesis': return '\u2B21';
       default: return '\u25CE';
     }
   };
@@ -51,7 +51,7 @@ export default function FeedView() {
 
         {/* Mesh Stats Summary */}
         {meshStats && (
-          <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
+          <div className="flex gap-4 mt-2 text-[10px] text-gray-500 flex-wrap">
             <span>DAG: <span className="text-warp-400">{meshStats.totalTransactions}</span> nodes</span>
             <span>Tips: <span className="text-energy-400">{meshStats.totalTips}</span></span>
             <span>Resonance: <span className="text-star-400">{(meshStats.avgResonance * 100).toFixed(0)}%</span></span>
@@ -62,7 +62,7 @@ export default function FeedView() {
 
       {globalTxs.length === 0 ? (
         <div className="glass-panel p-8 text-center">
-          <p className="text-3xl mb-2">{'\u2726'}</p>
+          <p className="text-3xl mb-2">{'\u2B21'}</p>
           <p className="text-gray-400 text-sm">No transactions yet. Be the first to mine or send!</p>
         </div>
       ) : (

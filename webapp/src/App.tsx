@@ -46,7 +46,7 @@ function App() {
               SDK & API
             </button>
             {' \u00B7 '}
-            <span>CosmoWarp Foundation {'\u2726'}</span>
+            <span>CosmoWarp Foundation {'\u2B21'}</span>
           </p>
         </footer>
       </div>

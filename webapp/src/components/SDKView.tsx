@@ -19,7 +19,7 @@ export default function SDKView() {
       {/* Header */}
       <div className="glass-panel p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-2xl">{'\u2726'}</span>
+          <span className="text-2xl">{'\u2B21'}</span>
           <div>
             <h2 className="text-xl font-bold text-warp-300">CosmoWarp SDK</h2>
             <p className="text-xs text-gray-500">Developer API & Extension Guide</p>
@@ -130,7 +130,7 @@ cosmo.on('balance_changed', (event) => {
 });`} />
 
       <h3 className="text-sm font-bold text-energy-400 mb-2 mt-5">Protocol Constants</h3>
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
         {[
           ['Total Supply', '69,000,000 CW'],
           ['Airdrop/Wallet', '1,000 CW'],

@@ -3,7 +3,7 @@ import { useState } from 'react';
 type Section = 'overview' | 'foundation' | 'cosmomesh' | 'cosmocode' | 'cosmohash' | 'cosmolingua' | 'tokenomics' | 'hierarchy' | 'security' | 'roadmap';
 
 const NAV: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: 'Overview', icon: '\u2726' },
+  { id: 'overview', label: 'Overview', icon: '\u2B21' },
   { id: 'foundation', label: 'Foundation', icon: '\u2600' },
   { id: 'cosmomesh', label: 'CosmoMesh', icon: '\u25CE' },
   { id: 'cosmocode', label: 'CosmoCode', icon: '\u25B7' },
@@ -26,7 +26,7 @@ export default function WhitepaperView() {
           background: 'radial-gradient(circle at 30% 30%, #a855f7 0%, transparent 50%), radial-gradient(circle at 70% 70%, #06b6d4 0%, transparent 50%)',
         }} />
         <div className="relative">
-          <div className="text-5xl sm:text-6xl mb-4 animate-float">{'\u2726'}</div>
+          <div className="text-5xl sm:text-6xl mb-4 animate-float">{'\u2B21'}</div>
           <h1 className="text-2xl sm:text-3xl font-bold text-warp-300 mb-2">CosmoWarp</h1>
           <p className="text-sm sm:text-base text-gray-400 mb-1">White Paper v1.0</p>
           <p className="text-xs text-gray-500 max-w-md mx-auto">
@@ -108,7 +108,7 @@ function Stat({ label, value, color = 'text-warp-400' }: { label: string; value:
 function OverviewSection() {
   return (
     <div>
-      <SectionTitle icon={'\u2726'} title="Overview" subtitle="What is CosmoWarp and why does it exist?" />
+      <SectionTitle icon={'\u2B21'} title="Overview" subtitle="What is CosmoWarp and why does it exist?" />
       <P>
         CosmoWarp is a <span className="text-warp-400 font-bold">post-blockchain transactional fabric</span> that
         transcends both traditional fiat systems and cryptocurrency. It is not a blockchain, not a coin,
@@ -158,13 +158,13 @@ function OverviewSection() {
           </thead>
           <tbody className="text-gray-400">
             {[
-              ['Speed', '\u2713', '\u2717', '\u2726'],
-              ['Decentralized', '\u2717', '\u2713', '\u2726'],
-              ['Parallel Validation', '\u2717', '\u2717', '\u2726'],
-              ['No Mining Waste', '\u2717', '\u2717', '\u2726'],
-              ['Programmable', '\u2717', '\u2713', '\u2726'],
-              ['P2P Native', '\u2717', '\u2713', '\u2726'],
-              ['Fair Distribution', '\u2717', '\u2717', '\u2726'],
+              ['Speed', '\u2713', '\u2717', '\u2B21'],
+              ['Decentralized', '\u2717', '\u2713', '\u2B21'],
+              ['Parallel Validation', '\u2717', '\u2717', '\u2B21'],
+              ['No Mining Waste', '\u2717', '\u2717', '\u2B21'],
+              ['Programmable', '\u2717', '\u2713', '\u2B21'],
+              ['P2P Native', '\u2717', '\u2713', '\u2B21'],
+              ['Fair Distribution', '\u2717', '\u2717', '\u2B21'],
             ].map(([feat, fiat, block, cosmo]) => (
               <tr key={feat} className="border-b border-gray-800/30">
                 <td className="py-1.5 text-gray-300">{feat}</td>
@@ -207,7 +207,7 @@ function FoundationSection() {
           ['\u26BF', 'CosmoHash', 'The cryptographic foundation. Ed25519 digital signatures, SHA-256 hashing, and AES-GCM authenticated encryption form the security backbone.', 'text-star-400'],
           ['\u223F', 'CosmoLingua', 'The symbolic language. Greek letters (\u03A9, \u03C6, \u03C8), cosmic symbols, and fractal naming create a unique cultural identity for the protocol.', 'text-nebula-400'],
           ['\u269B', 'CosmoVault', 'The tokenomics engine. Manages the 69M supply, Resonance Decay curve, airdrops, streak rewards, and creator lock.', 'text-cyan-400'],
-          ['\u2726', 'CosmoSDK', 'The developer toolkit. Open-source API for building apps, extensions, and integrations on the CosmoWarp ecosystem.', 'text-orange-400'],
+          ['\u2B21', 'CosmoSDK', 'The developer toolkit. Open-source API for building apps, extensions, and integrations on the CosmoWarp ecosystem.', 'text-orange-400'],
         ].map(([icon, title, desc, color]) => (
           <div key={title} className="p-4 rounded-lg bg-cosmic-900/40 border border-gray-700/10">
             <div className="flex items-center gap-2 mb-2">
@@ -220,7 +220,7 @@ function FoundationSection() {
       </div>
 
       <H3>Values</H3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {['Transparency', 'Fairness', 'Innovation', 'Community', 'Security', 'Freedom'].map(v => (
           <div key={v} className="text-center p-2 rounded-lg bg-cosmic-900/40">
             <p className="text-xs text-warp-400 font-bold">{v}</p>
@@ -302,7 +302,7 @@ function CosmoCodeSection() {
         The CosmoVM is a register-based virtual machine with 12 special-purpose registers named
         with Greek letters, reflecting the cosmic philosophy of the protocol.
       </P>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-2 gap-2 mb-4 sm:grid-cols-3">
         {[
           ['R\u03A9', 'Accumulator'],
           ['R\u03C6', 'Golden Ratio'],
@@ -389,7 +389,7 @@ function CosmoHashSection() {
         Key derivation uses PBKDF2 with 100,000 iterations.
       </P>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+      <div className="grid grid-cols-1 gap-3 mt-4 sm:grid-cols-3">
         <Stat label="SIGNATURES" value="Ed25519" color="text-warp-400" />
         <Stat label="HASHING" value="SHA-256" color="text-energy-400" />
         <Stat label="ENCRYPTION" value="AES-GCM" color="text-star-400" />
@@ -411,12 +411,12 @@ function CosmoLinguaSection() {
       </P>
 
       <H3>Symbolic Vocabulary</H3>
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {[
           ['\u03A9', 'Omega', 'Unit of value (Warps)'],
           ['\u03C6', 'Phi', 'Golden ratio (Resonance Decay)'],
           ['\u03C8', 'Psi', 'Wave function (consensus)'],
-          ['\u2726', 'Star', 'CosmoWarp identity symbol'],
+          ['\u2B21', 'Hexagon', 'CosmoWarp identity symbol'],
           ['\u223F', 'Wave', 'Resonance and harmony'],
           ['\u269B', 'Atom', 'Fundamental transaction unit'],
           ['\u2604', 'Comet', 'High-energy operations'],
@@ -457,7 +457,7 @@ function TokenomicsSection() {
     <div>
       <SectionTitle icon={'\u269B'} title="Tokenomics" subtitle="Supply, Distribution & Resonance Decay" />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
         <Stat label="TOTAL SUPPLY" value="69M" color="text-warp-400" />
         <Stat label="CREATOR LOCK" value="1M" color="text-amber-400" />
         <Stat label="AIRDROP POOL" value="10M" color="text-energy-400" />
@@ -491,7 +491,7 @@ function TokenomicsSection() {
         <p className="text-[10px] text-gray-500 mb-1">FORMULA</p>
         <p className="text-sm text-energy-400 font-bold">reward = 50 {'\u00D7'} {'\u03C6'}^(-totalMined / 5,000,000)</p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 text-center text-xs">
+      <div className="grid grid-cols-2 gap-2 mb-4 text-center text-xs sm:grid-cols-4">
         {[
           ['0 mined', '50.00 CW'],
           ['5M mined', '~30.9 CW'],
@@ -542,7 +542,7 @@ function HierarchySection() {
           { sym: '\u2605', name: 'Star', title: 'Stellar Navigator', mult: '1.5x', min: '50 TX', bonus: '250 CW', color: 'text-yellow-400', desc: 'A guiding light in the CosmoMesh.' },
           { sym: '\u2604', name: 'Nebula', title: 'Nebula Architect', mult: '2.0x', min: '200 TX', bonus: '500 CW', color: 'text-purple-400', desc: 'You shape the fabric of the mesh.' },
           { sym: '\u269B', name: 'Galaxy', title: 'Galactic Guardian', mult: '2.5x', min: '500 TX', bonus: '1,000 CW', color: 'text-cyan-400', desc: 'A gravitational center of the network.' },
-          { sym: '\u2726', name: 'Cosmos', title: 'Cosmic Sovereign', mult: '3.5x', min: '2,000 TX', bonus: '2,500 CW', color: 'text-orange-400', desc: 'Sovereign of the cosmic order.' },
+          { sym: '\u2B21', name: 'Cosmos', title: 'Cosmic Sovereign', mult: '3.5x', min: '2,000 TX', bonus: '2,500 CW', color: 'text-orange-400', desc: 'Sovereign of the cosmic order.' },
           { sym: '\u2600', name: 'Lumina', title: 'Lumina Transcendent', mult: '5.0x', min: '10,000 TX', bonus: '5,000 CW', color: 'text-amber-300', desc: 'Transcended beyond the mesh. You ARE the light.' },
         ].map(level => (
           <div key={level.name} className="p-3 rounded-lg bg-cosmic-900/40 border border-gray-700/10">

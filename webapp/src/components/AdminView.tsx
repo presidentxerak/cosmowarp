@@ -95,7 +95,7 @@ export default function AdminView() {
       {supplyInfo && (
         <div className="glass-panel p-4">
           <h3 className="text-sm font-bold text-gray-300 mb-3">Supply Overview</h3>
-          <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="glass-panel p-3 text-center bg-cosmic-900/40">
               <p className="text-lg font-bold text-warp-400">{supplyInfo.total.toLocaleString()}</p>
               <p className="text-[10px] text-gray-500">TOTAL SUPPLY</p>
@@ -113,7 +113,7 @@ export default function AdminView() {
               <p className="text-[10px] text-gray-500">AIRDROPPED</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-xs">
             <div>
               <span className="text-gray-500">Creator Locked:</span>
               <span className="text-amber-400 ml-1">{supplyInfo.creatorLocked.toLocaleString()}</span>
@@ -160,7 +160,7 @@ export default function AdminView() {
         <>
           <div className="glass-panel p-4">
             <h3 className="text-sm font-bold text-gray-300 mb-3">Protocol Dashboard</h3>
-            <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="glass-panel p-3 text-center bg-cosmic-900/40">
                 <p className="text-lg font-bold text-warp-400">{adminDashboard.totalAccounts}</p>
                 <p className="text-[10px] text-gray-500">ACCOUNTS</p>
@@ -174,7 +174,7 @@ export default function AdminView() {
                 <p className="text-[10px] text-gray-500">ACTIVE 24H</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 text-xs">
               <div>
                 <span className="text-gray-500">24h TXs:</span>
                 <span className="text-energy-400 ml-1">{adminDashboard.transactions24h}</span>

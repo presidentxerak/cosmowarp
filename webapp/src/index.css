@@ -107,4 +107,7 @@ main > * {
 @media (max-width: 640px) {
   .warp-button { min-height: 44px; }
   .warp-input { min-height: 44px; font-size: 16px; }
+  .glass-panel { border-radius: 0.5rem; }
+  table { font-size: 11px; }
+  pre { font-size: 10px; }
 }
