@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="hex-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="hex-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer hexagon -->
+  <polygon points="100,10 178,55 178,145 100,190 22,145 22,55" fill="url(#hex-grad)" opacity="0.9"/>
+  <!-- Inner hexagon -->
+  <polygon points="100,30 162,65 162,135 100,170 38,135 38,65" fill="url(#hex-inner)" opacity="0.15"/>
+  <!-- Inner glow hexagon -->
+  <polygon points="100,50 145,75 145,125 100,150 55,125 55,75" fill="url(#hex-inner)" opacity="0.08"/>
+  <!-- CW text -->
+  <text x="100" y="115" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="52" fill="white" opacity="0.95">CW</text>
+</svg>

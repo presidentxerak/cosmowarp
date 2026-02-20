@@ -26,7 +26,9 @@ export default function WhitepaperView() {
           background: 'radial-gradient(circle at 30% 30%, #a855f7 0%, transparent 50%), radial-gradient(circle at 70% 70%, #06b6d4 0%, transparent 50%)',
         }} />
         <div className="relative">
-          <div className="text-5xl sm:text-6xl mb-4 animate-float">{'\u2B21'}</div>
+          <div className="flex justify-center mb-4">
+            <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
+          </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-warp-300 mb-2 font-title">CosmoWarp</h1>
           <p className="text-sm sm:text-base text-gray-400 mb-1">White Paper v1.0</p>
           <p className="text-xs text-gray-500 max-w-md mx-auto">

@@ -1,30 +1,43 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 2000;
-const GRID_SIZE = 60;
-const GRID_DIVISIONS = 30;
+const PARTICLE_COUNT = 1500;
+const TUNNEL_RINGS = 28;
+const TUNNEL_LENGTH = 80;
+
+/** Generate vertices for a flat hexagon at given radius */
+function hexagonVertices(radius: number, z: number): THREE.Vector3[] {
+  const verts: THREE.Vector3[] = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i - Math.PI / 6;
+    verts.push(new THREE.Vector3(
+      Math.cos(angle) * radius,
+      Math.sin(angle) * radius,
+      z,
+    ));
+  }
+  return verts;
+}
 
 export default function CosmicBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // ─── Scene Setup ─────────────────────────────────
+    // ─── Scene ───────────────────────────────────────
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0a1a, 0.012);
+    scene.fog = new THREE.FogExp2(0x0a0a1a, 0.018);
 
     const camera = new THREE.PerspectiveCamera(
-      60,
+      75,
       window.innerWidth / window.innerHeight,
       0.1,
-      200,
+      150,
     );
-    camera.position.set(0, 8, 30);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 0, 5);
+    camera.lookAt(0, 0, -TUNNEL_LENGTH);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: false,
@@ -36,87 +49,100 @@ export default function CosmicBackground() {
     renderer.setClearColor(0x0a0a1a, 1);
     container.appendChild(renderer.domElement);
 
-    // ─── Warp Grid (time grid floor) ─────────────────
-    const gridGeometry = new THREE.BufferGeometry();
-    const gridPositions: number[] = [];
-    const gridColors: number[] = [];
-    const half = GRID_SIZE / 2;
-    const step = GRID_SIZE / GRID_DIVISIONS;
+    const colorPalette = [
+      new THREE.Color(0xa855f7),
+      new THREE.Color(0x06b6d4),
+      new THREE.Color(0xec4899),
+      new THREE.Color(0xd8b4fe),
+      new THREE.Color(0x67e8f9),
+      new THREE.Color(0x7c3aed),
+    ];
 
-    for (let i = 0; i <= GRID_DIVISIONS; i++) {
-      const pos = -half + i * step;
-      // X lines
-      gridPositions.push(-half, 0, pos, half, 0, pos);
-      // Z lines
-      gridPositions.push(pos, 0, -half, pos, 0, half);
+    // ─── Hexagonal Tunnel Rings ──────────────────────
+    const tunnelGroup = new THREE.Group();
+    interface RingData { lines: THREE.LineLoop; baseZ: number; baseRadius: number }
+    const rings: RingData[] = [];
 
-      const intensity = 0.15 + Math.sin(i * 0.3) * 0.05;
-      // purple-cyan gradient
-      for (let j = 0; j < 2; j++) {
-        gridColors.push(0.66 * intensity, 0.33 * intensity, 0.97 * intensity);
-        gridColors.push(0.02 * intensity, 0.71 * intensity, 0.83 * intensity);
-      }
+    for (let i = 0; i < TUNNEL_RINGS; i++) {
+      const t = i / (TUNNEL_RINGS - 1);
+      const z = -t * TUNNEL_LENGTH;
+      const radius = 4 + t * 18;
+
+      const verts = hexagonVertices(radius, z);
+      const geo = new THREE.BufferGeometry().setFromPoints([...verts, verts[0]]);
+      const color = colorPalette[i % colorPalette.length].clone();
+      const mat = new THREE.LineBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.15 + (1 - t) * 0.25,
+        blending: THREE.AdditiveBlending,
+      });
+      const line = new THREE.LineLoop(geo, mat);
+
+      tunnelGroup.add(line);
+      rings.push({ lines: line, baseZ: z, baseRadius: radius });
     }
+    scene.add(tunnelGroup);
 
-    gridGeometry.setAttribute('position', new THREE.Float32BufferAttribute(gridPositions, 3));
-    gridGeometry.setAttribute('color', new THREE.Float32BufferAttribute(gridColors, 3));
+    // ─── Connecting Edge Lines (tunnel frame) ────────
+    const edgeGroup = new THREE.Group();
+    for (let v = 0; v < 6; v++) {
+      const linePoints: THREE.Vector3[] = [];
+      for (let i = 0; i < TUNNEL_RINGS; i++) {
+        const t = i / (TUNNEL_RINGS - 1);
+        const z = -t * TUNNEL_LENGTH;
+        const radius = 4 + t * 18;
+        const angle = (Math.PI / 3) * v - Math.PI / 6;
+        linePoints.push(new THREE.Vector3(
+          Math.cos(angle) * radius,
+          Math.sin(angle) * radius,
+          z,
+        ));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(linePoints);
+      const mat = new THREE.LineBasicMaterial({
+        color: colorPalette[v],
+        transparent: true,
+        opacity: 0.08,
+        blending: THREE.AdditiveBlending,
+      });
+      const line = new THREE.Line(geo, mat);
+      edgeGroup.add(line);
+    }
+    scene.add(edgeGroup);
 
-    const gridMaterial = new THREE.LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.25,
-      blending: THREE.AdditiveBlending,
-    });
-    const grid = new THREE.LineSegments(gridGeometry, gridMaterial);
-    grid.position.y = -6;
-    scene.add(grid);
-
-    // ─── Floating Particles (stars / cosmic dust) ────
-    const particleGeometry = new THREE.BufferGeometry();
+    // ─── Tunnel Particles (flying through) ───────────
+    const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const colors = new Float32Array(PARTICLE_COUNT * 3);
     const sizes = new Float32Array(PARTICLE_COUNT);
-    const velocities = new Float32Array(PARTICLE_COUNT * 3);
-
-    const colorPalette = [
-      new THREE.Color(0xa855f7), // warp purple
-      new THREE.Color(0x06b6d4), // energy cyan
-      new THREE.Color(0xec4899), // nebula pink
-      new THREE.Color(0xd8b4fe), // warp light
-      new THREE.Color(0x67e8f9), // energy light
-      new THREE.Color(0xfacc15), // star gold
-    ];
+    const speeds = new Float32Array(PARTICLE_COUNT);
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const i3 = i * 3;
-      // Spread in a large sphere/cylinder
-      const radius = 20 + Math.random() * 60;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = (Math.random() - 0.5) * Math.PI * 0.8;
+      const t = Math.random();
+      const z = -t * TUNNEL_LENGTH;
+      const radius = (4 + t * 18) * (0.3 + Math.random() * 0.7);
+      const angle = Math.random() * Math.PI * 2;
 
-      positions[i3] = Math.cos(theta) * Math.cos(phi) * radius;
-      positions[i3 + 1] = Math.sin(phi) * radius * 0.4 + (Math.random() - 0.5) * 10;
-      positions[i3 + 2] = Math.sin(theta) * Math.cos(phi) * radius;
+      positions[i3] = Math.cos(angle) * radius;
+      positions[i3 + 1] = Math.sin(angle) * radius;
+      positions[i3 + 2] = z;
 
       const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
       colors[i3] = color.r;
       colors[i3 + 1] = color.g;
       colors[i3 + 2] = color.b;
 
-      sizes[i] = 0.5 + Math.random() * 2.5;
-
-      // Slow orbital velocities
-      velocities[i3] = (Math.random() - 0.5) * 0.02;
-      velocities[i3 + 1] = (Math.random() - 0.5) * 0.005;
-      velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+      sizes[i] = 0.5 + Math.random() * 2.0;
+      speeds[i] = 5 + Math.random() * 15;
     }
 
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    particleGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-    // Custom shader for point glow
-    const particleMaterial = new THREE.ShaderMaterial({
+    const particleMat = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
         uPixelRatio: { value: renderer.getPixelRatio() },
@@ -131,17 +157,10 @@ export default function CosmicBackground() {
 
         void main() {
           vColor = color;
-          vec3 pos = position;
-
-          // Gentle floating motion
-          pos.y += sin(uTime * 0.3 + position.x * 0.1) * 0.5;
-          pos.x += sin(uTime * 0.2 + position.z * 0.08) * 0.3;
-
-          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
           float dist = -mvPosition.z;
-          vAlpha = smoothstep(100.0, 10.0, dist) * (0.4 + 0.6 * sin(uTime * 0.5 + position.x * 0.2) * 0.5 + 0.5);
-
-          gl_PointSize = size * uPixelRatio * (20.0 / dist);
+          vAlpha = smoothstep(80.0, 5.0, dist) * 0.7;
+          gl_PointSize = size * uPixelRatio * (15.0 / max(dist, 1.0));
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
@@ -152,12 +171,9 @@ export default function CosmicBackground() {
         void main() {
           float d = length(gl_PointCoord - vec2(0.5));
           if (d > 0.5) discard;
-
-          // Soft glow falloff
           float glow = 1.0 - smoothstep(0.0, 0.5, d);
           glow = pow(glow, 1.5);
-
-          gl_FragColor = vec4(vColor, glow * vAlpha * 0.8);
+          gl_FragColor = vec4(vColor, glow * vAlpha);
         }
       `,
       transparent: true,
@@ -165,94 +181,51 @@ export default function CosmicBackground() {
       depthWrite: false,
     });
 
-    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // ─── Warp Lines (streaking light trails) ─────────
-    const warpLineCount = 40;
-    const warpGroup = new THREE.Group();
-    const warpLines: { mesh: THREE.Line; speed: number; offset: number }[] = [];
-
-    for (let i = 0; i < warpLineCount; i++) {
-      const length = 2 + Math.random() * 8;
-      const points = [
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, 0, -length),
-      ];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-      const lineMat = new THREE.LineBasicMaterial({
-        color,
-        transparent: true,
-        opacity: 0.15 + Math.random() * 0.25,
-        blending: THREE.AdditiveBlending,
-      });
-      const line = new THREE.Line(lineGeo, lineMat);
-
-      const radius = 8 + Math.random() * 25;
-      const angle = Math.random() * Math.PI * 2;
-      line.position.set(
-        Math.cos(angle) * radius,
-        (Math.random() - 0.5) * 15,
-        Math.sin(angle) * radius - 10,
-      );
-      line.lookAt(0, 0, 0);
-
-      warpGroup.add(line);
-      warpLines.push({
-        mesh: line,
-        speed: 0.5 + Math.random() * 1.5,
-        offset: Math.random() * Math.PI * 2,
-      });
-    }
-    scene.add(warpGroup);
-
-    // ─── Central Nebula Glow ─────────────────────────
-    const nebulaGeo = new THREE.SphereGeometry(3, 32, 32);
-    const nebulaMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-      },
+    // ─── Central Hex Glow ────────────────────────────
+    const glowGeo = new THREE.CircleGeometry(2.5, 6);
+    const glowMat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 } },
       vertexShader: `
-        varying vec3 vNormal;
-        varying vec3 vPosition;
+        varying vec2 vUv;
         void main() {
-          vNormal = normalize(normalMatrix * normal);
-          vPosition = position;
+          vUv = uv;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: `
         uniform float uTime;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
+        varying vec2 vUv;
 
         void main() {
-          float rim = 1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0));
-          rim = pow(rim, 3.0);
+          vec2 center = vUv - 0.5;
+          float dist = length(center);
+          float ring = smoothstep(0.3, 0.35, dist) * (1.0 - smoothstep(0.35, 0.5, dist));
 
           vec3 purple = vec3(0.66, 0.33, 0.97);
           vec3 cyan = vec3(0.02, 0.71, 0.83);
-          vec3 pink = vec3(0.93, 0.28, 0.60);
+          float t = sin(uTime * 0.5) * 0.5 + 0.5;
+          vec3 color = mix(purple, cyan, t);
 
-          float t = sin(uTime * 0.3 + vPosition.y * 2.0) * 0.5 + 0.5;
-          float t2 = sin(uTime * 0.2 + vPosition.x * 3.0) * 0.5 + 0.5;
-          vec3 color = mix(mix(purple, cyan, t), pink, t2 * 0.3);
+          float pulse = 0.5 + 0.5 * sin(uTime * 0.8);
+          float alpha = (ring * 0.6 + (1.0 - smoothstep(0.0, 0.5, dist)) * 0.15) * pulse;
 
-          float alpha = rim * 0.3 * (0.7 + 0.3 * sin(uTime * 0.5));
           gl_FragColor = vec4(color, alpha);
         }
       `,
       transparent: true,
       blending: THREE.AdditiveBlending,
-      side: THREE.BackSide,
       depthWrite: false,
+      side: THREE.DoubleSide,
     });
-    const nebula = new THREE.Mesh(nebulaGeo, nebulaMat);
-    nebula.position.set(0, 2, -5);
-    scene.add(nebula);
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.position.set(0, 0, -TUNNEL_LENGTH + 2);
+    glow.lookAt(camera.position);
+    scene.add(glow);
 
-    // ─── Animation Loop ──────────────────────────────
+    // ─── Animation ───────────────────────────────────
     let animationId: number;
     const clock = new THREE.Clock();
 
@@ -261,75 +234,84 @@ export default function CosmicBackground() {
       const elapsed = clock.getElapsedTime();
 
       // Update uniforms
-      particleMaterial.uniforms.uTime.value = elapsed;
-      nebulaMat.uniforms.uTime.value = elapsed;
+      particleMat.uniforms.uTime.value = elapsed;
+      glowMat.uniforms.uTime.value = elapsed;
 
-      // Rotate particles slowly
-      particles.rotation.y = elapsed * 0.02;
+      // Animate rings: rotate + pulse
+      rings.forEach(({ lines }, i) => {
+        const t = i / (TUNNEL_RINGS - 1);
+        lines.rotation.z = elapsed * 0.1 * (1 - t * 0.5) + i * 0.05;
 
-      // Animate grid wave
-      const gridPos = grid.geometry.attributes.position.array as Float32Array;
-      for (let i = 1; i < gridPos.length; i += 3) {
-        const x = gridPos[i - 1];
-        const z = gridPos[i + 1];
-        gridPos[i] = Math.sin(elapsed * 0.5 + x * 0.15 + z * 0.15) * 0.4;
-      }
-      grid.geometry.attributes.position.needsUpdate = true;
-      grid.position.y = -6;
+        // Breathing radius
+        const breathe = 1 + Math.sin(elapsed * 0.4 + i * 0.3) * 0.05;
+        lines.scale.set(breathe, breathe, 1);
 
-      // Animate warp lines pulse
-      warpLines.forEach(({ mesh, speed, offset }) => {
-        const mat = mesh.material as THREE.LineBasicMaterial;
-        mat.opacity = (0.1 + 0.2 * Math.sin(elapsed * speed + offset)) * 0.8;
+        // Pulse opacity
+        const mat = lines.material as THREE.LineBasicMaterial;
+        const wave = Math.sin(elapsed * 0.6 - i * 0.4) * 0.5 + 0.5;
+        mat.opacity = (0.08 + (1 - t) * 0.2) * (0.5 + wave * 0.5);
       });
 
-      // Slow camera sway
-      camera.position.x = Math.sin(elapsed * 0.08) * 3;
-      camera.position.y = 8 + Math.sin(elapsed * 0.12) * 1.5;
-      camera.lookAt(0, 0, 0);
+      // Move particles toward camera (warp speed effect)
+      const posArr = particleGeo.attributes.position.array as Float32Array;
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const i3 = i * 3;
+        posArr[i3 + 2] += speeds[i] * 0.016; // ~60fps normalized
 
-      // Nebula breathe
-      const scale = 1 + Math.sin(elapsed * 0.3) * 0.15;
-      nebula.scale.set(scale, scale, scale);
-      nebula.rotation.y = elapsed * 0.1;
+        // Reset particle to back of tunnel when it passes camera
+        if (posArr[i3 + 2] > 10) {
+          const newT = 0.7 + Math.random() * 0.3;
+          posArr[i3 + 2] = -newT * TUNNEL_LENGTH;
+          const radius = (4 + newT * 18) * (0.3 + Math.random() * 0.7);
+          const angle = Math.random() * Math.PI * 2;
+          posArr[i3] = Math.cos(angle) * radius;
+          posArr[i3 + 1] = Math.sin(angle) * radius;
+        }
+      }
+      particleGeo.attributes.position.needsUpdate = true;
+
+      // Gentle camera sway
+      camera.position.x = Math.sin(elapsed * 0.15) * 0.8;
+      camera.position.y = Math.cos(elapsed * 0.12) * 0.6;
+      camera.lookAt(0, 0, -TUNNEL_LENGTH * 0.5);
+
+      // Rotate edge lines subtly
+      edgeGroup.rotation.z = elapsed * 0.03;
 
       renderer.render(scene, camera);
     }
 
     animate();
 
-    // ─── Resize Handler ──────────────────────────────
+    // ─── Resize ──────────────────────────────────────
     function onResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      particleMaterial.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 1.5);
+      particleMat.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 1.5);
     }
-
     window.addEventListener('resize', onResize);
 
     // ─── Cleanup ─────────────────────────────────────
-    cleanupRef.current = () => {
+    return () => {
       window.removeEventListener('resize', onResize);
       cancelAnimationFrame(animationId);
       renderer.dispose();
-      particleGeometry.dispose();
-      particleMaterial.dispose();
-      gridGeometry.dispose();
-      gridMaterial.dispose();
-      nebulaGeo.dispose();
-      nebulaMat.dispose();
-      warpLines.forEach(({ mesh }) => {
-        mesh.geometry.dispose();
-        (mesh.material as THREE.Material).dispose();
+      particleGeo.dispose();
+      particleMat.dispose();
+      glowGeo.dispose();
+      glowMat.dispose();
+      rings.forEach(({ lines }) => {
+        lines.geometry.dispose();
+        (lines.material as THREE.Material).dispose();
+      });
+      edgeGroup.children.forEach(child => {
+        (child as THREE.Line).geometry.dispose();
+        ((child as THREE.Line).material as THREE.Material).dispose();
       });
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
-    };
-
-    return () => {
-      cleanupRef.current?.();
     };
   }, []);
 

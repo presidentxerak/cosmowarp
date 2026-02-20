@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="prof-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <!-- Hexagon body -->
+  <polygon points="100,10 178,55 178,145 100,190 22,145 22,55" fill="url(#prof-grad)" opacity="0.9"/>
+  <!-- Eyes -->
+  <circle cx="72" cy="88" r="10" fill="white" opacity="0.9"/>
+  <circle cx="128" cy="88" r="10" fill="white" opacity="0.9"/>
+  <circle cx="75" cy="86" r="5" fill="#0a0a1a"/>
+  <circle cx="131" cy="86" r="5" fill="#0a0a1a"/>
+  <!-- Smile -->
+  <path d="M 68 120 Q 100 150 132 120" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.9"/>
+</svg>

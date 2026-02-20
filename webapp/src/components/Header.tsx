@@ -24,11 +24,11 @@ export default function Header({ activeTab, setActiveTab }: {
     <header className="glass-panel mb-4 p-3 sm:p-4 relative z-50">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-full animate-warp-spin cursor-pointer"
+          <img
+            src={import.meta.env.BASE_URL + 'logo.svg'}
+            alt="CosmoWarp"
+            className="w-8 h-8 animate-float cursor-pointer"
             onClick={() => setActiveTab('whitepaper')}
-            style={{
-              background: 'conic-gradient(from 0deg, #a855f7, #06b6d4, #ec4899, #a855f7)',
-            }}
           />
           <div>
             <h1 className="text-base font-bold text-warp-300 leading-tight cursor-pointer font-title"

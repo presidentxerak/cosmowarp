@@ -13,7 +13,9 @@ export default function WalletView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <div className="text-5xl mb-4 animate-float">{'\u2B21'}</div>
+        <div className="flex justify-center mb-4">
+          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-20 h-20 animate-float" />
+        </div>
         <h2 className="text-xl font-bold text-warp-300 mb-2 font-title">Create Your Warp Wallet</h2>
         <p className="text-sm text-gray-400 mb-2">
           Generate an Ed25519 keypair and receive 1,000 {'\u03A9'} airdrop.
@@ -68,6 +70,13 @@ export default function WalletView() {
     <div className="space-y-4">
       {/* Balance Card */}
       <div className="glass-panel p-5 text-center animate-pulse-glow">
+        <div className="flex justify-center mb-3">
+          <img
+            src={import.meta.env.BASE_URL + 'profile.svg'}
+            alt="Profile"
+            className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]"
+          />
+        </div>
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className={`text-lg ${levelDef.color}`}>{wallet.levelSymbol}</span>
           <span className={`text-xs font-bold ${levelDef.color}`}>{wallet.levelTitle}</span>

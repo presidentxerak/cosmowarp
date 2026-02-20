@@ -62,7 +62,7 @@ export default function FeedView() {
 
       {globalTxs.length === 0 ? (
         <div className="glass-panel p-8 text-center">
-          <p className="text-3xl mb-2">{'\u2B21'}</p>
+          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-12 h-12 mx-auto mb-2" />
           <p className="text-gray-400 text-sm">No transactions yet. Be the first to mine or send!</p>
         </div>
       ) : (
