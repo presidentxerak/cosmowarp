@@ -89,7 +89,7 @@ export default function MineView() {
     <div className="space-y-4">
       {/* Mining Control */}
       <div className="glass-panel p-5">
-        <h2 className="text-lg font-bold text-warp-300 mb-1">{'\u26CF'} Warp Mining</h2>
+        <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u26CF'} Warp Mining</h2>
         <p className="text-xs text-gray-500 mb-2">
           Execute CosmoCode programs to mine Warps via proof-of-computation.
         </p>

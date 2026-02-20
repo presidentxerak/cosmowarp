@@ -17,16 +17,14 @@
   --color-star-500: #eab308;
   --color-star-400: #facc15;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  --font-title: 'Silkscreen', 'JetBrains Mono', monospace;
 }
 
 @layer base {
   body {
     @apply bg-cosmic-900 text-gray-100 font-mono m-0;
-    background-image:
-      radial-gradient(ellipse at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
     min-height: 100vh;
+    overflow-x: hidden;
   }
 }
 

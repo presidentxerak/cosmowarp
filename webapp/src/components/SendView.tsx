@@ -45,7 +45,7 @@ export default function SendView() {
   return (
     <div className="space-y-4">
       <div className="glass-panel p-5">
-        <h2 className="text-lg font-bold text-warp-300 mb-1">{'\u2197'} Send Warps</h2>
+        <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u2197'} Send Warps</h2>
         <p className="text-xs text-gray-500 mb-4">
           Balance: <span className="text-energy-400">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
           <span className="text-gray-600 ml-2">Ed25519 signed + DAG validated</span>

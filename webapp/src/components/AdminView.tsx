@@ -20,7 +20,7 @@ export default function AdminView() {
     return (
       <div className="glass-panel p-6 text-center">
         <div className="text-3xl mb-3">{'\u26D4'}</div>
-        <h2 className="text-lg font-bold text-red-400 mb-2">Access Denied</h2>
+        <h2 className="text-lg font-bold text-red-400 mb-2 font-title">Access Denied</h2>
         <p className="text-sm text-gray-400">This section is restricted to the CosmoWarp administrator.</p>
         <p className="text-xs text-gray-500 mt-2">The admin registry is encrypted and only accessible by the creator address.</p>
       </div>
@@ -56,7 +56,7 @@ export default function AdminView() {
     return (
       <div className="glass-panel p-6 text-center">
         <div className="text-3xl mb-3">{'\u26BF'}</div>
-        <h2 className="text-lg font-bold text-amber-400 mb-2">Admin Registry</h2>
+        <h2 className="text-lg font-bold text-amber-400 mb-2 font-title">Admin Registry</h2>
         <p className="text-sm text-gray-400 mb-4">AES-GCM encrypted. Authenticate to access.</p>
         <button
           className="warp-button py-3 px-8"
@@ -82,7 +82,7 @@ export default function AdminView() {
       <div className="glass-panel p-4 border-amber-500/20">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-amber-400">{'\u26BF'} Admin Registry</h2>
+            <h2 className="text-lg font-bold text-amber-400 font-title">{'\u26BF'} Admin Registry</h2>
             <p className="text-xs text-gray-500">Encrypted private ledger</p>
           </div>
           <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">

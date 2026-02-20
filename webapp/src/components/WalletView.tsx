@@ -14,7 +14,7 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 text-center">
         <div className="text-5xl mb-4 animate-float">{'\u2B21'}</div>
-        <h2 className="text-xl font-bold text-warp-300 mb-2">Create Your Warp Wallet</h2>
+        <h2 className="text-xl font-bold text-warp-300 mb-2 font-title">Create Your Warp Wallet</h2>
         <p className="text-sm text-gray-400 mb-2">
           Generate an Ed25519 keypair and receive 1,000 {'\u03A9'} airdrop.
         </p>

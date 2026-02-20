@@ -31,7 +31,7 @@ export default function Header({ activeTab, setActiveTab }: {
             }}
           />
           <div>
-            <h1 className="text-base font-bold text-warp-300 leading-tight cursor-pointer"
+            <h1 className="text-base font-bold text-warp-300 leading-tight cursor-pointer font-title"
               onClick={() => setActiveTab('whitepaper')}>
               CosmoWarp
             </h1>

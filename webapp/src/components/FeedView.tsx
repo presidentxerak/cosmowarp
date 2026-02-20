@@ -42,7 +42,7 @@ export default function FeedView() {
     <div className="space-y-4">
       <div className="glass-panel p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-warp-300">{'\u25CE'} CosmoMesh Feed</h2>
+          <h2 className="text-lg font-bold text-warp-300 font-title">{'\u25CE'} CosmoMesh Feed</h2>
           <button className="warp-button text-xs" onClick={handleRefresh}>Refresh</button>
         </div>
         <p className="text-xs text-gray-500">
