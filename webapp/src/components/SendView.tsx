@@ -94,7 +94,7 @@ export default function SendView() {
           </div>
 
           {result && (
-            <div className={`text-sm p-3 rounded-lg ${
+            <div className={`text-sm p-3 rounded-none ${
               result.success
                 ? 'bg-green-500/10 border border-green-500/30 text-green-400'
                 : 'bg-red-500/10 border border-red-500/30 text-red-400'
@@ -110,7 +110,7 @@ export default function SendView() {
           >
             {sending ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-full animate-spin" />
+                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
                 Signing & Validating...
               </span>
             ) : (

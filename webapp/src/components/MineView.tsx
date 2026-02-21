@@ -107,7 +107,7 @@ export default function MineView() {
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
-                className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                className={`flex-1 py-2 px-3 rounded-none text-xs font-medium transition-all cursor-pointer ${
                   difficulty === d
                     ? 'bg-warp-500/30 border border-warp-500/50 text-warp-300'
                     : 'bg-cosmic-900/40 border border-gray-700/30 text-gray-400 hover:text-gray-200'
@@ -129,7 +129,7 @@ export default function MineView() {
         >
           {mining ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-full animate-spin" />
+              <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
               Mining...
             </span>
           ) : (
@@ -138,7 +138,7 @@ export default function MineView() {
         </button>
 
         {lastReward !== null && !mining && (
-          <div className="mt-3 text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+          <div className="mt-3 text-center p-3 rounded-none bg-green-500/10 border border-green-500/30">
             <span className="text-green-400 font-bold">+{lastReward} {'\u03A9'}</span>
             <span className="text-green-400/70 text-xs ml-2">mined successfully</span>
           </div>
@@ -150,7 +150,7 @@ export default function MineView() {
         <h3 className="text-sm font-bold text-gray-300 mb-2">{'\u25B7'} Mining Log</h3>
         <div
           ref={logRef}
-          className="bg-cosmic-900/80 rounded-lg p-3 h-48 overflow-y-auto text-xs space-y-1"
+          className="bg-cosmic-900/80 rounded-none p-3 h-48 overflow-y-auto text-xs space-y-1"
         >
           {logs.length === 0 ? (
             <p className="text-gray-600">Waiting for mining operation...</p>
@@ -172,7 +172,7 @@ export default function MineView() {
       {/* Program Preview */}
       <div className="glass-panel p-4">
         <h3 className="text-sm font-bold text-gray-300 mb-2">CosmoASM Source</h3>
-        <pre className="bg-cosmic-900/80 rounded-lg p-3 text-[11px] text-gray-400 overflow-x-auto max-h-48 overflow-y-auto">
+        <pre className="bg-cosmic-900/80 rounded-none p-3 text-[11px] text-gray-400 overflow-x-auto max-h-48 overflow-y-auto">
           {MINING_PROGRAMS[difficulty]}
         </pre>
       </div>

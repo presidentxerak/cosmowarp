@@ -51,11 +51,11 @@
   background: rgba(13, 16, 48, 0.6);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(168, 85, 247, 0.2);
-  border-radius: 0.75rem;
+  border-radius: 0;
 }
 
 .warp-button {
-  @apply px-4 py-2 rounded-lg font-bold text-sm transition-all duration-200 cursor-pointer;
+  @apply px-4 py-2 font-bold text-sm transition-all duration-200 cursor-pointer;
   background: rgba(168, 85, 247, 0.2);
   border: 1px solid rgba(168, 85, 247, 0.4);
   color: #d8b4fe;
@@ -69,7 +69,7 @@
 .warp-button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .warp-input {
-  @apply w-full px-3 py-2 rounded-lg text-sm transition-all duration-200;
+  @apply w-full px-3 py-2 text-sm transition-all duration-200;
   background: rgba(10, 10, 26, 0.8);
   border: 1px solid rgba(168, 85, 247, 0.2);
   color: #f3f4f6;
@@ -93,7 +93,7 @@ main > * {
 /* Mobile-optimized scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 0; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(168, 85, 247, 0.5); }
 
 /* Safe area padding for mobile notches */
@@ -105,7 +105,7 @@ main > * {
 @media (max-width: 640px) {
   .warp-button { min-height: 44px; }
   .warp-input { min-height: 44px; font-size: 16px; }
-  .glass-panel { border-radius: 0.5rem; }
+  .glass-panel { border-radius: 0; }
   table { font-size: 11px; }
   pre { font-size: 10px; }
 }

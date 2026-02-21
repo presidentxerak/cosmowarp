@@ -27,7 +27,7 @@ export default function WhitepaperView() {
         }} />
         <div className="relative">
           <div className="flex justify-center mb-4">
-            <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
+            <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-warp-300 mb-2 font-title">CosmoWarp</h1>
           <p className="text-sm sm:text-base text-gray-400 mb-1">White Paper v1.0</p>
@@ -45,7 +45,7 @@ export default function WhitepaperView() {
             <button
               key={n.id}
               onClick={() => setSection(n.id)}
-              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
+              className={`px-3 py-1.5 rounded-none text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 section === n.id
                   ? 'bg-warp-500/30 text-warp-300'
                   : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
@@ -137,7 +137,7 @@ function OverviewSection() {
           ['\u269B', 'Resonance Decay', 'Golden ratio mining curve (replaces halving)'],
           ['\u2605', 'Hierarchy', '7-level account system with reward multipliers'],
         ].map(([icon, title, desc]) => (
-          <div key={title} className="flex gap-3 p-3 rounded-lg bg-cosmic-900/40">
+          <div key={title} className="flex gap-3 p-3 rounded-none bg-cosmic-900/40">
             <span className="text-xl text-warp-400 shrink-0">{icon}</span>
             <div>
               <p className="text-xs font-bold text-gray-200">{title}</p>
@@ -211,7 +211,7 @@ function FoundationSection() {
           ['\u269B', 'CosmoVault', 'The tokenomics engine. Manages the 69M supply, Resonance Decay curve, airdrops, streak rewards, and creator lock.', 'text-cyan-400'],
           ['\u2B21', 'CosmoSDK', 'The developer toolkit. Open-source API for building apps, extensions, and integrations on the CosmoWarp ecosystem.', 'text-orange-400'],
         ].map(([icon, title, desc, color]) => (
-          <div key={title} className="p-4 rounded-lg bg-cosmic-900/40 border border-gray-700/10">
+          <div key={title} className="p-4 rounded-none bg-cosmic-900/40 border border-gray-700/10">
             <div className="flex items-center gap-2 mb-2">
               <span className={`text-lg ${color}`}>{icon}</span>
               <span className={`text-sm font-bold ${color}`}>{title}</span>
@@ -224,7 +224,7 @@ function FoundationSection() {
       <H3>Values</H3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {['Transparency', 'Fairness', 'Innovation', 'Community', 'Security', 'Freedom'].map(v => (
-          <div key={v} className="text-center p-2 rounded-lg bg-cosmic-900/40">
+          <div key={v} className="text-center p-2 rounded-none bg-cosmic-900/40">
             <p className="text-xs text-warp-400 font-bold">{v}</p>
           </div>
         ))}
@@ -260,7 +260,7 @@ function CosmoMeshSection() {
           ['NEXUS', 'Cross-layer bridges', 'text-orange-400'],
           ['LUMINA', 'Genesis & epoch transitions', 'text-amber-300'],
         ].map(([name, desc, color]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded bg-cosmic-900/40">
+          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40">
             <span className={`text-xs font-bold w-20 ${color}`}>{name}</span>
             <span className="text-[11px] text-gray-400">{desc}</span>
           </div>
@@ -319,7 +319,7 @@ function CosmoCodeSection() {
           ['R\u03B5', 'Precision'],
           ['R\u03BE', 'Random'],
         ].map(([reg, desc]) => (
-          <div key={reg} className="flex items-center gap-2 p-2 rounded bg-cosmic-900/40">
+          <div key={reg} className="flex items-center gap-2 p-2 rounded-none bg-cosmic-900/40">
             <code className="text-energy-400 text-xs font-bold">{reg}</code>
             <span className="text-[10px] text-gray-500">{desc}</span>
           </div>
@@ -334,7 +334,7 @@ function CosmoCodeSection() {
           ['CRYPTO', 'Crypto ops: HASH_STAR, SIGN_NEBULA, ENCRYPT_VOID, KEY_FORGE, VERIFY_GLYPH', 'text-star-400'],
           ['NET', 'Network ops: NODE_CONNECT, MESH_WEAVE, SIGNAL_BURST, BROADCAST_WAVE', 'text-energy-400'],
         ].map(([cat, desc, color]) => (
-          <div key={cat} className="p-3 rounded-lg bg-cosmic-900/40">
+          <div key={cat} className="p-3 rounded-none bg-cosmic-900/40">
             <span className={`text-xs font-bold ${color}`}>{cat}</span>
             <p className="text-[11px] text-gray-400 mt-1">{desc}</p>
           </div>
@@ -348,7 +348,7 @@ function CosmoCodeSection() {
         solving arbitrary puzzles — the computation itself is the value.
       </P>
 
-      <div className="p-3 rounded-lg bg-cosmic-900/60 border border-gray-700/20">
+      <div className="p-3 rounded-none bg-cosmic-900/60 border border-gray-700/20">
         <p className="text-[10px] text-gray-500 mb-2">EXAMPLE PROGRAM</p>
         <pre className="text-[11px] text-energy-400 whitespace-pre-wrap">{`WARP_INIT GRID.R\u03A9, R\u03A9
 ENERGY_LOAD GRID.R\u03A9, #42
@@ -424,7 +424,7 @@ function CosmoLinguaSection() {
           ['\u2604', 'Comet', 'High-energy operations'],
           ['\u2600', 'Sun', 'Lumina — highest level'],
         ].map(([sym, name, desc]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded bg-cosmic-900/40">
+          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40">
             <span className="text-2xl text-warp-400 w-8 text-center">{sym}</span>
             <div>
               <p className="text-xs font-bold text-gray-200">{name}</p>
@@ -473,7 +473,7 @@ function TokenomicsSection() {
           ['Airdrop Pool', '10,000,000 CW (14.5%)', '1,000 CW per new wallet', 'bg-energy-500/20'],
           ['Creator Lock', '1,000,000 CW (1.5%)', 'Locked, unlockable by admin at any time', 'bg-amber-500/20'],
         ].map(([title, amount, desc, bg]) => (
-          <div key={title} className={`p-3 rounded-lg ${bg}`}>
+          <div key={title} className={`p-3 rounded-none ${bg}`}>
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs font-bold text-gray-200">{title}</span>
               <span className="text-xs text-warp-400">{amount}</span>
@@ -489,7 +489,7 @@ function TokenomicsSection() {
         <span className="text-warp-400"> Resonance Decay</span>: a continuous, smooth curve
         based on the golden ratio ({'\u03C6'} = 1.618...).
       </P>
-      <div className="p-3 rounded-lg bg-cosmic-900/60 border border-gray-700/20 mb-4">
+      <div className="p-3 rounded-none bg-cosmic-900/60 border border-gray-700/20 mb-4">
         <p className="text-[10px] text-gray-500 mb-1">FORMULA</p>
         <p className="text-sm text-energy-400 font-bold">reward = 50 {'\u00D7'} {'\u03C6'}^(-totalMined / 5,000,000)</p>
       </div>
@@ -500,7 +500,7 @@ function TokenomicsSection() {
           ['20M mined', '~7.3 CW'],
           ['50M mined', '~0.3 CW'],
         ].map(([stage, reward]) => (
-          <div key={stage} className="p-2 rounded bg-cosmic-900/40">
+          <div key={stage} className="p-2 rounded-none bg-cosmic-900/40">
             <p className="text-gray-500">{stage}</p>
             <p className="text-energy-400 font-bold">{reward}</p>
           </div>
@@ -547,7 +547,7 @@ function HierarchySection() {
           { sym: '\u2B21', name: 'Cosmos', title: 'Cosmic Sovereign', mult: '3.5x', min: '2,000 TX', bonus: '2,500 CW', color: 'text-orange-400', desc: 'Sovereign of the cosmic order.' },
           { sym: '\u2600', name: 'Lumina', title: 'Lumina Transcendent', mult: '5.0x', min: '10,000 TX', bonus: '5,000 CW', color: 'text-amber-300', desc: 'Transcended beyond the mesh. You ARE the light.' },
         ].map(level => (
-          <div key={level.name} className="p-3 rounded-lg bg-cosmic-900/40 border border-gray-700/10">
+          <div key={level.name} className="p-3 rounded-none bg-cosmic-900/40 border border-gray-700/10">
             <div className="flex items-center gap-3">
               <span className={`text-2xl ${level.color}`}>{level.sym}</span>
               <div className="flex-1">
@@ -591,7 +591,7 @@ function SecuritySection() {
           ['State Integrity', 'SHA-256 checksums on all critical state data. Any tampering is immediately detected.'],
           ['Encrypted Admin Registry', 'AES-GCM encrypted audit trail. Only accessible by admin with proper authentication.'],
         ].map(([title, desc], i) => (
-          <div key={title} className="p-3 rounded-lg bg-cosmic-900/40">
+          <div key={title} className="p-3 rounded-none bg-cosmic-900/40">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs text-warp-400 font-bold">Layer {i + 1}</span>
               <span className="text-xs font-bold text-gray-200">{title}</span>
@@ -618,7 +618,7 @@ function RoadmapSection() {
           { phase: 'Phase 3', title: 'Ecosystem', status: 'In Progress', color: 'text-amber-400', items: ['White Paper & landing page', 'API documentation', 'SDK marketplace', 'Community governance', 'Mobile-first responsive design', 'Extension ecosystem'] },
           { phase: 'Phase 4', title: 'Horizon', status: 'Planned', color: 'text-gray-500', items: ['Mobile apps (iOS + Android)', 'Hardware wallet support', 'Cross-mesh bridges', 'Governance DAO', 'Art & services marketplace', 'Global P2P relay network'] },
         ].map(phase => (
-          <div key={phase.phase} className="p-4 rounded-lg bg-cosmic-900/40 border border-gray-700/10">
+          <div key={phase.phase} className="p-4 rounded-none bg-cosmic-900/40 border border-gray-700/10">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-bold text-warp-400">{phase.phase}</span>
               <span className="text-sm font-bold text-gray-200">{phase.title}</span>

@@ -39,7 +39,7 @@ export default function SDKView() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
+              className={`px-3 py-1.5 rounded-none text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 tab === t.id
                   ? 'bg-warp-500/30 text-warp-300'
                   : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
@@ -66,7 +66,7 @@ export default function SDKView() {
 
 function CodeBlock({ title, code }: { title?: string; code: string }) {
   return (
-    <div className="rounded-lg bg-cosmic-900/60 border border-gray-700/20 overflow-hidden mb-4">
+    <div className="rounded-none bg-cosmic-900/60 border border-gray-700/20 overflow-hidden mb-4">
       {title && (
         <div className="px-3 py-1.5 border-b border-gray-700/20">
           <span className="text-[10px] text-gray-500">{title}</span>
@@ -81,7 +81,7 @@ function ApiMethod({ name, desc, params, returns }: {
   name: string; desc: string; params?: string[]; returns: string;
 }) {
   return (
-    <div className="p-3 rounded-lg bg-cosmic-900/40 mb-3">
+    <div className="p-3 rounded-none bg-cosmic-900/40 mb-3">
       <code className="text-sm text-warp-400 font-bold">{name}</code>
       <p className="text-xs text-gray-400 mt-1 mb-2">{desc}</p>
       {params && params.length > 0 && (
@@ -141,7 +141,7 @@ cosmo.on('balance_changed', (event) => {
           ['Streak Days', '365'],
           ['Hierarchy Levels', '7'],
         ].map(([k, v]) => (
-          <div key={k} className="flex justify-between p-2 rounded bg-cosmic-900/40">
+          <div key={k} className="flex justify-between p-2 rounded-none bg-cosmic-900/40">
             <span className="text-gray-500">{k}</span>
             <span className="text-warp-400">{v}</span>
           </div>
@@ -275,7 +275,7 @@ function EventsTab() {
           ['level_up', 'When account reaches a new hierarchy level'],
           ['streak_milestone', 'When a streak milestone is reached'],
         ].map(([name, desc]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded bg-cosmic-900/40 text-xs">
+          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40 text-xs">
             <code className="text-warp-400 shrink-0">{name}</code>
             <span className="text-gray-500">{desc}</span>
           </div>

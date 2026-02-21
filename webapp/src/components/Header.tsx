@@ -25,7 +25,7 @@ export default function Header({ activeTab, setActiveTab }: {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-center gap-2 shrink-0">
           <img
-            src={import.meta.env.BASE_URL + 'logo.svg'}
+            src={import.meta.env.BASE_URL + 'logo.png'}
             alt="CosmoWarp"
             className="w-8 h-8 animate-float cursor-pointer"
             onClick={() => setActiveTab('whitepaper')}
@@ -45,7 +45,7 @@ export default function Header({ activeTab, setActiveTab }: {
             <button
               key={tab.id}
               onClick={() => { setActiveTab(tab.id); setMenuOpen(false); }}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-none text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-warp-500/30 text-warp-300 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
                   : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
@@ -59,7 +59,7 @@ export default function Header({ activeTab, setActiveTab }: {
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-none text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
                 moreTabs.some(t => t.id === activeTab)
                   ? 'bg-warp-500/30 text-warp-300'
                   : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
@@ -75,7 +75,7 @@ export default function Header({ activeTab, setActiveTab }: {
                     <button
                       key={tab.id}
                       onClick={() => { setActiveTab(tab.id); setMenuOpen(false); }}
-                      className={`w-full text-left px-3 py-2 rounded-md text-xs transition-all cursor-pointer ${
+                      className={`w-full text-left px-3 py-2 rounded-none text-xs transition-all cursor-pointer ${
                         activeTab === tab.id
                           ? 'bg-warp-500/30 text-warp-300'
                           : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'

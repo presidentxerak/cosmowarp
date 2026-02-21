@@ -62,7 +62,7 @@ export default function FeedView() {
 
       {globalTxs.length === 0 ? (
         <div className="glass-panel p-8 text-center">
-          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-12 h-12 mx-auto mb-2" />
+          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-12 h-12 mx-auto mb-2" />
           <p className="text-gray-400 text-sm">No transactions yet. Be the first to mine or send!</p>
         </div>
       ) : (
@@ -80,7 +80,7 @@ export default function FeedView() {
                     </span>
                     <span className="text-[10px] text-gray-600">{timeAgo(tx.timestamp)}</span>
                     {tx.layer !== undefined && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-warp-500/10 text-warp-400/70">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-nonebg-warp-500/10 text-warp-400/70">
                         {LAYER_NAMES[tx.layer]}
                       </span>
                     )}

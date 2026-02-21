@@ -163,7 +163,7 @@ SIGNAL_BURST GRID.R\u03A9`;
 
       <div
         ref={scrollRef}
-        className="flex-1 bg-cosmic-900/80 rounded-lg p-3 overflow-y-auto text-xs font-mono mb-2 cursor-text"
+        className="flex-1 bg-cosmic-900/80 rounded-none p-3 overflow-y-auto text-xs font-mono mb-2 cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {lines.map((line, i) => (

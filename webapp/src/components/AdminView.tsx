@@ -65,7 +65,7 @@ export default function AdminView() {
         >
           {unlocking ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-full animate-spin" />
+              <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
               Decrypting...
             </span>
           ) : (
@@ -85,7 +85,7 @@ export default function AdminView() {
             <h2 className="text-lg font-bold text-amber-400 font-title">{'\u26BF'} Admin Registry</h2>
             <p className="text-xs text-gray-500">Encrypted private ledger</p>
           </div>
-          <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+          <span className="text-[10px] px-2 py-1 rounded-none bg-green-500/20 text-green-400 border border-green-500/30">
             UNLOCKED
           </span>
         </div>
@@ -200,7 +200,7 @@ export default function AdminView() {
                 <p className="text-xs text-gray-500 text-center py-2">No events</p>
               ) : (
                 adminDashboard.recentEvents.map(event => (
-                  <div key={event.id} className={`text-[11px] p-2 rounded-lg ${
+                  <div key={event.id} className={`text-[11px] p-2 rounded-none ${
                     event.severity === 'critical' ? 'bg-red-500/10 border border-red-500/20' :
                     event.severity === 'warning' ? 'bg-yellow-500/10 border border-yellow-500/20' :
                     'bg-cosmic-900/40'

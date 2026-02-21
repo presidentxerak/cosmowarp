@@ -14,7 +14,7 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 text-center">
         <div className="flex justify-center mb-4">
-          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-20 h-20 animate-float" />
+          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-20 h-20 animate-float" />
         </div>
         <h2 className="text-xl font-bold text-warp-300 mb-2 font-title">Create Your Warp Wallet</h2>
         <p className="text-sm text-gray-400 mb-2">
@@ -44,7 +44,7 @@ export default function WalletView() {
           >
             {creating ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-full animate-spin" />
+                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
                 Generating Ed25519 Keys...
               </span>
             ) : (
@@ -89,7 +89,7 @@ export default function WalletView() {
         </div>
         <p className="text-[10px] text-gray-500">WARP ENERGY UNITS</p>
         {wallet.isAdmin && (
-          <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+          <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-none bg-amber-500/20 text-amber-400 border border-amber-500/30">
             ADMIN
           </span>
         )}
@@ -127,9 +127,9 @@ export default function WalletView() {
               <span>Progress to {nextLevel.name}</span>
               <span>{levelProgress}%</span>
             </div>
-            <div className="w-full bg-cosmic-900/60 rounded-full h-2">
+            <div className="w-full bg-cosmic-900/60 rounded-none h-2">
               <div
-                className="h-2 rounded-full transition-all duration-500"
+                className="h-2 rounded-none transition-all duration-500"
                 style={{
                   width: `${levelProgress}%`,
                   background: `linear-gradient(90deg, #a855f7, #06b6d4)`,
@@ -241,7 +241,7 @@ export default function WalletView() {
         ) : (
           <div className="space-y-2">
             {recentTxs.map(tx => (
-              <div key={tx.id} className="flex items-center gap-3 p-2 rounded-lg bg-cosmic-900/40 text-xs">
+              <div key={tx.id} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40 text-xs">
                 <span className={`text-base ${
                   tx.type === 'mine' ? 'text-star-400' :
                   tx.type === 'send' ? 'text-nebula-400' :
