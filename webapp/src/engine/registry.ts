@@ -9,10 +9,11 @@
  * - Security events (failed auth, suspicious activity)
  *
  * Access: Admin only (creator address + admin key)
- * Storage: AES-GCM encrypted localStorage, exportable
+ * Storage: AES-GCM encrypted storage, exportable
  */
 
 import { sha256, encryptData, decryptData, type EncryptedPayload } from './crypto';
+import { storage } from './storage';
 import type { SupplyState } from './tokenomics';
 
 // ─── Registry Entry Types ────────────────────────────────
@@ -95,12 +96,12 @@ export class AdminRegistry {
       throw new Error('Admin already initialized');
     }
     this.adminAddressHash = await sha256('COSMOWARP_ADMIN:' + adminAddress);
-    localStorage.setItem(ADMIN_HASH_KEY, this.adminAddressHash);
+    storage.setItem(ADMIN_HASH_KEY, this.adminAddressHash);
   }
 
   /** Verify admin access */
   async verifyAdmin(address: string): Promise<boolean> {
-    const storedHash = this.adminAddressHash || localStorage.getItem(ADMIN_HASH_KEY) || '';
+    const storedHash = this.adminAddressHash || storage.getItem(ADMIN_HASH_KEY) || '';
     if (!storedHash) return false;
     const hash = await sha256('COSMOWARP_ADMIN:' + address);
     return hash === storedHash;
@@ -295,11 +296,11 @@ export class AdminRegistry {
 
     const secret = 'COSMOWARP_REGISTRY_KEY:' + adminAddress;
     const encrypted = await encryptData(data, secret);
-    localStorage.setItem(REGISTRY_STORAGE_KEY, JSON.stringify(encrypted));
+    storage.setItem(REGISTRY_STORAGE_KEY, JSON.stringify(encrypted));
   }
 
   async loadEncrypted(adminAddress: string): Promise<boolean> {
-    const raw = localStorage.getItem(REGISTRY_STORAGE_KEY);
+    const raw = storage.getItem(REGISTRY_STORAGE_KEY);
     if (!raw) return false;
 
     try {

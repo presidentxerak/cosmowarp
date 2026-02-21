@@ -10,6 +10,7 @@ import {
 } from '../engine/wallet';
 import type { MeshStats } from '../engine/cosmomesh';
 import { WartEngine, type Wart } from '../engine/warts';
+import { storage } from '../engine/storage';
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -273,9 +274,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_mint',
       memo: `Minted Wart: ${title}`,
     };
-    const txs = JSON.parse(localStorage.getItem('cosmowarp_global_tx') || '[]');
+    const txs = JSON.parse(storage.getItem('cosmowarp_global_tx') || '[]');
     txs.unshift(tx);
-    localStorage.setItem('cosmowarp_global_tx', JSON.stringify(txs.slice(0, 200)));
+    storage.setItem('cosmowarp_global_tx', JSON.stringify(txs.slice(0, 200)));
     wallet.transactions.unshift(tx);
 
     setWallet({ ...wallet });

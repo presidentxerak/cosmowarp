@@ -15,6 +15,7 @@ import {
   decryptPrivateKey,
   type EncryptedPayload,
 } from './crypto';
+import { storage } from './storage';
 import {
   CosmoMesh,
   type MeshTransaction,
@@ -91,7 +92,7 @@ let securityInstance: SecurityManager | null = null;
 
 export function getMesh(): CosmoMesh {
   if (!meshInstance) {
-    const saved = localStorage.getItem(MESH_STORAGE_KEY);
+    const saved = storage.getItem(MESH_STORAGE_KEY);
     if (saved) {
       try {
         meshInstance = CosmoMesh.deserialize(saved);
@@ -107,7 +108,7 @@ export function getMesh(): CosmoMesh {
 
 export function getConsensus(): ResonanceConsensus {
   if (!consensusInstance) {
-    const saved = localStorage.getItem(CONSENSUS_STORAGE_KEY);
+    const saved = storage.getItem(CONSENSUS_STORAGE_KEY);
     if (saved) {
       try {
         consensusInstance = ResonanceConsensus.deserialize(saved);
@@ -151,13 +152,13 @@ export function getSecurity(): SecurityManager {
 
 function saveMesh(): void {
   if (meshInstance) {
-    localStorage.setItem(MESH_STORAGE_KEY, meshInstance.serialize());
+    storage.setItem(MESH_STORAGE_KEY, meshInstance.serialize());
   }
 }
 
 function saveConsensus(): void {
   if (consensusInstance) {
-    localStorage.setItem(CONSENSUS_STORAGE_KEY, consensusInstance.serialize());
+    storage.setItem(CONSENSUS_STORAGE_KEY, consensusInstance.serialize());
   }
 }
 
@@ -177,7 +178,7 @@ function genId(): string {
 // ─── Daily Total Tracking ────────────────────────────────
 
 function getDailyTotal(address: string): number {
-  const raw = localStorage.getItem(DAILY_TOTAL_KEY);
+  const raw = storage.getItem(DAILY_TOTAL_KEY);
   if (!raw) return 0;
   try {
     const data = JSON.parse(raw);
@@ -193,14 +194,14 @@ function addDailyTotal(address: string, amount: number): void {
   const today = new Date().toISOString().split('T')[0];
   let data: { date: string; totals: Record<string, number> };
   try {
-    const raw = localStorage.getItem(DAILY_TOTAL_KEY);
+    const raw = storage.getItem(DAILY_TOTAL_KEY);
     data = raw ? JSON.parse(raw) : { date: today, totals: {} };
     if (data.date !== today) data = { date: today, totals: {} };
   } catch {
     data = { date: today, totals: {} };
   }
   data.totals[address] = (data.totals[address] || 0) + amount;
-  localStorage.setItem(DAILY_TOTAL_KEY, JSON.stringify(data));
+  storage.setItem(DAILY_TOTAL_KEY, JSON.stringify(data));
 }
 
 // ─── Convert MeshTransaction to UI Transaction ──────────
@@ -248,11 +249,11 @@ function enrichWalletWithHierarchy(wallet: WarpWallet): void {
 // ─── Wallet CRUD ─────────────────────────────────────────
 
 /**
- * Load wallet from localStorage in LOCKED state (privateKey = '').
+ * Load wallet from storage in LOCKED state (privateKey = '').
  * Handles migration from legacy unencrypted wallets.
  */
 export function loadWallet(): WarpWallet | null {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
     const stored = JSON.parse(raw);
@@ -290,7 +291,7 @@ export function loadWallet(): WarpWallet | null {
  * Check if an existing wallet needs migration (has legacy plaintext key).
  */
 export function walletNeedsMigration(): boolean {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(STORAGE_KEY);
   if (!raw) return false;
   try {
     const stored = JSON.parse(raw);
@@ -304,7 +305,7 @@ export function walletNeedsMigration(): boolean {
  * Migrate a legacy wallet by encrypting its plaintext privateKey.
  */
 export async function migrateWallet(password: string): Promise<boolean> {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(STORAGE_KEY);
   if (!raw) return false;
   try {
     const stored = JSON.parse(raw);
@@ -312,7 +313,7 @@ export async function migrateWallet(password: string): Promise<boolean> {
     const encrypted = await encryptPrivateKey(stored.privateKey, password);
     stored.encryptedPrivateKey = encrypted;
     delete stored.privateKey;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    storage.setItem(STORAGE_KEY, JSON.stringify(stored));
     return true;
   } catch {
     return false;
@@ -322,7 +323,7 @@ export async function migrateWallet(password: string): Promise<boolean> {
 export function saveWallet(wallet: WarpWallet): void {
   // Never persist the decrypted private key
   const toSave = { ...wallet, privateKey: undefined };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  storage.setItem(STORAGE_KEY, JSON.stringify(toSave));
 }
 
 /**
@@ -337,7 +338,7 @@ export async function unlockWalletKey(wallet: WarpWallet, password: string): Pro
 }
 
 export function isAdminAddress(address: string): boolean {
-  const adminAddr = localStorage.getItem(ADMIN_ADDRESS_KEY);
+  const adminAddr = storage.getItem(ADMIN_ADDRESS_KEY);
   return !!adminAddr && adminAddr === address;
 }
 
@@ -358,10 +359,10 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
   const registry = getRegistry();
 
   // First wallet created becomes admin
-  const existingAdmin = localStorage.getItem(ADMIN_ADDRESS_KEY);
+  const existingAdmin = storage.getItem(ADMIN_ADDRESS_KEY);
   const isFirstWallet = !existingAdmin;
   if (isFirstWallet) {
-    localStorage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
+    storage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
     tokenomics.constructor.prototype; // ensure creator address set
     await registry.initAdmin(keyPair.address);
   }
@@ -781,7 +782,7 @@ export async function unlockCreatorTokens(wallet: WarpWallet, amount: number): P
 // ─── Global Transaction Feed ─────────────────────────────
 
 export function getGlobalTransactions(): Transaction[] {
-  const raw = localStorage.getItem(TX_STORAGE_KEY);
+  const raw = storage.getItem(TX_STORAGE_KEY);
   if (!raw) return [];
   try {
     return JSON.parse(raw);
@@ -793,7 +794,7 @@ export function getGlobalTransactions(): Transaction[] {
 function addGlobalTx(tx: Transaction): void {
   const txs = getGlobalTransactions();
   txs.unshift(tx);
-  localStorage.setItem(TX_STORAGE_KEY, JSON.stringify(txs.slice(0, 200)));
+  storage.setItem(TX_STORAGE_KEY, JSON.stringify(txs.slice(0, 200)));
 }
 
 // ─── Mesh Stats (exported for UI) ───────────────────────

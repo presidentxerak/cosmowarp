@@ -6,6 +6,8 @@
  * Creators earn royalties on every resale.
  */
 
+import { storage } from './storage';
+
 // ─── Types ───────────────────────────────────────────────
 
 export interface WartTransfer {
@@ -41,7 +43,7 @@ export class WartEngine {
 
   static load(): WartEngine {
     const engine = new WartEngine();
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     if (raw) {
       try {
         const arr: Wart[] = JSON.parse(raw);
@@ -55,7 +57,7 @@ export class WartEngine {
 
   private save(): void {
     const arr = Array.from(this.warts.values());
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    storage.setItem(STORAGE_KEY, JSON.stringify(arr));
   }
 
   // ─── Mint ────────────────────────────────────────────

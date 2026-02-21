@@ -1,3 +1,5 @@
+import { storage } from './storage';
+
 /**
  * CosmoWarp Account Hierarchy — Levels, Titles & Rewards
  *
@@ -265,11 +267,11 @@ export class HierarchyEngine {
   }
 
   save(): void {
-    localStorage.setItem('cosmowarp_hierarchy', this.serialize());
+    storage.setItem('cosmowarp_hierarchy', this.serialize());
   }
 
   static load(): HierarchyEngine | null {
-    const raw = localStorage.getItem('cosmowarp_hierarchy');
+    const raw = storage.getItem('cosmowarp_hierarchy');
     if (!raw) return null;
     try {
       return HierarchyEngine.deserialize(raw);
