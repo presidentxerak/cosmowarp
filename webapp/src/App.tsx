@@ -1,7 +1,31 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, Component } from 'react';
+import type { ReactNode, ErrorInfo } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import Header from './components/Header';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
+
+class BackgroundErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(_: Error, __: ErrorInfo) { /* swallow background errors */ }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          className="fixed inset-0 -z-10"
+          style={{
+            pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, #131650 0%, #0a0a1a 70%)',
+          }}
+        />
+      );
+    }
+    return this.props.children;
+  }
+}
 import WalletView from './components/WalletView';
 import SendView from './components/SendView';
 import MineView from './components/MineView';
@@ -16,7 +40,9 @@ function App() {
 
   return (
     <WalletProvider>
-      <Suspense fallback={null}><CosmicBackground /></Suspense>
+      <BackgroundErrorBoundary>
+        <Suspense fallback={null}><CosmicBackground /></Suspense>
+      </BackgroundErrorBoundary>
       <div className="min-h-screen min-h-[100dvh] px-[10px] py-[10px] relative z-10">
         <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
