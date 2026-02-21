@@ -4,11 +4,16 @@
  * Manages wallet state, transactions via the CosmoMesh DAG,
  * consensus validation, tokenomics (Resonance Decay), hierarchy levels,
  * admin registry, and security hardening.
+ *
+ * v2.1 — Password-encrypted private key + Wart marketplace operations
  */
 
 import {
   generateKeyPair,
   isValidAddress,
+  encryptPrivateKey,
+  decryptPrivateKey,
+  type EncryptedPayload,
 } from './crypto';
 import {
   CosmoMesh,
@@ -30,7 +35,7 @@ export interface Transaction {
   amount: number;
   timestamp: number;
   signature: string;
-  type: 'send' | 'receive' | 'mine' | 'genesis' | 'airdrop' | 'level_up' | 'streak_reward';
+  type: 'send' | 'receive' | 'mine' | 'genesis' | 'airdrop' | 'level_up' | 'streak_reward' | 'wart_mint' | 'wart_buy' | 'wart_transfer';
   memo?: string;
   resonanceScore?: number;
   confirmations?: number;
@@ -40,8 +45,9 @@ export interface Transaction {
 
 export interface WarpWallet {
   address: string;
-  privateKey: string;
+  privateKey: string;                        // In-memory only — empty when locked
   publicKey: string;
+  encryptedPrivateKey: EncryptedPayload;     // Persisted (AES-GCM encrypted)
   balance: number;
   transactions: Transaction[];
   createdAt: number;
@@ -54,6 +60,15 @@ export interface WarpWallet {
   streakDays: number;
   xp: number;
   isAdmin: boolean;
+}
+
+export interface WalletExport {
+  version: 2;
+  address: string;
+  publicKey: string;
+  encryptedPrivateKey: EncryptedPayload;
+  alias?: string;
+  createdAt: number;
 }
 
 // ─── Storage Keys ────────────────────────────────────────
@@ -232,11 +247,38 @@ function enrichWalletWithHierarchy(wallet: WarpWallet): void {
 
 // ─── Wallet CRUD ─────────────────────────────────────────
 
+/**
+ * Load wallet from localStorage in LOCKED state (privateKey = '').
+ * Handles migration from legacy unencrypted wallets.
+ */
 export function loadWallet(): WarpWallet | null {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
-    const wallet: WarpWallet = JSON.parse(raw);
+    const stored = JSON.parse(raw);
+
+    // Migration: legacy wallet with plaintext privateKey and no encryptedPrivateKey
+    // This can happen if the user had a wallet before the encryption update.
+    // We can't auto-encrypt without a password, so we keep it as-is but flag it.
+    const wallet: WarpWallet = {
+      address: stored.address,
+      privateKey: '',  // Always locked on load
+      publicKey: stored.publicKey,
+      encryptedPrivateKey: stored.encryptedPrivateKey || { ciphertext: '', iv: '', tag: '' },
+      balance: stored.balance,
+      transactions: stored.transactions || [],
+      createdAt: stored.createdAt,
+      alias: stored.alias,
+      level: stored.level || 0,
+      levelName: stored.levelName || 'Particle',
+      levelTitle: stored.levelTitle || 'Quantum Seed',
+      levelSymbol: stored.levelSymbol || '\u2022',
+      rewardMultiplier: stored.rewardMultiplier || 1,
+      streakDays: stored.streakDays || 0,
+      xp: stored.xp || 0,
+      isAdmin: stored.isAdmin || false,
+    };
+
     enrichWalletWithHierarchy(wallet);
     return wallet;
   } catch {
@@ -244,8 +286,54 @@ export function loadWallet(): WarpWallet | null {
   }
 }
 
+/**
+ * Check if an existing wallet needs migration (has legacy plaintext key).
+ */
+export function walletNeedsMigration(): boolean {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const stored = JSON.parse(raw);
+    return !!stored.privateKey && stored.privateKey.length > 0 && !stored.encryptedPrivateKey;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Migrate a legacy wallet by encrypting its plaintext privateKey.
+ */
+export async function migrateWallet(password: string): Promise<boolean> {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const stored = JSON.parse(raw);
+    if (!stored.privateKey || stored.encryptedPrivateKey) return false;
+    const encrypted = await encryptPrivateKey(stored.privateKey, password);
+    stored.encryptedPrivateKey = encrypted;
+    delete stored.privateKey;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function saveWallet(wallet: WarpWallet): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+  // Never persist the decrypted private key
+  const toSave = { ...wallet, privateKey: undefined };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+
+/**
+ * Decrypt the wallet's private key with user password.
+ * Returns the hex private key or throws on wrong password.
+ */
+export async function unlockWalletKey(wallet: WarpWallet, password: string): Promise<string> {
+  if (!wallet.encryptedPrivateKey || !wallet.encryptedPrivateKey.ciphertext) {
+    throw new Error('No encrypted key found — wallet may need migration');
+  }
+  return decryptPrivateKey(wallet.encryptedPrivateKey, password);
 }
 
 export function isAdminAddress(address: string): boolean {
@@ -253,8 +341,14 @@ export function isAdminAddress(address: string): boolean {
   return !!adminAddr && adminAddr === address;
 }
 
-export async function createWallet(alias?: string): Promise<WarpWallet> {
+/**
+ * Create a new wallet with password-encrypted private key.
+ */
+export async function createWallet(password: string, alias?: string): Promise<WarpWallet> {
   const keyPair = await generateKeyPair();
+
+  // Encrypt private key with user password
+  const encrypted = await encryptPrivateKey(keyPair.privateKey, password);
 
   // Initialize mesh with genesis
   const mesh = getMesh();
@@ -342,8 +436,9 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
 
   const wallet: WarpWallet = {
     address: keyPair.address,
-    privateKey: keyPair.privateKey,
+    privateKey: keyPair.privateKey,  // Available in memory right after creation
     publicKey: keyPair.publicKey,
+    encryptedPrivateKey: encrypted,
     balance: totalInitialBalance,
     transactions,
     createdAt: Date.now(),
@@ -364,6 +459,59 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   return wallet;
 }
 
+// ─── Export / Import ────────────────────────────────────
+
+export function exportWallet(wallet: WarpWallet): WalletExport {
+  return {
+    version: 2,
+    address: wallet.address,
+    publicKey: wallet.publicKey,
+    encryptedPrivateKey: wallet.encryptedPrivateKey,
+    alias: wallet.alias,
+    createdAt: wallet.createdAt,
+  };
+}
+
+export async function importWallet(data: WalletExport, password: string): Promise<WarpWallet> {
+  // Verify password can decrypt the key
+  const privateKey = await decryptPrivateKey(data.encryptedPrivateKey, password);
+  if (!privateKey) throw new Error('Invalid password');
+
+  // Check if wallet already exists on this device
+  const existing = loadWallet();
+  if (existing && existing.address !== data.address) {
+    throw new Error('A different wallet already exists on this device. Clear it first.');
+  }
+
+  const mesh = getMesh();
+  const balance = mesh.getBalance(data.address) || 0;
+
+  const levelDef = HIERARCHY_LEVELS[0];
+  const wallet: WarpWallet = {
+    address: data.address,
+    privateKey,
+    publicKey: data.publicKey,
+    encryptedPrivateKey: data.encryptedPrivateKey,
+    balance,
+    transactions: [],
+    createdAt: data.createdAt,
+    alias: data.alias,
+    level: 0,
+    levelName: levelDef.name,
+    levelTitle: levelDef.title,
+    levelSymbol: levelDef.symbol,
+    rewardMultiplier: levelDef.rewardMultiplier,
+    streakDays: 0,
+    xp: 0,
+    isAdmin: isAdminAddress(data.address),
+  };
+
+  enrichWalletWithHierarchy(wallet);
+  saveWallet(wallet);
+
+  return wallet;
+}
+
 // ─── Send Warps ──────────────────────────────────────────
 
 export async function sendWarps(
@@ -372,6 +520,7 @@ export async function sendWarps(
   amount: number,
   memo?: string
 ): Promise<{ success: boolean; error?: string; tx?: Transaction; levelUp?: LevelUpResult }> {
+  if (!wallet.privateKey) return { success: false, error: 'Wallet is locked' };
   if (amount <= 0) return { success: false, error: 'Amount must be positive' };
   if (amount > wallet.balance) return { success: false, error: 'Insufficient Warps' };
   if (toAddress === wallet.address) return { success: false, error: 'Cannot send to yourself' };
@@ -388,7 +537,6 @@ export async function sendWarps(
   });
 
   if (!securityResult.allowed) {
-    // Log security event in registry
     getRegistry().addSecurityEvent({
       type: 'suspicious_pattern',
       address: wallet.address,
@@ -501,6 +649,8 @@ export async function mineWarps(
   energyUsed: number,
   cycles: number
 ): Promise<{ tx: Transaction; levelUp?: LevelUpResult }> {
+  if (!wallet.privateKey) throw new Error('Wallet is locked');
+
   const mesh = getMesh();
   const consensus = getConsensus();
   const tokenomics = getTokenomics();

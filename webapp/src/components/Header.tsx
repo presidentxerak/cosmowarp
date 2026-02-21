@@ -10,6 +10,7 @@ export default function Header({ activeTab, setActiveTab }: {
     { id: 'wallet', label: '\u25C8 Wallet', group: 'main' },
     { id: 'send', label: '\u2197 Send', group: 'main' },
     { id: 'mine', label: '\u26CF Mine', group: 'main' },
+    { id: 'warts', label: '\u2B22 Warts', group: 'main' },
     { id: 'feed', label: '\u25CE Feed', group: 'main' },
     { id: 'whitepaper', label: '\u2B21 Paper', group: 'info' },
     { id: 'sdk', label: '\u269B SDK', group: 'info' },

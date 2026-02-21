@@ -233,3 +233,19 @@ export function randomHex(length: number): string {
   const bytes = randomBytes(length);
   return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
+// ─── Wallet Key Encryption ─────────────────────────────
+
+export async function encryptPrivateKey(
+  privateKeyHex: string,
+  password: string
+): Promise<EncryptedPayload> {
+  return encryptData(privateKeyHex, 'COSMOWARP_WALLET_KEY:' + password);
+}
+
+export async function decryptPrivateKey(
+  payload: EncryptedPayload,
+  password: string
+): Promise<string> {
+  return decryptData(payload, 'COSMOWARP_WALLET_KEY:' + password);
+}

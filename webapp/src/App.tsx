@@ -29,6 +29,7 @@ class BackgroundErrorBoundary extends Component<
 import WalletView from './components/WalletView';
 import SendView from './components/SendView';
 import MineView from './components/MineView';
+import MarketplaceView from './components/MarketplaceView';
 import FeedView from './components/FeedView';
 import AdminView from './components/AdminView';
 import ConsoleView from './components/ConsoleView';
@@ -50,6 +51,7 @@ function App() {
           {activeTab === 'wallet' && <WalletView />}
           {activeTab === 'send' && <SendView />}
           {activeTab === 'mine' && <MineView />}
+          {activeTab === 'warts' && <MarketplaceView />}
           {activeTab === 'feed' && <FeedView />}
           {activeTab === 'admin' && <AdminView />}
           {activeTab === 'console' && <ConsoleView />}

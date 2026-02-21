@@ -1,15 +1,33 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 
 export default function WalletView() {
-  const { wallet, meshStats, supplyInfo, levelProgress, initWallet } = useWallet();
+  const {
+    wallet, unlocked, needsMigration,
+    meshStats, supplyInfo, levelProgress,
+    initWallet, unlock, lock, migrate,
+    doExportWallet, doImportWallet,
+  } = useWallet();
+
   const [alias, setAlias] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [unlockPassword, setUnlockPassword] = useState('');
   const [copied, setCopied] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [showExport, setShowExport] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importPassword, setImportPassword] = useState('');
+  const [importError, setImportError] = useState('');
+  const [importData, setImportData] = useState<string | null>(null);
 
+  // ─── No wallet: Creation screen ──────────────────────
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
@@ -21,7 +39,7 @@ export default function WalletView() {
           Generate an Ed25519 keypair and receive 1,000 {'\u03A9'} airdrop.
         </p>
         <p className="text-xs text-gray-500 mb-6">
-          Powered by CosmoMesh DAG + Resonance Consensus + Resonance Decay
+          Your private key will be encrypted with your password (AES-256-GCM)
         </p>
         <div className="max-w-xs mx-auto space-y-3">
           <input
@@ -30,36 +48,231 @@ export default function WalletView() {
             value={alias}
             onChange={e => setAlias(e.target.value)}
           />
+          <input
+            className="warp-input text-center"
+            type="password"
+            placeholder="Password (min 6 chars)"
+            value={password}
+            onChange={e => { setPassword(e.target.value); setCreateError(''); }}
+          />
+          <input
+            className="warp-input text-center"
+            type="password"
+            placeholder="Confirm password"
+            value={passwordConfirm}
+            onChange={e => { setPasswordConfirm(e.target.value); setCreateError(''); }}
+          />
+          {createError && (
+            <p className="text-xs text-red-400">{createError}</p>
+          )}
           <button
             className="warp-button w-full text-base py-3"
             onClick={async () => {
+              if (password.length < 6) {
+                setCreateError('Password must be at least 6 characters');
+                return;
+              }
+              if (password !== passwordConfirm) {
+                setCreateError('Passwords do not match');
+                return;
+              }
               setCreating(true);
               try {
-                await initWallet(alias || undefined);
+                await initWallet(password, alias || undefined);
               } finally {
                 setCreating(false);
               }
             }}
-            disabled={creating}
+            disabled={creating || !password}
           >
             {creating ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
-                Generating Ed25519 Keys...
+                Generating & Encrypting...
               </span>
             ) : (
               <>{'\u2B21'} Initialize Wallet</>
             )}
+          </button>
+
+          {/* Import section */}
+          <div className="pt-4 border-t border-white/5">
+            <p className="text-[10px] text-gray-500 mb-2">OR IMPORT EXISTING WALLET</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => setImportData(reader.result as string);
+                reader.readAsText(file);
+              }}
+            />
+            {!importData ? (
+              <button
+                className="warp-button w-full text-xs py-2 opacity-70 hover:opacity-100"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Upload Wallet File (.json)
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-energy-400">File loaded. Enter password:</p>
+                <input
+                  className="warp-input text-center text-xs"
+                  type="password"
+                  placeholder="Wallet password"
+                  value={importPassword}
+                  onChange={e => { setImportPassword(e.target.value); setImportError(''); }}
+                />
+                {importError && <p className="text-xs text-red-400">{importError}</p>}
+                <button
+                  className="warp-button w-full text-xs py-2"
+                  onClick={async () => {
+                    try {
+                      const data = JSON.parse(importData!);
+                      const ok = await doImportWallet(data, importPassword);
+                      if (!ok) setImportError('Wrong password or invalid file');
+                    } catch {
+                      setImportError('Invalid wallet file');
+                    }
+                  }}
+                  disabled={!importPassword}
+                >
+                  Import Wallet
+                </button>
+                <button
+                  className="text-xs text-gray-500 hover:text-gray-300"
+                  onClick={() => { setImportData(null); setImportPassword(''); setImportError(''); }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Migration screen (legacy wallet) ─────────────────
+  if (needsMigration) {
+    return (
+      <div className="glass-panel p-6 text-center">
+        <h2 className="text-xl font-bold text-amber-400 mb-2 font-title">{'\u26A0'} Security Upgrade</h2>
+        <p className="text-sm text-gray-400 mb-4">
+          Your wallet needs encryption. Set a password to secure your private key.
+        </p>
+        <div className="max-w-xs mx-auto space-y-3">
+          <input
+            className="warp-input text-center"
+            type="password"
+            placeholder="Choose a password (min 6 chars)"
+            value={password}
+            onChange={e => { setPassword(e.target.value); setCreateError(''); }}
+          />
+          <input
+            className="warp-input text-center"
+            type="password"
+            placeholder="Confirm password"
+            value={passwordConfirm}
+            onChange={e => { setPasswordConfirm(e.target.value); setCreateError(''); }}
+          />
+          {createError && <p className="text-xs text-red-400">{createError}</p>}
+          <button
+            className="warp-button w-full text-base py-3"
+            onClick={async () => {
+              if (password.length < 6) { setCreateError('Min 6 characters'); return; }
+              if (password !== passwordConfirm) { setCreateError('Passwords do not match'); return; }
+              const ok = await migrate(password);
+              if (!ok) setCreateError('Migration failed');
+            }}
+            disabled={!password}
+          >
+            {'\u26BF'} Encrypt & Secure Wallet
           </button>
         </div>
       </div>
     );
   }
 
+  // ─── Locked wallet: Unlock screen ─────────────────────
+  if (!unlocked) {
+    return (
+      <div className="glass-panel p-6 text-center">
+        <div className="flex justify-center mb-4">
+          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-16 h-16 opacity-50" />
+        </div>
+        <h2 className="text-xl font-bold text-warp-300 mb-1 font-title">{'\u26BF'} Wallet Locked</h2>
+        <p className="text-xs text-gray-500 mb-1">
+          {wallet.alias ? `@${wallet.alias}` : shortAddress(wallet.address)}
+        </p>
+        <p className="text-lg font-bold text-warp-300/50 mb-4">
+          {wallet.balance.toLocaleString()} {'\u03A9'}
+        </p>
+        <div className="max-w-xs mx-auto space-y-3">
+          <input
+            className="warp-input text-center"
+            type="password"
+            placeholder="Enter password"
+            value={unlockPassword}
+            onChange={e => { setUnlockPassword(e.target.value); setUnlockError(''); }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && unlockPassword) {
+                setUnlocking(true);
+                unlock(unlockPassword).then(ok => {
+                  if (!ok) setUnlockError('Wrong password');
+                  setUnlocking(false);
+                  setUnlockPassword('');
+                });
+              }
+            }}
+          />
+          {unlockError && <p className="text-xs text-red-400">{unlockError}</p>}
+          <button
+            className="warp-button w-full py-3"
+            onClick={async () => {
+              setUnlocking(true);
+              const ok = await unlock(unlockPassword);
+              if (!ok) setUnlockError('Wrong password');
+              setUnlocking(false);
+              setUnlockPassword('');
+            }}
+            disabled={!unlockPassword || unlocking}
+          >
+            {unlocking ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+                Decrypting...
+              </span>
+            ) : 'Unlock'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Unlocked wallet: Full view ───────────────────────
   const copyAddress = () => {
     navigator.clipboard.writeText(wallet.address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleExport = () => {
+    const data = doExportWallet();
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cosmowarp-wallet-${shortAddress(wallet.address)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowExport(false);
   };
 
   const recentTxs = wallet.transactions.slice(0, 8);
@@ -88,11 +301,22 @@ export default function WalletView() {
           {wallet.balance.toLocaleString()} <span className="text-2xl">{'\u03A9'}</span>
         </div>
         <p className="text-[10px] text-gray-500">WARP ENERGY UNITS</p>
-        {wallet.isAdmin && (
-          <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-none bg-amber-500/20 text-amber-400 border border-amber-500/30">
-            ADMIN
+        <div className="flex items-center justify-center gap-2 mt-2">
+          {wallet.isAdmin && (
+            <span className="text-[10px] px-2 py-0.5 rounded-none bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              ADMIN
+            </span>
+          )}
+          <span className="text-[10px] px-2 py-0.5 rounded-none bg-green-500/20 text-green-400 border border-green-500/30">
+            {'\u26BF'} ENCRYPTED
           </span>
-        )}
+          <button
+            onClick={lock}
+            className="text-[10px] px-2 py-0.5 rounded-none bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors cursor-pointer"
+          >
+            {'\u274C'} Lock
+          </button>
+        </div>
       </div>
 
       {/* Address */}
@@ -100,13 +324,37 @@ export default function WalletView() {
         <p className="text-[10px] text-gray-500 mb-1">YOUR ADDRESS (Ed25519)</p>
         <div className="flex items-center gap-2">
           <code className="text-xs text-energy-400 flex-1 truncate">{wallet.address}</code>
-          <button
-            onClick={copyAddress}
-            className="warp-button text-xs px-2 py-1"
-          >
+          <button onClick={copyAddress} className="warp-button text-xs px-2 py-1">
             {copied ? '\u2713 Copied' : 'Copy'}
           </button>
         </div>
+      </div>
+
+      {/* Security & Export */}
+      <div className="glass-panel p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-gray-500">WALLET SECURITY</p>
+            <p className="text-xs text-green-400">AES-256-GCM + PBKDF2 (100k rounds)</p>
+          </div>
+          <button
+            onClick={() => setShowExport(!showExport)}
+            className="warp-button text-xs px-3 py-1"
+          >
+            {showExport ? 'Close' : 'Export'}
+          </button>
+        </div>
+        {showExport && (
+          <div className="mt-3 pt-3 border-t border-white/5 text-center">
+            <p className="text-xs text-gray-400 mb-2">
+              Download an encrypted backup of your wallet.
+              You'll need your password to restore it.
+            </p>
+            <button onClick={handleExport} className="warp-button text-xs px-4 py-2">
+              {'\u2B07'} Download Encrypted Backup
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Hierarchy & Level Progress */}
@@ -132,7 +380,7 @@ export default function WalletView() {
                 className="h-2 rounded-none transition-all duration-500"
                 style={{
                   width: `${levelProgress}%`,
-                  background: `linear-gradient(90deg, #a855f7, #06b6d4)`,
+                  background: 'linear-gradient(90deg, #a855f7, #06b6d4)',
                 }}
               />
             </div>
@@ -247,21 +495,29 @@ export default function WalletView() {
                   tx.type === 'send' ? 'text-nebula-400' :
                   tx.type === 'genesis' || tx.type === 'airdrop' ? 'text-warp-400' :
                   tx.type === 'level_up' ? 'text-amber-400' :
+                  tx.type === 'wart_mint' ? 'text-pink-400' :
+                  tx.type === 'wart_buy' ? 'text-cyan-400' :
+                  tx.type === 'wart_transfer' ? 'text-purple-400' :
                   'text-energy-400'
                 }`}>
                   {tx.type === 'mine' ? '\u26CF' :
                    tx.type === 'send' ? '\u2197' :
                    tx.type === 'genesis' || tx.type === 'airdrop' ? '\u2B21' :
-                   tx.type === 'level_up' ? '\u2605' : '\u2199'}
+                   tx.type === 'level_up' ? '\u2605' :
+                   tx.type === 'wart_mint' ? '\u2742' :
+                   tx.type === 'wart_buy' ? '\u2B22' :
+                   tx.type === 'wart_transfer' ? '\u21C4' : '\u2199'}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-gray-300 truncate">
-                    {tx.type === 'genesis' || tx.type === 'airdrop' ? 'Airdrop' :
-                     tx.type === 'mine' ? 'Mining Reward' :
-                     tx.type === 'level_up' ? 'Level Up Bonus' :
-                     tx.type === 'streak_reward' ? 'Streak Reward' :
-                     tx.type === 'send' ? `To ${shortAddress(tx.to)}` :
-                     `From ${shortAddress(tx.from)}`}
+                    {tx.memo || (
+                      tx.type === 'genesis' || tx.type === 'airdrop' ? 'Airdrop' :
+                      tx.type === 'mine' ? 'Mining Reward' :
+                      tx.type === 'level_up' ? 'Level Up Bonus' :
+                      tx.type === 'streak_reward' ? 'Streak Reward' :
+                      tx.type === 'send' ? `To ${shortAddress(tx.to)}` :
+                      `From ${shortAddress(tx.from)}`
+                    )}
                   </p>
                   <div className="flex gap-2 text-[10px] text-gray-500">
                     {tx.layer !== undefined && (
@@ -273,9 +529,9 @@ export default function WalletView() {
                   </div>
                 </div>
                 <span className={`font-bold shrink-0 ${
-                  tx.type === 'send' ? 'text-nebula-400' : 'text-energy-400'
+                  tx.type === 'send' || tx.type === 'wart_buy' ? 'text-nebula-400' : 'text-energy-400'
                 }`}>
-                  {tx.type === 'send' ? '-' : '+'}{tx.amount} {'\u03A9'}
+                  {tx.type === 'send' || tx.type === 'wart_buy' ? '-' : '+'}{tx.amount} {'\u03A9'}
                 </span>
               </div>
             ))}
