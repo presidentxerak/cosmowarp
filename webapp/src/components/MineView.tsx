@@ -16,7 +16,7 @@ interface MiningLog {
 }
 
 export default function MineView() {
-  const { wallet, mine, supplyInfo } = useWallet();
+  const { wallet, unlocked, mine, supplyInfo } = useWallet();
   const [difficulty, setDifficulty] = useState<Difficulty>('basic');
   const [mining, setMining] = useState(false);
   const [logs, setLogs] = useState<MiningLog[]>([]);
@@ -27,6 +27,14 @@ export default function MineView() {
     return (
       <div className="glass-panel p-6 text-center">
         <p className="text-gray-400">Create a wallet first to mine Warps.</p>
+      </div>
+    );
+  }
+
+  if (!unlocked) {
+    return (
+      <div className="glass-panel p-6 text-center">
+        <p className="text-gray-400">Unlock your wallet to mine Warps.</p>
       </div>
     );
   }

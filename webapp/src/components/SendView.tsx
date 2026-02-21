@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWallet } from '../context/WalletContext';
 
 export default function SendView() {
-  const { wallet, send } = useWallet();
+  const { wallet, unlocked, send } = useWallet();
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -13,6 +13,14 @@ export default function SendView() {
     return (
       <div className="glass-panel p-6 text-center">
         <p className="text-gray-400">Create a wallet first to send Warps.</p>
+      </div>
+    );
+  }
+
+  if (!unlocked) {
+    return (
+      <div className="glass-panel p-6 text-center">
+        <p className="text-gray-400">Unlock your wallet to send Warps.</p>
       </div>
     );
   }

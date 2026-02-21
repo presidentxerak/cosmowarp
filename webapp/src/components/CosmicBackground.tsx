@@ -76,14 +76,16 @@ export default function CosmicBackground() {
       const canvas = renderer.domElement;
 
       // Handle WebGL context loss (common on iOS Safari)
-      canvas.addEventListener('webglcontextlost', (e) => {
+      function onContextLost(e: Event) {
         e.preventDefault();
         if (animationId) cancelAnimationFrame(animationId);
         animationId = 0;
-      });
-      canvas.addEventListener('webglcontextrestored', () => {
+      }
+      function onContextRestored() {
         if (!disposed) animate();
-      });
+      }
+      canvas.addEventListener('webglcontextlost', onContextLost);
+      canvas.addEventListener('webglcontextrestored', onContextRestored);
 
       container.appendChild(canvas);
 
@@ -318,6 +320,8 @@ export default function CosmicBackground() {
       return () => {
         disposed = true;
         window.removeEventListener('resize', onResize);
+        canvas.removeEventListener('webglcontextlost', onContextLost);
+        canvas.removeEventListener('webglcontextrestored', onContextRestored);
         if (animationId) cancelAnimationFrame(animationId);
         try {
           renderer?.dispose();
