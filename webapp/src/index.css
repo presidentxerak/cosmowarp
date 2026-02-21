@@ -21,10 +21,17 @@
 }
 
 @layer base {
+  html {
+    height: 100%;
+    height: -webkit-fill-available;
+  }
   body {
     @apply bg-cosmic-900 text-gray-100 font-mono m-0;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -98,14 +105,26 @@ main > * {
 
 /* Safe area padding for mobile notches */
 @supports (padding: env(safe-area-inset-bottom)) {
-  body { padding-bottom: env(safe-area-inset-bottom); }
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }
 
 /* Touch-friendly targets on mobile */
 @media (max-width: 640px) {
-  .warp-button { min-height: 44px; }
+  .warp-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
   .warp-input { min-height: 44px; font-size: 16px; }
   .glass-panel { border-radius: 0; }
   table { font-size: 11px; }
-  pre { font-size: 10px; }
+  pre { font-size: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* Prevent zoom on input focus on iOS */
+@media (max-width: 640px) {
+  input[type="text"], input[type="number"], input, textarea, select {
+    font-size: 16px;
+  }
 }

@@ -17,7 +17,7 @@ function App() {
   return (
     <WalletProvider>
       <Suspense fallback={null}><CosmicBackground /></Suspense>
-      <div className="min-h-screen p-2 sm:p-4 max-w-3xl mx-auto relative z-10">
+      <div className="min-h-screen min-h-[100dvh] px-[10px] py-[10px] relative z-10">
         <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
         <main className="pb-6">

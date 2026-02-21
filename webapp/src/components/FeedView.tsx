@@ -80,7 +80,7 @@ export default function FeedView() {
                     </span>
                     <span className="text-[10px] text-gray-600">{timeAgo(tx.timestamp)}</span>
                     {tx.layer !== undefined && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-nonebg-warp-500/10 text-warp-400/70">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-none bg-warp-500/10 text-warp-400/70">
                         {LAYER_NAMES[tx.layer]}
                       </span>
                     )}
