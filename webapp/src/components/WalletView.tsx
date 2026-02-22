@@ -25,11 +25,11 @@ export default function WalletView() {
   const [importPassword, setImportPassword] = useState('');
   const [importError, setImportError] = useState('');
   const [importData, setImportData] = useState<string | null>(null);
-  const [showRestore, setShowRestore] = useState(false);
+  const [authTab, setAuthTab] = useState<'signup' | 'signin'>('signup');
   const [showBackupPrompt, setShowBackupPrompt] = useState(false);
   const [backupDownloaded, setBackupDownloaded] = useState(false);
 
-  // ─── No wallet: Welcome / Create screen ────────────────
+  // ─── No wallet: Sign Up / Sign In screen ───────────────
   if (!wallet) {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
@@ -37,12 +37,36 @@ export default function WalletView() {
           <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-warp-300 mb-1 font-title">CosmoWarp</h2>
-        <p className="text-xs text-gray-500 mb-6">
+        <p className="text-xs text-gray-500 mb-5">
           Post-blockchain transactional fabric
         </p>
 
-        {!showRestore ? (
-          /* ─── Create wallet (primary flow) ──────────────── */
+        {/* ─── Sign Up / Sign In tabs ──────────────────── */}
+        <div className="flex max-w-xs mx-auto mb-5 border border-white/10 overflow-hidden">
+          <button
+            onClick={() => setAuthTab('signup')}
+            className={`flex-1 py-2.5 text-sm font-bold transition-colors cursor-pointer ${
+              authTab === 'signup'
+                ? 'bg-warp-500/20 text-warp-300 border-b-2 border-warp-400'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+            }`}
+          >
+            Sign Up
+          </button>
+          <button
+            onClick={() => setAuthTab('signin')}
+            className={`flex-1 py-2.5 text-sm font-bold transition-colors cursor-pointer ${
+              authTab === 'signin'
+                ? 'bg-warp-500/20 text-warp-300 border-b-2 border-warp-400'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+            }`}
+          >
+            Sign In
+          </button>
+        </div>
+
+        {authTab === 'signup' ? (
+          /* ─── Sign Up: Create wallet ─────────────────── */
           <div className="max-w-xs mx-auto space-y-3">
             <p className="text-sm text-gray-400 mb-1">
               Create your wallet and receive 1,000 {'\u03A9'} airdrop.
@@ -97,32 +121,22 @@ export default function WalletView() {
                   Creating...
                 </span>
               ) : (
-                <>{'\u2B21'} Get Started</>
+                <>{'\u2B21'} Sign Up</>
               )}
             </button>
 
             <p className="text-[10px] text-gray-600 pt-2">
               Ed25519 keypair encrypted with AES-256-GCM
             </p>
-
-            {/* Restore link */}
-            <div className="pt-3 border-t border-white/5">
-              <button
-                onClick={() => setShowRestore(true)}
-                className="text-xs text-gray-500 hover:text-warp-400 transition-colors cursor-pointer"
-              >
-                Already have a wallet? Restore from backup
-              </button>
-            </div>
           </div>
         ) : (
-          /* ─── Restore wallet from backup ────────────────── */
+          /* ─── Sign In: Restore wallet from backup ────── */
           <div className="max-w-xs mx-auto space-y-3">
             <p className="text-sm text-gray-400 mb-1">
-              Restore from backup
+              Restore your wallet from your backup file.
             </p>
             <p className="text-[10px] text-gray-500 mb-2">
-              Select the encrypted .json backup file you exported from CosmoWarp.
+              Select the encrypted .json recovery key you downloaded when creating your account.
             </p>
             <input
               ref={fileInputRef}
@@ -142,12 +156,12 @@ export default function WalletView() {
                 className="warp-button w-full py-4 text-sm border-dashed"
                 onClick={() => fileInputRef.current?.click()}
               >
-                {'\u2B06'} Select Backup File
+                {'\u2B06'} Select Recovery Key (.json)
               </button>
             ) : (
               <div className="space-y-3">
                 <div className="p-3 bg-green-500/10 border border-green-500/20 text-xs text-green-400">
-                  {'\u2713'} Backup file loaded
+                  {'\u2713'} Recovery key loaded
                 </div>
                 <input
                   className="warp-input text-center"
@@ -183,18 +197,16 @@ export default function WalletView() {
                   }}
                   disabled={!importPassword}
                 >
-                  Restore Wallet
+                  Sign In
                 </button>
               </div>
             )}
 
-            <div className="pt-3 border-t border-white/5">
-              <button
-                onClick={() => { setShowRestore(false); setImportData(null); setImportPassword(''); setImportError(''); }}
-                className="text-xs text-gray-500 hover:text-warp-400 transition-colors cursor-pointer"
-              >
-                {'\u2190'} Back to wallet creation
-              </button>
+            <div className="p-3 bg-cosmic-900/40 border border-white/5 text-left mt-2">
+              <p className="text-[10px] text-gray-500">
+                {'\u2139'} Your recovery key (.json) was downloaded when you created your account.
+                It is your only way to restore your wallet — like a seed phrase.
+              </p>
             </div>
           </div>
         )}
