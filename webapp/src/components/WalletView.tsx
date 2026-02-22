@@ -26,78 +26,115 @@ export default function WalletView() {
   const [importPassword, setImportPassword] = useState('');
   const [importError, setImportError] = useState('');
   const [importData, setImportData] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
 
-  // ─── No wallet: Creation screen ──────────────────────
+  // ─── No wallet: Sign Up / Sign In screen ───────────────
   if (!wallet) {
     return (
-      <div className="glass-panel p-6 text-center">
+      <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
         <div className="flex justify-center mb-4">
-          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-20 h-20 animate-float" />
+          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
-        <h2 className="text-xl font-bold text-warp-300 mb-2 font-title">Create Your Warp Wallet</h2>
-        <p className="text-sm text-gray-400 mb-2">
-          Generate an Ed25519 keypair and receive 1,000 {'\u03A9'} airdrop.
+        <h2 className="text-xl sm:text-2xl font-bold text-warp-300 mb-1 font-title">CosmoWarp</h2>
+        <p className="text-xs text-gray-500 mb-5">
+          Post-blockchain transactional fabric
         </p>
-        <p className="text-xs text-gray-500 mb-6">
-          Your private key will be encrypted with your password (AES-256-GCM)
-        </p>
-        <div className="max-w-xs mx-auto space-y-3">
-          <input
-            className="warp-input text-center"
-            placeholder="Alias (optional)"
-            value={alias}
-            onChange={e => setAlias(e.target.value)}
-          />
-          <input
-            className="warp-input text-center"
-            type="password"
-            placeholder="Password (min 6 chars)"
-            value={password}
-            onChange={e => { setPassword(e.target.value); setCreateError(''); }}
-          />
-          <input
-            className="warp-input text-center"
-            type="password"
-            placeholder="Confirm password"
-            value={passwordConfirm}
-            onChange={e => { setPasswordConfirm(e.target.value); setCreateError(''); }}
-          />
-          {createError && (
-            <p className="text-xs text-red-400">{createError}</p>
-          )}
-          <button
-            className="warp-button w-full text-base py-3"
-            onClick={async () => {
-              if (password.length < 6) {
-                setCreateError('Password must be at least 6 characters');
-                return;
-              }
-              if (password !== passwordConfirm) {
-                setCreateError('Passwords do not match');
-                return;
-              }
-              setCreating(true);
-              try {
-                await initWallet(password, alias || undefined);
-              } finally {
-                setCreating(false);
-              }
-            }}
-            disabled={creating || !password}
-          >
-            {creating ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
-                Generating & Encrypting...
-              </span>
-            ) : (
-              <>{'\u2B21'} Initialize Wallet</>
-            )}
-          </button>
 
-          {/* Import section */}
-          <div className="pt-4 border-t border-white/5">
-            <p className="text-[10px] text-gray-500 mb-2">OR IMPORT EXISTING WALLET</p>
+        {/* Sign Up / Sign In tabs */}
+        <div className="flex mb-5 border border-white/5">
+          <button
+            onClick={() => { setAuthMode('signup'); setCreateError(''); setImportError(''); setImportData(null); }}
+            className={`flex-1 py-2.5 text-sm font-bold transition-all cursor-pointer ${
+              authMode === 'signup'
+                ? 'bg-warp-500/25 text-warp-300 shadow-[0_0_10px_rgba(168,85,247,0.15)]'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+            }`}
+          >
+            Sign Up
+          </button>
+          <button
+            onClick={() => { setAuthMode('signin'); setCreateError(''); setImportError(''); setImportData(null); }}
+            className={`flex-1 py-2.5 text-sm font-bold transition-all cursor-pointer ${
+              authMode === 'signin'
+                ? 'bg-warp-500/25 text-warp-300 shadow-[0_0_10px_rgba(168,85,247,0.15)]'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+            }`}
+          >
+            Sign In
+          </button>
+        </div>
+
+        {authMode === 'signup' ? (
+          /* ─── Sign Up: Create new wallet ──────────────────── */
+          <div className="max-w-xs mx-auto space-y-3">
+            <p className="text-sm text-gray-400 mb-1">
+              Create a new wallet and receive 1,000 {'\u03A9'} airdrop.
+            </p>
+            <p className="text-[10px] text-gray-500 mb-3">
+              Ed25519 keypair + AES-256-GCM encryption
+            </p>
+            <input
+              className="warp-input text-center"
+              placeholder="Alias (optional)"
+              value={alias}
+              onChange={e => setAlias(e.target.value)}
+            />
+            <input
+              className="warp-input text-center"
+              type="password"
+              placeholder="Password (min 6 chars)"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setCreateError(''); }}
+            />
+            <input
+              className="warp-input text-center"
+              type="password"
+              placeholder="Confirm password"
+              value={passwordConfirm}
+              onChange={e => { setPasswordConfirm(e.target.value); setCreateError(''); }}
+            />
+            {createError && (
+              <p className="text-xs text-red-400">{createError}</p>
+            )}
+            <button
+              className="warp-button w-full text-base py-3"
+              onClick={async () => {
+                if (password.length < 6) {
+                  setCreateError('Password must be at least 6 characters');
+                  return;
+                }
+                if (password !== passwordConfirm) {
+                  setCreateError('Passwords do not match');
+                  return;
+                }
+                setCreating(true);
+                try {
+                  await initWallet(password, alias || undefined);
+                } finally {
+                  setCreating(false);
+                }
+              }}
+              disabled={creating || !password}
+            >
+              {creating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+                  Generating & Encrypting...
+                </span>
+              ) : (
+                <>{'\u2B21'} Create Wallet</>
+              )}
+            </button>
+          </div>
+        ) : (
+          /* ─── Sign In: Import existing wallet ─────────────── */
+          <div className="max-w-xs mx-auto space-y-3">
+            <p className="text-sm text-gray-400 mb-1">
+              Import your existing wallet backup.
+            </p>
+            <p className="text-[10px] text-gray-500 mb-3">
+              Upload your .json file and enter your password
+            </p>
             <input
               ref={fileInputRef}
               type="file"
@@ -113,24 +150,39 @@ export default function WalletView() {
             />
             {!importData ? (
               <button
-                className="warp-button w-full text-xs py-2 opacity-70 hover:opacity-100"
+                className="warp-button w-full py-4 text-sm border-dashed"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Upload Wallet File (.json)
+                {'\u2B06'} Select Wallet File (.json)
               </button>
             ) : (
-              <div className="space-y-2">
-                <p className="text-xs text-energy-400">File loaded. Enter password:</p>
+              <div className="space-y-3">
+                <div className="p-3 bg-green-500/10 border border-green-500/20 text-xs text-green-400">
+                  File loaded successfully
+                </div>
                 <input
-                  className="warp-input text-center text-xs"
+                  className="warp-input text-center"
                   type="password"
-                  placeholder="Wallet password"
+                  placeholder="Enter wallet password"
                   value={importPassword}
                   onChange={e => { setImportPassword(e.target.value); setImportError(''); }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && importPassword) {
+                      (async () => {
+                        try {
+                          const data = JSON.parse(importData!);
+                          const ok = await doImportWallet(data, importPassword);
+                          if (!ok) setImportError('Wrong password or invalid file');
+                        } catch {
+                          setImportError('Invalid wallet file');
+                        }
+                      })();
+                    }
+                  }}
                 />
                 {importError && <p className="text-xs text-red-400">{importError}</p>}
                 <button
-                  className="warp-button w-full text-xs py-2"
+                  className="warp-button w-full py-3 text-base"
                   onClick={async () => {
                     try {
                       const data = JSON.parse(importData!);
@@ -142,18 +194,18 @@ export default function WalletView() {
                   }}
                   disabled={!importPassword}
                 >
-                  Import Wallet
+                  {'\u26BF'} Unlock & Import
                 </button>
                 <button
-                  className="text-xs text-gray-500 hover:text-gray-300"
+                  className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer"
                   onClick={() => { setImportData(null); setImportPassword(''); setImportError(''); }}
                 >
-                  Cancel
+                  Choose a different file
                 </button>
               </div>
             )}
           </div>
-        </div>
+        )}
       </div>
     );
   }

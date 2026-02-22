@@ -38,20 +38,21 @@ export default function WhitepaperView() {
         </div>
       </div>
 
-      {/* Section Nav */}
-      <div className="glass-panel p-2 overflow-x-auto">
-        <div className="flex gap-1 min-w-max">
+      {/* Section Nav — wrapping grid on mobile, inline on desktop */}
+      <div className="glass-panel p-2">
+        <div className="grid grid-cols-5 gap-1 sm:flex sm:gap-1 sm:overflow-x-auto">
           {NAV.map(n => (
             <button
               key={n.id}
               onClick={() => setSection(n.id)}
-              className={`px-3 py-1.5 rounded-none text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-2 sm:py-1.5 rounded-none text-[10px] sm:text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 section === n.id
                   ? 'bg-warp-500/30 text-warp-300'
                   : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
               }`}
             >
-              {n.icon} {n.label}
+              <span className="text-sm sm:text-[11px] leading-none">{n.icon}</span>
+              <span>{n.label}</span>
             </button>
           ))}
         </div>
@@ -412,22 +413,107 @@ function CosmoLinguaSection() {
         identity that distinguishes CosmoWarp from all other systems.
       </P>
 
-      <H3>Symbolic Vocabulary</H3>
+      <H3>Core Symbols</H3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {[
-          ['\u03A9', 'Omega', 'Unit of value (Warps)'],
-          ['\u03C6', 'Phi', 'Golden ratio (Resonance Decay)'],
-          ['\u03C8', 'Psi', 'Wave function (consensus)'],
-          ['\u2B21', 'Hexagon', 'CosmoWarp identity symbol'],
-          ['\u223F', 'Wave', 'Resonance and harmony'],
-          ['\u269B', 'Atom', 'Fundamental transaction unit'],
-          ['\u2604', 'Comet', 'High-energy operations'],
-          ['\u2600', 'Sun', 'Lumina — highest level'],
-        ].map(([sym, name, desc]) => (
+          ['\u03A9', 'Omega', 'Unit of value (Warps)', 'text-warp-400'],
+          ['\u03C6', 'Phi', 'Golden ratio (Resonance Decay)', 'text-star-400'],
+          ['\u03C8', 'Psi', 'Wave function (consensus)', 'text-energy-400'],
+          ['\u2B21', 'Hexagon', 'CosmoWarp identity symbol', 'text-warp-400'],
+          ['\u223F', 'Wave', 'Resonance and harmony', 'text-energy-400'],
+          ['\u269B', 'Atom', 'Fundamental transaction unit', 'text-cyan-400'],
+          ['\u2604', 'Comet', 'High-energy operations', 'text-nebula-400'],
+          ['\u2600', 'Sun', 'Lumina \u2014 highest level', 'text-amber-300'],
+        ].map(([sym, name, desc, color]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40">
-            <span className="text-2xl text-warp-400 w-8 text-center">{sym}</span>
+            <span className={`text-2xl w-8 text-center ${color}`}>{sym}</span>
             <div>
               <p className="text-xs font-bold text-gray-200">{name}</p>
+              <p className="text-[10px] text-gray-500">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <H3>Hierarchy Glyphs</H3>
+      <P>
+        Each account level is represented by a cosmic glyph that reflects its place in the
+        progression from quantum particle to transcendent light.
+      </P>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+        {[
+          ['\u2022', 'Particle', 'Quantum seed \u2014 the origin point', 'text-gray-400'],
+          ['\u223F', 'Wave', 'Harmonic traveler through the mesh', 'text-blue-400'],
+          ['\u2605', 'Star', 'Stellar navigator \u2014 a guiding light', 'text-yellow-400'],
+          ['\u2604', 'Nebula', 'Architect shaping the cosmic fabric', 'text-purple-400'],
+          ['\u269B', 'Galaxy', 'Galactic guardian of the network', 'text-cyan-400'],
+          ['\u2B21', 'Cosmos', 'Sovereign of the cosmic order', 'text-orange-400'],
+          ['\u2600', 'Lumina', 'Transcendent \u2014 you ARE the light', 'text-amber-300'],
+        ].map(([sym, name, desc, color]) => (
+          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40">
+            <span className={`text-2xl w-8 text-center ${color}`}>{sym}</span>
+            <div>
+              <p className="text-xs font-bold text-gray-200">{name}</p>
+              <p className="text-[10px] text-gray-500">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <H3>VM Register Alphabet</H3>
+      <P>
+        The CosmoVM uses 12 Greek-letter registers, each carrying semantic meaning aligned
+        with its mathematical or physical origin.
+      </P>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+        {[
+          ['\u03A9', 'Omega', 'Accumulator'],
+          ['\u03C6', 'Phi', 'Golden ratio'],
+          ['\u03C8', 'Psi', 'Wave function'],
+          ['\u221E', 'Infinity', 'Loop counter'],
+          ['\u03B4', 'Delta', 'Difference'],
+          ['\u03BB', 'Lambda', 'Code pointer'],
+          ['\u03BC', 'Mu', 'Memory pointer'],
+          ['\u03C0', 'Pi', 'Rotation'],
+          ['\u03C3', 'Sigma', 'Summation'],
+          ['\u03B8', 'Theta', 'Direction'],
+          ['\u03B5', 'Epsilon', 'Precision'],
+          ['\u03BE', 'Xi', 'Randomness'],
+        ].map(([sym, name, desc]) => (
+          <div key={name} className="flex items-center gap-2 p-2 rounded-none bg-cosmic-900/40">
+            <code className="text-energy-400 text-sm font-bold w-6 text-center">R{sym}</code>
+            <div>
+              <p className="text-[11px] font-bold text-gray-200">{name}</p>
+              <p className="text-[10px] text-gray-500">{desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <H3>Protocol Glyphs</H3>
+      <P>
+        Every action in CosmoWarp is marked by a distinctive glyph, creating a visual language
+        that is instantly recognizable across the interface.
+      </P>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+        {[
+          ['\u25CE', 'CosmoMesh', 'DAG network'],
+          ['\u25B7', 'CosmoCode', 'VM execution'],
+          ['\u26BF', 'CosmoHash', 'Cryptography'],
+          ['\u26CF', 'Mining', 'Proof-of-computation'],
+          ['\u2197', 'Send', 'Outgoing transfer'],
+          ['\u2199', 'Receive', 'Incoming transfer'],
+          ['\u2B22', 'Warts', 'Digital artworks'],
+          ['\u2742', 'Mint', 'Art creation'],
+          ['\u21C4', 'Transfer', 'Ownership exchange'],
+          ['\u26A1', 'Energy', 'Security & power'],
+          ['\u2713', 'Confirm', 'Validated action'],
+          ['\u25C8', 'Wallet', 'Account & balance'],
+        ].map(([sym, name, desc]) => (
+          <div key={name} className="flex items-center gap-2 p-2 rounded-none bg-cosmic-900/40">
+            <span className="text-lg text-warp-400 w-6 text-center">{sym}</span>
+            <div>
+              <p className="text-[11px] font-bold text-gray-200">{name}</p>
               <p className="text-[10px] text-gray-500">{desc}</p>
             </div>
           </div>
@@ -439,7 +525,7 @@ function CosmoLinguaSection() {
         Every component of CosmoWarp follows a cosmic naming convention:
         Mesh layers are named after cosmic phenomena (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA).
         Account levels follow a cosmic progression (Particle {'\u2192'} Wave {'\u2192'} Star {'\u2192'} Nebula {'\u2192'} Galaxy {'\u2192'} Cosmos {'\u2192'} Lumina).
-        VM registers use Greek letters ({'\u03A9'}, {'\u03C6'}, {'\u03C8'}, {'\u03B4'}).
+        VM registers use Greek letters ({'\u03A9'}, {'\u03C6'}, {'\u03C8'}, {'\u03B4'}, {'\u03BB'}, {'\u03BC'}, {'\u03C0'}, {'\u03C3'}, {'\u03B8'}, {'\u03B5'}, {'\u03BE'}).
       </P>
 
       <H3>Value Exchange Philosophy</H3>

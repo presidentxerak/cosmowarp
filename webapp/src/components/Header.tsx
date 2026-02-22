@@ -51,7 +51,7 @@ export default function Header({ activeTab, setActiveTab }: {
   };
 
   return (
-    <header className="glass-panel mb-3 sm:mb-4 relative z-50" ref={menuRef}>
+    <header className="glass-panel mb-3 sm:mb-4 sticky top-0 sm:relative z-50" ref={menuRef}>
       {/* ─── Top bar ──────────────────────────────────────── */}
       <div className="flex items-center gap-3 p-3 sm:p-4">
         {/* Logo + title */}

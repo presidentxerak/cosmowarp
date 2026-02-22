@@ -79,7 +79,7 @@ function App() {
         <BackgroundErrorBoundary>
           <Suspense fallback={null}><CosmicBackground /></Suspense>
         </BackgroundErrorBoundary>
-        <div className="min-h-screen min-h-[100dvh] px-3 sm:px-4 py-3 sm:py-4 relative z-10 max-w-3xl mx-auto">
+        <div className="min-h-screen min-h-[100dvh] px-3 sm:px-[10px] pt-0 sm:pt-[10px] pb-3 sm:pb-[10px] relative z-10">
           <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
           <main className="pb-6">
