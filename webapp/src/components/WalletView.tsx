@@ -21,12 +21,13 @@ export default function WalletView() {
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState('');
   const [createError, setCreateError] = useState('');
-  const [showExport, setShowExport] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importPassword, setImportPassword] = useState('');
   const [importError, setImportError] = useState('');
   const [importData, setImportData] = useState<string | null>(null);
   const [showRestore, setShowRestore] = useState(false);
+  const [showBackupPrompt, setShowBackupPrompt] = useState(false);
+  const [backupDownloaded, setBackupDownloaded] = useState(false);
 
   // ─── No wallet: Welcome / Create screen ────────────────
   if (!wallet) {
@@ -83,6 +84,7 @@ export default function WalletView() {
                 setCreating(true);
                 try {
                   await initWallet(password, alias || undefined);
+                  setShowBackupPrompt(true);
                 } finally {
                   setCreating(false);
                 }
@@ -241,6 +243,82 @@ export default function WalletView() {
     );
   }
 
+  // ─── Backup prompt after wallet creation ─────────────
+  if (showBackupPrompt && unlocked) {
+    const handleBackupDownload = () => {
+      const data = doExportWallet();
+      if (!data) return;
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cosmowarp-wallet-${shortAddress(wallet.address)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setBackupDownloaded(true);
+    };
+
+    return (
+      <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
+        <div className="text-4xl mb-4">{'\u26A0'}</div>
+        <h2 className="text-xl font-bold text-amber-400 mb-2 font-title">Save Your Recovery Key</h2>
+        <p className="text-sm text-gray-300 mb-2">
+          Your wallet has been created successfully!
+        </p>
+        <p className="text-sm text-gray-400 mb-5">
+          Download your <span className="text-warp-300 font-bold">encrypted backup file</span> now.
+          This is the only way to recover your wallet on a new device or if your browser data is cleared.
+        </p>
+
+        <div className="p-4 bg-amber-500/10 border border-amber-500/20 mb-5 text-left space-y-2">
+          <p className="text-xs text-amber-300 font-bold">Important:</p>
+          <ul className="text-xs text-gray-400 space-y-1">
+            <li>{'\u2022'} This file is your <span className="text-amber-300">recovery key</span> (like a seed phrase)</li>
+            <li>{'\u2022'} It is encrypted with your password — keep both safe</li>
+            <li>{'\u2022'} Without this file, there is <span className="text-red-400">no way to recover</span> your wallet</li>
+            <li>{'\u2022'} Store it somewhere safe (cloud drive, USB, etc.)</li>
+          </ul>
+        </div>
+
+        <div className="max-w-xs mx-auto space-y-3">
+          {!backupDownloaded ? (
+            <button
+              className="warp-button w-full py-3 text-base"
+              onClick={handleBackupDownload}
+            >
+              {'\u2B07'} Download Backup File
+            </button>
+          ) : (
+            <>
+              <div className="p-3 bg-green-500/10 border border-green-500/20 text-sm text-green-400">
+                {'\u2713'} Backup downloaded
+              </div>
+              <button
+                className="warp-button w-full py-3 text-base"
+                onClick={() => setShowBackupPrompt(false)}
+              >
+                {'\u2B21'} Enter CosmoWarp
+              </button>
+              <button
+                className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer"
+                onClick={handleBackupDownload}
+              >
+                Download again
+              </button>
+            </>
+          )}
+
+          <button
+            onClick={() => setShowBackupPrompt(false)}
+            className="text-[10px] text-gray-600 hover:text-gray-400 cursor-pointer block mx-auto pt-2"
+          >
+            I'll do this later (not recommended)
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ─── Locked wallet: Sign In screen ───────────────────
   if (!unlocked) {
     return (
@@ -315,7 +393,6 @@ export default function WalletView() {
     a.download = `cosmowarp-wallet-${shortAddress(wallet.address)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setShowExport(false);
   };
 
   const recentTxs = wallet.transactions.slice(0, 8);
@@ -373,31 +450,23 @@ export default function WalletView() {
         </div>
       </div>
 
-      {/* Security & Export */}
-      <div className="glass-panel p-3">
-        <div className="flex items-center justify-between">
+      {/* Backup & Security */}
+      <div className="glass-panel p-4">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="text-[10px] text-gray-500">WALLET SECURITY</p>
-            <p className="text-xs text-green-400">AES-256-GCM + PBKDF2 (100k rounds)</p>
+            <p className="text-[10px] text-gray-500">RECOVERY KEY</p>
+            <p className="text-xs text-gray-400">Encrypted backup &middot; AES-256-GCM</p>
           </div>
           <button
-            onClick={() => setShowExport(!showExport)}
-            className="warp-button text-xs px-3 py-1"
+            onClick={handleExport}
+            className="warp-button text-xs px-3 py-1.5"
           >
-            {showExport ? 'Close' : 'Export'}
+            {'\u2B07'} Download Backup
           </button>
         </div>
-        {showExport && (
-          <div className="mt-3 pt-3 border-t border-white/5 text-center">
-            <p className="text-xs text-gray-400 mb-2">
-              Download an encrypted backup of your wallet.
-              You'll need your password to restore it.
-            </p>
-            <button onClick={handleExport} className="warp-button text-xs px-4 py-2">
-              {'\u2B07'} Download Encrypted Backup
-            </button>
-          </div>
-        )}
+        <p className="text-[10px] text-gray-600">
+          This file + your password = the only way to restore your wallet. Keep it safe.
+        </p>
       </div>
 
       {/* Hierarchy & Level Progress */}
