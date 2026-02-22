@@ -244,7 +244,11 @@ export default function WalletView() {
               if (password.length < 6) { setCreateError('Min 6 characters'); return; }
               if (password !== passwordConfirm) { setCreateError('Passwords do not match'); return; }
               const ok = await migrate(password);
-              if (!ok) setCreateError('Migration failed');
+              if (ok) {
+                setShowBackupPrompt(true);
+              } else {
+                setCreateError('Migration failed');
+              }
             }}
             disabled={!password}
           >
