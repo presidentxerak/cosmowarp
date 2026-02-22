@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { WalletProvider } from './context/WalletContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Header from './components/Header';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
 
@@ -75,6 +76,7 @@ function App() {
 
   return (
     <AppErrorBoundary>
+      <ThemeProvider>
       <WalletProvider>
         <BackgroundErrorBoundary>
           <Suspense fallback={null}><CosmicBackground /></Suspense>
@@ -116,6 +118,7 @@ function App() {
           </footer>
         </div>
       </WalletProvider>
+      </ThemeProvider>
     </AppErrorBoundary>
   );
 }

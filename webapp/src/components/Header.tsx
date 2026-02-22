@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Header({ activeTab, setActiveTab }: {
   activeTab: string;
@@ -6,6 +7,7 @@ export default function Header({ activeTab, setActiveTab }: {
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   const tabs = [
     { id: 'wallet', label: 'Wallet', icon: '\u25C8', group: 'main' },
@@ -119,13 +121,30 @@ export default function Header({ activeTab, setActiveTab }: {
               </div>
             )}
           </div>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer text-gray-400 hover:text-gray-200 hover:bg-white/5"
+            aria-label="Toggle theme"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? '\u2600' : '\u263D'}
+          </button>
         </nav>
 
-        {/* Mobile: active tab label + burger button */}
-        <div className="flex items-center gap-2 ml-auto sm:hidden">
+        {/* Mobile: active tab label + theme toggle + burger button */}
+        <div className="flex items-center gap-1 ml-auto sm:hidden">
           <span className="text-xs text-warp-300 font-medium">
             {activeLabel ? `${activeLabel.icon} ${activeLabel.label}` : ''}
           </span>
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-warp-300 transition-all cursor-pointer"
+            aria-label="Toggle theme"
+          >
+            <span className="text-base">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
+          </button>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center justify-center w-10 h-10 text-gray-300 hover:text-warp-300 hover:bg-white/5 transition-all cursor-pointer"

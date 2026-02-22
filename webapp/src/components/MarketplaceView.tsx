@@ -9,6 +9,7 @@ export default function MarketplaceView() {
   const {
     wallet, unlocked, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart,
+    deleteWart, editWart,
   } = useWallet();
 
   const [tab, setTab] = useState<Tab>('marketplace');
@@ -31,9 +32,19 @@ export default function MarketplaceView() {
   const [listPrice, setListPrice] = useState('');
   const [transferTo, setTransferTo] = useState('');
 
+  // Edit state
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editRoyalty, setEditRoyalty] = useState('');
+
+  // Delete state
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   if (!wallet) {
     return (
-      <div className="glass-panel p-6 text-center">
+      <div className="glass-panel p-6 text-center max-w-md mx-auto">
         <p className="text-gray-400">Create a wallet first to access the Warts marketplace.</p>
       </div>
     );
@@ -41,7 +52,7 @@ export default function MarketplaceView() {
 
   if (!unlocked) {
     return (
-      <div className="glass-panel p-6 text-center">
+      <div className="glass-panel p-6 text-center max-w-md mx-auto">
         <p className="text-gray-400">Unlock your wallet to access the Warts marketplace.</p>
       </div>
     );
@@ -121,12 +132,53 @@ export default function MarketplaceView() {
     }
   };
 
+  const handleDelete = (wart: Wart) => {
+    deleteWart(wart.id);
+    setSelectedWart(null);
+    setConfirmDelete(false);
+    setTab('collection');
+  };
+
+  const startEditing = (wart: Wart) => {
+    setEditing(true);
+    setEditTitle(wart.title);
+    setEditDescription(wart.description);
+    setEditPrice(wart.price !== null ? String(wart.price) : '');
+    setEditRoyalty(String(wart.royaltyPercent));
+  };
+
+  const handleSaveEdit = (wart: Wart) => {
+    const priceVal = editPrice ? parseFloat(editPrice) : null;
+    if (priceVal !== null && (isNaN(priceVal) || priceVal <= 0)) return;
+    const royaltyVal = parseFloat(editRoyalty);
+    if (isNaN(royaltyVal) || royaltyVal < 0 || royaltyVal > 50) return;
+
+    editWart(wart.id, {
+      title: editTitle,
+      description: editDescription,
+      price: priceVal,
+      royaltyPercent: royaltyVal,
+    });
+    setEditing(false);
+    // Update local selected wart
+    setSelectedWart({
+      ...wart,
+      title: editTitle,
+      description: editDescription,
+      price: priceVal,
+      listed: priceVal !== null,
+      royaltyPercent: wart.creator === wallet.address ? royaltyVal : wart.royaltyPercent,
+    });
+  };
+
   const openDetail = (wart: Wart) => {
     setSelectedWart(wart);
     setTab('detail');
     setBuyResult(null);
     setListPrice('');
     setTransferTo('');
+    setEditing(false);
+    setConfirmDelete(false);
   };
 
   // ─── Wart Card ─────────────────────────────────────────
@@ -171,10 +223,10 @@ export default function MarketplaceView() {
     const isCreator = wart.creator === wallet.address;
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-lg mx-auto">
         <button
-          className="text-xs text-gray-400 hover:text-gray-200"
-          onClick={() => { setTab('marketplace'); setSelectedWart(null); }}
+          className="text-xs text-gray-400 hover:text-gray-200 cursor-pointer"
+          onClick={() => { setTab('marketplace'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
         >
           {'\u2190'} Back to Marketplace
         </button>
@@ -185,104 +237,197 @@ export default function MarketplaceView() {
               <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
             </div>
 
-            <h2 className="text-xl font-bold text-warp-300 mb-1 font-title">{wart.title}</h2>
-            {wart.description && (
-              <p className="text-sm text-gray-400 mb-3">{wart.description}</p>
-            )}
-
-            <div className="grid grid-cols-2 gap-3 text-xs mb-4">
-              <div>
-                <span className="text-gray-500">Creator:</span>
-                <span className="text-warp-400 ml-1">{isCreator ? 'You' : shortAddress(wart.creator)}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Owner:</span>
-                <span className="text-energy-400 ml-1">{isMine ? 'You' : shortAddress(wart.owner)}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Royalty:</span>
-                <span className="text-star-400 ml-1">{wart.royaltyPercent}%</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Sales:</span>
-                <span className="text-nebula-400 ml-1">{wart.history.length}</span>
-              </div>
-            </div>
-
-            {/* Price & Actions */}
-            {wart.listed && wart.price !== null && (
-              <div className="glass-panel p-3 mb-3 text-center">
-                <p className="text-[10px] text-gray-500">CURRENT PRICE</p>
-                <p className="text-2xl font-bold text-energy-400">{wart.price} {'\u03A9'}</p>
-              </div>
-            )}
-
-            {buyResult && (
-              <div className={`text-sm p-3 rounded-none mb-3 ${
-                buyResult.success
-                  ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-                  : 'bg-red-500/10 border border-red-500/30 text-red-400'
-              }`}>
-                {buyResult.message}
-              </div>
-            )}
-
-            {/* Buy button (not mine, listed) */}
-            {!isMine && wart.listed && wart.price !== null && (
-              <button
-                className="warp-button w-full py-3 text-base mb-3"
-                onClick={() => handleBuy(wart)}
-                disabled={buying || wallet.balance < wart.price}
-              >
-                {buying ? 'Processing...' : `Buy for ${wart.price} \u03A9`}
-              </button>
-            )}
-
-            {/* Owner actions */}
-            {isMine && (
+            {editing ? (
+              /* ─── Edit Mode ─────────────────────────────── */
               <div className="space-y-3">
-                {wart.listed ? (
-                  <button
-                    className="warp-button w-full py-2 text-sm"
-                    onClick={() => handleDelist(wart)}
-                  >
-                    Remove from Sale
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
+                <div>
+                  <label className="text-[10px] text-gray-400 block mb-1">TITLE</label>
+                  <input
+                    className="warp-input"
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    maxLength={100}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-400 block mb-1">DESCRIPTION</label>
+                  <textarea
+                    className="warp-input min-h-[80px] resize-y"
+                    value={editDescription}
+                    onChange={e => setEditDescription(e.target.value)}
+                    maxLength={500}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-400 block mb-1">PRICE IN {'\u03A9'} (empty = not for sale)</label>
+                  <input
+                    className="warp-input"
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    step="1"
+                    value={editPrice}
+                    onChange={e => setEditPrice(e.target.value)}
+                  />
+                </div>
+                {isCreator && (
+                  <div>
+                    <label className="text-[10px] text-gray-400 block mb-1">ROYALTY (%)</label>
                     <input
-                      className="warp-input flex-1 text-sm"
+                      className="warp-input"
                       type="number"
-                      placeholder="Price in \u03A9"
-                      value={listPrice}
-                      onChange={e => setListPrice(e.target.value)}
+                      min="0"
+                      max="50"
+                      step="1"
+                      value={editRoyalty}
+                      onChange={e => setEditRoyalty(e.target.value)}
                     />
-                    <button
-                      className="warp-button text-sm px-4"
-                      onClick={() => handleList(wart)}
-                      disabled={!listPrice}
-                    >
-                      List for Sale
-                    </button>
                   </div>
                 )}
-
                 <div className="flex gap-2">
-                  <input
-                    className="warp-input flex-1 text-sm"
-                    placeholder="CW... (recipient address)"
-                    value={transferTo}
-                    onChange={e => setTransferTo(e.target.value)}
-                  />
                   <button
-                    className="warp-button text-sm px-4"
-                    onClick={() => handleTransfer(wart)}
-                    disabled={!transferTo}
+                    className="warp-button flex-1 py-2 text-sm"
+                    onClick={() => handleSaveEdit(wart)}
+                    disabled={!editTitle.trim()}
                   >
-                    Gift
+                    Save Changes
+                  </button>
+                  <button
+                    className="warp-button flex-1 py-2 text-sm opacity-60 hover:opacity-100"
+                    onClick={() => setEditing(false)}
+                  >
+                    Cancel
                   </button>
                 </div>
               </div>
+            ) : (
+              /* ─── View Mode ─────────────────────────────── */
+              <>
+                <h2 className="text-xl font-bold text-warp-300 mb-1 font-title">{wart.title}</h2>
+                {wart.description && (
+                  <p className="text-sm text-gray-400 mb-3">{wart.description}</p>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 text-xs mb-4">
+                  <div>
+                    <span className="text-gray-500">Creator:</span>
+                    <span className="text-warp-400 ml-1">{isCreator ? 'You' : shortAddress(wart.creator)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Owner:</span>
+                    <span className="text-energy-400 ml-1">{isMine ? 'You' : shortAddress(wart.owner)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Royalty:</span>
+                    <span className="text-star-400 ml-1">{wart.royaltyPercent}%</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Sales:</span>
+                    <span className="text-nebula-400 ml-1">{wart.history.length}</span>
+                  </div>
+                </div>
+
+                {/* Price & Actions */}
+                {wart.listed && wart.price !== null && (
+                  <div className="glass-panel p-3 mb-3 text-center">
+                    <p className="text-[10px] text-gray-500">CURRENT PRICE</p>
+                    <p className="text-2xl font-bold text-energy-400">{wart.price} {'\u03A9'}</p>
+                  </div>
+                )}
+
+                {buyResult && (
+                  <div className={`text-sm p-3 rounded-none mb-3 ${
+                    buyResult.success
+                      ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+                      : 'bg-red-500/10 border border-red-500/30 text-red-400'
+                  }`}>
+                    {buyResult.message}
+                  </div>
+                )}
+
+                {/* Buy button (not mine, listed) */}
+                {!isMine && wart.listed && wart.price !== null && (
+                  <button
+                    className="warp-button w-full py-3 text-base mb-3"
+                    onClick={() => handleBuy(wart)}
+                    disabled={buying || wallet.balance < wart.price}
+                  >
+                    {buying ? 'Processing...' : `Buy for ${wart.price} \u03A9`}
+                  </button>
+                )}
+
+                {/* Owner actions */}
+                {isMine && (
+                  <div className="space-y-3">
+                    {/* Edit & Delete buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        className="warp-button flex-1 py-2 text-sm"
+                        onClick={() => startEditing(wart)}
+                      >
+                        {'\u270E'} Edit
+                      </button>
+                      {!confirmDelete ? (
+                        <button
+                          className="flex-1 py-2 text-sm font-bold border transition-all cursor-pointer bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                          onClick={() => setConfirmDelete(true)}
+                        >
+                          {'\u2716'} Delete
+                        </button>
+                      ) : (
+                        <button
+                          className="flex-1 py-2 text-sm font-bold border transition-all cursor-pointer bg-red-500/30 border-red-500/50 text-red-300 hover:bg-red-500/40"
+                          onClick={() => handleDelete(wart)}
+                        >
+                          Confirm Delete?
+                        </button>
+                      )}
+                    </div>
+
+                    {wart.listed ? (
+                      <button
+                        className="warp-button w-full py-2 text-sm"
+                        onClick={() => handleDelist(wart)}
+                      >
+                        Remove from Sale
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          className="warp-input flex-1 text-sm"
+                          type="number"
+                          placeholder="Price in \u03A9"
+                          value={listPrice}
+                          onChange={e => setListPrice(e.target.value)}
+                        />
+                        <button
+                          className="warp-button text-sm px-4"
+                          onClick={() => handleList(wart)}
+                          disabled={!listPrice}
+                        >
+                          List for Sale
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <input
+                        className="warp-input flex-1 text-sm"
+                        placeholder="CW... (recipient address)"
+                        value={transferTo}
+                        onChange={e => setTransferTo(e.target.value)}
+                      />
+                      <button
+                        className="warp-button text-sm px-4"
+                        onClick={() => handleTransfer(wart)}
+                        disabled={!transferTo}
+                      >
+                        Gift
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -346,7 +491,7 @@ export default function MarketplaceView() {
       {/* ─── Marketplace Tab ───────────────────────────────── */}
       {tab === 'marketplace' && (
         <>
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-4 text-center">
             <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u2B22'} Warts Marketplace</h2>
             <p className="text-xs text-gray-500">
               Unique digital artworks stored on the CosmoWarp protocol. Buy, sell, and collect Warts.
@@ -378,7 +523,7 @@ export default function MarketplaceView() {
       {/* ─── Collection Tab ────────────────────────────────── */}
       {tab === 'collection' && (
         <>
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-4 text-center">
             <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u25C8'} My Collection</h2>
             <p className="text-xs text-gray-500">
               Warts you own ({myCollection.length}) and created ({myCreated.length})
@@ -408,13 +553,13 @@ export default function MarketplaceView() {
       {/* ─── Create Tab ────────────────────────────────────── */}
       {tab === 'create' && (
         <div className="glass-panel p-5">
-          <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u2742'} Create a Wart</h2>
-          <p className="text-xs text-gray-500 mb-4">
+          <h2 className="text-lg font-bold text-warp-300 mb-1 font-title text-center">{'\u2742'} Create a Wart</h2>
+          <p className="text-xs text-gray-500 mb-4 text-center">
             Mint a unique digital artwork on the CosmoWarp protocol.
             You'll earn royalties on every resale.
           </p>
 
-          <div className="space-y-4 max-w-md">
+          <div className="space-y-4 max-w-md mx-auto">
             {/* Image Upload */}
             <div>
               <label className="text-[10px] text-gray-400 block mb-1">ARTWORK IMAGE (max 500KB)</label>
@@ -426,12 +571,12 @@ export default function MarketplaceView() {
                 onChange={handleImageUpload}
               />
               {imageData ? (
-                <div className="relative">
+                <div className="flex flex-col items-center">
                   <div className="aspect-square max-w-[200px] overflow-hidden rounded-none bg-cosmic-900/60 mb-2">
                     <img src={imageData} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                   <button
-                    className="text-xs text-gray-500 hover:text-gray-300"
+                    className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer"
                     onClick={() => setImageData('')}
                   >
                     Remove
@@ -531,8 +676,8 @@ export default function MarketplaceView() {
           </div>
 
           {/* Protocol info */}
-          <div className="mt-6 pt-4 border-t border-white/5">
-            <h3 className="text-sm font-bold text-gray-300 mb-2">How Warts Work</h3>
+          <div className="mt-6 pt-4 border-t border-white/5 max-w-md mx-auto">
+            <h3 className="text-sm font-bold text-gray-300 mb-2 text-center">How Warts Work</h3>
             <div className="text-[11px] text-gray-500 space-y-1">
               <p>1. Upload your artwork and set a title</p>
               <p>2. Your Wart is minted and stored on the CosmoWarp protocol</p>

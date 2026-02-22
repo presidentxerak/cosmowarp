@@ -35,6 +35,61 @@
   }
 }
 
+/* ─── Light / Dark theme system ──────────────────────── */
+
+/* Dark mode (default) — pure black */
+[data-theme="dark"] {
+  --color-cosmic-900: #000000;
+  --color-cosmic-800: #080808;
+  --color-cosmic-700: #111111;
+  --color-cosmic-600: #1a1a1a;
+  --color-cosmic-500: #222222;
+}
+
+[data-theme="dark"] body {
+  background-color: #000000;
+}
+
+/* Light mode — pure white */
+[data-theme="light"] {
+  /* Swap gray scale so text is readable on white */
+  --color-gray-50: #030712;
+  --color-gray-100: #111827;
+  --color-gray-200: #1f2937;
+  --color-gray-300: #374151;
+  --color-gray-400: #4b5563;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #9ca3af;
+  --color-gray-700: #d1d5db;
+  --color-gray-800: #e5e7eb;
+  --color-gray-900: #f3f4f6;
+  --color-gray-950: #f9fafb;
+
+  /* Cosmic backgrounds become light */
+  --color-cosmic-900: #f0f0f5;
+  --color-cosmic-800: #f5f5fa;
+  --color-cosmic-700: #fafaff;
+  --color-cosmic-600: #e8e8f0;
+  --color-cosmic-500: #d8d8e8;
+
+  /* Darken accent colors for white bg contrast */
+  --color-warp-500: #9333ea;
+  --color-warp-400: #a855f7;
+  --color-warp-300: #7c3aed;
+  --color-energy-500: #0891b2;
+  --color-energy-400: #0e7490;
+  --color-energy-300: #06b6d4;
+  --color-nebula-400: #db2777;
+  --color-star-400: #ca8a04;
+}
+
+[data-theme="light"] body {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+/* ─── Animations ─────────────────────────────────────── */
+
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.3); }
   50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.2); }
@@ -54,12 +109,22 @@
 .animate-warp-spin { animation: warp-spin 8s linear infinite; }
 .animate-float { animation: float 3s ease-in-out infinite; }
 
+/* ─── Glass Panel ────────────────────────────────────── */
+
 .glass-panel {
-  background: rgba(13, 16, 48, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 0;
 }
+
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(168, 85, 247, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Buttons ────────────────────────────────────────── */
 
 .warp-button {
   @apply px-4 py-2 font-bold text-sm transition-all duration-200 cursor-pointer;
@@ -75,9 +140,22 @@
 .warp-button:active { transform: scale(0.95); }
 .warp-button:disabled { opacity: 0.4; cursor: not-allowed; }
 
+[data-theme="light"] .warp-button {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.25);
+  color: #7c3aed;
+}
+[data-theme="light"] .warp-button:hover {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.15);
+}
+
+/* ─── Inputs ─────────────────────────────────────────── */
+
 .warp-input {
   @apply w-full px-3 py-2 text-sm transition-all duration-200;
-  background: rgba(10, 10, 26, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(168, 85, 247, 0.2);
   color: #f3f4f6;
 }
@@ -88,7 +166,19 @@
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
 }
 
-/* Smooth page transitions */
+[data-theme="light"] .warp-input {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(168, 85, 247, 0.15);
+  color: #111827;
+}
+[data-theme="light"] .warp-input::placeholder { color: #9ca3af; }
+[data-theme="light"] .warp-input:focus {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.1);
+}
+
+/* ─── Page transitions ───────────────────────────────── */
+
 main > * {
   animation: fadeIn 0.2s ease-out;
 }
@@ -97,13 +187,15 @@ main > * {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mobile-optimized scrollbar */
+/* ─── Scrollbar ──────────────────────────────────────── */
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 0; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(168, 85, 247, 0.5); }
 
-/* Safe area padding for mobile notches */
+/* ─── Safe area for mobile notches ───────────────────── */
+
 @supports (padding: env(safe-area-inset-bottom)) {
   body {
     padding-top: env(safe-area-inset-top);
@@ -113,28 +205,43 @@ main > * {
   }
 }
 
-/* Touch-friendly targets on mobile */
+/* ─── Mobile optimizations ───────────────────────────── */
+
 @media (max-width: 640px) {
   .warp-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
   .warp-input { min-height: 44px; font-size: 16px; }
   .glass-panel { border-radius: 0; }
   table { font-size: 11px; }
   pre { font-size: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-  /* Tighter spacing on small screens */
   .glass-panel { padding-left: 12px; padding-right: 12px; }
 }
 
-/* Prevent zoom on input focus on iOS */
 @media (max-width: 640px) {
   input[type="text"], input[type="number"], input, textarea, select {
     font-size: 16px;
   }
 }
 
-/* Ensure text doesn't overflow on small screens */
 .truncate-mobile {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ─── Hide 3D background in light mode ───────────────── */
+
+[data-theme="light"] canvas {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* ─── Light mode status color overrides ──────────────── */
+
+[data-theme="light"] .animate-pulse-glow {
+  animation: pulse-glow-light 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-light {
+  0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.15); }
+  50% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.25), 0 0 30px rgba(168, 85, 247, 0.1); }
 }

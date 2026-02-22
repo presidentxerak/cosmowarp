@@ -46,6 +46,8 @@ interface WalletContextType {
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
   transferWart: (wartId: string, toAddress: string) => Promise<{ success: boolean; error?: string }>;
+  deleteWart: (wartId: string) => boolean;
+  editWart: (wartId: string, updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number }) => boolean;
   refreshWarts: () => void;
 }
 
@@ -376,6 +378,25 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, [wallet]);
 
+  const doDeleteWart = useCallback((wartId: string): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const ok = engine.delete(wartId, wallet.address);
+    if (ok) refreshWartsState(wallet.address);
+    return ok;
+  }, [wallet]);
+
+  const doEditWart = useCallback((
+    wartId: string,
+    updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number },
+  ): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const ok = engine.update(wartId, wallet.address, updates);
+    if (ok) refreshWartsState(wallet.address);
+    return ok;
+  }, [wallet]);
+
   const refreshWarts = useCallback(() => {
     refreshWartsState(wallet?.address);
   }, [wallet]);
@@ -388,7 +409,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       doExportWallet, doImportWallet,
       send, mine, refreshTxs, refreshStats, unlockAdmin, unlockCreator,
       warts, marketplace, myCollection, myCreated,
-      mintWart, buyWart, listWart, delistWart, transferWart, refreshWarts,
+      mintWart, buyWart, listWart, delistWart, transferWart,
+      deleteWart: doDeleteWart, editWart: doEditWart, refreshWarts,
     }}>
       {children}
     </WalletContext.Provider>

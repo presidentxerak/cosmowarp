@@ -170,6 +170,38 @@ export class WartEngine {
     return true;
   }
 
+  // ─── Delete ─────────────────────────────────────────
+
+  delete(wartId: string, ownerAddress: string): boolean {
+    const wart = this.warts.get(wartId);
+    if (!wart || wart.owner !== ownerAddress) return false;
+    this.warts.delete(wartId);
+    this.save();
+    return true;
+  }
+
+  // ─── Update ─────────────────────────────────────────
+
+  update(
+    wartId: string,
+    ownerAddress: string,
+    updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number },
+  ): boolean {
+    const wart = this.warts.get(wartId);
+    if (!wart || wart.owner !== ownerAddress) return false;
+    if (updates.title !== undefined) wart.title = updates.title.trim();
+    if (updates.description !== undefined) wart.description = updates.description.trim();
+    if (updates.price !== undefined) {
+      wart.price = updates.price;
+      wart.listed = updates.price !== null;
+    }
+    if (updates.royaltyPercent !== undefined && wart.creator === ownerAddress) {
+      wart.royaltyPercent = Math.max(0, Math.min(50, updates.royaltyPercent));
+    }
+    this.save();
+    return true;
+  }
+
   // ─── Queries ─────────────────────────────────────────
 
   getWart(id: string): Wart | undefined {
