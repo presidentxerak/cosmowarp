@@ -1,66 +1,99 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function Header({ activeTab, setActiveTab }: {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const tabs = [
-    { id: 'wallet', label: '\u25C8 Wallet', group: 'main' },
-    { id: 'send', label: '\u2197 Send', group: 'main' },
-    { id: 'mine', label: '\u26CF Mine', group: 'main' },
-    { id: 'warts', label: '\u2B22 Warts', group: 'main' },
-    { id: 'feed', label: '\u25CE Feed', group: 'main' },
-    { id: 'whitepaper', label: '\u2B21 Paper', group: 'info' },
-    { id: 'sdk', label: '\u269B SDK', group: 'info' },
-    { id: 'admin', label: '\u26BF Admin', group: 'more' },
-    { id: 'console', label: '> Console', group: 'more' },
+    { id: 'wallet', label: 'Wallet', icon: '\u25C8', group: 'main' },
+    { id: 'send', label: 'Send', icon: '\u2197', group: 'main' },
+    { id: 'mine', label: 'Mine', icon: '\u26CF', group: 'main' },
+    { id: 'warts', label: 'Warts', icon: '\u2B22', group: 'main' },
+    { id: 'feed', label: 'Feed', icon: '\u25CE', group: 'main' },
+    { id: 'whitepaper', label: 'Paper', icon: '\u2B21', group: 'info' },
+    { id: 'sdk', label: 'SDK', icon: '\u269B', group: 'info' },
+    { id: 'admin', label: 'Admin', icon: '\u26BF', group: 'more' },
+    { id: 'console', label: 'Console', icon: '>', group: 'more' },
   ];
 
   const mainTabs = tabs.filter(t => t.group === 'main');
   const moreTabs = tabs.filter(t => t.group !== 'main');
+  const activeLabel = tabs.find(t => t.id === activeTab);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [menuOpen]);
+
+  // Close menu on escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [menuOpen]);
+
+  const selectTab = (id: string) => {
+    setActiveTab(id);
+    setMenuOpen(false);
+  };
 
   return (
-    <header className="glass-panel mb-4 p-3 sm:p-4 relative z-50">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+    <header className="glass-panel mb-3 sm:mb-4 relative z-50" ref={menuRef}>
+      {/* ─── Top bar ──────────────────────────────────────── */}
+      <div className="flex items-center gap-3 p-3 sm:p-4">
+        {/* Logo + title */}
         <div className="flex items-center gap-2 shrink-0">
           <img
             src={import.meta.env.BASE_URL + 'logo.png'}
             alt="CosmoWarp"
-            className="w-8 h-8 animate-float cursor-pointer"
-            onClick={() => setActiveTab('whitepaper')}
+            className="w-7 h-7 sm:w-8 sm:h-8 animate-float cursor-pointer"
+            onClick={() => selectTab('whitepaper')}
           />
-          <div>
-            <h1 className="text-base font-bold text-warp-300 leading-tight cursor-pointer font-title"
-              onClick={() => setActiveTab('whitepaper')}>
+          <div className="hidden sm:block">
+            <h1
+              className="text-base font-bold text-warp-300 leading-tight cursor-pointer font-title"
+              onClick={() => selectTab('whitepaper')}
+            >
               CosmoWarp
             </h1>
             <p className="text-[10px] text-gray-500">Terminal v2.0</p>
           </div>
         </div>
 
-        <nav className="flex gap-1 flex-wrap sm:ml-auto items-center">
-          {/* Main tabs always visible */}
+        {/* Desktop nav (hidden on mobile) */}
+        <nav className="hidden sm:flex gap-1 ml-auto items-center">
           {mainTabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setMenuOpen(false); }}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-none text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
+              onClick={() => selectTab(tab.id)}
+              className={`px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-warp-500/30 text-warp-300 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
                   : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
               }`}
             >
-              {tab.label}
+              {tab.icon} {tab.label}
             </button>
           ))}
 
-          {/* More menu */}
+          {/* Desktop "More" dropdown */}
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-none text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                 moreTabs.some(t => t.id === activeTab)
                   ? 'bg-warp-500/30 text-warp-300'
                   : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
@@ -69,28 +102,69 @@ export default function Header({ activeTab, setActiveTab }: {
               {'\u2261'} More
             </button>
             {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-full mt-1 z-20 glass-panel p-1 min-w-[140px]">
-                  {moreTabs.map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => { setActiveTab(tab.id); setMenuOpen(false); }}
-                      className={`w-full text-left px-3 py-2 rounded-none text-xs transition-all cursor-pointer ${
-                        activeTab === tab.id
-                          ? 'bg-warp-500/30 text-warp-300'
-                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </>
+              <div className="absolute right-0 top-full mt-1 z-20 glass-panel p-1 min-w-[140px]">
+                {moreTabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => selectTab(tab.id)}
+                    className={`w-full text-left px-3 py-2 text-xs transition-all cursor-pointer ${
+                      activeTab === tab.id
+                        ? 'bg-warp-500/30 text-warp-300'
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                    }`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </nav>
+
+        {/* Mobile: active tab label + burger button */}
+        <div className="flex items-center gap-2 ml-auto sm:hidden">
+          <span className="text-xs text-warp-300 font-medium">
+            {activeLabel ? `${activeLabel.icon} ${activeLabel.label}` : ''}
+          </span>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center justify-center w-10 h-10 text-gray-300 hover:text-warp-300 hover:bg-white/5 transition-all cursor-pointer"
+            aria-label="Menu"
+          >
+            {menuOpen ? (
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 5l10 10M15 5L5 15" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 5h14M3 10h14M3 15h14" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* ─── Mobile dropdown menu ─────────────────────────── */}
+      {menuOpen && (
+        <div className="sm:hidden border-t border-white/5">
+          <nav className="p-2 grid grid-cols-3 gap-1">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => selectTab(tab.id)}
+                className={`flex flex-col items-center gap-1 py-3 px-2 text-center transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-warp-500/20 text-warp-300 shadow-[0_0_8px_rgba(168,85,247,0.2)]'
+                    : 'text-gray-400 active:bg-white/5'
+                }`}
+              >
+                <span className="text-lg leading-none">{tab.icon}</span>
+                <span className="text-[11px] font-medium">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
