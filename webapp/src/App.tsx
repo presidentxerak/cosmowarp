@@ -68,6 +68,8 @@ import FeedView from './components/FeedView';
 import DevView from './components/DevView';
 import WhitepaperView from './components/WhitepaperView';
 import SettingsView from './components/SettingsView';
+import LandingView from './components/LandingView';
+import HelpView from './components/HelpView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('wallet');
@@ -83,11 +85,13 @@ function App() {
           <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
           <main className="pb-6">
+            {activeTab === 'landing' && <LandingView onNavigate={setActiveTab} />}
             {activeTab === 'wallet' && <WalletView />}
             {activeTab === 'warts' && <MarketplaceView />}
             {activeTab === 'cosmochat' && <CosmoChatView />}
             {activeTab === 'feed' && <FeedView />}
             {activeTab === 'settings' && <SettingsView />}
+            {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
             {activeTab === 'dev' && <DevView />}
             {activeTab === 'whitepaper' && <WhitepaperView />}
           </main>

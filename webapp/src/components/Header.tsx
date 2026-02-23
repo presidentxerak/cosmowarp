@@ -15,6 +15,7 @@ export default function Header({ activeTab, setActiveTab }: {
     { id: 'cosmochat', label: 'CosmoChat', icon: '\u25CE', group: 'main' },
     { id: 'feed', label: 'Feed', icon: '\u25C9', group: 'main' },
     { id: 'settings', label: 'Settings', icon: '\u2699', group: 'main' },
+    { id: 'help', label: 'Help', icon: '\u2753', group: 'info' },
     { id: 'whitepaper', label: 'Paper', icon: '\u2B21', group: 'info' },
     { id: 'dev', label: 'Dev', icon: '\u269B', group: 'more' },
   ];
@@ -60,12 +61,12 @@ export default function Header({ activeTab, setActiveTab }: {
             src={import.meta.env.BASE_URL + 'logo.svg'}
             alt="CosmoWarp"
             className="w-7 h-7 sm:w-8 sm:h-8 animate-float cursor-pointer"
-            onClick={() => selectTab('whitepaper')}
+            onClick={() => selectTab('landing')}
           />
           <div className="hidden sm:block">
             <h1
               className="text-base font-bold text-gray-100 leading-tight cursor-pointer font-title"
-              onClick={() => selectTab('whitepaper')}
+              onClick={() => selectTab('landing')}
             >
               CosmoWarp
             </h1>
