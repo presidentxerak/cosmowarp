@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
+import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 
 type Tab = 'marketplace' | 'collection' | 'create' | 'detail';
@@ -21,6 +22,9 @@ export default function MarketplaceView() {
   const [imageData, setImageData] = useState('');
   const [price, setPrice] = useState('');
   const [royalty, setRoyalty] = useState('5');
+  const [editionType, setEditionType] = useState<'unique' | 'limited' | 'unlimited'>('unique');
+  const [maxEditions, setMaxEditions] = useState('');
+  const [durationHours, setDurationHours] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
@@ -81,12 +85,22 @@ export default function MarketplaceView() {
     const royaltyVal = parseFloat(royalty);
     if (isNaN(royaltyVal) || royaltyVal < 0 || royaltyVal > 50) { setCreateError('Royalty must be 0-50%'); return; }
 
+    const maxEd = editionType === 'limited' ? parseInt(maxEditions) : null;
+    if (editionType === 'limited' && (!maxEd || maxEd < 1)) {
+      setCreateError('Limited editions require a max count (1+)');
+      return;
+    }
+
+    const durH = durationHours ? parseFloat(durationHours) : null;
+    if (durH !== null && durH <= 0) { setCreateError('Duration must be positive'); return; }
+
     setCreating(true);
     setCreateError('');
     try {
-      const wart = await mintWart(title, description, imageData, priceVal, royaltyVal);
-      setCreateSuccess(`Minted "${wart.title}"!`);
+      const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH);
+      setCreateSuccess(`Minted "${wart.title}" (Edition #${wart.editionNumber})!`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
+      setEditionType('unique'); setMaxEditions(''); setDurationHours('');
       setTimeout(() => setCreateSuccess(''), 3000);
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : 'Mint failed');
@@ -160,7 +174,6 @@ export default function MarketplaceView() {
       royaltyPercent: royaltyVal,
     });
     setEditing(false);
-    // Update local selected wart
     setSelectedWart({
       ...wart,
       title: editTitle,
@@ -181,46 +194,97 @@ export default function MarketplaceView() {
     setConfirmDelete(false);
   };
 
-  // ─── Wart Card ─────────────────────────────────────────
-  const WartCard = ({ wart, showBuy = false }: { wart: Wart; showBuy?: boolean }) => (
-    <div
-      className="glass-panel p-3 cursor-pointer hover:border-warp-400/40 transition-all"
-      onClick={() => openDetail(wart)}
-    >
-      <div className="aspect-square mb-2 overflow-hidden rounded-none bg-cosmic-900/60">
-        <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
-      </div>
-      <h4 className="text-sm font-bold text-gray-200 truncate">{wart.title}</h4>
-      <p className="text-[10px] text-gray-500 truncate">
-        by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}
-      </p>
-      <div className="flex items-center justify-between mt-2">
-        {wart.listed && wart.price !== null ? (
-          <span className="text-sm font-bold text-energy-400">{wart.price} {'\u03A9'}</span>
+  // ─── Rarity Badge ────────────────────────────────────────
+  const RarityBadge = ({ wart }: { wart: Wart }) => {
+    const rarity = computeRarity(wart);
+    const cfg = RARITY_CONFIG[rarity];
+    return (
+      <span className={`text-[10px] font-bold ${cfg.color}`}>
+        {cfg.badge} {cfg.label}
+      </span>
+    );
+  };
+
+  // ─── Edition Info ─────────────────────────────────────────
+  const EditionInfo = ({ wart, compact = false }: { wart: Wart; compact?: boolean }) => {
+    const expired = isExpired(wart);
+    return (
+      <div className={`flex items-center gap-2 flex-wrap ${compact ? 'text-[10px]' : 'text-xs'}`}>
+        {wart.editionType === 'unique' ? (
+          <span className="text-amber-400">1/1</span>
+        ) : wart.editionType === 'limited' && wart.maxEditions !== null ? (
+          <span className="text-purple-400">#{wart.editionNumber}/{wart.maxEditions}</span>
         ) : (
-          <span className="text-xs text-gray-500">Not listed</span>
+          <span className="text-gray-500">#{wart.editionNumber}</span>
         )}
-        {wart.history.length > 0 && (
-          <span className="text-[10px] text-gray-500">{wart.history.length} sales</span>
+        {wart.availableUntil !== null && (
+          expired ? (
+            <span className="text-red-400">{'\u23F0'} Expired</span>
+          ) : (
+            <span className="text-energy-400">{'\u23F0'} {formatTimeRemaining(wart.availableUntil)}</span>
+          )
         )}
       </div>
-      {showBuy && wart.listed && wart.price !== null && wart.owner !== wallet.address && (
-        <button
-          className="warp-button w-full text-xs mt-2 py-1.5"
-          onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-          disabled={buying || wallet.balance < wart.price}
-        >
-          Buy for {wart.price} {'\u03A9'}
-        </button>
-      )}
-    </div>
-  );
+    );
+  };
+
+  // ─── Wart Card ─────────────────────────────────────────
+  const WartCard = ({ wart, showBuy = false }: { wart: Wart; showBuy?: boolean }) => {
+    const expired = isExpired(wart);
+
+    return (
+      <div
+        className={`glass-panel p-3 cursor-pointer hover:border-warp-400/40 transition-all ${expired ? 'opacity-50' : ''}`}
+        onClick={() => openDetail(wart)}
+      >
+        <div className="aspect-square mb-2 overflow-hidden rounded-none bg-cosmic-900/60 relative">
+          <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
+          {/* Rarity badge overlay */}
+          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur-sm">
+            <RarityBadge wart={wart} />
+          </div>
+          {expired && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <span className="text-red-400 text-xs font-bold">EXPIRED</span>
+            </div>
+          )}
+        </div>
+        <h4 className="text-sm font-bold text-gray-200 truncate">{wart.title}</h4>
+        <p className="text-[10px] text-gray-500 truncate">
+          by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}
+        </p>
+        <EditionInfo wart={wart} compact />
+        <div className="flex items-center justify-between mt-2">
+          {wart.listed && wart.price !== null ? (
+            <span className="text-sm font-bold text-energy-400">{wart.price} {'\u03A9'}</span>
+          ) : (
+            <span className="text-xs text-gray-500">Not listed</span>
+          )}
+          {wart.history.length > 0 && (
+            <span className="text-[10px] text-gray-500">{wart.history.length} sales</span>
+          )}
+        </div>
+        {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet.address && (
+          <button
+            className="warp-button w-full text-xs mt-2 py-1.5"
+            onClick={e => { e.stopPropagation(); handleBuy(wart); }}
+            disabled={buying || wallet.balance < wart.price}
+          >
+            Buy for {wart.price} {'\u03A9'}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   // ─── Detail View ───────────────────────────────────────
   if (tab === 'detail' && selectedWart) {
     const wart = selectedWart;
     const isMine = wart.owner === wallet.address;
     const isCreator = wart.creator === wallet.address;
+    const expired = isExpired(wart);
+    const rarity = computeRarity(wart);
+    const rarityCfg = RARITY_CONFIG[rarity];
 
     return (
       <div className="space-y-4 max-w-lg mx-auto">
@@ -233,8 +297,13 @@ export default function MarketplaceView() {
 
         <div className="glass-panel p-4">
           <div className="max-w-md mx-auto">
-            <div className="aspect-square mb-4 overflow-hidden rounded-none bg-cosmic-900/60">
+            <div className="aspect-square mb-4 overflow-hidden rounded-none bg-cosmic-900/60 relative">
               <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
+              {expired && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <span className="text-red-400 text-lg font-bold">EXPIRED</span>
+                </div>
+              )}
             </div>
 
             {editing ? (
@@ -303,6 +372,14 @@ export default function MarketplaceView() {
             ) : (
               /* ─── View Mode ─────────────────────────────── */
               <>
+                {/* Rarity + Edition header */}
+                <div className="flex items-center gap-3 mb-2">
+                  <span className={`text-sm font-bold ${rarityCfg.color}`}>
+                    {rarityCfg.badge} {rarityCfg.label}
+                  </span>
+                  <EditionInfo wart={wart} />
+                </div>
+
                 <h2 className="text-xl font-bold text-gray-100 mb-1 font-title">{wart.title}</h2>
                 {wart.description && (
                   <p className="text-sm text-gray-400 mb-3">{wart.description}</p>
@@ -325,7 +402,34 @@ export default function MarketplaceView() {
                     <span className="text-gray-500">Sales:</span>
                     <span className="text-nebula-400 ml-1">{wart.history.length}</span>
                   </div>
+                  <div>
+                    <span className="text-gray-500">Edition:</span>
+                    <span className="text-gray-300 ml-1">
+                      {wart.editionType === 'unique' ? '1/1 Unique' :
+                       wart.editionType === 'limited' ? `#${wart.editionNumber}/${wart.maxEditions}` :
+                       `#${wart.editionNumber} (Unlimited)`}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Created:</span>
+                    <span className="text-gray-300 ml-1">{formatDateFR(wart.createdAt)}</span>
+                  </div>
                 </div>
+
+                {/* Time limit info */}
+                {wart.availableUntil !== null && (
+                  <div className={`text-xs p-2 mb-3 border ${
+                    expired
+                      ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                      : 'bg-energy-500/10 border-energy-500/20 text-energy-400'
+                  }`}>
+                    {expired ? (
+                      <>{'\u23F0'} Expired on {formatDateFR(wart.availableUntil)} (Paris)</>
+                    ) : (
+                      <>{'\u23F0'} Available until {formatDateFR(wart.availableUntil)} (Paris) — {formatTimeRemaining(wart.availableUntil)} remaining</>
+                    )}
+                  </div>
+                )}
 
                 {/* Price & Actions */}
                 {wart.listed && wart.price !== null && (
@@ -345,8 +449,8 @@ export default function MarketplaceView() {
                   </div>
                 )}
 
-                {/* Buy button (not mine, listed) */}
-                {!isMine && wart.listed && wart.price !== null && (
+                {/* Buy button (not mine, listed, not expired) */}
+                {!isMine && wart.listed && wart.price !== null && !expired && (
                   <button
                     className="warp-button w-full py-3 text-base mb-3"
                     onClick={() => handleBuy(wart)}
@@ -445,7 +549,7 @@ export default function MarketplaceView() {
                       {shortAddress(h.from)} {'\u2192'} {shortAddress(h.to)}
                     </p>
                     <p className="text-[10px] text-gray-500">
-                      {new Date(h.timestamp).toLocaleDateString()}
+                      {formatDateFR(h.timestamp)}
                     </p>
                   </div>
                   <span className="font-bold text-energy-400 shrink-0">
@@ -459,6 +563,9 @@ export default function MarketplaceView() {
       </div>
     );
   }
+
+  // ─── Filter expired from marketplace ──────────────────────
+  const activeMarketplace = marketplace.filter(w => !isExpired(w));
 
   // ─── Tab Navigation ────────────────────────────────────
   const tabs: { id: Tab; label: string }[] = [
@@ -498,7 +605,7 @@ export default function MarketplaceView() {
             </p>
           </div>
 
-          {marketplace.length === 0 ? (
+          {activeMarketplace.length === 0 ? (
             <div className="glass-panel p-8 text-center">
               <p className="text-2xl mb-2">{'\u2742'}</p>
               <p className="text-gray-400 text-sm">No Warts listed yet.</p>
@@ -512,7 +619,7 @@ export default function MarketplaceView() {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {marketplace.map(wart => (
+              {activeMarketplace.map(wart => (
                 <WartCard key={wart.id} wart={wart} showBuy />
               ))}
             </div>
@@ -616,6 +723,66 @@ export default function MarketplaceView() {
               />
             </div>
 
+            {/* ─── Edition Type ─────────────────────────── */}
+            <div>
+              <label className="text-[10px] text-gray-400 block mb-1">EDITION TYPE</label>
+              <div className="flex gap-2">
+                {(['unique', 'limited', 'unlimited'] as const).map(et => (
+                  <button
+                    key={et}
+                    className={`flex-1 py-2 text-xs font-medium border transition-all cursor-pointer ${
+                      editionType === et
+                        ? 'bg-warp-500/30 border-warp-500/50 text-warp-300'
+                        : 'bg-transparent border-white/10 text-gray-400 hover:border-white/20'
+                    }`}
+                    onClick={() => setEditionType(et)}
+                  >
+                    {et === 'unique' ? '\u2726 Unique (1/1)' :
+                     et === 'limited' ? '\u2605 Limited' :
+                     '\u25CE Unlimited'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Max Editions (only for limited) */}
+            {editionType === 'limited' && (
+              <div>
+                <label className="text-[10px] text-gray-400 block mb-1">MAX EDITIONS</label>
+                <input
+                  className="warp-input"
+                  type="number"
+                  placeholder="e.g. 10"
+                  min="1"
+                  step="1"
+                  value={maxEditions}
+                  onChange={e => setMaxEditions(e.target.value)}
+                />
+                <p className="text-[10px] text-gray-500 mt-1">
+                  How many copies can be minted.
+                </p>
+              </div>
+            )}
+
+            {/* ─── Time Limit ──────────────────────────── */}
+            <div>
+              <label className="text-[10px] text-gray-400 block mb-1">TIME LIMIT (optional, in hours)</label>
+              <input
+                className="warp-input"
+                type="number"
+                placeholder="e.g. 24 (leave empty = forever)"
+                min="0"
+                step="1"
+                value={durationHours}
+                onChange={e => setDurationHours(e.target.value)}
+              />
+              <p className="text-[10px] text-gray-500 mt-1">
+                {durationHours
+                  ? `Expires ${formatDateFR(Date.now() + parseFloat(durationHours) * 3600000)} (Paris). Rarity increases as deadline approaches.`
+                  : 'Leave empty for no time limit. Time-limited Warts gain rarity as deadline approaches.'}
+              </p>
+            </div>
+
             {/* Price */}
             <div>
               <label className="text-[10px] text-gray-400 block mb-1">PRICE IN {'\u03A9'} (leave empty = not for sale)</label>
@@ -646,6 +813,23 @@ export default function MarketplaceView() {
               <p className="text-[10px] text-gray-500 mt-1">
                 You'll receive {royalty || 5}% of every future resale.
               </p>
+            </div>
+
+            {/* Rarity Preview */}
+            <div className="text-xs p-3 border border-white/5 bg-cosmic-900/40">
+              <span className="text-gray-500">Estimated rarity: </span>
+              {(() => {
+                const previewRarity = editionType === 'unique' ? 'legendary'
+                  : editionType === 'limited' && maxEditions
+                    ? parseInt(maxEditions) <= 10 ? 'epic'
+                    : parseInt(maxEditions) <= 50 ? 'rare'
+                    : parseInt(maxEditions) <= 200 ? 'uncommon'
+                    : 'common'
+                  : 'common';
+                const cfg = RARITY_CONFIG[previewRarity];
+                return <span className={`font-bold ${cfg.color}`}>{cfg.badge} {cfg.label}</span>;
+              })()}
+              {durationHours && <span className="text-energy-400 ml-2">(+time bonus near deadline)</span>}
             </div>
 
             {createError && (
@@ -680,11 +864,11 @@ export default function MarketplaceView() {
             <h3 className="text-sm font-bold text-gray-300 mb-2 text-center">How Warts Work</h3>
             <div className="text-[11px] text-gray-500 space-y-1">
               <p>1. Upload your artwork and set a title</p>
-              <p>2. Your Wart is minted and stored on the CosmoWarp protocol</p>
-              <p>3. List it for sale on the marketplace at your price</p>
-              <p>4. Buyers pay in Warp ({'\u03A9'}) — ownership transfers instantly</p>
-              <p>5. You earn royalties on every future resale ({royalty || 5}%)</p>
-              <p>6. All transfers are recorded in the CosmoMesh DAG</p>
+              <p>2. Choose edition type: Unique (1/1), Limited, or Unlimited</p>
+              <p>3. Set an optional time limit — rarity increases as deadline approaches</p>
+              <p>4. List it for sale on the marketplace at your price</p>
+              <p>5. Buyers pay in Warp ({'\u03A9'}) — ownership transfers instantly</p>
+              <p>6. You earn royalties on every future resale ({royalty || 5}%)</p>
             </div>
           </div>
         </div>

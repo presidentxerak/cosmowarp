@@ -89,6 +89,17 @@ export function formatTimeRemaining(until: number): string {
   return `${mins}m`;
 }
 
+export function formatDateFR(timestamp: number): string {
+  return new Intl.DateTimeFormat('fr-FR', {
+    timeZone: 'Europe/Paris',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(timestamp));
+}
+
 // ─── Storage ─────────────────────────────────────────────
 
 const STORAGE_KEY = 'cosmowarp_warts';
