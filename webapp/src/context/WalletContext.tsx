@@ -49,6 +49,7 @@ interface WalletContextType {
   deleteWart: (wartId: string) => boolean;
   editWart: (wartId: string, updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number }) => boolean;
   addWartComment: (wartId: string, content: string) => boolean;
+  verifyWartCertificate: (wartId: string) => Promise<{ valid: boolean; reason: string }>;
   refreshWarts: () => void;
 }
 
@@ -267,7 +268,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   ): Promise<Wart> => {
     if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');
     const engine = getWartEngine();
-    const wart = engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours, mediaType, audioCover);
+    const wart = await engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours, mediaType, audioCover, wallet.privateKey);
 
     // Record mint transaction
     const result = await sendWarps(wallet, wallet.address, 0);
@@ -412,6 +413,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return !!comment;
   }, [wallet]);
 
+  const verifyWartCertificate = useCallback(async (wartId: string): Promise<{ valid: boolean; reason: string }> => {
+    const engine = getWartEngine();
+    return engine.verifyCertificate(wartId);
+  }, []);
+
   const refreshWarts = useCallback(() => {
     refreshWartsState(wallet?.address);
   }, [wallet]);
@@ -426,7 +432,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       warts, marketplace, myCollection, myCreated,
       mintWart, buyWart, listWart, delistWart, transferWart,
       deleteWart: doDeleteWart, editWart: doEditWart,
-      addWartComment: doAddWartComment, refreshWarts,
+      addWartComment: doAddWartComment, verifyWartCertificate, refreshWarts,
     }}>
       {children}
     </WalletContext.Provider>

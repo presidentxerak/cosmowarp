@@ -1,0 +1,24 @@
+{
+  "name": "CosmoWarp Terminal",
+  "short_name": "CosmoWarp",
+  "description": "CosmoWarp Terminal — Warp Wallet, Wart Market & CosmoChat",
+  "start_url": "/cosmowarp/",
+  "scope": "/cosmowarp/",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#0a0a1a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

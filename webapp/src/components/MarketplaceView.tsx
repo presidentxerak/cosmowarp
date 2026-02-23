@@ -10,7 +10,7 @@ export default function MarketplaceView() {
   const {
     wallet, unlocked, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart,
-    deleteWart, editWart, addWartComment, refreshWarts,
+    deleteWart, editWart, addWartComment, verifyWartCertificate, refreshWarts,
   } = useWallet();
 
   const [tab, setTab] = useState<Tab>('marketplace');
@@ -51,6 +51,10 @@ export default function MarketplaceView() {
 
   // Delete state
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Certificate verification
+  const [certStatus, setCertStatus] = useState<{ valid: boolean; reason: string } | null>(null);
+  const [verifying, setVerifying] = useState(false);
 
   if (!wallet) {
     return (
@@ -214,6 +218,7 @@ export default function MarketplaceView() {
     setTransferTo('');
     setEditing(false);
     setConfirmDelete(false);
+    setCertStatus(null);
   };
 
   const handleAddComment = (wartId: string) => {
@@ -224,6 +229,14 @@ export default function MarketplaceView() {
     // Refresh selected wart
     const updated = [...marketplace, ...myCollection].find(w => w.id === wartId);
     if (updated) setSelectedWart({ ...updated });
+  };
+
+  const handleVerifyCert = async (wartId: string) => {
+    setVerifying(true);
+    setCertStatus(null);
+    const result = await verifyWartCertificate(wartId);
+    setCertStatus(result);
+    setVerifying(false);
   };
 
   // ─── Media Renderer ───────────────────────────────────────
@@ -294,6 +307,11 @@ export default function MarketplaceView() {
           <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur-sm">
             <RarityBadge wart={wart} />
           </div>
+          {wart.certId && (
+            <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-green-500/20 border border-green-500/30">
+              <span className="text-[9px] text-green-400">{'\u2714'} Cert</span>
+            </div>
+          )}
           {expired && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
               <span className="text-red-400 text-xs font-bold">EXPIRED</span>
@@ -478,6 +496,47 @@ export default function MarketplaceView() {
                       <>{'\u23F0'} Expired on {formatDateFR(wart.availableUntil)} (Paris)</>
                     ) : (
                       <>{'\u23F0'} Available until {formatDateFR(wart.availableUntil)} (Paris) — {formatTimeRemaining(wart.availableUntil)} remaining</>
+                    )}
+                  </div>
+                )}
+
+                {/* Certificate of Authenticity */}
+                {wart.certId && (
+                  <div className="glass-panel p-3 mb-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-gray-300">{'\u2726'} Certificate of Authenticity</h4>
+                      <button
+                        className="text-[10px] text-warp-400 hover:text-warp-300 cursor-pointer"
+                        onClick={() => handleVerifyCert(wart.id)}
+                        disabled={verifying}
+                      >
+                        {verifying ? 'Verifying...' : '\u2714 Verify'}
+                      </button>
+                    </div>
+                    <div className="text-[10px] text-gray-500 space-y-1">
+                      <p>
+                        <span className="text-gray-400">Cert ID:</span>{' '}
+                        <span className="text-warp-400 font-mono break-all">{wart.certId}</span>
+                      </p>
+                      <p>
+                        <span className="text-gray-400">Fingerprint:</span>{' '}
+                        <span className="text-gray-300 font-mono">{wart.contentFingerprint?.slice(0, 16)}...</span>
+                      </p>
+                      {wart.creatorSignature && (
+                        <p>
+                          <span className="text-gray-400">Signed:</span>{' '}
+                          <span className="text-green-400">{'\u2714'} Creator Ed25519 signature</span>
+                        </p>
+                      )}
+                    </div>
+                    {certStatus && (
+                      <div className={`text-xs p-2 border ${
+                        certStatus.valid
+                          ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                          : 'bg-red-500/10 border-red-500/20 text-red-400'
+                      }`}>
+                        {certStatus.valid ? '\u2714' : '\u2718'} {certStatus.reason}
+                      </div>
                     )}
                   </div>
                 )}

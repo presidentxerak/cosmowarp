@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
-import type { ChatPost, ChatChannel, ChatMessage, DirectThread } from '../engine/cosmochat';
+import type { ChatPost, ChatChannel, DirectThread } from '../engine/cosmochat';
 
 type Tab = 'timeline' | 'explore' | 'channels' | 'messages' | 'bookmarks';
 
