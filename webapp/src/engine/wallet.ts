@@ -10,6 +10,8 @@
 
 import {
   generateKeyPair,
+  generateKeyPairFromSeed,
+  deriveWalletSeed,
   isValidAddress,
   encryptPrivateKey,
   decryptPrivateKey,
@@ -511,6 +513,162 @@ export async function importWallet(data: WalletExport, password: string): Promis
   saveWallet(wallet);
 
   return wallet;
+}
+
+// ─── CosmoID: Deterministic Wallet (username + password) ─
+
+/**
+ * Create or recover a wallet deterministically from username + password.
+ * Same credentials on any device → same wallet address & keys.
+ *
+ * - If a wallet with the same address exists locally → unlock it
+ * - If no wallet exists → create a new one (with airdrop)
+ * - If a DIFFERENT wallet exists → throw (user must clear first)
+ */
+export async function loginCosmoID(
+  username: string,
+  password: string
+): Promise<WarpWallet> {
+  if (!username.trim()) throw new Error('Username is required');
+  if (password.length < 6) throw new Error('Password must be at least 6 characters');
+
+  // Derive deterministic key pair
+  const seed = await deriveWalletSeed(username, password);
+  const keyPair = await generateKeyPairFromSeed(seed);
+
+  // Check if this wallet already exists locally
+  const existing = loadWallet();
+  if (existing) {
+    if (existing.address === keyPair.address) {
+      // Same wallet — just unlock it
+      existing.privateKey = keyPair.privateKey;
+      enrichWalletWithHierarchy(existing);
+      return existing;
+    }
+    // Different wallet exists
+    throw new Error('A different wallet exists on this device. Go to Settings to sign out first.');
+  }
+
+  // No wallet exists — create new deterministic wallet
+  const encrypted = await encryptPrivateKey(keyPair.privateKey, password);
+  const alias = username.trim();
+
+  const mesh = getMesh();
+  const consensus = getConsensus();
+  const tokenomics = getTokenomics();
+  const hierarchy = getHierarchy();
+  const registry = getRegistry();
+
+  // First wallet = admin
+  const existingAdmin = storage.getItem(ADMIN_ADDRESS_KEY);
+  const isFirstWallet = !existingAdmin;
+  if (isFirstWallet) {
+    storage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
+    await registry.initAdmin(keyPair.address);
+  }
+
+  const airdropAmount = tokenomics.processAirdrop(keyPair.address);
+  const adminBonus = isFirstWallet ? 999000 : 0;
+  const totalInitialBalance = airdropAmount + adminBonus;
+
+  await mesh.createGenesis(keyPair.address, totalInitialBalance);
+
+  consensus.registerValidator({
+    id: keyPair.address,
+    publicKey: keyPair.publicKey,
+    stake: totalInitialBalance,
+    isLocal: true,
+  });
+
+  hierarchy.getProfile(keyPair.address);
+
+  registry.registerAccount({
+    address: keyPair.address,
+    publicKey: keyPair.publicKey,
+    alias,
+    createdAt: Date.now(),
+    level: 0,
+    balance: totalInitialBalance,
+    totalTransactions: 0,
+    lastActive: Date.now(),
+    status: 'active',
+    flags: isFirstWallet ? ['admin', 'creator'] : [],
+  });
+
+  const levelDef = HIERARCHY_LEVELS[0];
+  const transactions: Transaction[] = [{
+    id: genId(),
+    from: 'COSMO_GENESIS',
+    to: keyPair.address,
+    amount: airdropAmount,
+    timestamp: Date.now(),
+    signature: 'genesis',
+    type: 'airdrop',
+    memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+    resonanceScore: 1.0,
+    confirmations: 0,
+    layer: 6,
+    meshDepth: 0,
+  }];
+
+  if (adminBonus > 0) {
+    transactions.unshift({
+      id: genId(),
+      from: 'COSMO_ADMIN_GRANT',
+      to: keyPair.address,
+      amount: adminBonus,
+      timestamp: Date.now(),
+      signature: 'admin_grant',
+      type: 'genesis',
+      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
+      resonanceScore: 1.0,
+      confirmations: 0,
+      layer: 6,
+      meshDepth: 0,
+    });
+  }
+
+  const wallet: WarpWallet = {
+    address: keyPair.address,
+    privateKey: keyPair.privateKey,
+    publicKey: keyPair.publicKey,
+    encryptedPrivateKey: encrypted,
+    balance: totalInitialBalance,
+    transactions,
+    createdAt: Date.now(),
+    alias,
+    level: 0,
+    levelName: levelDef.name,
+    levelTitle: levelDef.title,
+    levelSymbol: levelDef.symbol,
+    rewardMultiplier: levelDef.rewardMultiplier,
+    streakDays: 0,
+    xp: 0,
+    isAdmin: isFirstWallet,
+  };
+
+  saveWallet(wallet);
+  saveEngines();
+
+  return wallet;
+}
+
+/**
+ * Clear the local wallet data (sign out).
+ * Returns true if a wallet was cleared.
+ */
+export function clearWallet(): boolean {
+  const existing = storage.getItem(STORAGE_KEY);
+  if (!existing) return false;
+  storage.removeItem(STORAGE_KEY);
+  // Reset singletons so next login starts fresh
+  meshInstance = null;
+  consensusInstance = null;
+  tokenomicsInstance = null;
+  hierarchyInstance = null;
+  registryInstance = null;
+  securityInstance = null;
+  return true;
 }
 
 // ─── Send Warps ──────────────────────────────────────────

@@ -7,6 +7,8 @@ import { runMiningProgram, MINING_PROGRAMS } from '../engine/miner';
 
 type WalletTab = 'overview' | 'send' | 'mine';
 type Difficulty = 'basic' | 'crypto' | 'deep';
+type AuthTab = 'signup' | 'signin';
+type SignInMethod = 'cosmoid' | 'cosmolink' | 'file';
 
 const DIFFICULTY_INFO: Record<Difficulty, { label: string; reward: string; color: string }> = {
   basic: { label: 'Basic', reward: 'Low', color: 'text-energy-400' },
@@ -23,8 +25,8 @@ export default function WalletView() {
   const {
     wallet, unlocked, needsMigration,
     meshStats, supplyInfo, levelProgress,
-    initWallet, unlock, lock, migrate, mine, send,
-    doExportWallet, doImportWallet,
+    cosmoIDLogin, unlock, lock, migrate, mine, send,
+    doExportWallet, doImportWallet, doImportCosmoLink,
   } = useWallet();
 
   const [alias, setAlias] = useState('');
@@ -40,9 +42,20 @@ export default function WalletView() {
   const [importPassword, setImportPassword] = useState('');
   const [importError, setImportError] = useState('');
   const [importData, setImportData] = useState<string | null>(null);
-  const [authTab, setAuthTab] = useState<'signup' | 'signin'>('signup');
-  const [showBackupPrompt, setShowBackupPrompt] = useState(false);
-  const [backupDownloaded, setBackupDownloaded] = useState(false);
+  const [authTab, setAuthTab] = useState<AuthTab>('signup');
+  const [signInMethod, setSignInMethod] = useState<SignInMethod>('cosmoid');
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  // CosmoLink import state
+  const [cosmoLinkInput, setCosmoLinkInput] = useState('');
+  const [cosmoLinkPassword, setCosmoLinkPassword] = useState('');
+  const [cosmoLinkError, setCosmoLinkError] = useState('');
+
+  // Sign In CosmoID state
+  const [signInUsername, setSignInUsername] = useState('');
+  const [signInPassword, setSignInPassword] = useState('');
+  const [signInError, setSignInError] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
 
   // Wallet sub-tabs
   const [walletTab, setWalletTab] = useState<WalletTab>('overview');
@@ -60,6 +73,59 @@ export default function WalletView() {
   const [miningLogs, setMiningLogs] = useState<MiningLog[]>([]);
   const [lastReward, setLastReward] = useState<number | null>(null);
   const miningLogRef = useRef<HTMLDivElement>(null);
+
+  // Spinner component
+  const Spinner = () => (
+    <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+  );
+
+  // ─── CosmoID Sign Up handler ────────────────────────────
+  const handleSignUp = async () => {
+    if (!alias.trim()) { setCreateError('Username is required for CosmoID'); return; }
+    if (password.length < 6) { setCreateError('Password must be at least 6 characters'); return; }
+    if (password !== passwordConfirm) { setCreateError('Passwords do not match'); return; }
+    setCreating(true);
+    setCreateError('');
+    try {
+      const result = await cosmoIDLogin(alias.trim(), password);
+      if (result.success) {
+        setShowWelcome(true);
+      } else {
+        setCreateError(result.error || 'Sign up failed');
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // ─── CosmoID Sign In handler ────────────────────────────
+  const handleCosmoIDSignIn = async () => {
+    if (!signInUsername.trim()) { setSignInError('Username is required'); return; }
+    if (signInPassword.length < 6) { setSignInError('Password must be at least 6 characters'); return; }
+    setSigningIn(true);
+    setSignInError('');
+    try {
+      const result = await cosmoIDLogin(signInUsername.trim(), signInPassword);
+      if (!result.success) {
+        setSignInError(result.error || 'Sign in failed');
+      }
+    } finally {
+      setSigningIn(false);
+    }
+  };
+
+  // ─── CosmoLink Import handler ────────────────────────────
+  const handleCosmoLinkImport = async () => {
+    if (!cosmoLinkInput.trim()) { setCosmoLinkError('Paste your CosmoLink code'); return; }
+    if (!cosmoLinkPassword) { setCosmoLinkError('Password is required'); return; }
+    setCosmoLinkError('');
+    try {
+      const ok = await doImportCosmoLink(cosmoLinkInput.trim(), cosmoLinkPassword);
+      if (!ok) setCosmoLinkError('Invalid CosmoLink or wrong password');
+    } catch {
+      setCosmoLinkError('Failed to import CosmoLink');
+    }
+  };
 
   // ─── No wallet: Sign Up / Sign In screen ───────────────
   if (!wallet) {
@@ -102,70 +168,174 @@ export default function WalletView() {
             <p className="text-sm text-gray-400 mb-1">
               Create your wallet and receive 1,000 {'\u03A9'} airdrop.
             </p>
-            <input className="warp-input text-center" placeholder="Choose a username (optional)" value={alias} onChange={e => setAlias(e.target.value)} />
-            <input className="warp-input text-center" type="password" placeholder="Password (min 6 chars)" value={password} onChange={e => { setPassword(e.target.value); setCreateError(''); }} />
-            <input className="warp-input text-center" type="password" placeholder="Confirm password" value={passwordConfirm} onChange={e => { setPasswordConfirm(e.target.value); setCreateError(''); }} />
+
+            <div className="p-3 bg-warp-500/5 border border-warp-500/20 text-left">
+              <p className="text-[10px] text-warp-300 font-bold mb-1">CosmoID</p>
+              <p className="text-[10px] text-gray-400">Same username + password = same wallet on any device. No backup file needed.</p>
+            </div>
+
+            <input
+              className="warp-input text-center"
+              placeholder="Choose a username"
+              value={alias}
+              onChange={e => { setAlias(e.target.value); setCreateError(''); }}
+            />
+            <input
+              className="warp-input text-center"
+              type="password"
+              placeholder="Password (min 6 chars)"
+              value={password}
+              onChange={e => { setPassword(e.target.value); setCreateError(''); }}
+            />
+            <input
+              className="warp-input text-center"
+              type="password"
+              placeholder="Confirm password"
+              value={passwordConfirm}
+              onChange={e => { setPasswordConfirm(e.target.value); setCreateError(''); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSignUp(); }}
+            />
             {createError && <p className="text-xs text-red-400">{createError}</p>}
             <button
               className="warp-button w-full text-base py-3"
-              onClick={async () => {
-                if (password.length < 6) { setCreateError('Password must be at least 6 characters'); return; }
-                if (password !== passwordConfirm) { setCreateError('Passwords do not match'); return; }
-                setCreating(true);
-                try { await initWallet(password, alias || undefined); setShowBackupPrompt(true); } finally { setCreating(false); }
-              }}
-              disabled={creating || !password}
+              onClick={handleSignUp}
+              disabled={creating || !alias.trim() || !password}
             >
               {creating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
-                  Creating...
+                  <Spinner />
+                  Generating keys...
                 </span>
               ) : <>{'\u2B21'} Sign Up</>}
             </button>
-            <p className="text-[10px] text-gray-600 pt-2">Ed25519 keypair encrypted with AES-256-GCM</p>
+            <p className="text-[10px] text-gray-600 pt-2">Ed25519 + PBKDF2 (600K rounds) + AES-256-GCM</p>
           </div>
         ) : (
           <div className="max-w-xs mx-auto space-y-3">
-            <p className="text-sm text-gray-400 mb-1">Restore your wallet from your backup file.</p>
-            <p className="text-[10px] text-gray-500 mb-2">Select the encrypted .json recovery key you downloaded when creating your account.</p>
-            <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={e => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => setImportData(reader.result as string);
-              reader.readAsText(file);
-            }} />
-            {!importData ? (
-              <button className="warp-button w-full py-4 text-sm border-dashed" onClick={() => fileInputRef.current?.click()}>
-                {'\u2B06'} Select Recovery Key (.json)
-              </button>
-            ) : (
+            {/* Sign In method selector */}
+            <div className="flex gap-1 mb-2">
+              {([
+                { id: 'cosmoid' as SignInMethod, label: 'CosmoID', icon: '\u2B21' },
+                { id: 'cosmolink' as SignInMethod, label: 'CosmoLink', icon: '\u26A1' },
+                { id: 'file' as SignInMethod, label: 'File', icon: '\u2B07' },
+              ]).map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setSignInMethod(m.id)}
+                  className={`flex-1 py-2 text-[11px] font-medium transition-all cursor-pointer ${
+                    signInMethod === m.id
+                      ? 'bg-warp-500/20 text-warp-300 border border-warp-500/30'
+                      : 'text-gray-500 hover:text-gray-300 border border-white/5 hover:bg-white/5'
+                  }`}
+                >
+                  {m.icon} {m.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ─── CosmoID Sign In ────────────────────────── */}
+            {signInMethod === 'cosmoid' && (
               <div className="space-y-3">
-                <div className="p-3 bg-green-500/10 border border-green-500/20 text-xs text-green-400">{'\u2713'} Recovery key loaded</div>
+                <p className="text-sm text-gray-400">Sign in with your CosmoID credentials.</p>
+                <p className="text-[10px] text-gray-500">Same username + password = same wallet, any device.</p>
                 <input
-                  className="warp-input text-center" type="password" placeholder="Your wallet password"
-                  value={importPassword}
-                  onChange={e => { setImportPassword(e.target.value); setImportError(''); }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && importPassword) {
-                      (async () => {
-                        try { const data = JSON.parse(importData!); const ok = await doImportWallet(data, importPassword); if (!ok) setImportError('Wrong password or invalid file'); }
-                        catch { setImportError('Invalid wallet file'); }
-                      })();
-                    }
-                  }}
+                  className="warp-input text-center"
+                  placeholder="Username"
+                  value={signInUsername}
+                  onChange={e => { setSignInUsername(e.target.value); setSignInError(''); }}
                 />
-                {importError && <p className="text-xs text-red-400">{importError}</p>}
-                <button className="warp-button w-full py-3 text-base" onClick={async () => {
-                  try { const data = JSON.parse(importData!); const ok = await doImportWallet(data, importPassword); if (!ok) setImportError('Wrong password or invalid file'); }
-                  catch { setImportError('Invalid wallet file'); }
-                }} disabled={!importPassword}>Sign In</button>
+                <input
+                  className="warp-input text-center"
+                  type="password"
+                  placeholder="Password"
+                  value={signInPassword}
+                  onChange={e => { setSignInPassword(e.target.value); setSignInError(''); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleCosmoIDSignIn(); }}
+                />
+                {signInError && <p className="text-xs text-red-400">{signInError}</p>}
+                <button
+                  className="warp-button w-full py-3 text-base"
+                  onClick={handleCosmoIDSignIn}
+                  disabled={!signInUsername.trim() || !signInPassword || signingIn}
+                >
+                  {signingIn ? (
+                    <span className="flex items-center justify-center gap-2"><Spinner />Deriving keys...</span>
+                  ) : 'Sign In'}
+                </button>
               </div>
             )}
-            <div className="p-3 bg-cosmic-900/40 border border-white/5 text-left mt-2">
-              <p className="text-[10px] text-gray-500">{'\u2139'} Your recovery key (.json) was downloaded when you created your account. It is your only way to restore your wallet — like a seed phrase.</p>
-            </div>
+
+            {/* ─── CosmoLink Import ──────────────────────── */}
+            {signInMethod === 'cosmolink' && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-400">Paste a CosmoLink code from another device.</p>
+                <p className="text-[10px] text-gray-500">CosmoLink is an encrypted transfer code you can share via any messaging app.</p>
+                <textarea
+                  className="warp-input text-center text-xs min-h-[80px] resize-none"
+                  placeholder="Paste CWLINK-... code here"
+                  value={cosmoLinkInput}
+                  onChange={e => { setCosmoLinkInput(e.target.value); setCosmoLinkError(''); }}
+                />
+                <input
+                  className="warp-input text-center"
+                  type="password"
+                  placeholder="Your wallet password"
+                  value={cosmoLinkPassword}
+                  onChange={e => { setCosmoLinkPassword(e.target.value); setCosmoLinkError(''); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleCosmoLinkImport(); }}
+                />
+                {cosmoLinkError && <p className="text-xs text-red-400">{cosmoLinkError}</p>}
+                <button
+                  className="warp-button w-full py-3 text-base"
+                  onClick={handleCosmoLinkImport}
+                  disabled={!cosmoLinkInput.trim() || !cosmoLinkPassword}
+                >
+                  {'\u26A1'} Import
+                </button>
+              </div>
+            )}
+
+            {/* ─── File Import (legacy) ──────────────────── */}
+            {signInMethod === 'file' && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-400">Restore from a recovery file.</p>
+                <p className="text-[10px] text-gray-500">Legacy method: upload the .json file exported from a previous wallet.</p>
+                <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setImportData(reader.result as string);
+                  reader.readAsText(file);
+                }} />
+                {!importData ? (
+                  <button className="warp-button w-full py-4 text-sm border-dashed" onClick={() => fileInputRef.current?.click()}>
+                    {'\u2B06'} Select Recovery Key (.json)
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-green-500/10 border border-green-500/20 text-xs text-green-400">{'\u2713'} File loaded</div>
+                    <input
+                      className="warp-input text-center" type="password" placeholder="Your wallet password"
+                      value={importPassword}
+                      onChange={e => { setImportPassword(e.target.value); setImportError(''); }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && importPassword) {
+                          (async () => {
+                            try { const data = JSON.parse(importData!); const ok = await doImportWallet(data, importPassword); if (!ok) setImportError('Wrong password or invalid file'); }
+                            catch { setImportError('Invalid wallet file'); }
+                          })();
+                        }
+                      }}
+                    />
+                    {importError && <p className="text-xs text-red-400">{importError}</p>}
+                    <button className="warp-button w-full py-3 text-base" onClick={async () => {
+                      try { const data = JSON.parse(importData!); const ok = await doImportWallet(data, importPassword); if (!ok) setImportError('Wrong password or invalid file'); }
+                      catch { setImportError('Invalid wallet file'); }
+                    }} disabled={!importPassword}>Import</button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -186,53 +356,54 @@ export default function WalletView() {
             if (password.length < 6) { setCreateError('Min 6 characters'); return; }
             if (password !== passwordConfirm) { setCreateError('Passwords do not match'); return; }
             const ok = await migrate(password);
-            if (ok) setShowBackupPrompt(true); else setCreateError('Migration failed');
+            if (!ok) setCreateError('Migration failed');
           }} disabled={!password}>{'\u26BF'} Encrypt & Secure Wallet</button>
         </div>
       </div>
     );
   }
 
-  // ─── Backup prompt ─────────────────────────────────────
-  if (showBackupPrompt && unlocked) {
-    const handleBackupDownload = () => {
-      const data = doExportWallet();
-      if (!data) return;
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `cosmowarp-wallet-${shortAddress(wallet.address)}.json`; a.click();
-      URL.revokeObjectURL(url);
-      setBackupDownloaded(true);
-    };
-
+  // ─── Welcome screen (after CosmoID signup) ──────────────
+  if (showWelcome && unlocked) {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
-        <div className="text-4xl mb-4">{'\u26A0'}</div>
-        <h2 className="text-xl font-bold text-amber-400 mb-2 font-title">Save Your Recovery Key</h2>
-        <p className="text-sm text-gray-300 mb-2">Your wallet has been created successfully!</p>
-        <p className="text-sm text-gray-400 mb-5">Download your <span className="text-warp-300 font-bold">encrypted backup file</span> now. This is the only way to recover your wallet on a new device or if your browser data is cleared.</p>
-        <div className="p-4 bg-amber-500/10 border border-amber-500/20 mb-5 text-left space-y-2">
-          <p className="text-xs text-amber-300 font-bold">Important:</p>
-          <ul className="text-xs text-gray-400 space-y-1">
-            <li>{'\u2022'} This file is your <span className="text-amber-300">recovery key</span> (like a seed phrase)</li>
-            <li>{'\u2022'} It is encrypted with your password — keep both safe</li>
-            <li>{'\u2022'} Without this file, there is <span className="text-red-400">no way to recover</span> your wallet</li>
-            <li>{'\u2022'} Store it somewhere safe (cloud drive, USB, etc.)</li>
-          </ul>
+        <div className="text-4xl mb-4">{'\u2B21'}</div>
+        <h2 className="text-xl font-bold text-warp-300 mb-2 font-title">Welcome to CosmoWarp!</h2>
+        <p className="text-sm text-gray-300 mb-2">Your wallet is ready.</p>
+
+        <div className="p-4 bg-warp-500/10 border border-warp-500/20 mb-5 text-left space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-lg text-green-400 shrink-0 mt-0.5">{'\u2713'}</span>
+            <div>
+              <p className="text-xs text-gray-200 font-bold">CosmoID Active</p>
+              <p className="text-[10px] text-gray-400">Your wallet is linked to your username + password. Sign in with the same credentials on any device to access the same wallet.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-lg text-warp-400 shrink-0 mt-0.5">{'\u26BF'}</span>
+            <div>
+              <p className="text-xs text-gray-200 font-bold">No backup file needed</p>
+              <p className="text-[10px] text-gray-400">Unlike traditional crypto wallets, you don't need to save a seed phrase or download a file. Just remember your username and password.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-lg text-energy-400 shrink-0 mt-0.5">{'\u26A1'}</span>
+            <div>
+              <p className="text-xs text-gray-200 font-bold">Quick device transfer</p>
+              <p className="text-[10px] text-gray-400">Need to transfer your local data? Generate a CosmoLink in Settings and paste it on your other device.</p>
+            </div>
+          </div>
         </div>
-        <div className="max-w-xs mx-auto space-y-3">
-          {!backupDownloaded ? (
-            <button className="warp-button w-full py-3 text-base" onClick={handleBackupDownload}>{'\u2B07'} Download Backup File</button>
-          ) : (
-            <>
-              <div className="p-3 bg-green-500/10 border border-green-500/20 text-sm text-green-400">{'\u2713'} Backup downloaded</div>
-              <button className="warp-button w-full py-3 text-base" onClick={() => setShowBackupPrompt(false)}>{'\u2B21'} Enter CosmoWarp</button>
-              <button className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer" onClick={handleBackupDownload}>Download again</button>
-            </>
-          )}
-          <button onClick={() => setShowBackupPrompt(false)} className="text-[10px] text-gray-600 hover:text-gray-400 cursor-pointer block mx-auto pt-2">I'll do this later (not recommended)</button>
+
+        <div className="text-xs text-gray-400 mb-5">
+          <span className="text-energy-400 font-bold">+{wallet.balance.toLocaleString()} {'\u03A9'}</span> airdrop received
         </div>
+
+        <button className="warp-button w-full py-3 text-base" onClick={() => setShowWelcome(false)}>
+          {'\u2B21'} Enter CosmoWarp
+        </button>
+
+        <p className="text-[10px] text-gray-600 mt-3">Ed25519 + PBKDF2 (600K) + AES-256-GCM</p>
       </div>
     );
   }
@@ -255,7 +426,7 @@ export default function WalletView() {
           />
           {unlockError && <p className="text-xs text-red-400">{unlockError}</p>}
           <button className="warp-button w-full py-3 text-base" onClick={async () => { setUnlocking(true); const ok = await unlock(unlockPassword); if (!ok) setUnlockError('Wrong password'); setUnlocking(false); setUnlockPassword(''); }} disabled={!unlockPassword || unlocking}>
-            {unlocking ? <span className="flex items-center justify-center gap-2"><span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />Signing in...</span> : 'Sign In'}
+            {unlocking ? <span className="flex items-center justify-center gap-2"><Spinner />Unlocking...</span> : 'Unlock'}
           </button>
         </div>
       </div>
@@ -380,8 +551,9 @@ export default function WalletView() {
               {wallet.balance.toLocaleString()} <span className="text-2xl">{'\u03A9'}</span>
             </div>
             <p className="text-[10px] text-gray-500">WARP ENERGY UNITS</p>
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
               {wallet.isAdmin && <span className="text-[10px] px-2 py-0.5 rounded-none bg-amber-500/20 text-amber-400 border border-amber-500/30">ADMIN</span>}
+              <span className="text-[10px] px-2 py-0.5 rounded-none bg-warp-500/20 text-warp-300 border border-warp-500/30">{'\u2B21'} CosmoID</span>
               <span className="text-[10px] px-2 py-0.5 rounded-none bg-green-500/20 text-green-400 border border-green-500/30">{'\u26BF'} ENCRYPTED</span>
               <button onClick={lock} className="text-[10px] px-2 py-0.5 rounded-none bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors cursor-pointer">{'\u274C'} Lock</button>
             </div>
@@ -396,16 +568,16 @@ export default function WalletView() {
             </div>
           </div>
 
-          {/* Backup */}
+          {/* Sync info */}
           <div className="glass-panel p-4">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-[10px] text-gray-500">RECOVERY KEY</p>
-                <p className="text-xs text-gray-400">Encrypted backup &middot; AES-256-GCM</p>
+                <p className="text-[10px] text-gray-500">SYNC & BACKUP</p>
+                <p className="text-xs text-gray-400">CosmoID + CosmoLink available in Settings</p>
               </div>
-              <button onClick={handleExport} className="warp-button text-xs px-3 py-1.5">{'\u2B07'} Download Backup</button>
+              <button onClick={handleExport} className="text-[10px] px-3 py-1.5 border border-white/10 text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-all cursor-pointer">{'\u2B07'} .json</button>
             </div>
-            <p className="text-[10px] text-gray-600">This file + your password = the only way to restore your wallet. Keep it safe.</p>
+            <p className="text-[10px] text-gray-600">Sign in with the same username + password on any device. Or use CosmoLink for quick transfer.</p>
           </div>
 
           {/* Level Progress */}
@@ -543,7 +715,7 @@ export default function WalletView() {
                 </div>
               )}
               <button className="warp-button w-full py-3 text-base" onClick={handleSend} disabled={!sendTo || !sendAmount || sending}>
-                {sending ? <span className="flex items-center justify-center gap-2"><span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />Signing & Validating...</span> : <>{'\u26A1'} Send Transaction</>}
+                {sending ? <span className="flex items-center justify-center gap-2"><Spinner />Signing & Validating...</span> : <>{'\u26A1'} Send Transaction</>}
               </button>
             </div>
           </div>
@@ -584,7 +756,7 @@ export default function WalletView() {
               </div>
             </div>
             <button className="warp-button w-full py-3 text-base" onClick={startMining} disabled={mining}>
-              {mining ? <span className="flex items-center justify-center gap-2"><span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />Mining...</span> : <>{'\u26A1'} Start Mining</>}
+              {mining ? <span className="flex items-center justify-center gap-2"><Spinner />Mining...</span> : <>{'\u26A1'} Start Mining</>}
             </button>
             {lastReward !== null && !mining && (
               <div className="mt-3 text-center p-3 rounded-none bg-green-500/10 border border-green-500/30">

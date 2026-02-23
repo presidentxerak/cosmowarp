@@ -4,10 +4,11 @@ import {
   getGlobalTransactions, getMeshStats, getSupplyBreakdown,
   getProgressToNextLevel, unlockAdminRegistry, getAdminDashboard,
   unlockCreatorTokens, unlockWalletKey, walletNeedsMigration,
-  migrateWallet, exportWallet, importWallet,
+  migrateWallet, exportWallet, importWallet, loginCosmoID, clearWallet,
   type WarpWallet, type Transaction, type SupplyBreakdown,
   type RegistryDashboard, type LevelUpResult, type WalletExport,
 } from '../engine/wallet';
+import { generateCosmoLink, parseCosmoLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/cosmomesh';
 import { WartEngine, type Wart } from '../engine/warts';
 import { storage } from '../engine/storage';
@@ -25,11 +26,15 @@ interface WalletContextType {
   levelProgress: number;
   lastLevelUp: LevelUpResult | null;
   initWallet: (password: string, alias?: string) => Promise<void>;
+  cosmoIDLogin: (username: string, password: string) => Promise<{ success: boolean; error?: string; isNew?: boolean }>;
   unlock: (password: string) => Promise<boolean>;
   lock: () => void;
+  signOut: () => void;
   migrate: (password: string) => Promise<boolean>;
   doExportWallet: () => WalletExport | null;
   doImportWallet: (data: WalletExport, password: string) => Promise<boolean>;
+  doGenerateCosmoLink: (password: string) => Promise<string | null>;
+  doImportCosmoLink: (link: string, password: string) => Promise<boolean>;
   send: (to: string, amount: number, memo?: string) => Promise<{ success: boolean; error?: string; levelUp?: LevelUpResult }>;
   mine: (energy: number, cycles: number) => Promise<{ tx: Transaction; levelUp?: LevelUpResult }>;
   refreshTxs: () => void;
@@ -139,6 +144,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     refreshWartsState(w.address);
   }, []);
 
+  // ─── CosmoID Login ───────────────────────────────────────
+  const doCosmoIDLogin = useCallback(async (username: string, password: string): Promise<{ success: boolean; error?: string; isNew?: boolean }> => {
+    try {
+      const existingBefore = loadWallet();
+      const w = await loginCosmoID(username, password);
+      const isNew = !existingBefore;
+      setWallet({ ...w });
+      setUnlocked(true);
+      setNeedsMigration(false);
+      try {
+        setMeshStats(getMeshStats());
+        setSupplyInfo(getSupplyBreakdown());
+      } catch { /* first load */ }
+      setLevelProgress(getProgressToNextLevel(w.address));
+      refreshWartsState(w.address);
+      return { success: true, isNew };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Login failed' };
+    }
+  }, []);
+
   // ─── Unlock ────────────────────────────────────────────
   const doUnlock = useCallback(async (password: string): Promise<boolean> => {
     if (!wallet) return false;
@@ -161,6 +187,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
     setUnlocked(false);
   }, [wallet]);
+
+  // ─── Sign out (clear local wallet) ─────────────────────
+  const doSignOut = useCallback(() => {
+    clearWallet();
+    setWallet(null);
+    setUnlocked(false);
+    setNeedsMigration(false);
+    setGlobalTxs([]);
+    setMeshStats(null);
+    setSupplyInfo(null);
+    setAdminDashboard(null);
+    setLevelProgress(0);
+    setLastLevelUp(null);
+    setWarts([]);
+    setMarketplace([]);
+    setMyCollection([]);
+    setMyCreated([]);
+  }, []);
 
   // ─── Migration ─────────────────────────────────────────
   const doMigrate = useCallback(async (password: string): Promise<boolean> => {
@@ -186,6 +230,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const doImportWallet = useCallback(async (data: WalletExport, password: string): Promise<boolean> => {
     try {
+      const w = await importWallet(data, password);
+      setWallet({ ...w });
+      setUnlocked(true);
+      setNeedsMigration(false);
+      refreshWartsState(w.address);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // ─── CosmoLink ─────────────────────────────────────────
+  const doGenerateCosmoLink = useCallback(async (password: string): Promise<string | null> => {
+    if (!wallet) return null;
+    try {
+      const data = exportWallet(wallet);
+      return await generateCosmoLink(data, password);
+    } catch {
+      return null;
+    }
+  }, [wallet]);
+
+  const doImportCosmoLink = useCallback(async (link: string, password: string): Promise<boolean> => {
+    try {
+      const data = await parseCosmoLink(link, password);
       const w = await importWallet(data, password);
       setWallet({ ...w });
       setUnlocked(true);
@@ -426,8 +495,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     <WalletContext.Provider value={{
       wallet, unlocked, needsMigration, globalTxs, meshStats, supplyInfo,
       adminDashboard, levelProgress, lastLevelUp,
-      initWallet, unlock: doUnlock, lock: doLock, migrate: doMigrate,
+      initWallet, cosmoIDLogin: doCosmoIDLogin, unlock: doUnlock,
+      lock: doLock, signOut: doSignOut, migrate: doMigrate,
       doExportWallet, doImportWallet,
+      doGenerateCosmoLink, doImportCosmoLink,
       send, mine, refreshTxs, refreshStats, unlockAdmin, unlockCreator,
       warts, marketplace, myCollection, myCreated,
       mintWart, buyWart, listWart, delistWart, transferWart,
