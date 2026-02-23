@@ -303,7 +303,7 @@ export default function MarketplaceView() {
             ) : (
               /* ─── View Mode ─────────────────────────────── */
               <>
-                <h2 className="text-xl font-bold text-warp-300 mb-1 font-title">{wart.title}</h2>
+                <h2 className="text-xl font-bold text-gray-100 mb-1 font-title">{wart.title}</h2>
                 {wart.description && (
                   <p className="text-sm text-gray-400 mb-3">{wart.description}</p>
                 )}
@@ -492,7 +492,7 @@ export default function MarketplaceView() {
       {tab === 'marketplace' && (
         <>
           <div className="glass-panel p-4 text-center">
-            <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u2B22'} Warts Marketplace</h2>
+            <h2 className="text-lg font-bold text-gray-100 mb-1 font-title">{'\u2B22'} Warts Marketplace</h2>
             <p className="text-xs text-gray-500">
               Unique digital artworks stored on the CosmoWarp protocol. Buy, sell, and collect Warts.
             </p>
@@ -524,7 +524,7 @@ export default function MarketplaceView() {
       {tab === 'collection' && (
         <>
           <div className="glass-panel p-4 text-center">
-            <h2 className="text-lg font-bold text-warp-300 mb-1 font-title">{'\u25C8'} My Collection</h2>
+            <h2 className="text-lg font-bold text-gray-100 mb-1 font-title">{'\u25C8'} My Collection</h2>
             <p className="text-xs text-gray-500">
               Warts you own ({myCollection.length}) and created ({myCreated.length})
             </p>
@@ -553,7 +553,7 @@ export default function MarketplaceView() {
       {/* ─── Create Tab ────────────────────────────────────── */}
       {tab === 'create' && (
         <div className="glass-panel p-5">
-          <h2 className="text-lg font-bold text-warp-300 mb-1 font-title text-center">{'\u2742'} Create a Wart</h2>
+          <h2 className="text-lg font-bold text-gray-100 mb-1 font-title text-center">{'\u2742'} Create a Wart</h2>
           <p className="text-xs text-gray-500 mb-4 text-center">
             Mint a unique digital artwork on the CosmoWarp protocol.
             You'll earn royalties on every resale.

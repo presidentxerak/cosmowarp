@@ -18,6 +18,8 @@ export interface WartTransfer {
   txId: string;
 }
 
+export type WartRarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
+
 export interface Wart {
   id: string;                    // SHA-256(creator + timestamp + title)
   title: string;
@@ -30,6 +32,61 @@ export interface Wart {
   createdAt: number;
   history: WartTransfer[];       // Full transfer history
   royaltyPercent: number;        // % paid to creator on resale (default 5)
+  // ─── Temporal Edition System ────────────────────────
+  editionType: 'unique' | 'limited' | 'unlimited';   // Edition model
+  maxEditions: number | null;    // null = unlimited, otherwise max copies
+  editionNumber: number;         // Which edition this is (1-based)
+  availableUntil: number | null; // Timestamp deadline (null = forever)
+}
+
+// ─── Rarity Computation ─────────────────────────────────
+
+export const RARITY_CONFIG: Record<WartRarity, { label: string; color: string; badge: string }> = {
+  legendary: { label: 'Legendary', color: 'text-amber-400',  badge: '\u2726' },
+  epic:      { label: 'Epic',      color: 'text-purple-400', badge: '\u2605' },
+  rare:      { label: 'Rare',      color: 'text-blue-400',   badge: '\u25C6' },
+  uncommon:  { label: 'Uncommon',  color: 'text-green-400',  badge: '\u25C8' },
+  common:    { label: 'Common',    color: 'text-gray-400',   badge: '\u25CE' },
+};
+
+export function computeRarity(wart: Wart): WartRarity {
+  let rarity: WartRarity = 'common';
+
+  if (wart.editionType === 'unique' || wart.maxEditions === 1) {
+    rarity = 'legendary';
+  } else if (wart.editionType === 'limited' && wart.maxEditions !== null) {
+    if (wart.maxEditions <= 10) rarity = 'epic';
+    else if (wart.maxEditions <= 50) rarity = 'rare';
+    else if (wart.maxEditions <= 200) rarity = 'uncommon';
+    else rarity = 'common';
+  }
+
+  // Time pressure bonus: bump up one tier if time-limited and < 24h remaining
+  if (wart.availableUntil !== null) {
+    const remaining = wart.availableUntil - Date.now();
+    if (remaining > 0 && remaining < 24 * 60 * 60 * 1000) {
+      const tiers: WartRarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+      const idx = tiers.indexOf(rarity);
+      if (idx < tiers.length - 1) rarity = tiers[idx + 1];
+    }
+  }
+
+  return rarity;
+}
+
+export function isExpired(wart: Wart): boolean {
+  return wart.availableUntil !== null && Date.now() > wart.availableUntil;
+}
+
+export function formatTimeRemaining(until: number): string {
+  const diff = until - Date.now();
+  if (diff <= 0) return 'Expired';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
 }
 
 // ─── Storage ─────────────────────────────────────────────
@@ -69,15 +126,29 @@ export class WartEngine {
     imageData: string,
     price: number | null = null,
     royaltyPercent: number = 5,
+    editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
+    maxEditions: number | null = null,
+    durationHours: number | null = null,
   ): Wart {
     if (!title.trim()) throw new Error('Title required');
     if (!imageData) throw new Error('Image required');
     if (royaltyPercent < 0 || royaltyPercent > 50) throw new Error('Royalty must be 0-50%');
+    if (editionType === 'limited' && (maxEditions === null || maxEditions < 1)) {
+      throw new Error('Limited editions require a max count');
+    }
 
     const timestamp = Date.now();
+    // Count existing editions of this title by same creator
+    const existingEditions = Array.from(this.warts.values()).filter(
+      w => w.creator === creator && w.title.trim() === title.trim(),
+    ).length;
+
+    if (editionType === 'limited' && maxEditions !== null && existingEditions >= maxEditions) {
+      throw new Error(`Maximum editions (${maxEditions}) already minted`);
+    }
+
     // Generate deterministic ID (sync for simplicity; collision risk negligible)
-    const idSource = `${creator}:${timestamp}:${title}`;
-    // Use a simple hash since we need sync
+    const idSource = `${creator}:${timestamp}:${title}:${existingEditions}`;
     let h = 0x811c9dc5;
     for (let i = 0; i < idSource.length; i++) {
       h ^= idSource.charCodeAt(i);
@@ -97,6 +168,10 @@ export class WartEngine {
       createdAt: timestamp,
       history: [],
       royaltyPercent,
+      editionType,
+      maxEditions: editionType === 'unique' ? 1 : maxEditions,
+      editionNumber: existingEditions + 1,
+      availableUntil: durationHours !== null ? timestamp + durationHours * 3600000 : null,
     };
 
     this.warts.set(id, wart);

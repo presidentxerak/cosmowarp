@@ -42,7 +42,7 @@ export default function FeedView() {
     <div className="space-y-4">
       <div className="glass-panel p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-warp-300 font-title">{'\u25CE'} CosmoMesh Feed</h2>
+          <h2 className="text-lg font-bold text-gray-100 font-title">{'\u25CE'} CosmoMesh Feed</h2>
           <button className="warp-button text-xs" onClick={handleRefresh}>Refresh</button>
         </div>
         <p className="text-xs text-gray-500">
@@ -62,7 +62,7 @@ export default function FeedView() {
 
       {globalTxs.length === 0 ? (
         <div className="glass-panel p-8 text-center">
-          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-12 h-12 mx-auto mb-2" />
+          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-12 h-12 mx-auto mb-2" />
           <p className="text-gray-400 text-sm">No transactions yet. Be the first to mine or send!</p>
         </div>
       ) : (

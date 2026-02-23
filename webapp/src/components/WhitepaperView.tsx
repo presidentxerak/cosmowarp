@@ -27,9 +27,9 @@ export default function WhitepaperView() {
         }} />
         <div className="relative">
           <div className="flex justify-center mb-4">
-            <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
+            <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-warp-300 mb-2 font-title">CosmoWarp</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-2 font-title">CosmoWarp</h1>
           <p className="text-sm sm:text-base text-gray-400 mb-1">White Paper v1.0</p>
           <p className="text-xs text-gray-500 max-w-md mx-auto">
             A post-blockchain transactional fabric designed to surpass both fiat and cryptocurrency.
@@ -82,7 +82,7 @@ function SectionTitle({ icon, title, subtitle }: { icon: string; title: string; 
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-2xl">{icon}</span>
-        <h2 className="text-xl font-bold text-warp-300 font-title">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-100 font-title">{title}</h2>
       </div>
       <p className="text-xs text-gray-500">{subtitle}</p>
     </div>

@@ -59,14 +59,14 @@ export default function Header({ activeTab, setActiveTab }: {
         {/* Logo + title */}
         <div className="flex items-center gap-2 shrink-0">
           <img
-            src={import.meta.env.BASE_URL + 'logo.png'}
+            src={import.meta.env.BASE_URL + 'logo.svg'}
             alt="CosmoWarp"
             className="w-7 h-7 sm:w-8 sm:h-8 animate-float cursor-pointer"
             onClick={() => selectTab('whitepaper')}
           />
           <div className="hidden sm:block">
             <h1
-              className="text-base font-bold text-warp-300 leading-tight cursor-pointer font-title"
+              className="text-base font-bold text-gray-100 leading-tight cursor-pointer font-title"
               onClick={() => selectTab('whitepaper')}
             >
               CosmoWarp
@@ -135,7 +135,7 @@ export default function Header({ activeTab, setActiveTab }: {
 
         {/* Mobile: active tab label + theme toggle + burger button */}
         <div className="flex items-center gap-1 ml-auto sm:hidden">
-          <span className="text-xs text-warp-300 font-medium">
+          <span className="text-xs text-gray-100 font-medium">
             {activeLabel ? `${activeLabel.icon} ${activeLabel.label}` : ''}
           </span>
           <button

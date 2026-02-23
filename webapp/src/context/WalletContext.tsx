@@ -41,7 +41,7 @@ interface WalletContextType {
   marketplace: Wart[];
   myCollection: Wart[];
   myCreated: Wart[];
-  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number) => Promise<Wart>;
+  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null) => Promise<Wart>;
   buyWart: (wartId: string) => Promise<{ success: boolean; error?: string }>;
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
@@ -257,11 +257,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const mintWart = useCallback(async (
     title: string, description: string, imageData: string,
-    price: number | null, royaltyPercent = 5
+    price: number | null, royaltyPercent = 5,
+    editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
+    maxEditions: number | null = null,
+    durationHours: number | null = null,
   ): Promise<Wart> => {
     if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');
     const engine = getWartEngine();
-    const wart = engine.mint(wallet.address, title, description, imageData, price, royaltyPercent);
+    const wart = engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours);
 
     // Record mint transaction
     const result = await sendWarps(wallet, wallet.address, 0);

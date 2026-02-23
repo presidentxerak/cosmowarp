@@ -21,7 +21,7 @@ export default function SDKView() {
         <div className="flex items-center gap-3 mb-2">
           <span className="text-2xl">{'\u2B21'}</span>
           <div>
-            <h2 className="text-xl font-bold text-warp-300 font-title">CosmoWarp SDK</h2>
+            <h2 className="text-xl font-bold text-gray-100 font-title">CosmoWarp SDK</h2>
             <p className="text-xs text-gray-500">Developer API & Extension Guide</p>
           </div>
         </div>

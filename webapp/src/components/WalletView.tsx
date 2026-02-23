@@ -34,9 +34,9 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
         <div className="flex justify-center mb-4">
-          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
+          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-warp-300 mb-1 font-title">CosmoWarp</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-100 mb-1 font-title">CosmoWarp</h2>
         <p className="text-xs text-gray-500 mb-5">
           Post-blockchain transactional fabric
         </p>
@@ -340,13 +340,13 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
         <div className="flex justify-center mb-3">
-          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="CosmoWarp" className="w-14 h-14 sm:w-16 sm:h-16 opacity-60" />
+          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-14 h-14 sm:w-16 sm:h-16 opacity-60" />
         </div>
         <p className="text-sm text-gray-400 mb-1">Welcome back</p>
-        <h2 className="text-xl font-bold text-warp-300 mb-1 font-title">
+        <h2 className="text-xl font-bold text-gray-100 mb-1 font-title">
           {wallet.alias ? `@${wallet.alias}` : shortAddress(wallet.address)}
         </h2>
-        <p className="text-lg font-bold text-warp-300/40 mb-5">
+        <p className="text-lg font-bold text-gray-100/40 mb-5">
           {wallet.balance.toLocaleString()} {'\u03A9'}
         </p>
         <div className="max-w-xs mx-auto space-y-3">
@@ -433,7 +433,7 @@ export default function WalletView() {
         <p className="text-xs text-gray-400 mb-1">
           {wallet.alias ? `@${wallet.alias}` : 'Warp Balance'}
         </p>
-        <div className="text-4xl sm:text-5xl font-bold text-warp-300 mb-1 animate-float">
+        <div className="text-4xl sm:text-5xl font-bold text-gray-100 mb-1 animate-float">
           {wallet.balance.toLocaleString()} <span className="text-2xl">{'\u03A9'}</span>
         </div>
         <p className="text-[10px] text-gray-500">WARP ENERGY UNITS</p>
