@@ -62,14 +62,12 @@ class AppErrorBoundary extends Component<
   }
 }
 import WalletView from './components/WalletView';
-import SendView from './components/SendView';
-import MineView from './components/MineView';
 import MarketplaceView from './components/MarketplaceView';
+import CosmoChatView from './components/CosmoChatView';
 import FeedView from './components/FeedView';
-import AdminView from './components/AdminView';
-import ConsoleView from './components/ConsoleView';
+import DevView from './components/DevView';
 import WhitepaperView from './components/WhitepaperView';
-import SDKView from './components/SDKView';
+import SettingsView from './components/SettingsView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('wallet');
@@ -86,14 +84,12 @@ function App() {
 
           <main className="pb-6">
             {activeTab === 'wallet' && <WalletView />}
-            {activeTab === 'send' && <SendView />}
-            {activeTab === 'mine' && <MineView />}
             {activeTab === 'warts' && <MarketplaceView />}
+            {activeTab === 'cosmochat' && <CosmoChatView />}
             {activeTab === 'feed' && <FeedView />}
-            {activeTab === 'admin' && <AdminView />}
-            {activeTab === 'console' && <ConsoleView />}
+            {activeTab === 'settings' && <SettingsView />}
+            {activeTab === 'dev' && <DevView />}
             {activeTab === 'whitepaper' && <WhitepaperView />}
-            {activeTab === 'sdk' && <SDKView />}
           </main>
 
           <footer className="text-center text-[10px] text-gray-600 pb-6 space-y-1">
@@ -107,10 +103,10 @@ function App() {
               </button>
               {' \u00B7 '}
               <button
-                onClick={() => setActiveTab('sdk')}
+                onClick={() => setActiveTab('dev')}
                 className="text-warp-400/50 hover:text-warp-400 transition-colors cursor-pointer"
               >
-                SDK & API
+                Dev
               </button>
               {' \u00B7 '}
               <span>CosmoWarp Foundation {'\u2B21'}</span>

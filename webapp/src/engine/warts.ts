@@ -20,11 +20,21 @@ export interface WartTransfer {
 
 export type WartRarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
 
+export interface WartComment {
+  id: string;
+  author: string;
+  authorAlias: string;
+  content: string;
+  timestamp: number;
+}
+
 export interface Wart {
   id: string;                    // SHA-256(creator + timestamp + title)
   title: string;
   description: string;
-  imageData: string;             // data URL (base64 image)
+  imageData: string;             // data URL (base64 image/gif/video/audio)
+  mediaType?: 'image' | 'audio' | 'video';  // media type
+  audioCover?: string;           // cover image for audio Warts
   creator: string;               // CW address of original creator (immutable)
   owner: string;                 // CW address of current owner
   price: number | null;          // Price in Warp (null = not for sale)
@@ -32,6 +42,7 @@ export interface Wart {
   createdAt: number;
   history: WartTransfer[];       // Full transfer history
   royaltyPercent: number;        // % paid to creator on resale (default 5)
+  comments: WartComment[];       // User comments
   // ─── Temporal Edition System ────────────────────────
   editionType: 'unique' | 'limited' | 'unlimited';   // Edition model
   maxEditions: number | null;    // null = unlimited, otherwise max copies
@@ -140,9 +151,11 @@ export class WartEngine {
     editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
     maxEditions: number | null = null,
     durationHours: number | null = null,
+    mediaType: 'image' | 'audio' | 'video' = 'image',
+    audioCover?: string,
   ): Wart {
     if (!title.trim()) throw new Error('Title required');
-    if (!imageData) throw new Error('Image required');
+    if (!imageData) throw new Error('Media required');
     if (royaltyPercent < 0 || royaltyPercent > 50) throw new Error('Royalty must be 0-50%');
     if (editionType === 'limited' && (maxEditions === null || maxEditions < 1)) {
       throw new Error('Limited editions require a max count');
@@ -177,8 +190,11 @@ export class WartEngine {
       price,
       listed: price !== null,
       createdAt: timestamp,
+      mediaType,
+      audioCover,
       history: [],
       royaltyPercent,
+      comments: [],
       editionType,
       maxEditions: editionType === 'unique' ? 1 : maxEditions,
       editionNumber: existingEditions + 1,
@@ -286,6 +302,24 @@ export class WartEngine {
     }
     this.save();
     return true;
+  }
+
+  // ─── Comments ──────────────────────────────────────
+
+  addComment(wartId: string, author: string, authorAlias: string, content: string): WartComment | null {
+    const wart = this.warts.get(wartId);
+    if (!wart || !content.trim()) return null;
+    const comment: WartComment = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      author,
+      authorAlias: authorAlias || author.slice(0, 10),
+      content: content.trim(),
+      timestamp: Date.now(),
+    };
+    if (!wart.comments) wart.comments = [];
+    wart.comments.push(comment);
+    this.save();
+    return comment;
   }
 
   // ─── Queries ─────────────────────────────────────────

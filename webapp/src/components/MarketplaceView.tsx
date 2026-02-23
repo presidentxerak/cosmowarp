@@ -10,7 +10,7 @@ export default function MarketplaceView() {
   const {
     wallet, unlocked, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart,
-    deleteWart, editWart,
+    deleteWart, editWart, addWartComment, refreshWarts,
   } = useWallet();
 
   const [tab, setTab] = useState<Tab>('marketplace');
@@ -20,6 +20,8 @@ export default function MarketplaceView() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageData, setImageData] = useState('');
+  const [mediaType, setMediaType] = useState<'image' | 'audio' | 'video'>('image');
+  const [audioCover, setAudioCover] = useState('');
   const [price, setPrice] = useState('');
   const [royalty, setRoyalty] = useState('5');
   const [editionType, setEditionType] = useState<'unique' | 'limited' | 'unlimited'>('unique');
@@ -28,6 +30,10 @@ export default function MarketplaceView() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
+  const audioCoverRef = useRef<HTMLInputElement>(null);
+
+  // Comment
+  const [commentText, setCommentText] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Buy / List state
@@ -62,18 +68,33 @@ export default function MarketplaceView() {
     );
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 500 * 1024) {
-      setCreateError('Image must be under 500KB');
+    if (file.size > 5 * 1024 * 1024) {
+      setCreateError('File must be under 5MB');
       return;
     }
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    let mType: 'image' | 'audio' | 'video' = 'image';
+    if (['mp3'].includes(ext)) mType = 'audio';
+    else if (['mp4', 'mov'].includes(ext)) mType = 'video';
+    else if (['gif', 'jpeg', 'jpg', 'png'].includes(ext)) mType = 'image';
+
     const reader = new FileReader();
     reader.onload = () => {
       setImageData(reader.result as string);
+      setMediaType(mType);
       setCreateError('');
     };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAudioCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || file.size > 5 * 1024 * 1024) return;
+    const reader = new FileReader();
+    reader.onload = () => setAudioCover(reader.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -97,10 +118,11 @@ export default function MarketplaceView() {
     setCreating(true);
     setCreateError('');
     try {
-      const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH);
+      const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined);
       setCreateSuccess(`Minted "${wart.title}" (Edition #${wart.editionNumber})!`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
       setEditionType('unique'); setMaxEditions(''); setDurationHours('');
+      setMediaType('image'); setAudioCover('');
       setTimeout(() => setCreateSuccess(''), 3000);
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : 'Mint failed');
@@ -194,6 +216,36 @@ export default function MarketplaceView() {
     setConfirmDelete(false);
   };
 
+  const handleAddComment = (wartId: string) => {
+    if (!commentText.trim()) return;
+    addWartComment(wartId, commentText);
+    setCommentText('');
+    refreshWarts();
+    // Refresh selected wart
+    const updated = [...marketplace, ...myCollection].find(w => w.id === wartId);
+    if (updated) setSelectedWart({ ...updated });
+  };
+
+  // ─── Media Renderer ───────────────────────────────────────
+  const WartMedia = ({ wart, className = '' }: { wart: Wart; className?: string }) => {
+    if (wart.mediaType === 'audio') {
+      return (
+        <div className={`bg-cosmic-900/60 flex flex-col items-center justify-center p-4 ${className}`}>
+          {wart.audioCover ? (
+            <img src={wart.audioCover} alt={wart.title} className="w-full h-auto max-h-[200px] object-cover mb-2" />
+          ) : (
+            <div className="text-4xl mb-2">{'\u266B'}</div>
+          )}
+          <audio controls className="w-full h-8" src={wart.imageData} />
+        </div>
+      );
+    }
+    if (wart.mediaType === 'video') {
+      return <video controls className={`w-full bg-black ${className}`} src={wart.imageData} />;
+    }
+    return <img src={wart.imageData} alt={wart.title} className={`w-full h-full object-cover ${className}`} />;
+  };
+
   // ─── Rarity Badge ────────────────────────────────────────
   const RarityBadge = ({ wart }: { wart: Wart }) => {
     const rarity = computeRarity(wart);
@@ -238,8 +290,7 @@ export default function MarketplaceView() {
         onClick={() => openDetail(wart)}
       >
         <div className="aspect-square mb-2 overflow-hidden rounded-none bg-cosmic-900/60 relative">
-          <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
-          {/* Rarity badge overlay */}
+          <WartMedia wart={wart} />
           <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur-sm">
             <RarityBadge wart={wart} />
           </div>
@@ -298,7 +349,7 @@ export default function MarketplaceView() {
         <div className="glass-panel p-4">
           <div className="max-w-md mx-auto">
             <div className="aspect-square mb-4 overflow-hidden rounded-none bg-cosmic-900/60 relative">
-              <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
+              <WartMedia wart={wart} />
               {expired && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                   <span className="text-red-400 text-lg font-bold">EXPIRED</span>
@@ -536,6 +587,43 @@ export default function MarketplaceView() {
           </div>
         </div>
 
+        {/* Comments */}
+        <div className="glass-panel p-4">
+          <h3 className="text-sm font-bold text-gray-300 mb-3">Comments ({(wart.comments || []).length})</h3>
+          <div className="flex gap-2 mb-4">
+            <input
+              className="warp-input flex-1 text-sm"
+              placeholder="Add a comment..."
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleAddComment(wart.id); }}
+            />
+            <button className="warp-button text-xs px-3" onClick={() => handleAddComment(wart.id)} disabled={!commentText.trim()}>
+              Post
+            </button>
+          </div>
+          <div className="space-y-3">
+            {(!wart.comments || wart.comments.length === 0) ? (
+              <p className="text-xs text-gray-500 text-center py-2">No comments yet</p>
+            ) : (
+              wart.comments.map(c => (
+                <div key={c.id} className="flex gap-2">
+                  <div className="w-6 h-6 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-[10px] text-warp-300 font-bold shrink-0 mt-0.5">
+                    {c.authorAlias.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-200">@{c.authorAlias}</span>
+                      <span className="text-[10px] text-gray-500">{formatDateFR(c.timestamp)}</span>
+                    </div>
+                    <p className="text-xs text-gray-400">{c.content}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Transfer History */}
         {wart.history.length > 0 && (
           <div className="glass-panel p-4">
@@ -667,24 +755,45 @@ export default function MarketplaceView() {
           </p>
 
           <div className="space-y-4 max-w-md mx-auto">
-            {/* Image Upload */}
+            {/* Media Upload */}
             <div>
-              <label className="text-[10px] text-gray-400 block mb-1">ARTWORK IMAGE (max 500KB)</label>
+              <label className="text-[10px] text-gray-400 block mb-1">MEDIA FILE (max 5MB) — .gif .jpeg .png .mp3 .mp4 .mov</label>
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/*"
+                accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov"
                 className="hidden"
-                onChange={handleImageUpload}
+                onChange={handleMediaUpload}
               />
+              <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
               {imageData ? (
                 <div className="flex flex-col items-center">
-                  <div className="aspect-square max-w-[200px] overflow-hidden rounded-none bg-cosmic-900/60 mb-2">
-                    <img src={imageData} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
+                  {mediaType === 'image' && (
+                    <div className="aspect-square max-w-[200px] overflow-hidden rounded-none bg-cosmic-900/60 mb-2">
+                      <img src={imageData} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  {mediaType === 'video' && (
+                    <video src={imageData} controls className="max-w-[200px] max-h-[200px] mb-2 bg-black" />
+                  )}
+                  {mediaType === 'audio' && (
+                    <div className="mb-2 space-y-2 w-full">
+                      <audio src={imageData} controls className="w-full h-8" />
+                      {audioCover ? (
+                        <div className="flex items-center gap-2">
+                          <img src={audioCover} alt="Cover" className="w-12 h-12 object-cover" />
+                          <button className="text-[10px] text-gray-500 hover:text-gray-300 cursor-pointer" onClick={() => setAudioCover('')}>Remove cover</button>
+                        </div>
+                      ) : (
+                        <button className="text-[10px] text-gray-500 hover:text-gray-300 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
+                          + Add cover image for audio
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <button
                     className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer"
-                    onClick={() => setImageData('')}
+                    onClick={() => { setImageData(''); setMediaType('image'); setAudioCover(''); }}
                   >
                     Remove
                   </button>
@@ -694,7 +803,7 @@ export default function MarketplaceView() {
                   className="warp-button w-full py-4 text-sm border-dashed"
                   onClick={() => fileRef.current?.click()}
                 >
-                  {'\u2B06'} Upload Image
+                  {'\u2B06'} Upload Media
                 </button>
               )}
             </div>

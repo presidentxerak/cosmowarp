@@ -41,13 +41,14 @@ interface WalletContextType {
   marketplace: Wart[];
   myCollection: Wart[];
   myCreated: Wart[];
-  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null) => Promise<Wart>;
+  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null, mediaType?: 'image' | 'audio' | 'video', audioCover?: string) => Promise<Wart>;
   buyWart: (wartId: string) => Promise<{ success: boolean; error?: string }>;
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
   transferWart: (wartId: string, toAddress: string) => Promise<{ success: boolean; error?: string }>;
   deleteWart: (wartId: string) => boolean;
   editWart: (wartId: string, updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number }) => boolean;
+  addWartComment: (wartId: string, content: string) => boolean;
   refreshWarts: () => void;
 }
 
@@ -261,10 +262,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
     maxEditions: number | null = null,
     durationHours: number | null = null,
+    mediaType: 'image' | 'audio' | 'video' = 'image',
+    audioCover?: string,
   ): Promise<Wart> => {
     if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');
     const engine = getWartEngine();
-    const wart = engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours);
+    const wart = engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours, mediaType, audioCover);
 
     // Record mint transaction
     const result = await sendWarps(wallet, wallet.address, 0);
@@ -400,6 +403,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return ok;
   }, [wallet]);
 
+  const doAddWartComment = useCallback((wartId: string, content: string): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const alias = wallet.alias || wallet.address.slice(0, 10);
+    const comment = engine.addComment(wartId, wallet.address, alias, content);
+    if (comment) refreshWartsState(wallet.address);
+    return !!comment;
+  }, [wallet]);
+
   const refreshWarts = useCallback(() => {
     refreshWartsState(wallet?.address);
   }, [wallet]);
@@ -413,7 +425,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       send, mine, refreshTxs, refreshStats, unlockAdmin, unlockCreator,
       warts, marketplace, myCollection, myCreated,
       mintWart, buyWart, listWart, delistWart, transferWart,
-      deleteWart: doDeleteWart, editWart: doEditWart, refreshWarts,
+      deleteWart: doDeleteWart, editWart: doEditWart,
+      addWartComment: doAddWartComment, refreshWarts,
     }}>
       {children}
     </WalletContext.Provider>

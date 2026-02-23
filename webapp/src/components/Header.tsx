@@ -11,14 +11,12 @@ export default function Header({ activeTab, setActiveTab }: {
 
   const tabs = [
     { id: 'wallet', label: 'Wallet', icon: '\u25C8', group: 'main' },
-    { id: 'send', label: 'Send', icon: '\u2197', group: 'main' },
-    { id: 'mine', label: 'Mine', icon: '\u26CF', group: 'main' },
-    { id: 'warts', label: 'Warts', icon: '\u2B22', group: 'main' },
-    { id: 'feed', label: 'Feed', icon: '\u25CE', group: 'main' },
+    { id: 'warts', label: 'Wart Market', icon: '\u2B22', group: 'main' },
+    { id: 'cosmochat', label: 'CosmoChat', icon: '\u25CE', group: 'main' },
+    { id: 'feed', label: 'Feed', icon: '\u25C9', group: 'main' },
+    { id: 'settings', label: 'Settings', icon: '\u2699', group: 'main' },
     { id: 'whitepaper', label: 'Paper', icon: '\u2B21', group: 'info' },
-    { id: 'sdk', label: 'SDK', icon: '\u269B', group: 'info' },
-    { id: 'admin', label: 'Admin', icon: '\u26BF', group: 'more' },
-    { id: 'console', label: 'Console', icon: '>', group: 'more' },
+    { id: 'dev', label: 'Dev', icon: '\u269B', group: 'more' },
   ];
 
   const mainTabs = tabs.filter(t => t.group === 'main');
