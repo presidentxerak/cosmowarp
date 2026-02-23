@@ -367,7 +367,9 @@ export default function WalletView() {
           {/* Balance Card */}
           <div className="glass-panel p-5 text-center animate-pulse-glow">
             <div className="flex justify-center mb-3">
-              <img src={import.meta.env.BASE_URL + 'profile.svg'} alt="Profile" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]" />
+              <div className="profile-icon-ring">
+                <img src={import.meta.env.BASE_URL + 'profile.svg'} alt="Profile" className="profile-icon w-16 h-16 sm:w-20 sm:h-20" />
+              </div>
             </div>
             <div className="flex items-center justify-center gap-2 mb-1">
               <span className={`text-lg ${levelDef.color}`}>{wallet.levelSymbol}</span>
