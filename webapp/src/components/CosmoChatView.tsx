@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
-import type { ChatPost, ChatChannel, DirectThread } from '../engine/cosmochat';
+import type { ChatPost, ChatChannel } from '../engine/cosmochat';
 
-type Tab = 'timeline' | 'explore' | 'channels' | 'messages' | 'bookmarks';
+type Tab = 'timeline' | 'explore' | 'channels';
 
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
@@ -26,7 +26,6 @@ export default function CosmoChatView() {
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
   const [channels, setChannels] = useState<ChatChannel[]>([]);
-  const [threads, setThreads] = useState<DirectThread[]>([]);
 
   // Compose
   const [composeText, setComposeText] = useState('');
@@ -49,12 +48,7 @@ export default function CosmoChatView() {
   const [newChannelDesc, setNewChannelDesc] = useState('');
   const [showCreateChannel, setShowCreateChannel] = useState(false);
 
-  // DM
-  const [selectedThread, setSelectedThread] = useState<DirectThread | null>(null);
-  const [dmText, setDmText] = useState('');
-  const [dmTo, setDmTo] = useState('');
   const channelScrollRef = useRef<HTMLDivElement>(null);
-  const dmScrollRef = useRef<HTMLDivElement>(null);
 
   // Share modal
   const [sharePost, setSharePost] = useState<ChatPost | null>(null);
@@ -63,7 +57,6 @@ export default function CosmoChatView() {
     const e = CosmoChatEngine.load();
     setPosts(e.getTimeline());
     setChannels(e.getChannels());
-    if (wallet) setThreads(e.getThreads(wallet.address));
   };
 
   useEffect(() => { refresh(); }, [tab]);
@@ -74,18 +67,18 @@ export default function CosmoChatView() {
     }
   }, [selectedChannel?.messages.length]);
 
-  useEffect(() => {
-    if (selectedThread) {
-      dmScrollRef.current?.scrollTo(0, dmScrollRef.current.scrollHeight);
-    }
-  }, [selectedThread?.messages.length]);
-
   if (!wallet || !unlocked) {
     return (
-      <div className="glass-panel p-6 text-center max-w-md mx-auto">
-        <div className="text-3xl mb-3">{'\u25CE'}</div>
-        <h2 className="text-lg font-bold text-gray-100 mb-2 font-title">CosmoChat</h2>
-        <p className="text-gray-400 text-sm">Create and unlock your wallet to access CosmoChat.</p>
+      <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
+        <div className="text-center px-6">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto text-gray-600 mb-3">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <h2 className="text-lg font-bold text-gray-100 mb-1 font-title">Wall</h2>
+          <p className="text-gray-400 text-sm">Create and unlock your wallet to access the Wall.</p>
+          <p className="text-gray-600 text-xs mt-1">Encrypted anonymous social network</p>
+        </div>
       </div>
     );
   }
@@ -140,7 +133,7 @@ export default function CosmoChatView() {
   const handleTip = async (post: ChatPost) => {
     const ok = engine.tipPost(post.id, wallet.address);
     if (ok) {
-      await send(post.author, 1, `CosmoChat tip for post`);
+      await send(post.author, 1, `Wall tip for post`);
       refresh();
       if (selectedPost?.id === post.id) setSelectedPost(engine.getPost(post.id));
     }
@@ -199,26 +192,6 @@ export default function CosmoChatView() {
   const handleJoinChannel = (ch: ChatChannel) => {
     engine.joinChannel(ch.id, wallet.address);
     refresh();
-  };
-
-  // ─── DM actions ────────────────────────────────────────
-  const handleSendDM = () => {
-    if (!dmText.trim()) return;
-    if (selectedThread) {
-      const other = selectedThread.participants.find(p => p !== wallet.address) || '';
-      engine.sendDM(wallet.address, alias, other, dmText);
-      setDmText('');
-      setSelectedThread(engine.getThread(wallet.address, other));
-    }
-  };
-
-  const handleNewDM = () => {
-    if (!dmTo.trim()) return;
-    engine.sendDM(wallet.address, alias, dmTo.trim(), 'Hello!');
-    setDmTo('');
-    refresh();
-    const thread = engine.getThread(wallet.address, dmTo.trim());
-    if (thread) setSelectedThread(thread);
   };
 
   // ─── Media Renderer ────────────────────────────────────
@@ -542,98 +515,41 @@ export default function CosmoChatView() {
     );
   }
 
-  // ─── DM Thread ─────────────────────────────────────────
-  if (selectedThread) {
-    const other = selectedThread.participants.find(p => p !== wallet.address) || '';
-
-    return (
-      <div className="space-y-4 max-w-lg mx-auto">
-        <button className="text-xs text-gray-400 hover:text-gray-200 cursor-pointer" onClick={() => setSelectedThread(null)}>
-          {'\u2190'} Back to Messages
-        </button>
-
-        <div className="glass-panel p-4">
-          <h3 className="text-sm font-bold text-gray-200 mb-2">{shortAddress(other)}</h3>
-
-          <div ref={dmScrollRef} className="bg-cosmic-900/60 p-3 h-64 overflow-y-auto space-y-2 mb-3">
-            {selectedThread.messages.map(m => (
-              <div key={m.id} className={`flex gap-2 ${m.from === wallet.address ? 'justify-end' : ''}`}>
-                <div className={`max-w-[80%] p-2 text-xs ${
-                  m.from === wallet.address
-                    ? 'bg-warp-500/20 border border-warp-500/30 text-gray-200'
-                    : 'bg-cosmic-900/80 border border-white/5 text-gray-300'
-                }`}>
-                  <p>{m.content}</p>
-                  <span className="text-[9px] text-gray-600 block text-right mt-1">{timeAgo(m.timestamp)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-2">
-            <input
-              className="warp-input flex-1 text-sm"
-              placeholder="Type a message..."
-              value={dmText}
-              onChange={e => setDmText(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSendDM(); }}
-            />
-            <button className="warp-button text-xs px-3" onClick={handleSendDM} disabled={!dmText.trim()}>
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // ─── Tab Bar ───────────────────────────────────────────
-  const tabList: { id: Tab; label: string; icon: string }[] = [
-    { id: 'timeline', label: 'Home', icon: '\u2302' },
-    { id: 'explore', label: 'Explore', icon: '\u2316' },
-    { id: 'channels', label: 'Channels', icon: '#' },
-    { id: 'messages', label: 'DMs', icon: '\u2709' },
-    { id: 'bookmarks', label: 'Saved', icon: '\u2606' },
+  const tabList: { id: Tab; label: string }[] = [
+    { id: 'timeline', label: 'For You' },
+    { id: 'explore', label: 'Explore' },
+    { id: 'channels', label: 'Channels' },
   ];
 
-  const displayPosts = tab === 'bookmarks'
-    ? posts.filter(p => p.bookmarkedBy.includes(wallet.address))
-    : posts;
+  const displayPosts = posts;
 
   return (
     <div className="space-y-4">
       <ShareModal />
 
-      {/* Header */}
-      <div className="glass-panel p-4 text-center">
-        <h2 className="text-lg font-bold text-gray-100 mb-1 font-title">{'\u25CE'} CosmoChat</h2>
-        <p className="text-xs text-gray-500">Encrypted anonymous social network</p>
-      </div>
-
       {/* Sub-tabs */}
-      <div className="glass-panel p-2">
-        <div className="flex gap-1 overflow-x-auto">
-          {tabList.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex-1 px-2 py-2 rounded-none text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                tab === t.id
-                  ? 'bg-warp-500/30 text-warp-300'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
-              }`}
-            >
-              {t.icon} {t.label}
-            </button>
-          ))}
-        </div>
+      <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-2 pt-2">
+        {tabList.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+              tab === t.id
+                ? 'border-warp-400 text-warp-300'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* ─── Timeline / Explore / Bookmarks ─────────────── */}
-      {(tab === 'timeline' || tab === 'explore' || tab === 'bookmarks') && (
+      {/* ─── Timeline / Explore ─────────────── */}
+      {(tab === 'timeline' || tab === 'explore') && (
         <>
           {/* Compose */}
-          {tab !== 'bookmarks' && (
+          {(
             <div className="glass-panel p-4">
               <div className="flex gap-3">
                 <div className="w-8 h-8 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-xs text-warp-300 font-bold shrink-0">
@@ -697,7 +613,7 @@ export default function CosmoChatView() {
             <div className="glass-panel p-8 text-center">
               <p className="text-2xl mb-2">{'\u25CE'}</p>
               <p className="text-gray-400 text-sm">
-                {tab === 'bookmarks' ? 'No saved posts yet.' : 'No posts yet. Be the first to post!'}
+                {'No posts yet. Be the first to post!'}
               </p>
             </div>
           ) : (
@@ -771,54 +687,6 @@ export default function CosmoChatView() {
         </>
       )}
 
-      {/* ─── Messages (DMs) ──────────────────────────────── */}
-      {tab === 'messages' && (
-        <>
-          <div className="glass-panel p-3">
-            <div className="flex gap-2">
-              <input
-                className="warp-input flex-1 text-sm"
-                placeholder="CW... (address to message)"
-                value={dmTo}
-                onChange={e => setDmTo(e.target.value)}
-              />
-              <button className="warp-button text-xs px-3" onClick={handleNewDM} disabled={!dmTo.trim()}>
-                New DM
-              </button>
-            </div>
-          </div>
-
-          {threads.length === 0 ? (
-            <div className="glass-panel p-8 text-center">
-              <p className="text-gray-400 text-sm">No conversations yet. Start a new DM!</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {threads.map(t => {
-                const other = t.participants.find(p => p !== wallet.address) || '';
-                const lastMsg = t.messages[t.messages.length - 1];
-                return (
-                  <div
-                    key={t.id}
-                    className="glass-panel p-3 cursor-pointer hover:border-warp-400/20 transition-all"
-                    onClick={() => setSelectedThread(t)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-gray-200">{shortAddress(other)}</p>
-                        {lastMsg && (
-                          <p className="text-xs text-gray-500 truncate">{lastMsg.content}</p>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-gray-600 shrink-0">{timeAgo(t.lastActivity)}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }

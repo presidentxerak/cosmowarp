@@ -2,7 +2,9 @@ import { useState, lazy, Suspense, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
-import Header from './components/Header';
+import TopBar from './components/TopBar';
+import Sidebar from './components/Sidebar';
+import BottomBar from './components/BottomBar';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
 
 class BackgroundErrorBoundary extends Component<
@@ -61,18 +63,30 @@ class AppErrorBoundary extends Component<
     return this.props.children;
   }
 }
+
 import WalletView from './components/WalletView';
 import MarketplaceView from './components/MarketplaceView';
 import CosmoChatView from './components/CosmoChatView';
-import FeedView from './components/FeedView';
-import DevView from './components/DevView';
+import CosmoView from './components/CosmoView';
+import MessageView from './components/MessageView';
+import NotificationsView from './components/NotificationsView';
+import ProfileView from './components/ProfileView';
+import SignetsView from './components/SignetsView';
 import WhitepaperView from './components/WhitepaperView';
-import SettingsView from './components/SettingsView';
-import LandingView from './components/LandingView';
+import FondationView from './components/FondationView';
+import AdminView from './components/AdminView';
+import SDKView from './components/SDKView';
+import ConsoleView from './components/ConsoleView';
 import HelpView from './components/HelpView';
+import SettingsView from './components/SettingsView';
+import LegalsView from './components/LegalsView';
+import PrivacyView from './components/PrivacyView';
+import LandingView from './components/LandingView';
+import DevView from './components/DevView';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('wallet');
+  const [activeTab, setActiveTab] = useState('wall');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <AppErrorBoundary>
@@ -81,41 +95,55 @@ function App() {
         <BackgroundErrorBoundary>
           <Suspense fallback={null}><CosmicBackground /></Suspense>
         </BackgroundErrorBoundary>
-        <div className="min-h-screen min-h-[100dvh] px-3 sm:px-[10px] pt-0 sm:pt-[10px] pb-3 sm:pb-[10px] relative z-10">
-          <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="min-h-screen min-h-[100dvh] relative z-10 flex flex-col">
+          {/* Top bar - sticky search + profile + notifications */}
+          <TopBar
+            onProfileClick={() => setSidebarOpen(true)}
+            onNotificationsClick={() => setActiveTab('notifications')}
+          />
 
-          <main className="pb-6">
-            {activeTab === 'landing' && <LandingView onNavigate={setActiveTab} />}
-            {activeTab === 'wallet' && <WalletView />}
-            {activeTab === 'warts' && <MarketplaceView />}
-            {activeTab === 'cosmochat' && <CosmoChatView />}
-            {activeTab === 'feed' && <FeedView />}
-            {activeTab === 'settings' && <SettingsView />}
-            {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
-            {activeTab === 'dev' && <DevView />}
-            {activeTab === 'whitepaper' && <WhitepaperView />}
+          {/* Sidebar - slides from left */}
+          <Sidebar
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+
+          {/* Main content area */}
+          <main className="flex-1 px-0 sm:px-[10px] pb-16">
+            <div className="max-w-2xl mx-auto">
+              {/* Bottom bar tabs */}
+              {activeTab === 'wall' && <CosmoChatView />}
+              {activeTab === 'gallery' && <MarketplaceView />}
+              {activeTab === 'cosmo' && <CosmoView onNavigate={setActiveTab} />}
+              {activeTab === 'message' && <MessageView />}
+
+              {/* Sidebar pages */}
+              {activeTab === 'profile' && <ProfileView onNavigate={setActiveTab} />}
+              {activeTab === 'wallet' && <WalletView />}
+              {activeTab === 'signets' && <SignetsView />}
+              {activeTab === 'whitepaper' && <WhitepaperView />}
+              {activeTab === 'fondation' && <FondationView />}
+              {activeTab === 'admin' && <AdminView />}
+              {activeTab === 'sdk' && <SDKView />}
+              {activeTab === 'console' && <ConsoleView />}
+              {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
+              {activeTab === 'settings' && <SettingsView />}
+              {activeTab === 'legals' && <LegalsView />}
+              {activeTab === 'privacy' && <PrivacyView />}
+
+              {/* Notifications (from top bar bell) */}
+              {activeTab === 'notifications' && <NotificationsView />}
+
+              {/* Legacy */}
+              {activeTab === 'landing' && <LandingView onNavigate={setActiveTab} />}
+              {activeTab === 'dev' && <DevView />}
+            </div>
           </main>
 
-          <footer className="text-center text-[10px] text-gray-600 pb-6 space-y-1">
-            <p>CosmoWarp Terminal v2.0 &middot; CosmoMesh v2.0 &middot; Resonance Decay &middot; 69M Supply</p>
-            <p>
-              <button
-                onClick={() => setActiveTab('whitepaper')}
-                className="text-warp-400/50 hover:text-warp-400 transition-colors cursor-pointer"
-              >
-                White Paper
-              </button>
-              {' \u00B7 '}
-              <button
-                onClick={() => setActiveTab('dev')}
-                className="text-warp-400/50 hover:text-warp-400 transition-colors cursor-pointer"
-              >
-                Dev
-              </button>
-              {' \u00B7 '}
-              <span>CosmoWarp Foundation {'\u2B21'}</span>
-            </p>
-          </footer>
+          {/* Bottom navigation bar */}
+          <BottomBar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
       </WalletProvider>
       </ThemeProvider>

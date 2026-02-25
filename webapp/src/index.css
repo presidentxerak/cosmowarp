@@ -232,7 +232,7 @@
 
 /* ─── Page transitions ───────────────────────────────── */
 
-main > * {
+main > div > * {
   animation: fadeIn 0.2s ease-out;
 }
 @keyframes fadeIn {
