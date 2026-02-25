@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, Component } from 'react';
+import { useState, useEffect, lazy, Suspense, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -83,10 +83,22 @@ import LegalsView from './components/LegalsView';
 import PrivacyView from './components/PrivacyView';
 import LandingView from './components/LandingView';
 import DevView from './components/DevView';
+import UserProfileView from './components/UserProfileView';
+import DiscoverView from './components/DiscoverView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('wall');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Listen for navigation events from child components
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail === 'string') setActiveTab(detail);
+    };
+    window.addEventListener('cosmowarp-navigate', handler);
+    return () => window.removeEventListener('cosmowarp-navigate', handler);
+  }, []);
 
   return (
     <AppErrorBoundary>
@@ -110,36 +122,38 @@ function App() {
             setActiveTab={setActiveTab}
           />
 
-          {/* Main content area */}
+          {/* Main content area - full width with 10px margin on desktop */}
           <main className="flex-1 px-0 sm:px-[10px] pb-16">
-            <div className="max-w-2xl mx-auto">
-              {/* Bottom bar tabs */}
-              {activeTab === 'wall' && <CosmoChatView />}
-              {activeTab === 'gallery' && <MarketplaceView />}
-              {activeTab === 'cosmo' && <CosmoView onNavigate={setActiveTab} />}
-              {activeTab === 'message' && <MessageView />}
+            {/* Bottom bar tabs */}
+            {activeTab === 'wall' && <CosmoChatView />}
+            {activeTab === 'gallery' && <MarketplaceView />}
+            {activeTab === 'cosmo' && <CosmoView onNavigate={setActiveTab} />}
+            {activeTab === 'message' && <MessageView />}
 
-              {/* Sidebar pages */}
-              {activeTab === 'profile' && <ProfileView onNavigate={setActiveTab} />}
-              {activeTab === 'wallet' && <WalletView />}
-              {activeTab === 'signets' && <SignetsView />}
-              {activeTab === 'whitepaper' && <WhitepaperView />}
-              {activeTab === 'fondation' && <FondationView />}
-              {activeTab === 'admin' && <AdminView />}
-              {activeTab === 'sdk' && <SDKView />}
-              {activeTab === 'console' && <ConsoleView />}
-              {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
-              {activeTab === 'settings' && <SettingsView />}
-              {activeTab === 'legals' && <LegalsView />}
-              {activeTab === 'privacy' && <PrivacyView />}
+            {/* Sidebar pages */}
+            {activeTab === 'profile' && <ProfileView onNavigate={setActiveTab} />}
+            {activeTab === 'wallet' && <WalletView />}
+            {activeTab === 'signets' && <SignetsView />}
+            {activeTab === 'whitepaper' && <WhitepaperView />}
+            {activeTab === 'fondation' && <FondationView />}
+            {activeTab === 'admin' && <AdminView />}
+            {activeTab === 'sdk' && <SDKView />}
+            {activeTab === 'console' && <ConsoleView />}
+            {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
+            {activeTab === 'settings' && <SettingsView />}
+            {activeTab === 'legals' && <LegalsView />}
+            {activeTab === 'privacy' && <PrivacyView />}
 
-              {/* Notifications (from top bar bell) */}
-              {activeTab === 'notifications' && <NotificationsView />}
+            {/* Social */}
+            {activeTab === 'user-profile' && <UserProfileView onNavigate={setActiveTab} />}
+            {activeTab === 'discover' && <DiscoverView onNavigate={setActiveTab} />}
 
-              {/* Legacy */}
-              {activeTab === 'landing' && <LandingView onNavigate={setActiveTab} />}
-              {activeTab === 'dev' && <DevView />}
-            </div>
+            {/* Notifications (from top bar bell) */}
+            {activeTab === 'notifications' && <NotificationsView />}
+
+            {/* Legacy */}
+            {activeTab === 'landing' && <LandingView onNavigate={setActiveTab} />}
+            {activeTab === 'dev' && <DevView />}
           </main>
 
           {/* Bottom navigation bar */}

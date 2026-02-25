@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
+import { SocialEngine } from '../engine/social';
 import type { ChatPost, ChatChannel } from '../engine/cosmochat';
+import HexAvatar from './HexAvatar';
 
 type Tab = 'timeline' | 'explore' | 'channels';
 
@@ -84,6 +86,19 @@ export default function CosmoChatView() {
   }
 
   const alias = wallet.alias || shortAddress(wallet.address);
+
+  // Ensure social profile exists
+  useEffect(() => {
+    const social = SocialEngine.load();
+    social.ensureProfile(wallet.address, alias);
+  }, [wallet.address, alias]);
+
+  const handleViewUser = (address: string) => {
+    sessionStorage.setItem('cosmowarp_view_user', address);
+    // Navigate to user-profile - we need a way to do this
+    // Use a custom event that App.tsx listens to
+    window.dispatchEvent(new CustomEvent('cosmowarp-navigate', { detail: 'user-profile' }));
+  };
 
   // ─── Media upload ──────────────────────────────────────
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,11 +260,11 @@ export default function CosmoChatView() {
       <div className="glass-panel p-3 cursor-pointer hover:border-warp-400/20 transition-all" onClick={() => setSelectedPost(post)}>
         {/* Author row */}
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-xs text-warp-300 font-bold shrink-0">
-            {post.authorAlias.charAt(0).toUpperCase()}
+          <div className="shrink-0" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>
+            <HexAvatar address={post.author} size={32} className="cursor-pointer" />
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-sm font-bold text-gray-200">@{post.authorAlias}</span>
+            <span className="text-sm font-bold text-gray-200 cursor-pointer hover:text-warp-300" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>@{post.authorAlias}</span>
             <span className="text-[10px] text-gray-500 ml-2">{timeAgo(post.timestamp)}</span>
           </div>
           {isMine && (
@@ -343,11 +358,11 @@ export default function CosmoChatView() {
 
         <div className="glass-panel p-4">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-sm text-warp-300 font-bold">
-              {post.authorAlias.charAt(0).toUpperCase()}
+            <div className="cursor-pointer" onClick={() => handleViewUser(post.author)}>
+              <HexAvatar address={post.author} size={40} />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-200">@{post.authorAlias}</p>
+              <p className="text-sm font-bold text-gray-200 cursor-pointer hover:text-warp-300" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</p>
               <p className="text-[10px] text-gray-500">{new Date(post.timestamp).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</p>
             </div>
           </div>
@@ -552,9 +567,7 @@ export default function CosmoChatView() {
           {(
             <div className="glass-panel p-4">
               <div className="flex gap-3">
-                <div className="w-8 h-8 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-xs text-warp-300 font-bold shrink-0">
-                  {alias.charAt(0).toUpperCase()}
-                </div>
+                <HexAvatar address={wallet.address} size={32} className="shrink-0" />
                 <div className="flex-1 space-y-2">
                   <textarea
                     className="warp-input min-h-[60px] resize-y text-sm"

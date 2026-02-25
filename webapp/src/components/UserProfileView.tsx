@@ -1,0 +1,300 @@
+import { useState, useEffect } from 'react';
+import { useWallet } from '../context/WalletContext';
+import { shortAddress } from '../engine/crypto';
+import { SocialEngine } from '../engine/social';
+import { CosmoChatEngine } from '../engine/cosmochat';
+import { WartEngine } from '../engine/warts';
+import type { ChatPost } from '../engine/cosmochat';
+import type { Wart } from '../engine/warts';
+import HexAvatar from './HexAvatar';
+
+type Tab = 'posts' | 'created' | 'collection';
+
+export default function UserProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const { wallet } = useWallet();
+  const [targetAddress, setTargetAddress] = useState('');
+  const [tab, setTab] = useState<Tab>('posts');
+  const [alias, setAlias] = useState('');
+  const [bio, setBio] = useState('');
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [posts, setPosts] = useState<ChatPost[]>([]);
+  const [created, setCreated] = useState<Wart[]>([]);
+  const [collection, setCollection] = useState<Wart[]>([]);
+  const [mutualFollowers, setMutualFollowers] = useState<string[]>([]);
+
+  useEffect(() => {
+    const addr = sessionStorage.getItem('cosmowarp_view_user');
+    if (!addr) return;
+    setTargetAddress(addr);
+    refresh(addr);
+  }, []);
+
+  const refresh = (addr: string) => {
+    const social = SocialEngine.load();
+    const profile = social.getProfile(addr);
+    if (profile) {
+      setAlias(profile.alias);
+      setBio(profile.bio);
+      setFollowersCount(profile.followers.length);
+      setFollowingCount(profile.following.length);
+    } else {
+      setAlias(shortAddress(addr));
+    }
+
+    if (wallet) {
+      setIsFollowing(social.isFollowing(wallet.address, addr));
+      setIsBlocked(social.isBlocked(wallet.address, addr));
+      // Mutual followers
+      const myProfile = social.getProfile(wallet.address);
+      if (myProfile && profile) {
+        const mutuals = myProfile.following.filter(a => profile.followers.includes(a));
+        setMutualFollowers(mutuals);
+      }
+    }
+
+    const chatEngine = CosmoChatEngine.load();
+    setPosts(chatEngine.getUserPosts(addr));
+
+    const wartEngine = WartEngine.load();
+    setCreated(wartEngine.getCreated(addr));
+    setCollection(wartEngine.getCollection(addr));
+  };
+
+  const handleFollow = () => {
+    if (!wallet || !targetAddress) return;
+    const social = SocialEngine.load();
+    social.ensureProfile(wallet.address, wallet.alias || shortAddress(wallet.address));
+    social.ensureProfile(targetAddress, alias);
+    social.follow(wallet.address, targetAddress);
+    setIsFollowing(true);
+    setFollowersCount(prev => prev + 1);
+  };
+
+  const handleUnfollow = () => {
+    if (!wallet || !targetAddress) return;
+    const social = SocialEngine.load();
+    social.unfollow(wallet.address, targetAddress);
+    setIsFollowing(false);
+    setFollowersCount(prev => Math.max(0, prev - 1));
+  };
+
+  const handleBlock = () => {
+    if (!wallet || !targetAddress) return;
+    const social = SocialEngine.load();
+    social.block(wallet.address, targetAddress);
+    setIsBlocked(true);
+    setIsFollowing(false);
+  };
+
+  const handleUnblock = () => {
+    if (!wallet || !targetAddress) return;
+    const social = SocialEngine.load();
+    social.unblock(wallet.address, targetAddress);
+    setIsBlocked(false);
+  };
+
+  const handleMessage = () => {
+    sessionStorage.setItem('cosmowarp_dm_to', targetAddress);
+    onNavigate('message');
+  };
+
+  const handleViewUser = (address: string) => {
+    sessionStorage.setItem('cosmowarp_view_user', address);
+    setTargetAddress(address);
+    setTab('posts');
+    refresh(address);
+  };
+
+  if (!targetAddress) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
+        <p className="text-gray-500 text-sm">No user selected</p>
+      </div>
+    );
+  }
+
+  const isMe = wallet?.address === targetAddress;
+
+  const tabList: { id: Tab; label: string; count: number }[] = [
+    { id: 'posts', label: 'Posts', count: posts.length },
+    { id: 'created', label: 'Created', count: created.length },
+    { id: 'collection', label: 'Collection', count: collection.length },
+  ];
+
+  return (
+    <div className="space-y-0 pb-4">
+      {/* Back button */}
+      <div className="px-3 py-2">
+        <button
+          onClick={() => window.history.length > 1 ? onNavigate('wall') : onNavigate('wall')}
+          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-200 cursor-pointer"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
+      </div>
+
+      {/* Profile header */}
+      <div className="glass-panel p-4 sm:p-5">
+        <div className="flex items-start gap-4">
+          <HexAvatar address={targetAddress} size={64} className="shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold text-gray-100 font-title truncate">{alias}</h2>
+            <p className="text-[11px] text-gray-500 font-mono truncate">{targetAddress}</p>
+
+            {/* Action buttons */}
+            {!isMe && wallet && (
+              <div className="flex gap-2 mt-2">
+                {isBlocked ? (
+                  <button onClick={handleUnblock} className="text-xs px-3 py-1.5 border border-red-500/30 text-red-400 cursor-pointer hover:bg-red-500/10 transition-colors">
+                    Unblock
+                  </button>
+                ) : isFollowing ? (
+                  <button onClick={handleUnfollow} className="text-xs px-3 py-1.5 border border-warp-500/30 text-warp-300 cursor-pointer hover:bg-warp-500/10 transition-colors">
+                    Following
+                  </button>
+                ) : (
+                  <button onClick={handleFollow} className="warp-button text-xs px-4 py-1.5">
+                    Follow
+                  </button>
+                )}
+                <button onClick={handleMessage} className="text-xs px-3 py-1.5 border border-white/10 text-gray-300 cursor-pointer hover:bg-white/5 transition-colors">
+                  Message
+                </button>
+                {!isBlocked && (
+                  <button onClick={handleBlock} className="text-xs px-2 py-1.5 text-gray-600 cursor-pointer hover:text-red-400 transition-colors" title="Block">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bio */}
+        {bio && <p className="text-xs text-gray-400 mt-3">{bio}</p>}
+
+        {/* Stats */}
+        <div className="flex gap-4 mt-3 text-xs">
+          <span>
+            <span className="font-bold text-gray-200">{followersCount}</span>{' '}
+            <span className="text-gray-500">Followers</span>
+          </span>
+          <span>
+            <span className="font-bold text-gray-200">{followingCount}</span>{' '}
+            <span className="text-gray-500">Following</span>
+          </span>
+          <span>
+            <span className="font-bold text-gray-200">{posts.length}</span>{' '}
+            <span className="text-gray-500">Posts</span>
+          </span>
+        </div>
+
+        {/* Mutual followers */}
+        {mutualFollowers.length > 0 && (
+          <p className="text-[10px] text-gray-500 mt-2">
+            Followed by {mutualFollowers.length} {mutualFollowers.length === 1 ? 'person' : 'people'} you follow
+          </p>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-white/5 overflow-x-auto">
+        {tabList.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+              tab === t.id
+                ? 'border-warp-400 text-warp-300'
+                : 'border-transparent text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            {t.label} <span className="text-[10px] text-gray-600 ml-1">{t.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="pt-2">
+        {tab === 'posts' && (
+          posts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-sm">No posts yet</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {posts.map(post => (
+                <div key={post.id} className="glass-panel p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <HexAvatar address={post.author} size={24} onClick={() => handleViewUser(post.author)} />
+                    <span className="text-xs font-medium text-gray-200 cursor-pointer hover:text-warp-300" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</span>
+                  </div>
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{post.content}</p>
+                  {post.mediaData && post.mediaType === 'image' && (
+                    <img src={post.mediaData} alt="" className="mt-2 w-full max-h-64 object-cover" />
+                  )}
+                  <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
+                    <span>{post.tipCount} tips</span>
+                    <span>{post.rewarpCount} rewarps</span>
+                    <span>{post.comments.length} comments</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === 'created' && (
+          created.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-sm">No Warts created</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {created.map(wart => (
+                <div key={wart.id} className="glass-panel p-2">
+                  {wart.mediaType !== 'audio' && wart.imageData && (
+                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
+                  )}
+                  {wart.mediaType === 'audio' && wart.audioCover && (
+                    <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
+                  )}
+                  <p className="text-xs font-medium text-gray-200 mt-1 truncate">{wart.title}</p>
+                  <p className="text-[10px] text-gray-500">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === 'collection' && (
+          collection.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-sm">Empty collection</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {collection.map(wart => (
+                <div key={wart.id} className="glass-panel p-2">
+                  {wart.mediaType !== 'audio' && wart.imageData && (
+                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
+                  )}
+                  <p className="text-xs font-medium text-gray-200 mt-1 truncate">{wart.title}</p>
+                  <p className="text-[10px] text-gray-500">by {shortAddress(wart.creator)}</p>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react';
+import { useWallet } from '../context/WalletContext';
+import HexAvatar from './HexAvatar';
 
 interface TopBarProps {
   onProfileClick: () => void;
@@ -7,6 +9,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ onProfileClick, onNotificationsClick, notificationCount = 0 }: TopBarProps) {
+  const { wallet } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,17 +23,7 @@ export default function TopBar({ onProfileClick, onNotificationsClick, notificat
           className="shrink-0 w-9 h-9 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
           aria-label="Open menu"
         >
-          <div className="profile-icon-ring">
-            <img
-              src={import.meta.env.BASE_URL + 'profile.svg'}
-              alt="Profile"
-              className="w-7 h-7 rounded-full profile-icon"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).parentElement!.innerHTML = '<span class="w-7 h-7 rounded-full bg-warp-500/30 flex items-center justify-center text-sm text-warp-300">\u2B21</span>';
-              }}
-            />
-          </div>
+          <HexAvatar address={wallet?.address || 'default'} size={32} />
         </button>
 
         {/* Search bar */}
