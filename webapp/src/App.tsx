@@ -122,8 +122,8 @@ function App() {
             setActiveTab={setActiveTab}
           />
 
-          {/* Main content area - full width with 10px margin on desktop */}
-          <main className="flex-1 px-0 sm:px-[10px] pb-16">
+          {/* Main content area - offset for mini sidebar on desktop */}
+          <main className="flex-1 px-0 sm:pl-[66px] sm:pr-[10px] pb-16">
             {/* Bottom bar tabs */}
             {activeTab === 'wall' && <CosmoChatView />}
             {activeTab === 'gallery' && <MarketplaceView />}

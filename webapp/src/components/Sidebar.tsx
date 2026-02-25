@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useWallet } from '../context/WalletContext';
+import HexAvatar from './HexAvatar';
+import { shortAddress } from '../engine/crypto';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -77,7 +80,7 @@ const menuItems = [
       <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   )},
-  { id: 'settings', label: 'Paramètres', icon: (
+  { id: 'settings', label: 'Param\u00e8tres', icon: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -101,6 +104,7 @@ const menuItems = [
 export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: SidebarProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
+  const { wallet } = useWallet();
 
   // Close on escape
   useEffect(() => {
@@ -129,7 +133,40 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Desktop mini sidebar - icons only */}
+      <div className="hidden sm:flex fixed top-[52px] left-0 bottom-0 z-40 w-[56px] flex-col items-center py-3 gap-1 glass-panel border-r border-white/5 overflow-y-auto sidebar-mini">
+        {menuItems.map((item) => {
+          if (item.id.startsWith('divider')) {
+            return <div key={item.id} className="w-8 my-0.5 border-b border-white/5" />;
+          }
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer ${
+                activeTab === item.id
+                  ? 'text-warp-400 bg-warp-500/10'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+              }`}
+              title={item.label}
+              aria-label={item.label}
+            >
+              {item.icon}
+            </button>
+          );
+        })}
+        <div className="mt-auto pt-2 border-t border-white/5 w-8">
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-300 cursor-pointer transition-colors mx-auto"
+            title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          >
+            <span className="text-lg">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Backdrop (mobile) */}
       <div
         className={`fixed inset-0 z-[60] bg-black/60 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -137,32 +174,46 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
         onClick={onClose}
       />
 
-      {/* Sidebar panel */}
+      {/* Sidebar panel (slides open) */}
       <div
         ref={sidebarRef}
         className={`fixed top-0 left-0 bottom-0 z-[70] w-[280px] max-w-[80vw] glass-panel overflow-y-auto transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Header with logo */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <img
-              src={import.meta.env.BASE_URL + 'logo.svg'}
-              alt="CosmoWarp"
-              className="w-7 h-7 animate-float"
-            />
-            <span className="font-title text-sm text-gray-100">CosmoWarp</span>
+        {/* Header with profile */}
+        <div className="p-4 border-b border-white/5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <img
+                src={import.meta.env.BASE_URL + 'logo.svg'}
+                alt="CosmoWarp"
+                className="w-7 h-7 animate-float"
+              />
+              <span className="font-title text-sm text-gray-100">CosmoWarp</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 cursor-pointer transition-colors"
+              aria-label="Close menu"
+            >
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 5l10 10M15 5L5 15" />
+              </svg>
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 cursor-pointer transition-colors"
-            aria-label="Close menu"
-          >
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 5l10 10M15 5L5 15" />
-            </svg>
-          </button>
+          {wallet && (
+            <button
+              onClick={() => handleSelect('profile')}
+              className="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-white/5 p-2 -mx-2 transition-colors"
+            >
+              <HexAvatar address={wallet.address} size={40} animate />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-gray-100 truncate">{wallet.alias || shortAddress(wallet.address)}</p>
+                <p className="text-[10px] text-gray-500 truncate">{shortAddress(wallet.address)}</p>
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Menu items */}

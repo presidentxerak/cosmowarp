@@ -4,7 +4,9 @@ import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 
-type Tab = 'marketplace' | 'collection' | 'create' | 'detail';
+import PFPCollectionView from './PFPCollectionView';
+
+type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp';
 
 export default function MarketplaceView() {
   const {
@@ -711,14 +713,38 @@ export default function MarketplaceView() {
     );
   }
 
+  // ─── Category filter ──────────────────────────────────────
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+
+  const categories = [
+    { id: 'all', label: 'All' },
+    { id: 'image', label: 'Art' },
+    { id: 'audio', label: 'Music' },
+    { id: 'video', label: 'Video' },
+    { id: 'unique', label: '1/1' },
+    { id: 'limited', label: 'Limited' },
+    { id: 'cheap', label: 'Under 10\u03A9' },
+  ];
+
   // ─── Filter expired from marketplace ──────────────────────
-  const activeMarketplace = marketplace.filter(w => !isExpired(w));
+  const activeMarketplace = marketplace.filter(w => {
+    if (isExpired(w)) return false;
+    if (categoryFilter === 'all') return true;
+    if (categoryFilter === 'image') return w.mediaType === 'image';
+    if (categoryFilter === 'audio') return w.mediaType === 'audio';
+    if (categoryFilter === 'video') return w.mediaType === 'video';
+    if (categoryFilter === 'unique') return w.editionType === 'unique';
+    if (categoryFilter === 'limited') return w.editionType === 'limited';
+    if (categoryFilter === 'cheap') return w.price !== null && w.price < 10;
+    return true;
+  });
 
   // ─── Tab Navigation ────────────────────────────────────
   const tabs: { id: Tab; label: string }[] = [
     { id: 'marketplace', label: '\u2B22 Marketplace' },
     { id: 'collection', label: '\u25C8 My Collection' },
     { id: 'create', label: '+ Create' },
+    { id: 'pfp', label: '\u2B21 PFP' },
   ];
 
   return (
@@ -750,6 +776,23 @@ export default function MarketplaceView() {
             <p className="text-xs text-gray-500">
               Unique digital artworks stored on the CosmoWarp protocol. Buy, sell, and collect Warts.
             </p>
+          </div>
+
+          {/* Category filters */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 px-1">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setCategoryFilter(cat.id)}
+                className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                  categoryFilter === cat.id
+                    ? 'bg-warp-500/30 border border-warp-500/50 text-warp-300'
+                    : 'bg-transparent border border-white/10 text-gray-400 hover:border-white/20 hover:text-gray-300'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
 
           {activeMarketplace.length === 0 ? (
@@ -1041,6 +1084,9 @@ export default function MarketplaceView() {
           </div>
         </div>
       )}
+
+      {/* ─── PFP Collections Tab ──────────────────────────── */}
+      {tab === 'pfp' && <PFPCollectionView />}
     </div>
   );
 }

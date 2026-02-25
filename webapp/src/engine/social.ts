@@ -6,11 +6,21 @@ export interface UserProfile {
   address: string;
   alias: string;
   bio: string;
+  profileImage: string;   // base64 custom avatar
   joinedAt: number;
-  following: string[];   // addresses this user follows
-  followers: string[];   // addresses following this user
-  blockedBy: string[];   // users who blocked this user
-  blocked: string[];     // users this user blocked
+  following: string[];     // addresses this user follows
+  followers: string[];     // addresses following this user
+  blockedBy: string[];     // users who blocked this user
+  blocked: string[];       // users this user blocked
+  // Social links
+  website: string;
+  instagram: string;
+  twitter: string;
+  // Relationship lists
+  closeFriends: string[];
+  favorites: string[];
+  muted: string[];
+  restricted: string[];
 }
 
 export interface SocialStats {
@@ -28,7 +38,20 @@ const STORAGE_KEY = 'cosmowarp_social';
 function loadProfiles(): UserProfile[] {
   try {
     const raw = storage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const profiles = JSON.parse(raw) as UserProfile[];
+    // Migrate old profiles that lack new fields
+    return profiles.map(p => ({
+      ...p,
+      profileImage: p.profileImage || '',
+      website: p.website || '',
+      instagram: p.instagram || '',
+      twitter: p.twitter || '',
+      closeFriends: p.closeFriends || [],
+      favorites: p.favorites || [],
+      muted: p.muted || [],
+      restricted: p.restricted || [],
+    }));
   } catch { return []; }
 }
 
@@ -66,11 +89,19 @@ export class SocialEngine {
         address,
         alias: alias || address.slice(0, 10),
         bio: '',
+        profileImage: '',
         joinedAt: Date.now(),
         following: [],
         followers: [],
         blockedBy: [],
         blocked: [],
+        website: '',
+        instagram: '',
+        twitter: '',
+        closeFriends: [],
+        favorites: [],
+        muted: [],
+        restricted: [],
       };
       this.profiles.push(profile);
       this.save();
@@ -95,6 +126,114 @@ export class SocialEngine {
     profile.alias = alias.slice(0, 30);
     this.save();
     return true;
+  }
+
+  updateProfileImage(address: string, imageData: string): boolean {
+    const profile = this.profiles.find(p => p.address === address);
+    if (!profile) return false;
+    profile.profileImage = imageData;
+    this.save();
+    return true;
+  }
+
+  updateLinks(address: string, links: { website?: string; instagram?: string; twitter?: string }): boolean {
+    const profile = this.profiles.find(p => p.address === address);
+    if (!profile) return false;
+    if (links.website !== undefined) profile.website = links.website.slice(0, 200);
+    if (links.instagram !== undefined) profile.instagram = links.instagram.slice(0, 100);
+    if (links.twitter !== undefined) profile.twitter = links.twitter.slice(0, 100);
+    this.save();
+    return true;
+  }
+
+  // ─── Relationship lists ──────────────────────────────
+
+  addToCloseFriends(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me || me.closeFriends.includes(targetAddress)) return false;
+    me.closeFriends.push(targetAddress);
+    this.save();
+    return true;
+  }
+
+  removeFromCloseFriends(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me) return false;
+    const idx = me.closeFriends.indexOf(targetAddress);
+    if (idx >= 0) me.closeFriends.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  addToFavorites(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me || me.favorites.includes(targetAddress)) return false;
+    me.favorites.push(targetAddress);
+    this.save();
+    return true;
+  }
+
+  removeFromFavorites(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me) return false;
+    const idx = me.favorites.indexOf(targetAddress);
+    if (idx >= 0) me.favorites.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  muteUser(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me || me.muted.includes(targetAddress)) return false;
+    me.muted.push(targetAddress);
+    this.save();
+    return true;
+  }
+
+  unmuteUser(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me) return false;
+    const idx = me.muted.indexOf(targetAddress);
+    if (idx >= 0) me.muted.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  restrictUser(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me || me.restricted.includes(targetAddress)) return false;
+    me.restricted.push(targetAddress);
+    this.save();
+    return true;
+  }
+
+  unrestrictUser(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    if (!me) return false;
+    const idx = me.restricted.indexOf(targetAddress);
+    if (idx >= 0) me.restricted.splice(idx, 1);
+    this.save();
+    return true;
+  }
+
+  isCloseFriend(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    return me ? me.closeFriends.includes(targetAddress) : false;
+  }
+
+  isFavorite(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    return me ? me.favorites.includes(targetAddress) : false;
+  }
+
+  isMuted(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    return me ? me.muted.includes(targetAddress) : false;
+  }
+
+  isRestricted(myAddress: string, targetAddress: string): boolean {
+    const me = this.profiles.find(p => p.address === myAddress);
+    return me ? me.restricted.includes(targetAddress) : false;
   }
 
   // ─── Follow / Unfollow ─────────────────────────────
@@ -123,6 +262,12 @@ export class SocialEngine {
 
     const idx2 = target.followers.indexOf(myAddress);
     if (idx2 >= 0) target.followers.splice(idx2, 1);
+
+    // Also remove from relationship lists
+    const cfIdx = me.closeFriends.indexOf(targetAddress);
+    if (cfIdx >= 0) me.closeFriends.splice(cfIdx, 1);
+    const fIdx = me.favorites.indexOf(targetAddress);
+    if (fIdx >= 0) me.favorites.splice(fIdx, 1);
 
     this.save();
     return true;

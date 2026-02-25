@@ -38,6 +38,16 @@ const tabs = [
     ),
   },
   {
+    id: 'notifications',
+    label: 'Notifs',
+    icon: (active: boolean) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+    ),
+  },
+  {
     id: 'message',
     label: 'Message',
     icon: (active: boolean) => (
@@ -58,13 +68,13 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center gap-0.5 py-2 px-4 flex-1 transition-all cursor-pointer ${
+              className={`flex flex-col items-center gap-0.5 py-2 px-2 flex-1 transition-all cursor-pointer ${
                 isActive ? 'text-warp-400' : 'text-gray-500 hover:text-gray-300'
               }`}
               aria-label={tab.label}
             >
               {tab.icon(isActive)}
-              <span className={`text-[10px] font-medium ${isActive ? 'text-warp-400' : ''}`}>
+              <span className={`text-[9px] font-medium ${isActive ? 'text-warp-400' : ''}`}>
                 {tab.label}
               </span>
             </button>

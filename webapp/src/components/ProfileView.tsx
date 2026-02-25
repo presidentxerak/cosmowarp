@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
@@ -20,6 +20,16 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   const [followingCount, setFollowingCount] = useState(0);
   const [followersList, setFollowersList] = useState<{ address: string; alias: string }[]>([]);
   const [followingList, setFollowingList] = useState<{ address: string; alias: string }[]>([]);
+  // Links
+  const [website, setWebsite] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [twitter, setTwitter] = useState('');
+  const [editingLinks, setEditingLinks] = useState(false);
+  const [linkWebsite, setLinkWebsite] = useState('');
+  const [linkInstagram, setLinkInstagram] = useState('');
+  const [linkTwitter, setLinkTwitter] = useState('');
+  // Profile image upload
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!wallet) return;
@@ -30,6 +40,9 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     setFollowingCount(profile.following.length);
     setFollowersList(social.getFollowers(wallet.address).map(p => ({ address: p.address, alias: p.alias })));
     setFollowingList(social.getFollowing(wallet.address).map(p => ({ address: p.address, alias: p.alias })));
+    setWebsite(profile.website);
+    setInstagram(profile.instagram);
+    setTwitter(profile.twitter);
 
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(wallet.address));
@@ -55,8 +68,31 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     setEditingBio(false);
   };
 
+  const handleSaveLinks = () => {
+    const social = SocialEngine.load();
+    social.updateLinks(wallet.address, { website: linkWebsite, instagram: linkInstagram, twitter: linkTwitter });
+    setWebsite(linkWebsite);
+    setInstagram(linkInstagram);
+    setTwitter(linkTwitter);
+    setEditingLinks(false);
+  };
+
+  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return; // Max 2MB
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result as string;
+      const social = SocialEngine.load();
+      social.updateProfileImage(wallet.address, data);
+      // Force re-render by navigating to self
+      onNavigate('profile');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleViewUser = (address: string) => {
-    // Store target user address for UserProfileView
     sessionStorage.setItem('cosmowarp_view_user', address);
     onNavigate('user-profile');
   };
@@ -70,67 +106,117 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   ];
 
   return (
-    <div className="space-y-0 pb-4">
-      {/* Profile header */}
-      <div className="glass-panel p-4 sm:p-5">
-        <div className="flex items-start gap-4">
-          <HexAvatar address={wallet.address} size={64} className="shrink-0" />
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-gray-100 font-title truncate">{alias}</h2>
-            <p className="text-[11px] text-gray-500 font-mono truncate">{wallet.address}</p>
-            <div className="flex gap-4 mt-2">
-              <div>
-                <span className="text-sm font-bold text-energy-400">{wallet.balance.toFixed(2)}</span>
-                <span className="text-[10px] text-gray-500 ml-1">{'\u03A9'}</span>
+    <div className="space-y-0 pb-4 max-w-2xl mx-auto">
+      {/* Profile header - centered */}
+      <div className="glass-panel p-5 sm:p-6">
+        <div className="flex flex-col items-center text-center">
+          {/* Avatar with upload */}
+          <div className="relative group mb-3">
+            <HexAvatar address={wallet.address} size={80} animate className="mx-auto" />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              title="Upload profile picture"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} />
+          </div>
+
+          <h2 className="text-xl font-bold text-gray-100 font-title">{alias}</h2>
+          <p className="text-[11px] text-gray-500 font-mono mt-0.5">{wallet.address}</p>
+
+          {/* Balance & Level */}
+          <div className="flex gap-4 mt-2 items-center">
+            <span className="text-sm font-bold text-energy-400">{wallet.balance.toFixed(2)} {'\u03A9'}</span>
+            <span className="text-xs text-gray-500">|</span>
+            <span className="text-sm font-bold text-warp-400">Lv.{wallet.level || 1}</span>
+            <span className="text-[10px] text-gray-500">{wallet.levelName}</span>
+          </div>
+
+          {/* Bio */}
+          <div className="mt-3 w-full max-w-sm">
+            {editingBio ? (
+              <div className="flex gap-2">
+                <input
+                  className="warp-input flex-1 text-xs py-1.5"
+                  value={bioInput}
+                  onChange={(e) => setBioInput(e.target.value)}
+                  placeholder="Tell us about yourself..."
+                  maxLength={280}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBio(); }}
+                  autoFocus
+                />
+                <button onClick={handleSaveBio} className="warp-button text-xs px-3 py-1.5">Save</button>
+                <button onClick={() => setEditingBio(false)} className="text-xs text-gray-500 cursor-pointer">Cancel</button>
               </div>
-              <div>
-                <span className="text-sm font-bold text-warp-400">Lv.{wallet.level || 1}</span>
-                <span className="text-[10px] text-gray-500 ml-1">{wallet.levelName}</span>
-              </div>
+            ) : (
+              <p
+                className="text-xs text-gray-400 cursor-pointer hover:text-gray-300 transition-colors"
+                onClick={() => { setBioInput(bio); setEditingBio(true); }}
+              >
+                {bio || 'Tap to add a bio...'}
+              </p>
+            )}
+          </div>
+
+          {/* Social links */}
+          <div className="mt-2 flex flex-wrap gap-3 justify-center items-center">
+            {website && (
+              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-energy-400 hover:text-energy-300 flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                {website.replace(/^https?:\/\//, '').slice(0, 30)}
+              </a>
+            )}
+            {instagram && (
+              <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-nebula-400 hover:text-nebula-500 flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
+                @{instagram.replace('@', '')}
+              </a>
+            )}
+            {twitter && (
+              <a href={`https://x.com/${twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-warp-300 hover:text-warp-400 flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                @{twitter.replace('@', '')}
+              </a>
+            )}
+            <button
+              onClick={() => { setLinkWebsite(website); setLinkInstagram(instagram); setLinkTwitter(twitter); setEditingLinks(!editingLinks); }}
+              className="text-[10px] text-gray-600 hover:text-gray-400 cursor-pointer"
+            >
+              {editingLinks ? 'Cancel' : (website || instagram || twitter ? 'Edit links' : '+ Add links')}
+            </button>
+          </div>
+
+          {/* Edit links form */}
+          {editingLinks && (
+            <div className="mt-3 w-full max-w-sm space-y-2">
+              <input className="warp-input text-xs py-1.5" value={linkWebsite} onChange={e => setLinkWebsite(e.target.value)} placeholder="Website URL" />
+              <input className="warp-input text-xs py-1.5" value={linkInstagram} onChange={e => setLinkInstagram(e.target.value)} placeholder="Instagram username" />
+              <input className="warp-input text-xs py-1.5" value={linkTwitter} onChange={e => setLinkTwitter(e.target.value)} placeholder="X (Twitter) username" />
+              <button onClick={handleSaveLinks} className="warp-button text-xs w-full py-1.5">Save Links</button>
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className="flex gap-6 mt-4 text-xs">
+            <button onClick={() => setTab('followers')} className="cursor-pointer hover:text-warp-300 transition-colors text-center">
+              <span className="block font-bold text-gray-200 text-base">{followersCount}</span>
+              <span className="text-gray-500">Followers</span>
+            </button>
+            <button onClick={() => setTab('following')} className="cursor-pointer hover:text-warp-300 transition-colors text-center">
+              <span className="block font-bold text-gray-200 text-base">{followingCount}</span>
+              <span className="text-gray-500">Following</span>
+            </button>
+            <div className="text-center">
+              <span className="block font-bold text-gray-200 text-base">{posts.length}</span>
+              <span className="text-gray-500">Posts</span>
             </div>
           </div>
-        </div>
-
-        {/* Bio */}
-        <div className="mt-3">
-          {editingBio ? (
-            <div className="flex gap-2">
-              <input
-                className="warp-input flex-1 text-xs py-1.5"
-                value={bioInput}
-                onChange={(e) => setBioInput(e.target.value)}
-                placeholder="Tell us about yourself..."
-                maxLength={280}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBio(); }}
-                autoFocus
-              />
-              <button onClick={handleSaveBio} className="warp-button text-xs px-3 py-1.5">Save</button>
-              <button onClick={() => setEditingBio(false)} className="text-xs text-gray-500 cursor-pointer">Cancel</button>
-            </div>
-          ) : (
-            <p
-              className="text-xs text-gray-400 cursor-pointer hover:text-gray-300 transition-colors"
-              onClick={() => { setBioInput(bio); setEditingBio(true); }}
-            >
-              {bio || 'Tap to add a bio...'}
-            </p>
-          )}
-        </div>
-
-        {/* Stats row */}
-        <div className="flex gap-4 mt-3 text-xs">
-          <button onClick={() => setTab('followers')} className="cursor-pointer hover:text-warp-300 transition-colors">
-            <span className="font-bold text-gray-200">{followersCount}</span>{' '}
-            <span className="text-gray-500">Followers</span>
-          </button>
-          <button onClick={() => setTab('following')} className="cursor-pointer hover:text-warp-300 transition-colors">
-            <span className="font-bold text-gray-200">{followingCount}</span>{' '}
-            <span className="text-gray-500">Following</span>
-          </button>
-          <span>
-            <span className="font-bold text-gray-200">{posts.length}</span>{' '}
-            <span className="text-gray-500">Posts</span>
-          </span>
         </div>
       </div>
 

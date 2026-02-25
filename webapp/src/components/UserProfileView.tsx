@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
@@ -24,6 +24,17 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const [created, setCreated] = useState<Wart[]>([]);
   const [collection, setCollection] = useState<Wart[]>([]);
   const [mutualFollowers, setMutualFollowers] = useState<string[]>([]);
+  // Social links
+  const [website, setWebsite] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [twitter, setTwitter] = useState('');
+  // Follow dropdown state
+  const [showFollowMenu, setShowFollowMenu] = useState(false);
+  const [isCloseFriend, setIsCloseFriend] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isRestricted, setIsRestricted] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const addr = sessionStorage.getItem('cosmowarp_view_user');
@@ -31,6 +42,18 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     setTargetAddress(addr);
     refresh(addr);
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!showFollowMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowFollowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showFollowMenu]);
 
   const refresh = (addr: string) => {
     const social = SocialEngine.load();
@@ -40,6 +63,9 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       setBio(profile.bio);
       setFollowersCount(profile.followers.length);
       setFollowingCount(profile.following.length);
+      setWebsite(profile.website);
+      setInstagram(profile.instagram);
+      setTwitter(profile.twitter);
     } else {
       setAlias(shortAddress(addr));
     }
@@ -47,6 +73,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     if (wallet) {
       setIsFollowing(social.isFollowing(wallet.address, addr));
       setIsBlocked(social.isBlocked(wallet.address, addr));
+      setIsCloseFriend(social.isCloseFriend(wallet.address, addr));
+      setIsFavorite(social.isFavorite(wallet.address, addr));
+      setIsMuted(social.isMuted(wallet.address, addr));
+      setIsRestricted(social.isRestricted(wallet.address, addr));
       // Mutual followers
       const myProfile = social.getProfile(wallet.address);
       if (myProfile && profile) {
@@ -78,7 +108,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     const social = SocialEngine.load();
     social.unfollow(wallet.address, targetAddress);
     setIsFollowing(false);
+    setIsCloseFriend(false);
+    setIsFavorite(false);
     setFollowersCount(prev => Math.max(0, prev - 1));
+    setShowFollowMenu(false);
   };
 
   const handleBlock = () => {
@@ -108,6 +141,50 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     refresh(address);
   };
 
+  const toggleCloseFriend = () => {
+    if (!wallet) return;
+    const social = SocialEngine.load();
+    if (isCloseFriend) {
+      social.removeFromCloseFriends(wallet.address, targetAddress);
+    } else {
+      social.addToCloseFriends(wallet.address, targetAddress);
+    }
+    setIsCloseFriend(!isCloseFriend);
+  };
+
+  const toggleFavorite = () => {
+    if (!wallet) return;
+    const social = SocialEngine.load();
+    if (isFavorite) {
+      social.removeFromFavorites(wallet.address, targetAddress);
+    } else {
+      social.addToFavorites(wallet.address, targetAddress);
+    }
+    setIsFavorite(!isFavorite);
+  };
+
+  const toggleMute = () => {
+    if (!wallet) return;
+    const social = SocialEngine.load();
+    if (isMuted) {
+      social.unmuteUser(wallet.address, targetAddress);
+    } else {
+      social.muteUser(wallet.address, targetAddress);
+    }
+    setIsMuted(!isMuted);
+  };
+
+  const toggleRestrict = () => {
+    if (!wallet) return;
+    const social = SocialEngine.load();
+    if (isRestricted) {
+      social.unrestrictUser(wallet.address, targetAddress);
+    } else {
+      social.restrictUser(wallet.address, targetAddress);
+    }
+    setIsRestricted(!isRestricted);
+  };
+
   if (!targetAddress) {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
@@ -125,11 +202,11 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   ];
 
   return (
-    <div className="space-y-0 pb-4">
+    <div className="space-y-0 pb-4 max-w-2xl mx-auto">
       {/* Back button */}
       <div className="px-3 py-2">
         <button
-          onClick={() => window.history.length > 1 ? onNavigate('wall') : onNavigate('wall')}
+          onClick={() => onNavigate('wall')}
           className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-200 cursor-pointer"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -139,70 +216,141 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         </button>
       </div>
 
-      {/* Profile header */}
-      <div className="glass-panel p-4 sm:p-5">
-        <div className="flex items-start gap-4">
-          <HexAvatar address={targetAddress} size={64} className="shrink-0" />
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-gray-100 font-title truncate">{alias}</h2>
-            <p className="text-[11px] text-gray-500 font-mono truncate">{targetAddress}</p>
+      {/* Profile header - centered */}
+      <div className="glass-panel p-5 sm:p-6">
+        <div className="flex flex-col items-center text-center">
+          <HexAvatar address={targetAddress} size={80} animate className="mb-3" />
+          <h2 className="text-xl font-bold text-gray-100 font-title">{alias}</h2>
+          <p className="text-[11px] text-gray-500 font-mono mt-0.5">{targetAddress}</p>
 
-            {/* Action buttons */}
-            {!isMe && wallet && (
-              <div className="flex gap-2 mt-2">
-                {isBlocked ? (
-                  <button onClick={handleUnblock} className="text-xs px-3 py-1.5 border border-red-500/30 text-red-400 cursor-pointer hover:bg-red-500/10 transition-colors">
-                    Unblock
-                  </button>
-                ) : isFollowing ? (
-                  <button onClick={handleUnfollow} className="text-xs px-3 py-1.5 border border-warp-500/30 text-warp-300 cursor-pointer hover:bg-warp-500/10 transition-colors">
-                    Following
-                  </button>
-                ) : (
-                  <button onClick={handleFollow} className="warp-button text-xs px-4 py-1.5">
-                    Follow
-                  </button>
-                )}
-                <button onClick={handleMessage} className="text-xs px-3 py-1.5 border border-white/10 text-gray-300 cursor-pointer hover:bg-white/5 transition-colors">
-                  Message
+          {/* Social links */}
+          {(website || instagram || twitter) && (
+            <div className="mt-2 flex flex-wrap gap-3 justify-center">
+              {website && (
+                <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-energy-400 hover:text-energy-300 flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  {website.replace(/^https?:\/\//, '').slice(0, 30)}
+                </a>
+              )}
+              {instagram && (
+                <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-nebula-400 hover:text-nebula-500 flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
+                  @{instagram.replace('@', '')}
+                </a>
+              )}
+              {twitter && (
+                <a href={`https://x.com/${twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-warp-300 hover:text-warp-400 flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  @{twitter.replace('@', '')}
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Bio */}
+          {bio && <p className="text-xs text-gray-400 mt-3 max-w-sm">{bio}</p>}
+
+          {/* Action buttons */}
+          {!isMe && wallet && (
+            <div className="flex gap-2 mt-4 items-center">
+              {isBlocked ? (
+                <button onClick={handleUnblock} className="text-xs px-4 py-2 border border-red-500/30 text-red-400 cursor-pointer hover:bg-red-500/10 transition-colors">
+                  Unblock
                 </button>
-                {!isBlocked && (
-                  <button onClick={handleBlock} className="text-xs px-2 py-1.5 text-gray-600 cursor-pointer hover:text-red-400 transition-colors" title="Block">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              ) : isFollowing ? (
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setShowFollowMenu(!showFollowMenu)}
+                    className="text-xs px-4 py-2 border border-warp-500/30 text-warp-300 cursor-pointer hover:bg-warp-500/10 transition-colors flex items-center gap-1"
+                  >
+                    Following
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </button>
-                )}
-              </div>
-            )}
+                  {/* Instagram-style dropdown */}
+                  {showFollowMenu && (
+                    <div className="absolute top-full left-0 mt-1 w-52 glass-panel border border-white/10 z-50 follow-dropdown">
+                      <button
+                        onClick={toggleCloseFriend}
+                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-gray-300">Close friends</span>
+                        {isCloseFriend && <span className="text-energy-400">{'\u2713'}</span>}
+                      </button>
+                      <button
+                        onClick={toggleFavorite}
+                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-gray-300">Favorites</span>
+                        {isFavorite && <span className="text-star-400">{'\u2605'}</span>}
+                      </button>
+                      <div className="border-t border-white/5" />
+                      <button
+                        onClick={toggleMute}
+                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-gray-300">Mute</span>
+                        {isMuted && <span className="text-gray-500">{'\u2713'}</span>}
+                      </button>
+                      <button
+                        onClick={toggleRestrict}
+                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-gray-300">Restrict</span>
+                        {isRestricted && <span className="text-gray-500">{'\u2713'}</span>}
+                      </button>
+                      <div className="border-t border-white/5" />
+                      <button
+                        onClick={handleUnfollow}
+                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-red-500/10 cursor-pointer transition-colors text-red-400"
+                      >
+                        Unfollow
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button onClick={handleFollow} className="warp-button text-xs px-5 py-2">
+                  Follow
+                </button>
+              )}
+              <button onClick={handleMessage} className="text-xs px-4 py-2 border border-white/10 text-gray-300 cursor-pointer hover:bg-white/5 transition-colors">
+                Message
+              </button>
+              {!isBlocked && (
+                <button onClick={handleBlock} className="text-xs px-2 py-2 text-gray-600 cursor-pointer hover:text-red-400 transition-colors" title="Block">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Stats */}
+          <div className="flex gap-6 mt-4 text-xs">
+            <div className="text-center">
+              <span className="block font-bold text-gray-200 text-base">{followersCount}</span>
+              <span className="text-gray-500">Followers</span>
+            </div>
+            <div className="text-center">
+              <span className="block font-bold text-gray-200 text-base">{followingCount}</span>
+              <span className="text-gray-500">Following</span>
+            </div>
+            <div className="text-center">
+              <span className="block font-bold text-gray-200 text-base">{posts.length}</span>
+              <span className="text-gray-500">Posts</span>
+            </div>
           </div>
+
+          {/* Mutual followers */}
+          {mutualFollowers.length > 0 && (
+            <p className="text-[10px] text-gray-500 mt-2">
+              Followed by {mutualFollowers.length} {mutualFollowers.length === 1 ? 'person' : 'people'} you follow
+            </p>
+          )}
         </div>
-
-        {/* Bio */}
-        {bio && <p className="text-xs text-gray-400 mt-3">{bio}</p>}
-
-        {/* Stats */}
-        <div className="flex gap-4 mt-3 text-xs">
-          <span>
-            <span className="font-bold text-gray-200">{followersCount}</span>{' '}
-            <span className="text-gray-500">Followers</span>
-          </span>
-          <span>
-            <span className="font-bold text-gray-200">{followingCount}</span>{' '}
-            <span className="text-gray-500">Following</span>
-          </span>
-          <span>
-            <span className="font-bold text-gray-200">{posts.length}</span>{' '}
-            <span className="text-gray-500">Posts</span>
-          </span>
-        </div>
-
-        {/* Mutual followers */}
-        {mutualFollowers.length > 0 && (
-          <p className="text-[10px] text-gray-500 mt-2">
-            Followed by {mutualFollowers.length} {mutualFollowers.length === 1 ? 'person' : 'people'} you follow
-          </p>
-        )}
       </div>
 
       {/* Tabs */}
