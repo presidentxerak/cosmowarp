@@ -3,29 +3,17 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
-import { runMiningProgram, MINING_PROGRAMS } from '../engine/miner';
+import MineView from './MineView';
 
 type WalletTab = 'overview' | 'send' | 'mine';
-type Difficulty = 'basic' | 'crypto' | 'deep';
 type AuthTab = 'signup' | 'signin';
 type SignInMethod = 'cosmoid' | 'cosmolink' | 'file';
-
-const DIFFICULTY_INFO: Record<Difficulty, { label: string; reward: string; color: string }> = {
-  basic: { label: 'Basic', reward: 'Low', color: 'text-energy-400' },
-  crypto: { label: 'Crypto', reward: 'Medium', color: 'text-warp-400' },
-  deep: { label: 'Deep', reward: 'High', color: 'text-star-400' },
-};
-
-interface MiningLog {
-  text: string;
-  type: 'info' | 'success' | 'energy' | 'level_up';
-}
 
 export default function WalletView() {
   const {
     wallet, unlocked, needsMigration,
     meshStats, supplyInfo, levelProgress,
-    cosmoIDLogin, unlock, lock, migrate, mine, send,
+    cosmoIDLogin, unlock, lock, migrate, send,
     doExportWallet, doImportWallet, doImportCosmoLink,
   } = useWallet();
 
@@ -67,12 +55,7 @@ export default function WalletView() {
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
   const [sending, setSending] = useState(false);
 
-  // Mine state
-  const [difficulty, setDifficulty] = useState<Difficulty>('basic');
-  const [mining, setMining] = useState(false);
-  const [miningLogs, setMiningLogs] = useState<MiningLog[]>([]);
-  const [lastReward, setLastReward] = useState<number | null>(null);
-  const miningLogRef = useRef<HTMLDivElement>(null);
+  // Mine tab now uses MineView component directly
 
   // Spinner component
   const Spinner = () => (
@@ -464,41 +447,7 @@ export default function WalletView() {
     setTimeout(() => setSendResult(null), 4000);
   };
 
-  // ─── Mine handler ──────────────────────────────────────
-  const addMineLog = (text: string, type: MiningLog['type'] = 'info') => {
-    setMiningLogs(prev => [...prev, { text, type }]);
-    setTimeout(() => miningLogRef.current?.scrollTo(0, miningLogRef.current.scrollHeight), 50);
-  };
-
-  const startMining = async () => {
-    setMining(true);
-    setMiningLogs([]);
-    setLastReward(null);
-    const program = MINING_PROGRAMS[difficulty];
-    addMineLog(`\u25B6 Starting ${difficulty} mining program...`);
-    addMineLog(`\u229A Loading CosmoASM bytecode...`);
-    await new Promise(r => setTimeout(r, 400));
-    addMineLog('\u26A1 Executing Planck cycles...');
-    await new Promise(r => setTimeout(r, 300));
-    const result = runMiningProgram(program);
-    addMineLog(`\u2699 Cycles: ${result.cycles} | Energy: ${result.energy.toFixed(1)}`);
-    addMineLog(`\u25C8 Hash: ${result.hash.toFixed(8)}`, 'energy');
-    if (result.output.length > 0) addMineLog(`\u25CE Output: [${result.output.map(v => typeof v === 'number' ? v.toFixed(4) : v).join(', ')}]`);
-    await new Promise(r => setTimeout(r, 200));
-    addMineLog('\u229A Submitting to CosmoMesh DAG...');
-    addMineLog(`\u229A Reward multiplier: ${wallet.rewardMultiplier}x (Level: ${wallet.levelName})`);
-    if (result.success) {
-      try {
-        const { tx, levelUp } = await mine(result.energy, result.cycles);
-        setLastReward(tx.amount);
-        addMineLog(`\u229A Ed25519 signature generated`, 'energy');
-        addMineLog(`\u229A Resonance Consensus: validated`, 'energy');
-        addMineLog(`\u2713 Mining complete! Reward: +${tx.amount} \u03A9`, 'success');
-        if (levelUp) addMineLog(`\u2605 LEVEL UP! ${levelUp.levelDef.name}: ${levelUp.levelDef.title} (+${levelUp.airdropBonus} \u03A9 bonus)`, 'level_up');
-      } catch (err) { addMineLog(`\u2717 Mining failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'info'); }
-    } else { addMineLog('\u2717 Mining failed: cycle limit reached', 'info'); }
-    setMining(false);
-  };
+  // Mine handler is now in MineView component
 
   // ─── Unlocked wallet: Full view ────────────────────────
   const recentTxs = wallet.transactions.slice(0, 8);
@@ -731,54 +680,7 @@ export default function WalletView() {
       )}
 
       {/* ─── Mine Tab ────────────────────────────────────── */}
-      {walletTab === 'mine' && (
-        <>
-          <div className="glass-panel p-5">
-            <h2 className="text-lg font-bold text-gray-100 mb-1 font-title">{'\u26CF'} Warp Mining</h2>
-            <p className="text-xs text-gray-500 mb-2">Execute CosmoCode programs to mine Warps via proof-of-computation.</p>
-            <div className="flex gap-3 text-[10px] text-gray-500 mb-4 flex-wrap">
-              <span>Current Reward: <span className="text-energy-400">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u03A9'}</span></span>
-              <span>Your Multiplier: <span className="text-star-400">{wallet.rewardMultiplier}x</span></span>
-              <span>Epoch: <span className="text-warp-400">{supplyInfo?.currentEpoch || 0}</span></span>
-            </div>
-            <div className="mb-4">
-              <p className="text-[10px] text-gray-400 mb-2">DIFFICULTY</p>
-              <div className="flex gap-2">
-                {(Object.keys(DIFFICULTY_INFO) as Difficulty[]).map(d => (
-                  <button key={d} onClick={() => setDifficulty(d)}
-                    className={`flex-1 py-2 px-3 rounded-none text-xs font-medium transition-all cursor-pointer ${
-                      difficulty === d ? 'bg-warp-500/30 border border-warp-500/50 text-warp-300' : 'bg-cosmic-900/40 border border-gray-700/30 text-gray-400 hover:text-gray-200'
-                    }`}>
-                    <div className="font-bold">{DIFFICULTY_INFO[d].label}</div>
-                    <div className={`text-[10px] ${DIFFICULTY_INFO[d].color}`}>{DIFFICULTY_INFO[d].reward}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button className="warp-button w-full py-3 text-base" onClick={startMining} disabled={mining}>
-              {mining ? <span className="flex items-center justify-center gap-2"><Spinner />Mining...</span> : <>{'\u26A1'} Start Mining</>}
-            </button>
-            {lastReward !== null && !mining && (
-              <div className="mt-3 text-center p-3 rounded-none bg-green-500/10 border border-green-500/30">
-                <span className="text-green-400 font-bold">+{lastReward} {'\u03A9'}</span>
-                <span className="text-green-400/70 text-xs ml-2">mined successfully</span>
-              </div>
-            )}
-          </div>
-          <div className="glass-panel p-4">
-            <h3 className="text-sm font-bold text-gray-300 mb-2">{'\u25B7'} Mining Log</h3>
-            <div ref={miningLogRef} className="bg-cosmic-900/80 rounded-none p-3 h-48 overflow-y-auto text-xs space-y-1">
-              {miningLogs.length === 0 ? <p className="text-gray-600">Waiting for mining operation...</p> : (
-                miningLogs.map((log, i) => (
-                  <div key={i} className={log.type === 'success' ? 'text-green-400' : log.type === 'energy' ? 'text-energy-400' : log.type === 'level_up' ? 'text-amber-400 font-bold' : 'text-gray-400'}>
-                    {log.text}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {walletTab === 'mine' && <MineView />}
     </div>
   );
 }

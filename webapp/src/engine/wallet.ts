@@ -801,14 +801,26 @@ export async function sendWarps(
   }
 }
 
-// ─── Mine Warps ──────────────────────────────────────────
+// ─── Mine Warps (Real Proof-of-Work) ─────────────────────
+
+import { type MiningProof, verifyProof } from './miner';
 
 export async function mineWarps(
   wallet: WarpWallet,
-  energyUsed: number,
-  cycles: number
+  proof: MiningProof
 ): Promise<{ tx: Transaction; levelUp?: LevelUpResult }> {
   if (!wallet.privateKey) throw new Error('Wallet is locked');
+
+  // 1. Verify the proof-of-work is legitimate
+  const verification = await verifyProof(proof);
+  if (!verification.valid) {
+    throw new Error(`Invalid proof-of-work: ${verification.reason}`);
+  }
+
+  // 2. Verify the proof is for this miner
+  if (proof.minerAddress !== wallet.address) {
+    throw new Error('Proof-of-work was mined by a different address');
+  }
 
   const mesh = getMesh();
   const consensus = getConsensus();
@@ -816,21 +828,22 @@ export async function mineWarps(
   const hierarchy = getHierarchy();
   const registry = getRegistry();
 
-  // Calculate reward with Resonance Decay + hierarchy multiplier
-  const baseReward = tokenomics.processMiningReward(energyUsed);
+  // 3. Calculate reward: Resonance Decay base * difficulty bonus * hierarchy multiplier
+  const baseReward = tokenomics.processMiningReward(proof.difficulty);
+  const difficultyBonus = Math.min(2.0, Math.max(0.5, proof.difficulty / 16));
   const multiplier = hierarchy.getRewardMultiplier(wallet.address);
-  const finalReward = Math.round(baseReward * multiplier * 100) / 100;
+  const finalReward = Math.round(baseReward * difficultyBonus * multiplier * 100) / 100;
 
   const { tx: meshTx } = await mesh.createMiningReward({
     to: wallet.address,
-    energyUsed,
-    cycles,
+    energyUsed: proof.hashesComputed,
+    cycles: proof.nonce,
     publicKey: wallet.publicKey,
     privateKey: wallet.privateKey,
   });
 
-  // Override amount with tokenomics-calculated reward
   meshTx.amount = finalReward;
+  meshTx.memo = `PoW Block: ${proof.hash.slice(0, 16)}... | Difficulty: ${proof.difficulty} bits | Nonce: ${proof.nonce} | ${proof.hashesComputed.toLocaleString()} hashes`;
 
   // Run consensus on mining reward
   await consensus.startRound(meshTx);

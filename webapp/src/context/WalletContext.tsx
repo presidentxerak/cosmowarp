@@ -8,6 +8,7 @@ import {
   type WarpWallet, type Transaction, type SupplyBreakdown,
   type RegistryDashboard, type LevelUpResult, type WalletExport,
 } from '../engine/wallet';
+import type { MiningProof } from '../engine/miner';
 import { generateCosmoLink, parseCosmoLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/cosmomesh';
 import { WartEngine, type Wart } from '../engine/warts';
@@ -36,7 +37,7 @@ interface WalletContextType {
   doGenerateCosmoLink: (password: string) => Promise<string | null>;
   doImportCosmoLink: (link: string, password: string) => Promise<boolean>;
   send: (to: string, amount: number, memo?: string) => Promise<{ success: boolean; error?: string; levelUp?: LevelUpResult }>;
-  mine: (energy: number, cycles: number) => Promise<{ tx: Transaction; levelUp?: LevelUpResult }>;
+  mine: (proof: MiningProof) => Promise<{ tx: Transaction; levelUp?: LevelUpResult }>;
   refreshTxs: () => void;
   refreshStats: () => void;
   unlockAdmin: () => Promise<boolean>;
@@ -282,9 +283,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [wallet]);
 
   // ─── Mine ──────────────────────────────────────────────
-  const mine = useCallback(async (energy: number, cycles: number) => {
+  const mine = useCallback(async (proof: MiningProof) => {
     if (!wallet) throw new Error('No wallet');
-    const result = await mineWarps(wallet, energy, cycles);
+    const result = await mineWarps(wallet, proof);
     setWallet({ ...wallet });
     setGlobalTxs(getGlobalTransactions());
     setMeshStats(getMeshStats());

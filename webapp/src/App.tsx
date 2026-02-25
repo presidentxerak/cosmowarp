@@ -112,6 +112,7 @@ function App() {
           <TopBar
             onProfileClick={() => setSidebarOpen(true)}
             onNotificationsClick={() => setActiveTab('notifications')}
+            onNavigate={setActiveTab}
           />
 
           {/* Sidebar - slides from left */}
