@@ -250,10 +250,10 @@ export default function CosmoChatView() {
       return (
         <div className="glass-panel p-3">
           <p className="text-label opacity-40 mb-2">
-            {'\u21C4'} <span className="opacity-80">@{post.authorAlias}</span> ReWarped
+            {'\u21C4'} <span className="opacity-80">@{post.authorAlias}</span> ReCosmo
           </p>
           {original ? <PostCard post={original} /> : (
-            <p className="text-body-sm opacity-40 italic">Original post deleted</p>
+            <p className="text-body-sm opacity-40 italic">Publication originale supprimée</p>
           )}
         </div>
       );
@@ -296,7 +296,7 @@ export default function CosmoChatView() {
             <span>{post.comments.length || ''}</span>
           </button>
 
-          {/* ReWarp */}
+          {/* ReCosmo */}
           <button
             className={`flex items-center gap-1 text-body-sm cursor-pointer ${
               post.rewarps.includes(wallet.address) ? 'opacity-80' : 'opacity-40 hover:opacity-80'
@@ -356,7 +356,7 @@ export default function CosmoChatView() {
     return (
       <div className="space-y-4 max-w-lg mx-auto">
         <button className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer" onClick={() => setSelectedPost(null)}>
-          {'\u2190'} Back
+          {'\u2190'} Retour
         </button>
 
         <div className="glass-panel p-4">
@@ -376,9 +376,9 @@ export default function CosmoChatView() {
 
           {/* Stats bar */}
           <div className="flex gap-4 mt-3 pt-3 border-t border-current/10 text-body-sm opacity-40">
-            <span>{post.rewarpCount} ReWarps</span>
+            <span>{post.rewarpCount} ReCosmo</span>
             <span>{post.tipCount} Tips ({post.tipCount} {'\u03A9'})</span>
-            <span>{formatViews(post.views)} views</span>
+            <span>{formatViews(post.views)} vues</span>
           </div>
 
           {/* Actions */}
@@ -387,13 +387,13 @@ export default function CosmoChatView() {
               {hasTipped ? '\u2665' : '\u2661'} Tip 1{'\u03A9'}
             </button>
             <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
-              {'\u21C4'} ReWarp
+              {'\u21C4'} ReCosmo
             </button>
             <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
-              {'\u2197'} Share
+              {'\u2197'} Partager
             </button>
             <button className={`text-body-sm cursor-pointer ${hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleBookmark(post)}>
-              {hasBookmarked ? '\u2605' : '\u2606'} Save
+              {hasBookmarked ? '\u2605' : '\u2606'} Sauver
             </button>
           </div>
         </div>
@@ -478,7 +478,7 @@ export default function CosmoChatView() {
     return (
       <div className="space-y-4 max-w-lg mx-auto">
         <button className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer" onClick={() => setSelectedChannel(null)}>
-          {'\u2190'} Back to Channels
+          {'\u2190'} Retour to Channels
         </button>
 
         <div className="glass-panel p-4">

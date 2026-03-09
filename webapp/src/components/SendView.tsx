@@ -12,7 +12,7 @@ export default function SendView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Create a wallet first to send Warps.</p>
+        <p className="opacity-50">Créez un wallet pour envoyer des Cosmorares.</p>
       </div>
     );
   }
@@ -20,7 +20,7 @@ export default function SendView() {
   if (!unlocked) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Unlock your wallet to send Warps.</p>
+        <p className="opacity-50">Déverrouillez votre wallet pour envoyer des Cosmorares.</p>
       </div>
     );
   }
@@ -28,22 +28,22 @@ export default function SendView() {
   const handleSend = async () => {
     const amt = parseFloat(amount);
     if (isNaN(amt)) {
-      setResult({ success: false, message: 'Invalid amount' });
+      setResult({ success: false, message: 'Montant invalide' });
       return;
     }
     setSending(true);
     try {
       const res = await send(to.trim(), amt, memo || undefined);
       if (res.success) {
-        setResult({ success: true, message: `Sent ${amt} \u03A9 via CosmoMesh DAG!` });
+        setResult({ success: true, message: `${amt} \u03A9 envoyés via CosmoMesh DAG !` });
         setTo('');
         setAmount('');
         setMemo('');
       } else {
-        setResult({ success: false, message: res.error || 'Transaction failed' });
+        setResult({ success: false, message: res.error || 'Échec de la transaction' });
       }
     } catch (err) {
-      setResult({ success: false, message: err instanceof Error ? err.message : 'Transaction failed' });
+      setResult({ success: false, message: err instanceof Error ? err.message : 'Échec de la transaction' });
     } finally {
       setSending(false);
     }
@@ -53,7 +53,7 @@ export default function SendView() {
   return (
     <div className="space-y-4">
       <div className="glass-panel p-5">
-        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2197'} Send Warps</h2>
+        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2197'} Envoyer des Cosmorares</h2>
         <p className="text-body-sm opacity-40 mb-4">
           Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
           <span className="opacity-30 ml-2">Ed25519 signed + DAG validated</span>
@@ -61,7 +61,7 @@ export default function SendView() {
 
         <div className="space-y-3">
           <div>
-            <label className="text-label opacity-50 block mb-1">RECIPIENT ADDRESS</label>
+            <label className="text-label opacity-50 block mb-1">ADRESSE DU DESTINATAIRE</label>
             <input
               className="warp-input"
               placeholder="CW..."
@@ -95,7 +95,7 @@ export default function SendView() {
             <label className="text-label opacity-50 block mb-1">MEMO (optional)</label>
             <input
               className="warp-input"
-              placeholder="What's this for?"
+              placeholder="Motif du transfert"
               value={memo}
               onChange={e => setMemo(e.target.value)}
             />
@@ -119,10 +119,10 @@ export default function SendView() {
             {sending ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
-                Signing & Validating...
+                Signature & Validation...
               </span>
             ) : (
-              <>{'\u26A1'} Send Transaction</>
+              <>{'\u26A1'} Envoyer</>
             )}
           </button>
         </div>
@@ -130,7 +130,7 @@ export default function SendView() {
 
       {/* Quick amounts */}
       <div className="glass-panel p-4">
-        <p className="text-label opacity-40 mb-2">QUICK AMOUNTS</p>
+        <p className="text-label opacity-40 mb-2">MONTANTS RAPIDES</p>
         <div className="flex gap-2 flex-wrap">
           {[10, 25, 50, 100].map(a => (
             <button
@@ -147,14 +147,14 @@ export default function SendView() {
 
       {/* Protocol info */}
       <div className="glass-panel p-4">
-        <h3 className="text-base font-bold opacity-70 mb-2">Transaction Flow</h3>
+        <h3 className="text-base font-bold opacity-70 mb-2">Flux de transaction</h3>
         <div className="text-[11px] opacity-40 space-y-1">
-          <p>1. Ed25519 signature generation</p>
-          <p>2. SHA-256 deterministic TX ID</p>
-          <p>3. DAG parent selection (2 tips)</p>
-          <p>4. Layer assignment by amount</p>
-          <p>5. Resonance Consensus validation</p>
-          <p>6. Merkle-DAG commitment</p>
+          <p>1. Génération de signature Ed25519</p>
+          <p>2. ID de TX déterministe SHA-256</p>
+          <p>3. Sélection des parents DAG (2 tips)</p>
+          <p>4. Assignation de couche par montant</p>
+          <p>5. Validation par Consensus Résonance</p>
+          <p>6. Engagement Merkle-DAG</p>
         </div>
       </div>
     </div>

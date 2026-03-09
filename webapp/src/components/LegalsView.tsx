@@ -19,7 +19,7 @@ export default function LegalsView() {
                 transactions, or personal information.
               </p>
               <p>
-                Warps tokens and Cosmorares digital assets are experimental cryptographic tokens. Their value
+                Les tokens Cosmorares (Ω) et les actifs numériques sont des jetons cryptographiques expérimentaux. Their value
                 is not guaranteed and may fluctuate. Cosmorare Foundation makes no promises regarding
                 the monetary value of these assets.
               </p>

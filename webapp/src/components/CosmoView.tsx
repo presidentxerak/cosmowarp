@@ -12,12 +12,12 @@ interface Message {
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
   {
     keywords: ['wallet', 'portefeuille', 'balance', 'solde', 'compte'],
-    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Warps et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Cosmorares. Vous voulez accéder à votre wallet ?',
+    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Cosmorares et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Cosmorares. Vous voulez accéder à votre wallet ?',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['mine', 'mining', 'miner', 'minage'],
-    response: 'Le minage sur Cosmorare utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Warps (Ω). La récompense diminue progressivement selon le nombre d\'or.',
+    response: 'Le minage sur Cosmorare utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Cosmorares (Ω). La récompense diminue progressivement selon le nombre d\'or.',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
@@ -27,7 +27,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['send', 'transfer', 'envoyer'],
-    response: 'Vous pouvez envoyer des Warps à n\'importe quelle adresse Cosmorare. Les transactions passent par le réseau CosmoMesh DAG avec 7 couches de validation. Instantané et gratuit !',
+    response: 'Vous pouvez envoyer des Cosmorares à n\'importe quelle adresse Cosmorare. Les transactions passent par le réseau CosmoMesh DAG avec 7 couches de validation. Instantané et gratuit !',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
@@ -42,7 +42,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['wall', 'post', 'social', 'feed', 'chat', 'mur'],
-    response: 'Le Mur est le réseau social décentralisé de Cosmorare. Partagez du texte, des objets certifiés, et tippez les publications avec des Warps. Toutes les conversations sont chiffrées et anonymes.',
+    response: 'Le Mur est le réseau social décentralisé de Cosmorare. Partagez du texte, des objets certifiés, et tippez les publications avec des Cosmorares. Toutes les conversations sont chiffrées et anonymes.',
     suggestion: { label: 'Ouvrir le Mur', tab: 'wall' },
   },
   {

@@ -43,7 +43,7 @@ export default function FiatGatewayView() {
           <p className="text-5xl mb-4">{'€'}</p>
           <h2 className="text-title-sm font-bold mb-1 font-title">Paiement</h2>
           <p className="opacity-50 text-base">Déverrouillez votre wallet pour accéder au paiement</p>
-          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Warps en EUR, USD, GBP</p>
+          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Cosmorares en EUR, USD, GBP</p>
         </div>
       </div>
     );
@@ -73,11 +73,11 @@ export default function FiatGatewayView() {
       });
       // Simulate crediting warps to wallet
       await send('FIAT_GATEWAY', 0, `Fiat buy: ${formatFiatPrice(buyFiat, currency)}`);
-      setBuyResult(`Purchased ${tx.warpAmount.toFixed(2)} Ω for ${formatFiatPrice(buyFiat, currency)}`);
+      setBuyResult(`Achat de ${tx.warpAmount.toFixed(2)} Ω pour ${formatFiatPrice(buyFiat, currency)}`);
       setBuyAmount('');
       setTransactions(gateway.getTransactionsByAddress(wallet.address));
     } catch (e: any) {
-      setBuyResult(`Error: ${e.message}`);
+      setBuyResult(`Erreur : ${e.message}`);
     }
     setBuying(false);
     setTimeout(() => setBuyResult(''), 5000);
@@ -86,7 +86,7 @@ export default function FiatGatewayView() {
   const handleSell = async () => {
     if (sellWarpAmount <= 0) return;
     if (sellWarpAmount > wallet.balance) {
-      setSellResult('Insufficient balance');
+      setSellResult('Solde insuffisant');
       setTimeout(() => setSellResult(''), 3000);
       return;
     }
@@ -100,32 +100,32 @@ export default function FiatGatewayView() {
         paymentMethod: sellMethod,
       });
       await send('FIAT_GATEWAY', sellWarpAmount, `Fiat sell: ${sellWarpAmount} Ω`);
-      setSellResult(`Sold ${sellWarpAmount} Ω for ${formatFiatPrice(tx.sellerReceives, currency)} (after fees)`);
+      setSellResult(`Vente de ${sellWarpAmount} Ω pour ${formatFiatPrice(tx.sellerReceives, currency)} (après frais)`);
       setSellWarps('');
       setTransactions(gateway.getTransactionsByAddress(wallet.address));
     } catch (e: any) {
-      setSellResult(`Error: ${e.message}`);
+      setSellResult(`Erreur : ${e.message}`);
     }
     setSelling(false);
     setTimeout(() => setSellResult(''), 5000);
   };
 
   const paymentMethods: { id: PaymentMethod; label: string; icon: string }[] = [
-    { id: 'card', label: 'Card', icon: '☐' },
+    { id: 'card', label: 'Carte', icon: '☐' },
     { id: 'paypal', label: 'PayPal', icon: 'Ⓟ' },
     { id: 'sepa', label: 'SEPA', icon: '⬡' },
     { id: 'apple_pay', label: 'Apple Pay', icon: '' },
     { id: 'google_pay', label: 'Google Pay', icon: '▶' },
-    { id: 'bank_transfer', label: 'Bank', icon: '⏣' },
+    { id: 'bank_transfer', label: 'Virement', icon: '⏣' },
   ];
 
   const currencies: FiatCurrency[] = ['EUR', 'USD', 'GBP', 'JPY', 'CHF'];
 
   const tabList: { id: Tab; label: string }[] = [
-    { id: 'buy', label: 'Buy Ω' },
-    { id: 'sell', label: 'Sell Ω' },
-    { id: 'rates', label: 'Rates' },
-    { id: 'history', label: 'History' },
+    { id: 'buy', label: 'Acheter Ω' },
+    { id: 'sell', label: 'Vendre Ω' },
+    { id: 'rates', label: 'Taux' },
+    { id: 'history', label: 'Historique' },
   ];
 
   return (
@@ -133,7 +133,7 @@ export default function FiatGatewayView() {
       {/* Header */}
       <div className="glass-panel p-5 text-center">
         <h2 className="text-title-sm font-bold font-title">{'€'} Paiement</h2>
-        <p className="text-body-sm opacity-40 mt-1">Achetez et vendez des Warps en monnaie fiat (EUR, USD, GBP...)</p>
+        <p className="text-body-sm opacity-40 mt-1">Achetez et vendez des Cosmorares en monnaie fiat (EUR, USD, GBP...)</p>
         <p className="text-label opacity-30 mt-1">SIMULATION — Interface complète, paiement réel via Stripe/PayPal en production</p>
         <div className="flex justify-center gap-3 mt-3">
           <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'Ω'}</span>
@@ -177,10 +177,10 @@ export default function FiatGatewayView() {
       {/* ─── Buy Tab ──────────────────────────────────── */}
       {tab === 'buy' && (
         <div className="glass-panel p-5 space-y-4">
-          <h3 className="text-base font-bold opacity-70">Buy Warps with {currency}</h3>
+          <h3 className="text-base font-bold opacity-70">Acheter des Cosmorares en {currency}</h3>
 
           <div>
-            <label className="text-label opacity-40 block mb-1">AMOUNT ({getCurrencySymbol(currency)})</label>
+            <label className="text-label opacity-40 block mb-1">MONTANT ({getCurrencySymbol(currency)})</label>
             <input
               className="warp-input text-title-sm text-center"
               type="number"
@@ -195,21 +195,21 @@ export default function FiatGatewayView() {
           {buyFiat > 0 && (
             <div className="bg-current/5 p-3 space-y-1 text-body-sm">
               <div className="flex justify-between">
-                <span className="opacity-50">You receive</span>
+                <span className="opacity-50">Vous recevez</span>
                 <span className="font-bold opacity-90">{buyWarps.toFixed(2)} {'Ω'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="opacity-50">Rate</span>
+                <span className="opacity-50">Taux</span>
                 <span className="opacity-60">1 {currency} = {gateway.getRate(currency)?.warpsPerUnit} {'Ω'}</span>
               </div>
               {buyFees && (
                 <>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Platform fee (2.5%)</span>
+                    <span className="opacity-40">Frais plateforme (2,5%)</span>
                     <span className="opacity-40">{getCurrencySymbol(currency)}{buyFees.platformFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Processor fee</span>
+                    <span className="opacity-40">Frais processeur</span>
                     <span className="opacity-40">{getCurrencySymbol(currency)}{buyFees.processorFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between pt-1 border-t border-current/10">
@@ -222,7 +222,7 @@ export default function FiatGatewayView() {
           )}
 
           <div>
-            <label className="text-label opacity-40 block mb-2">PAYMENT METHOD</label>
+            <label className="text-label opacity-40 block mb-2">MOYEN DE PAIEMENT</label>
             <div className="grid grid-cols-3 gap-2">
               {paymentMethods.map(m => (
                 <button
@@ -246,7 +246,7 @@ export default function FiatGatewayView() {
             className="warp-button w-full py-3 text-base"
             disabled={buying || buyFiat <= 0}
           >
-            {buying ? 'Processing...' : `Buy ${buyWarps > 0 ? buyWarps.toFixed(2) + ' Ω' : 'Warps'}`}
+            {buying ? 'En cours...' : `Acheter ${buyWarps > 0 ? buyWarps.toFixed(2) + ' Ω' : 'Cosmorares'}`}
           </button>
 
           {buyResult && (
@@ -258,10 +258,10 @@ export default function FiatGatewayView() {
       {/* ─── Sell Tab ─────────────────────────────────── */}
       {tab === 'sell' && (
         <div className="glass-panel p-5 space-y-4">
-          <h3 className="text-base font-bold opacity-70">Sell Warps for {currency}</h3>
+          <h3 className="text-base font-bold opacity-70">Vendre des Cosmorares en {currency}</h3>
 
           <div>
-            <label className="text-label opacity-40 block mb-1">AMOUNT ({'Ω'})</label>
+            <label className="text-label opacity-40 block mb-1">MONTANT ({'Ω'})</label>
             <input
               className="warp-input text-title-sm text-center"
               type="number"
@@ -277,21 +277,21 @@ export default function FiatGatewayView() {
           {sellWarpAmount > 0 && (
             <div className="bg-current/5 p-3 space-y-1 text-body-sm">
               <div className="flex justify-between">
-                <span className="opacity-50">Gross amount</span>
+                <span className="opacity-50">Montant brut</span>
                 <span className="opacity-60">{formatFiatPrice(sellFiat, currency)}</span>
               </div>
               {sellFees && (
                 <>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Platform fee (2.5%)</span>
+                    <span className="opacity-40">Frais plateforme (2,5%)</span>
                     <span className="opacity-40">-{getCurrencySymbol(currency)}{sellFees.platformFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Processor fee</span>
+                    <span className="opacity-40">Frais processeur</span>
                     <span className="opacity-40">-{getCurrencySymbol(currency)}{sellFees.processorFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between pt-1 border-t border-current/10">
-                    <span className="opacity-60 font-medium">You receive</span>
+                    <span className="opacity-60 font-medium">Vous recevez</span>
                     <span className="font-bold opacity-90">{formatFiatPrice(sellFees.sellerReceives, currency)}</span>
                   </div>
                 </>
@@ -300,7 +300,7 @@ export default function FiatGatewayView() {
           )}
 
           <div>
-            <label className="text-label opacity-40 block mb-2">PAYOUT METHOD</label>
+            <label className="text-label opacity-40 block mb-2">MÉTHODE DE RETRAIT</label>
             <div className="grid grid-cols-3 gap-2">
               {paymentMethods.filter(m => ['sepa', 'paypal', 'bank_transfer'].includes(m.id)).map(m => (
                 <button
@@ -324,7 +324,7 @@ export default function FiatGatewayView() {
             className="warp-button w-full py-3 text-base"
             disabled={selling || sellWarpAmount <= 0}
           >
-            {selling ? 'Processing...' : `Sell ${sellWarpAmount > 0 ? sellWarpAmount.toFixed(2) + ' Ω' : 'Warps'}`}
+            {selling ? 'En cours...' : `Vendre ${sellWarpAmount > 0 ? sellWarpAmount.toFixed(2) + ' Ω' : 'Cosmorares'}`}
           </button>
 
           {sellResult && (
@@ -337,8 +337,8 @@ export default function FiatGatewayView() {
       {tab === 'rates' && (
         <div className="space-y-3">
           <div className="glass-panel p-5">
-            <h3 className="text-base font-bold opacity-70 mb-3">Exchange Rates</h3>
-            <p className="text-label opacity-30 mb-4">1 unit of fiat = X Warps ({'Ω'})</p>
+            <h3 className="text-base font-bold opacity-70 mb-3">Taux de change</h3>
+            <p className="text-label opacity-30 mb-4">1 unité fiat = X Cosmorares ({'Ω'})</p>
             <div className="space-y-2">
               {rates.map(r => (
                 <div key={r.currency} className="flex items-center justify-between py-2 border-b border-current/5">
@@ -358,14 +358,14 @@ export default function FiatGatewayView() {
           </div>
 
           <div className="glass-panel p-5">
-            <h3 className="text-base font-bold opacity-70 mb-3">Fee Schedule</h3>
+            <h3 className="text-base font-bold opacity-70 mb-3">Grille tarifaire</h3>
             <div className="space-y-2 text-body-sm">
               <div className="flex justify-between py-1">
-                <span className="opacity-50">Platform fee</span>
+                <span className="opacity-50">Frais plateforme</span>
                 <span className="opacity-70">2.5%</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="opacity-50">Card (Stripe)</span>
+                <span className="opacity-50">Carte (Stripe)</span>
                 <span className="opacity-70">2.9% + {getCurrencySymbol(currency)}0.30</span>
               </div>
               <div className="flex justify-between py-1">
@@ -373,11 +373,11 @@ export default function FiatGatewayView() {
                 <span className="opacity-70">3.49% + {getCurrencySymbol(currency)}0.49</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="opacity-50">SEPA transfer</span>
+                <span className="opacity-50">Virement SEPA</span>
                 <span className="opacity-70">0.8%</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="opacity-50">Bank transfer</span>
+                <span className="opacity-50">Virement bancaire</span>
                 <span className="opacity-70">{getCurrencySymbol(currency)}1.50 flat</span>
               </div>
             </div>
@@ -390,8 +390,8 @@ export default function FiatGatewayView() {
         <div className="space-y-2">
           {transactions.length === 0 ? (
             <div className="glass-panel p-10 text-center">
-              <p className="text-base opacity-50">No transactions yet</p>
-              <p className="text-body-sm opacity-30 mt-1">Buy or sell Warps to see your history</p>
+              <p className="text-base opacity-50">Aucune transaction</p>
+              <p className="text-body-sm opacity-30 mt-1">Achetez ou vendez des Cosmorares pour voir votre historique</p>
             </div>
           ) : (
             transactions.map(tx => (

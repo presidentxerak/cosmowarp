@@ -28,7 +28,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['balance', 'solde', 'warp', 'warps', 'zero', '0', 'argent', 'money'],
     response: {
-      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Warps (Ω). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
+      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Cosmorares (Ω). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Miner',
     },
@@ -36,7 +36,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['send', 'envoyer', 'transfer', 'transferer', 'transférer', 'payer', 'pay'],
     response: {
-      answer: "Envoyer des Warps, c'est comme lancer une étoile filante à travers le mesh — magnifique ET rapide. Ouvre ton Portefeuille, va dans l'onglet Envoyer, entre l'adresse Cosmorare du destinataire et le montant. Ajoute un mémo si tu te sens poétique. Conseil de pro : vérifie l'adresse deux fois. Le cosmos pardonne, mais les fautes de frappe non.",
+      answer: "Envoyer des Cosmorares, c'est comme lancer une étoile filante à travers le mesh — magnifique ET rapide. Ouvre ton Portefeuille, va dans l'onglet Envoyer, entre l'adresse Cosmorare du destinataire et le montant. Ajoute un mémo si tu te sens poétique. Conseil de pro : vérifie l'adresse deux fois. Le cosmos pardonne, mais les fautes de frappe non.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Envoyer',
     },
@@ -53,7 +53,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mine', 'miner', 'mining', 'minage', 'earn', 'gagner', 'difficulty', 'difficulté'],
     response: {
-      answer: "Miner sur Cosmorare, ce n'est pas faire bouillir les océans ! Tu exécutes des programmes CosmoASM de preuve de calcul. Choisis ta difficulté : Léger (petit en-cas), Moyen (bon steak), ou Intense (escalader l'Everest en tongs). Plus c'est difficile = plus de Warps. La récompense suit la courbe de Décroissance par Résonance — une formule basée sur le nombre d'or (φ) bien plus douce que les halvings capricieux de Bitcoin. Va miner de la poussière d'étoile !",
+      answer: "Miner sur Cosmorare, ce n'est pas faire bouillir les océans ! Tu exécutes des programmes CosmoASM de preuve de calcul. Choisis ta difficulté : Léger (petit en-cas), Moyen (bon steak), ou Intense (escalader l'Everest en tongs). Plus c'est difficile = plus de Cosmorares. La récompense suit la courbe de Décroissance par Résonance — une formule basée sur le nombre d'or (φ) bien plus douce que les halvings capricieux de Bitcoin. Va miner de la poussière d'étoile !",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Miner',
     },
@@ -87,7 +87,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mur', 'cosmochat', 'chat', 'social', 'message', 'messages', 'dm', 'channel', 'canal', 'post', 'publier'],
     response: {
-      answer: "Le Mur, c'est ton réseau social chiffré et décentralisé ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, crée des canaux, envoie des DM, et donne des pourboires en Warps au lieu de likes (parce que mettre ton argent là où tu parles > un emoji cœur). Partage des liens vers des Cosmorares, des actus, des pensées cosmiques... l'univers est ton fil. Chiffré. Anonyme. Sécurisé.",
+      answer: "Le Mur, c'est ton réseau social chiffré et décentralisé ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares au lieu de likes (parce que mettre ton argent là où tu parles > un emoji cœur). Partage des liens vers des Cosmorares, des actus, des pensées cosmiques... l'univers est ton fil. Chiffré. Anonyme. Sécurisé.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -95,7 +95,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['tip', 'tips', 'pourboire', 'like', 'aimer', 'rewarp', 'retweet', 'share', 'partager'],
     response: {
-      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Cosmorare (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReWarp (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReWarps, vues et favoris. C'est comme X, mais avec une âme.",
+      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Cosmorare (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReCosmo (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReCosmos, vues et favoris. C'est comme X, mais avec une âme.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -239,7 +239,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
     response: {
-      answer: "Cosmorare intègre une passerelle de paiement fiat complète ! Tu peux acheter des Warps (Ω) ou des Cosmorares directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
+      answer: "Cosmorare intègre une passerelle de paiement fiat complète ! Tu peux acheter des Cosmorares (Ω) ou des Cosmorares directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Paiement',
     },
@@ -288,7 +288,7 @@ interface ChatMsg {
 
 const FAQ_ICONS: Record<string, ReactNode> = {
   'Pour commencer': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>,
-  'Minage & Warps': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
+  'Minage & Cosmorares': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
   'Marketplace (Cosmorares)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
   'CosmoMesh & CosmoCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
@@ -302,17 +302,17 @@ const FAQ_SECTIONS = [
     icon: 'Pour commencer',
     items: [
       { q: `Comment créer un portefeuille ?`, a: `Va dans l'onglet Portefeuille et clique sur « Créer un portefeuille ». Choisis un mot de passe solide et sauvegarde ta clé de récupération en lieu sûr.` },
-      { q: `Pourquoi mon solde est à 0 ?`, a: `Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Warps en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.` },
+      { q: `Pourquoi mon solde est à 0 ?`, a: `Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Cosmorares en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.` },
       { q: `Comment sauvegarder mon portefeuille ?`, a: `Dans Portefeuille → Aperçu, télécharge ta clé de récupération. Garde-la en lieu sûr — il n'y a pas de réinitialisation de mot de passe !` },
     ],
   },
   {
-    title: 'Minage & Warps',
-    icon: 'Minage & Warps',
+    title: 'Minage & Cosmorares',
+    icon: 'Minage & Cosmorares',
     items: [
-      { q: `Comment miner ?`, a: `Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Warps.` },
+      { q: `Comment miner ?`, a: `Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Cosmorares.` },
       { q: `Qu'est-ce que la Décroissance par Résonance ?`, a: `Une courbe de minage progressive basée sur le nombre d'or (φ). Contrairement au halving brutal de Bitcoin, les récompenses diminuent graduellement et de façon prévisible.` },
-      { q: `Quel est le supply total ?`, a: `69 millions de Warps. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.` },
+      { q: `Quel est le supply total ?`, a: `69 millions de Cosmorares. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.` },
     ],
   },
   {
@@ -331,7 +331,7 @@ const FAQ_SECTIONS = [
     items: [
       { q: `Qu'est-ce que le Mur ?`, a: `Un réseau social chiffré et anonyme au sein de Cosmorare. Publie, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares.` },
       { q: `Comment fonctionnent les pourboires ?`, a: `1 Cosmorare par utilisateur par post. C'est comme un « like » mais adossé à une vraie valeur.` },
-      { q: `Qu'est-ce que le ReWarp ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur la timeline du Mur.` },
+      { q: `Qu'est-ce que le ReCosmo ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur la timeline du Mur.` },
     ],
   },
   {
@@ -351,7 +351,7 @@ const FAQ_SECTIONS = [
     icon: 'Paiement',
     items: [
       { q: `Puis-je payer par carte bancaire ?`, a: `Oui ! Cosmorare intègre une passerelle fiat complète : carte bancaire, PayPal et virement SEPA.` },
-      { q: `Faut-il passer par un exchange crypto ?`, a: `Non. Tu peux acheter des Warps et des Cosmorares directement en euros, sans passer par une plateforme d'échange.` },
+      { q: `Faut-il passer par un exchange crypto ?`, a: `Non. Tu peux acheter des Cosmorares et des Cosmorares directement en euros, sans passer par une plateforme d'échange.` },
     ],
   },
   {

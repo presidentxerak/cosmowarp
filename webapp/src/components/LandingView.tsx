@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '../context/WalletContext';
 
 /* ─── i18n — auto-detect user language ───────────────── */
@@ -189,7 +189,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     publishTitle: '公開',
     publishDesc: '作品を公開 — デジタルアート、写真、音楽、物理オブジェクト。証明書はあなたが著者であり最初の所有者であることを証明します。',
     exchange: '交換',
-    exchangeDesc: '認証済み作品を安心して売買。証明書はオブジェクトに従い、その起源を証明します。Warps（Ω）またはユーロで支払い。',
+    exchangeDesc: '認証済み作品を安心して売買。証明書はオブジェクトに従い、その起源を証明します。Cosmorares（Ω）またはユーロで支払い。',
     forCreators: 'クリエイター向け',
     publishWorks: '作品を公開する',
     step1: 'プロフィール作成',
@@ -199,7 +199,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step3: '自動認証',
     step3Desc: 'CosmorareがファイルのSHA-256フィンガープリントを計算し、秘密鍵で署名します。CRCERT証明書が即座に作成されます。',
     step4: '販売開始',
-    step4Desc: '作品がマーケットプレイスに表示されます。コレクターはWarps（Ω）または統合ユーロ決済ゲートウェイで購入できます。',
+    step4Desc: '作品がマーケットプレイスに表示されます。コレクターはCosmorares（Ω）または統合ユーロ決済ゲートウェイで購入できます。',
     publishWork: '作品を公開',
     forCollectors: 'コレクター向け',
     collectCertified: '認証済み作品を収集',
@@ -207,7 +207,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     explore: '探索',
     exploreDesc: 'マーケットプレイスを閲覧し、世界中のクリエイターの作品を発見。',
     buy: '購入',
-    buyDesc: 'Warps（Ω）またはユーロで統合決済ゲートウェイ経由で支払い。',
+    buyDesc: 'Cosmorares（Ω）またはユーロで統合決済ゲートウェイ経由で支払い。',
     own: '所有',
     ownDesc: '各購入でCRCERT証明書がウォレットに転送されます。あなたが検証済みの所有者です。',
     resell: '再販',
@@ -395,46 +395,6 @@ function IconVinyl() {
       <circle cx="14" cy="14" r="1.5" fill="currentColor" />
       <path d="M14 2v2M14 24v2" />
     </svg>
-  );
-}
-
-/* ─── Hexagon grid background (pure CSS) ──────────────── */
-
-function HexGrid() {
-  const hexagons = useMemo(() => Array.from({ length: 40 }, (_, i) => ({
-    key: i,
-    size: 60 + Math.random() * 100,
-    left: Math.random() * 110 - 5,
-    top: Math.random() * 110 - 5,
-    delay: Math.random() * 8,
-    duration: 6 + Math.random() * 8,
-    opacity: 0.03 + Math.random() * 0.07,
-  })), []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {hexagons.map(h => (
-        <svg
-          key={h.key}
-          className="absolute"
-          style={{
-            width: h.size,
-            height: h.size,
-            left: `${h.left}%`,
-            top: `${h.top}%`,
-            opacity: h.opacity,
-          }}
-          viewBox="0 0 100 100"
-        >
-          <polygon
-            points="50,2 93,25 93,75 50,98 7,75 7,25"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-        </svg>
-      ))}
-    </div>
   );
 }
 
@@ -654,7 +614,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
         {/* Gradient overlays (reduced opacity) */}
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.13) 40%, rgba(0,0,0,0.45) 100%)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.25) 100%)',
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{
           background: 'radial-gradient(ellipse at 50% 40%, rgba(168,85,247,0.06) 0%, transparent 60%), radial-gradient(ellipse at 30% 70%, rgba(6,182,212,0.05) 0%, transparent 50%)',

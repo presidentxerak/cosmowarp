@@ -68,7 +68,7 @@ export default function FondationView() {
             <div className="space-y-2 text-body-sm opacity-50">
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'Ω'}</span>
-                <span><span className="opacity-90">Warps</span> - Token natif, supply fixe 69M</span>
+                <span><span className="opacity-90">Cosmorares</span> - Token natif, supply fixe 69M</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'✦'}</span>

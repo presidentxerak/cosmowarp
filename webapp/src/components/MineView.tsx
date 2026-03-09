@@ -41,7 +41,7 @@ export default function MineView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Create a wallet first to mine Warps.</p>
+        <p className="opacity-50">Créez un wallet pour miner des Cosmorares.</p>
       </div>
     );
   }
@@ -49,7 +49,7 @@ export default function MineView() {
   if (!unlocked) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Unlock your wallet to mine Warps.</p>
+        <p className="opacity-50">Déverrouillez votre wallet pour miner des Cosmorares.</p>
       </div>
     );
   }

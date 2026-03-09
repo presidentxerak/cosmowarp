@@ -700,7 +700,7 @@ export default function WalletView() {
           <div className="glass-panel p-5">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title flex items-center gap-2">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-              Send Warps
+              Envoyer des Cosmorares
             </h2>
             <p className="text-body-sm opacity-40 mb-4">
               Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>

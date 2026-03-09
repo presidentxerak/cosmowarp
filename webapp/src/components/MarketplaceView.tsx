@@ -921,7 +921,7 @@ export default function MarketplaceView() {
                           </div>
                         )}
                         <p className="text-[10px] opacity-40">
-                          {pricingMode === 'fiat' ? 'Buyers can pay with card, PayPal, or bank transfer' : 'Buyers pay with Warps (\u03A9)'}
+                          {pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Cosmorares (\u03A9)'}
                         </p>
                       </div>
                     )}
