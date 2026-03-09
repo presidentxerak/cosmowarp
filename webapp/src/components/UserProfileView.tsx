@@ -37,7 +37,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const addr = sessionStorage.getItem('cosmowarp_view_user');
+    const addr = sessionStorage.getItem('cosmorare_view_user');
     if (!addr) return;
     setTargetAddress(addr);
     refresh(addr);
@@ -130,12 +130,12 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   };
 
   const handleMessage = () => {
-    sessionStorage.setItem('cosmowarp_dm_to', targetAddress);
+    sessionStorage.setItem('cosmorare_dm_to', targetAddress);
     onNavigate('message');
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmowarp_view_user', address);
+    sessionStorage.setItem('cosmorare_view_user', address);
     setTargetAddress(address);
     setTab('posts');
     refresh(address);
@@ -227,13 +227,13 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           {(website || instagram || twitter) && (
             <div className="mt-2 flex flex-wrap gap-3 justify-center">
               {website && (
-                <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-energy-300 flex items-center gap-1">
+                <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:opacity-90 flex items-center gap-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                   {website.replace(/^https?:\/\//, '').slice(0, 30)}
                 </a>
               )}
               {instagram && (
-                <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-nebula-500 flex items-center gap-1">
+                <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:opacity-80 flex items-center gap-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
                   @{instagram.replace('@', '')}
                 </a>
@@ -254,7 +254,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           {!isMe && wallet && (
             <div className="flex gap-2 mt-4 items-center">
               {isBlocked ? (
-                <button onClick={handleUnblock} className="text-body-sm px-4 py-2 border border-red-500/30 opacity-70 cursor-pointer hover:bg-current/5 transition-colors">
+                <button onClick={handleUnblock} className="text-body-sm px-4 py-2 border border-current/15 opacity-70 cursor-pointer hover:bg-current/5 transition-colors">
                   Unblock
                 </button>
               ) : isFollowing ? (
@@ -283,7 +283,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                         className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between"
                       >
                         <span className="opacity-70">Favorites</span>
-                        {isFavorite && <span className="text-star-400">{'\u2605'}</span>}
+                        {isFavorite && <span className="opacity-80">{'\u2605'}</span>}
                       </button>
                       <div className="border-t border-current/10" />
                       <button
@@ -361,7 +361,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
             onClick={() => setTab(t.id)}
             className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
-                ? 'border-warp-400 opacity-80'
+                ? 'border-current/20 opacity-80'
                 : 'border-transparent opacity-40 hover:opacity-70'
             }`}
           >
@@ -403,7 +403,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No Warts created</p>
+              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

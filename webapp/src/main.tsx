@@ -21,14 +21,14 @@ if ('serviceWorker' in navigator) {
               const banner = document.createElement('div');
               banner.setAttribute('style',
                 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;' +
-                'background:#1e1b4b;border:1px solid rgba(168,85,247,0.4);padding:12px 20px;' +
-                'color:#c4b5fd;font-size:13px;font-family:monospace;display:flex;gap:12px;align-items:center;'
+                'background:#111111;border:1px solid rgba(255,255,255,0.15);padding:12px 20px;' +
+                'color:#cccccc;font-size:13px;font-family:Inter,sans-serif;display:flex;gap:12px;align-items:center;'
               );
-              banner.innerHTML = '<span>\u2B21 CosmoWarp update available</span>' +
-                '<button style="background:rgba(168,85,247,0.3);border:1px solid rgba(168,85,247,0.5);' +
-                'color:#e9d5ff;padding:4px 12px;cursor:pointer;font-size:12px" ' +
+              banner.innerHTML = '<span>\u2B21 Cosmorare update available</span>' +
+                '<button style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);' +
+                'color:#ffffff;padding:4px 12px;cursor:pointer;font-size:12px" ' +
                 'onclick="window.location.reload()">Reload</button>' +
-                '<button style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:14px" ' +
+                '<button style="background:none;border:none;color:#666666;cursor:pointer;font-size:14px" ' +
                 'onclick="this.parentElement.remove()">\u2715</button>';
               document.body.appendChild(banner);
             }

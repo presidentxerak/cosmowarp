@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Resonance Consensus — Fractal Layer Consensus with PBFT
+ * Cosmorare Resonance Consensus — Fractal Layer Consensus with PBFT
  *
  * Consensus modes (honest about what each provides):
  *

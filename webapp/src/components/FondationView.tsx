@@ -1,84 +1,94 @@
+import Logo from './Logo';
+
 export default function FondationView() {
   return (
     <div className="space-y-4 pb-4">
       <div className="glass-panel p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-4">
-          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-10 h-10 animate-float" />
+          <Logo className="w-10 h-10 animate-float" />
           <div>
-            <h2 className="text-title-md font-bold opacity-100 font-title">CosmoWarp Foundation</h2>
-            <p className="text-body-sm opacity-40">Building the future of decentralized finance</p>
+            <h2 className="text-title-md font-bold opacity-100 font-title">Cosmorare Foundation</h2>
+            <p className="text-body-sm opacity-40">Protocole de certification pour objets rares</p>
           </div>
         </div>
 
         <div className="space-y-4 text-base opacity-70 leading-relaxed">
           <p>
-            The CosmoWarp Foundation is the non-profit organization behind the CosmoWarp ecosystem.
-            Our mission is to develop and maintain an open, decentralized, and privacy-preserving
-            financial and social network accessible to everyone.
+            La Cosmorare Foundation est l'organisation à but non lucratif derrière l'écosystème Cosmorare.
+            Notre mission : développer et maintenir un protocole ouvert, décentralisé et respectueux de la vie privée
+            pour la certification d'objets rares — numériques ou physiques.
           </p>
 
           <div className="glass-panel p-4">
             <h3 className="text-base font-bold opacity-80 mb-2">Mission</h3>
             <ul className="space-y-2 text-body-sm opacity-50">
               <li className="flex items-start gap-2">
-                <span className="opacity-80 mt-0.5">{'\u25C8'}</span>
-                Democratize access to decentralized finance tools
+                <span className="opacity-80 mt-0.5">{'◈'}</span>
+                Démocratiser l'accès à la certification d'objets rares
               </li>
               <li className="flex items-start gap-2">
-                <span className="opacity-80 mt-0.5">{'\u25C8'}</span>
-                Protect user privacy through end-to-end encryption
+                <span className="opacity-80 mt-0.5">{'◈'}</span>
+                Protéger la propriété et l'authenticité via la cryptographie
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-star-400 mt-0.5">{'\u25C8'}</span>
-                Foster a community-driven ecosystem of digital art and creation
+                <span className="opacity-80 mt-0.5">{'◈'}</span>
+                Créer un écosystème communautaire pour collectionneurs et créateurs
               </li>
               <li className="flex items-start gap-2">
-                <span className="opacity-80 mt-0.5">{'\u25C8'}</span>
-                Advance CosmoMesh DAG technology for scalable decentralization
+                <span className="opacity-80 mt-0.5">{'◈'}</span>
+                Faire fonctionner l'app en mode offline ET online, accessible partout
               </li>
             </ul>
           </div>
 
           <div className="glass-panel p-4">
-            <h3 className="text-base font-bold text-energy-300 mb-2">Core Values</h3>
+            <h3 className="text-base font-bold opacity-90 mb-2">Valeurs fondamentales</h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-body-sm font-medium opacity-90">Decentralization</p>
-                <p className="text-[11px] opacity-40">No central authority, no single point of failure</p>
+                <p className="text-body-sm font-medium opacity-90">Décentralisation</p>
+                <p className="text-[11px] opacity-40">Aucune autorité centrale, aucun point unique de défaillance</p>
               </div>
               <div>
-                <p className="text-body-sm font-medium opacity-90">Privacy</p>
-                <p className="text-[11px] opacity-40">Your data belongs to you, always</p>
+                <p className="text-body-sm font-medium opacity-90">Vie privée</p>
+                <p className="text-[11px] opacity-40">Vos données vous appartiennent, toujours</p>
               </div>
               <div>
-                <p className="text-body-sm font-medium opacity-90">Transparency</p>
-                <p className="text-[11px] opacity-40">Open source, open governance</p>
+                <p className="text-body-sm font-medium opacity-90">Transparence</p>
+                <p className="text-[11px] opacity-40">Code ouvert, gouvernance ouverte</p>
               </div>
               <div>
-                <p className="text-body-sm font-medium opacity-90">Innovation</p>
-                <p className="text-[11px] opacity-40">Pushing the boundaries of DAG technology</p>
+                <p className="text-body-sm font-medium opacity-90">Accessibilité</p>
+                <p className="text-[11px] opacity-40">Offline + Online, pour tous et partout</p>
               </div>
             </div>
           </div>
 
           <div className="glass-panel p-4">
-            <h3 className="text-base font-bold text-star-400 mb-2">Ecosystem</h3>
+            <h3 className="text-base font-bold opacity-80 mb-2">Écosystème</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <div className="flex items-center gap-2">
-                <span className="opacity-80">{'\u03A9'}</span>
-                <span><span className="opacity-90">Warps</span> - Native token with 69M fixed supply</span>
+                <span className="opacity-80">{'Ω'}</span>
+                <span><span className="opacity-90">Warps</span> - Token natif, supply fixe 69M</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="opacity-80">{'\u2B22'}</span>
-                <span><span className="opacity-90">Warts</span> - Digital art NFTs with royalties</span>
+                <span className="opacity-80">{'✦'}</span>
+                <span><span className="opacity-90">CRCERT</span> - Certificats d'authenticité infalsifiables</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-star-400">{'\u25CE'}</span>
-                <span><span className="opacity-90">Wall</span> - Decentralized social network</span>
+                <span className="opacity-80">{'⬢'}</span>
+                <span><span className="opacity-90">Cosmorares</span> - Objets rares certifiés sur la place de marché</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="opacity-80">{'\u2B21'}</span>
-                <span><span className="opacity-90">CosmoMesh</span> - 7-layer DAG consensus</span>
+                <span className="opacity-80">{'◎'}</span>
+                <span><span className="opacity-90">Mur</span> - Réseau social décentralisé et chiffré</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="opacity-80">{'\u{1F4B3}'}</span>
+                <span><span className="opacity-90">Paiement</span> - Carte, PayPal, SEPA intégrés</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="opacity-80">{'⬡'}</span>
+                <span><span className="opacity-90">CosmoMesh</span> - Réseau DAG à 7 couches</span>
               </div>
             </div>
           </div>

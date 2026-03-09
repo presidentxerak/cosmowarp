@@ -1,12 +1,12 @@
 /**
- * CosmoWarp Public SDK — Developer API
+ * Cosmorare Public SDK — Developer API
  *
- * Open-source API for building apps on the CosmoWarp ecosystem.
+ * Open-source API for building apps on the Cosmorare ecosystem.
  * Provides read access to the mesh, wallet creation, transaction
  * submission, and event subscriptions.
  *
  * Usage:
- *   const cosmo = new CosmoWarpSDK();
+ *   const cosmo = new CosmorareSDK();
  *   const wallet = await cosmo.createWallet('MyApp User');
  *   const tx = await cosmo.send(wallet, recipientAddress, 100, 'Payment');
  *   const balance = cosmo.getBalance(wallet.address);
@@ -55,9 +55,9 @@ export interface SDKEvent {
   timestamp: number;
 }
 
-// ─── CosmoWarp SDK ───────────────────────────────────────
+// ─── Cosmorare SDK ───────────────────────────────────────
 
-export class CosmoWarpSDK {
+export class CosmorareSDK {
   private version = '1.0.0';
   private eventListeners: Map<SDKEventType, Array<(event: SDKEvent) => void>> = new Map();
 
@@ -83,7 +83,7 @@ export class CosmoWarpSDK {
   /** Get protocol constants */
   getProtocolInfo(): ProtocolInfo {
     return {
-      name: 'CosmoWarp',
+      name: 'Cosmorare',
       version: this.version,
       totalSupply: TOTAL_SUPPLY,
       airdropAmount: AIRDROP_AMOUNT,
@@ -225,4 +225,4 @@ export interface ProtocolInfo {
 
 // ─── Global SDK Instance ─────────────────────────────────
 
-export const cosmowarp = new CosmoWarpSDK();
+export const cosmorare = new CosmorareSDK();

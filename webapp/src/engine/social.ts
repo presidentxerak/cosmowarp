@@ -33,7 +33,7 @@ export interface SocialStats {
 
 // ─── Storage ───────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmowarp_social';
+const STORAGE_KEY = 'cosmorare_social';
 
 function loadProfiles(): UserProfile[] {
   try {

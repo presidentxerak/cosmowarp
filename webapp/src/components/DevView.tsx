@@ -24,8 +24,8 @@ export default function DevView() {
               onClick={() => setTab(t.id)}
               className={`flex-1 px-3 py-2 rounded-none text-xs font-medium transition-all cursor-pointer ${
                 tab === t.id
-                  ? 'bg-warp-500/30 text-warp-300'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  ? 'bg-current/10 opacity-80'
+                  : 'opacity-40 hover:opacity-80 hover:bg-white/5'
               }`}
             >
               {t.icon} {t.label}

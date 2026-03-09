@@ -191,7 +191,7 @@ export interface FiatPrice {
 
 // ─── Contract Engine ─────────────────────────────────────
 
-const CONTRACTS_KEY = 'cosmowarp_contracts';
+const CONTRACTS_KEY = 'cosmorare_contracts';
 
 export class ContractEngine {
   private contracts: Map<string, CosmoContract> = new Map();

@@ -23,20 +23,20 @@ function hashCode(str: string): number {
   return Math.abs(hash);
 }
 
-// App-themed color palettes (purples, cyans, pinks, blues - no green/brown)
+// Monochrome grayscale palettes
 const PALETTES = [
-  { bg: '#2d1b69', face: '#c084fc', accent: '#a855f7' },  // Deep purple
-  { bg: '#1e1b4b', face: '#818cf8', accent: '#6366f1' },  // Indigo
-  { bg: '#312e81', face: '#a78bfa', accent: '#8b5cf6' },  // Violet
-  { bg: '#1e3a5f', face: '#67e8f9', accent: '#22d3ee' },  // Cyan
-  { bg: '#4a1942', face: '#f472b6', accent: '#ec4899' },  // Pink
-  { bg: '#3b0764', face: '#d8b4fe', accent: '#c084fc' },  // Light purple
-  { bg: '#172554', face: '#93c5fd', accent: '#3b82f6' },  // Blue
-  { bg: '#581c87', face: '#e9d5ff', accent: '#a855f7' },  // Lavender
-  { bg: '#134e4a', face: '#5eead4', accent: '#14b8a6' },  // Teal
-  { bg: '#4c1d95', face: '#c4b5fd', accent: '#7c3aed' },  // Purple
-  { bg: '#1e1b4b', face: '#fda4af', accent: '#fb7185' },  // Rose
-  { bg: '#0c4a6e', face: '#7dd3fc', accent: '#0ea5e9' },  // Sky blue
+  { bg: '#1a1a1a', face: '#cccccc', accent: '#666666' },
+  { bg: '#0d0d0d', face: '#b3b3b3', accent: '#555555' },
+  { bg: '#222222', face: '#d9d9d9', accent: '#777777' },
+  { bg: '#111111', face: '#c0c0c0', accent: '#4d4d4d' },
+  { bg: '#2a2a2a', face: '#e0e0e0', accent: '#888888' },
+  { bg: '#181818', face: '#aaaaaa', accent: '#5a5a5a' },
+  { bg: '#1f1f1f', face: '#d4d4d4', accent: '#707070' },
+  { bg: '#141414', face: '#c7c7c7', accent: '#606060' },
+  { bg: '#262626', face: '#dedede', accent: '#808080' },
+  { bg: '#0f0f0f', face: '#b8b8b8', accent: '#505050' },
+  { bg: '#232323', face: '#dbdbdb', accent: '#757575' },
+  { bg: '#171717', face: '#a5a5a5', accent: '#585858' },
 ];
 
 function getAvatarColors(address: string): { bg: string; face: string; accent: string } {

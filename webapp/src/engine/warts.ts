@@ -1,7 +1,7 @@
 /**
- * CosmoWarp Wart Engine — NFT-like Digital Art on the CosmoWarp Protocol
+ * Cosmorare Wart Engine — NFT-like Digital Art on the Cosmorare Protocol
  *
- * Warts are unique digital artworks stored in the CosmoWarp protocol.
+ * Warts are unique digital artworks stored in the Cosmorare protocol.
  * Anyone with a wallet can mint, list, buy, and transfer Warts.
  * Creators earn royalties on every resale.
  *
@@ -17,7 +17,7 @@
  * - Both: Certificate of Authenticity with Ed25519 creator signature
  *
  * ─── Certificate of Authenticity ─────────────────────────
- * Every Wart receives an unforgeable Certificate ID (CWCERT_*) computed
+ * Every Wart receives an unforgeable Certificate ID (CRCERT_*) computed
  * from SHA-256(creator + content fingerprint + timestamp + title).
  * The creator's Ed25519 signature proves authenticity. Certificates are
  * permanently registered in an append-only local registry.
@@ -51,7 +51,7 @@ export interface WartComment {
 }
 
 export interface WartCertificate {
-  certId: string;              // CWCERT_<SHA256[0:32]> — unforgeable
+  certId: string;              // CRCERT_<SHA256[0:32]> — unforgeable
   contentFingerprint: string;  // SHA-256 of media data
   creatorSignature: string;    // Ed25519 signature of certId
   issuedAt: number;
@@ -81,7 +81,7 @@ export interface Wart {
   editionNumber: number;         // Which edition this is (1-based)
   availableUntil: number | null; // Timestamp deadline (null = forever)
   // ─── Certificate of Authenticity ──────────────────────
-  certId?: string;               // CWCERT_<SHA256[0:32]> — unforgeable certificate ID
+  certId?: string;               // CRCERT_<SHA256[0:32]> — unforgeable certificate ID
   contentFingerprint?: string;   // SHA-256 of media content — integrity proof
   creatorSignature?: string;     // Ed25519 signature — creator authenticity proof
   // ─── CosmoCode On-Chain SVG Storage ─────────────────
@@ -103,11 +103,11 @@ export interface Wart {
 // ─── Rarity Computation ─────────────────────────────────
 
 export const RARITY_CONFIG: Record<WartRarity, { label: string; color: string; badge: string }> = {
-  legendary: { label: 'Legendary', color: 'text-amber-400',  badge: '\u2726' },
-  epic:      { label: 'Epic',      color: 'text-purple-400', badge: '\u2605' },
-  rare:      { label: 'Rare',      color: 'text-blue-400',   badge: '\u25C6' },
-  uncommon:  { label: 'Uncommon',  color: 'text-green-400',  badge: '\u25C8' },
-  common:    { label: 'Common',    color: 'text-gray-400',   badge: '\u25CE' },
+  legendary: { label: 'Legendary', color: 'opacity-80',  badge: '\u2726' },
+  epic:      { label: 'Epic',      color: 'opacity-80', badge: '\u2605' },
+  rare:      { label: 'Rare',      color: 'opacity-80',   badge: '\u25C6' },
+  uncommon:  { label: 'Uncommon',  color: 'opacity-80',  badge: '\u25C8' },
+  common:    { label: 'Common',    color: 'opacity-40',   badge: '\u25CE' },
 };
 
 export function computeRarity(wart: Wart): WartRarity {
@@ -163,8 +163,8 @@ export function formatDateFR(timestamp: number): string {
 
 // ─── Storage ─────────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmowarp_warts';
-const CERT_REGISTRY_KEY = 'cosmowarp_cert_registry';
+const STORAGE_KEY = 'cosmorare_warts';
+const CERT_REGISTRY_KEY = 'cosmorare_cert_registry';
 const MEDIA_STORE_PREFIX = 'cw_media_';
 
 // ─── Content-Addressable Media Store ─────────────────────
@@ -300,7 +300,7 @@ export class WartEngine {
     // 2. Compute unforgeable certificate ID
     const certSource = `CW_CERT:v1:${creator}:${contentFingerprint}:${timestamp}:${title.trim()}`;
     const certHash = await sha256(certSource);
-    const certId = 'CWCERT_' + certHash.slice(0, 32).toUpperCase();
+    const certId = 'CRCERT_' + certHash.slice(0, 32).toUpperCase();
 
     // 3. Creator signs the certificate with their Ed25519 private key
     let creatorSignature: string | undefined;
@@ -462,7 +462,7 @@ export class WartEngine {
     // 2. Verify certificate ID — recompute and compare
     const certSource = `CW_CERT:v1:${wart.creator}:${wart.contentFingerprint}:${wart.createdAt}:${wart.title}`;
     const certHash = await sha256(certSource);
-    const expectedCertId = 'CWCERT_' + certHash.slice(0, 32).toUpperCase();
+    const expectedCertId = 'CRCERT_' + certHash.slice(0, 32).toUpperCase();
     if (expectedCertId !== wart.certId) {
       return { valid: false, reason: 'Certificate ID mismatch — data has been altered' };
     }

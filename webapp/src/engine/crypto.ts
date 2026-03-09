@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Crypto Engine — Real Cryptographic Primitives
+ * Cosmorare Crypto Engine — Real Cryptographic Primitives
  *
  * Ed25519 for signatures, SHA-256 for hashing, AES-GCM for encryption.
  * Uses the Web Crypto API (SubtleCrypto) — no dependencies.
@@ -145,7 +145,7 @@ async function deriveAesKey(sharedSecret: string): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: strToBuf('CosmoWarp-AES-Salt-v1'),
+      salt: strToBuf('Cosmorare-AES-Salt-v1'),
       iterations: 100000,
       hash: 'SHA-256',
     },
@@ -262,7 +262,7 @@ export async function deriveWalletSeed(
   password: string
 ): Promise<Uint8Array> {
   const normalizedUser = username.toLowerCase().trim();
-  const salt = `CosmoWarp-CosmoID-v1:${normalizedUser}`;
+  const salt = `Cosmorare-CosmoID-v1:${normalizedUser}`;
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
     strToBuf(password),

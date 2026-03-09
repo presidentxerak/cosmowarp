@@ -48,7 +48,7 @@ class AppErrorBoundary extends Component<
         >
           <div className="text-center max-w-md">
             <p className="text-4xl mb-6">{'\u2B21'}</p>
-            <h1 className="text-title-md font-bold mb-3">CosmoWarp encountered an error</h1>
+            <h1 className="text-title-md font-bold mb-3">Cosmorare encountered an error</h1>
             <p className="text-base opacity-50 mb-6">{this.state.error || 'Something went wrong.'}</p>
             <button
               onClick={() => window.location.reload()}
@@ -86,6 +86,8 @@ import DevView from './components/DevView';
 import UserProfileView from './components/UserProfileView';
 import DiscoverView from './components/DiscoverView';
 import VaultView from './components/VaultView';
+import FiatGatewayView from './components/FiatGatewayView';
+import PFPCollectionView from './components/PFPCollectionView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('wall');
@@ -97,8 +99,8 @@ function App() {
       const detail = (e as CustomEvent).detail;
       if (typeof detail === 'string') setActiveTab(detail);
     };
-    window.addEventListener('cosmowarp-navigate', handler);
-    return () => window.removeEventListener('cosmowarp-navigate', handler);
+    window.addEventListener('cosmorare-navigate', handler);
+    return () => window.removeEventListener('cosmorare-navigate', handler);
   }, []);
 
   return (
@@ -150,6 +152,10 @@ function App() {
             {/* Social */}
             {activeTab === 'user-profile' && <UserProfileView onNavigate={setActiveTab} />}
             {activeTab === 'discover' && <DiscoverView onNavigate={setActiveTab} />}
+
+            {/* Fiat Gateway & PFP */}
+            {activeTab === 'fiat-gateway' && <FiatGatewayView />}
+            {activeTab === 'pfp-collection' && <PFPCollectionView />}
 
             {/* Notifications (from top bar bell) */}
             {activeTab === 'notifications' && <NotificationsView />}

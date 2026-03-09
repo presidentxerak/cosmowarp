@@ -22,7 +22,7 @@ export default function SettingsView() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cosmowarp-wallet-${wallet ? shortAddress(wallet.address) : 'backup'}.json`;
+    a.download = `cosmorare-wallet-${wallet ? shortAddress(wallet.address) : 'backup'}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -76,7 +76,7 @@ export default function SettingsView() {
     <div className="space-y-4 max-w-lg mx-auto">
       <div className="glass-panel p-5 text-center">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2699'} Settings</h2>
-        <p className="text-body-sm opacity-40">Manage your CosmoWarp experience</p>
+        <p className="text-body-sm opacity-40">Manage your Cosmorare experience</p>
       </div>
 
       {/* ─── Profile ──────────────────────────────────────── */}
@@ -121,7 +121,7 @@ export default function SettingsView() {
             className={`px-4 py-2 text-body-sm font-medium border transition-all cursor-pointer ${
               theme === 'dark'
                 ? 'bg-current/5 border-current/15 opacity-70'
-                : 'bg-current/10 border-black/10 text-gray-700'
+                : 'bg-current/10 border-black/10 opacity-30'
             }`}
           >
             {theme === 'dark' ? '\u263D Dark' : '\u2600 Light'}
@@ -176,7 +176,7 @@ export default function SettingsView() {
                   Close
                 </button>
               </div>
-              <div className="p-3 bg-warp-500/5 border border-warp-500/10 text-left">
+              <div className="p-3 bg-current/5 border border-current/10 text-left">
                 <p className="text-label opacity-50">
                   <span className="opacity-80 font-bold">How to use:</span> Copy this code and send it to yourself via any messaging app (iMessage, WhatsApp, Telegram, etc.). On the other device, choose "CosmoLink" when signing in and paste the code + your password.
                 </p>
@@ -205,7 +205,7 @@ export default function SettingsView() {
                 <p className="text-body-sm opacity-90">Lock Wallet</p>
                 <p className="text-label opacity-40">Require password to access</p>
               </div>
-              <button onClick={lock} className="text-body-sm px-3 py-1.5 border border-red-500/30 opacity-70 bg-current/5 hover:bg-red-500/20 transition-all cursor-pointer">
+              <button onClick={lock} className="text-body-sm px-3 py-1.5 border border-current/15 opacity-70 bg-current/5 hover:bg-current/5 transition-all cursor-pointer">
                 {'\u274C'} Lock
               </button>
             </div>
@@ -224,7 +224,7 @@ export default function SettingsView() {
             </div>
             <button
               onClick={handleClearChat}
-              className="text-body-sm px-3 py-1.5 border border-red-500/30 opacity-70 bg-current/5 hover:bg-red-500/20 transition-all cursor-pointer"
+              className="text-body-sm px-3 py-1.5 border border-current/15 opacity-70 bg-current/5 hover:bg-current/5 transition-all cursor-pointer"
             >
               Clear
             </button>
@@ -244,8 +244,8 @@ export default function SettingsView() {
                 onClick={handleSignOut}
                 className={`text-body-sm px-3 py-1.5 border transition-all cursor-pointer ${
                   confirmSignOut
-                    ? 'border-red-500/50 text-red-300 bg-red-500/20 hover:bg-red-500/30'
-                    : 'border-red-500/30 opacity-70 bg-current/5 hover:bg-red-500/20'
+                    ? 'border-current/20 opacity-70 bg-current/5 hover:bg-current/10'
+                    : 'border-current/15 opacity-70 bg-current/5 hover:bg-current/5'
                 }`}
               >
                 {confirmSignOut ? 'Confirm Sign Out' : 'Sign Out'}
@@ -261,7 +261,7 @@ export default function SettingsView() {
         <div className="space-y-2 text-body-sm">
           <div className="flex justify-between">
             <span className="opacity-40">Version</span>
-            <span className="opacity-70">CosmoWarp Terminal v2.0</span>
+            <span className="opacity-70">Cosmorare Terminal v2.0</span>
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Engine</span>

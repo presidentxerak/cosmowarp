@@ -1,7 +1,7 @@
 import { storage } from './storage';
 
 /**
- * CosmoWarp Account Hierarchy — Levels, Titles & Rewards
+ * Cosmorare Account Hierarchy — Levels, Titles & Rewards
  *
  * 7 levels aligned with the 7 fractal layers.
  * Each level has a cosmic title, reward multiplier, and privileges.
@@ -33,7 +33,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 0,
     rewardMultiplier: 1.0,
     airdropBonus: 0,
-    color: 'text-gray-400',
+    color: 'opacity-40',
     description: 'Every journey begins with a single particle.',
   },
   {
@@ -45,7 +45,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 3,
     rewardMultiplier: 1.2,
     airdropBonus: 100,
-    color: 'text-blue-400',
+    color: 'opacity-80',
     description: 'Your transactions ripple through the mesh.',
   },
   {
@@ -57,7 +57,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 14,
     rewardMultiplier: 1.5,
     airdropBonus: 250,
-    color: 'text-yellow-400',
+    color: 'opacity-80',
     description: 'A guiding light in the CosmoMesh.',
   },
   {
@@ -69,7 +69,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 30,
     rewardMultiplier: 2.0,
     airdropBonus: 500,
-    color: 'text-purple-400',
+    color: 'opacity-80',
     description: 'You shape the fabric of the mesh.',
   },
   {
@@ -81,7 +81,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 90,
     rewardMultiplier: 2.5,
     airdropBonus: 1000,
-    color: 'text-cyan-400',
+    color: 'opacity-80',
     description: 'A gravitational center of the network.',
   },
   {
@@ -93,7 +93,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 180,
     rewardMultiplier: 3.5,
     airdropBonus: 2500,
-    color: 'text-orange-400',
+    color: 'opacity-80',
     description: 'Sovereign of the cosmic order.',
   },
   {
@@ -105,7 +105,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     minDaysActive: 365,
     rewardMultiplier: 5.0,
     airdropBonus: 5000,
-    color: 'text-amber-300',
+    color: 'opacity-80',
     description: 'Transcended beyond the mesh. You ARE the light.',
   },
 ];
@@ -267,11 +267,11 @@ export class HierarchyEngine {
   }
 
   save(): void {
-    storage.setItem('cosmowarp_hierarchy', this.serialize());
+    storage.setItem('cosmorare_hierarchy', this.serialize());
   }
 
   static load(): HierarchyEngine | null {
-    const raw = storage.getItem('cosmowarp_hierarchy');
+    const raw = storage.getItem('cosmorare_hierarchy');
     if (!raw) return null;
     try {
       return HierarchyEngine.deserialize(raw);

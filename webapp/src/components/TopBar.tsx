@@ -78,7 +78,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
             type: 'wart',
             id: wart.id,
             title: wart.title,
-            subtitle: `Wart · ${wart.price !== null ? wart.price + ' \u03A9' : 'Not for sale'}`,
+            subtitle: `Cosmorare · ${wart.price !== null ? wart.price + ' \u03A9' : 'Not for sale'}`,
             address: wart.creator,
             imageData: wart.imageData,
           });
@@ -97,7 +97,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
 
   const handleSelect = (result: SearchResult) => {
     if (result.type === 'user' && result.address) {
-      sessionStorage.setItem('cosmowarp_view_user', result.address);
+      sessionStorage.setItem('cosmorare_view_user', result.address);
       onNavigate('user-profile');
     } else if (result.type === 'wart') {
       onNavigate('gallery');
@@ -139,7 +139,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
-              placeholder="Search users, warts..."
+              placeholder="Rechercher objets, utilisateurs..."
               className="w-full bg-transparent text-base placeholder-current/30 outline-none"
               style={{ opacity: searchQuery ? 1 : 0.6 }}
             />
@@ -185,7 +185,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
                       <p className="text-body-sm opacity-40 truncate">{result.subtitle}</p>
                     </div>
                     <span className="text-label px-2 py-0.5 shrink-0 opacity-50">
-                      {result.type === 'user' ? 'User' : 'Wart'}
+                      {result.type === 'user' ? 'User' : 'Cosmorare'}
                     </span>
                   </button>
                 ))

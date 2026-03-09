@@ -93,7 +93,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmowarp_view_user', address);
+    sessionStorage.setItem('cosmorare_view_user', address);
     onNavigate('user-profile');
   };
 
@@ -167,13 +167,13 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Social links */}
           <div className="mt-2 flex flex-wrap gap-3 justify-center items-center">
             {website && (
-              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-energy-300 flex items-center gap-1">
+              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:opacity-90 flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 {website.replace(/^https?:\/\//, '').slice(0, 30)}
               </a>
             )}
             {instagram && (
-              <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-nebula-500 flex items-center gap-1">
+              <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:opacity-80 flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
                 @{instagram.replace('@', '')}
               </a>
@@ -228,7 +228,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             onClick={() => setTab(t.id)}
             className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
-                ? 'border-warp-400 opacity-80'
+                ? 'border-current/20 opacity-80'
                 : 'border-transparent opacity-40 hover:opacity-70'
             }`}
           >
@@ -270,7 +270,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'warts' && (
           myCreated.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No Warts created yet</p>
+              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Gallery</button>
             </div>
           ) : (
@@ -295,7 +295,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'collected' && (
           myCollection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No Warts in collection</p>
+              <p className="opacity-40 text-base">Aucune Cosmorare dans la collection</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Browse Gallery</button>
             </div>
           ) : (

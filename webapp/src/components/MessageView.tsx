@@ -21,7 +21,30 @@ export default function MessageView() {
     }
   };
 
-  useEffect(() => { refresh(); }, [wallet]);
+  useEffect(() => {
+    refresh();
+    // Auto-open DM if navigated from user profile
+    if (wallet) {
+      const dmTo = sessionStorage.getItem('cosmorare_dm_to');
+      if (dmTo) {
+        sessionStorage.removeItem('cosmorare_dm_to');
+        const e = CosmoChatEngine.load();
+        const alias = wallet.alias || shortAddress(wallet.address);
+        // Find existing thread or create one
+        const existingThreads = e.getThreads(wallet.address);
+        const existing = existingThreads.find(t => t.participants.includes(dmTo));
+        if (existing) {
+          setSelectedThread(existing);
+        } else {
+          e.sendDM(wallet.address, alias, dmTo, 'Hey!');
+          const updated = e.getThreads(wallet.address);
+          const newThread = updated.find(t => t.participants.includes(dmTo));
+          if (newThread) setSelectedThread(newThread);
+          setThreads(updated);
+        }
+      }
+    }
+  }, [wallet]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -106,8 +129,8 @@ export default function MessageView() {
               <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] px-3 py-2 ${
                   isMe
-                    ? 'bg-current/5 border border-warp-500/25'
-                    : 'bg-cosmic-700/60 border border-current/10'
+                    ? 'bg-current/5 border border-current/10'
+                    : 'bg-current/5 border border-current/10'
                 }`}>
                   <p className="text-base opacity-90">{msg.content}</p>
                   <p className="text-label opacity-30 mt-0.5 text-right">{timeAgo(msg.timestamp)}</p>
@@ -187,7 +210,7 @@ export default function MessageView() {
                 onClick={() => setSelectedThread(thread)}
                 className="w-full flex items-center gap-3 p-3 border-b border-current/10 hover:bg-white/3 transition-colors cursor-pointer text-left"
               >
-                <div className="w-10 h-10 rounded-full bg-warp-500/15 flex items-center justify-center text-base opacity-80 shrink-0">
+                <div className="w-10 h-10 rounded-full bg-current/5 flex items-center justify-center text-base opacity-80 shrink-0">
                   {shortAddress(peer).slice(0, 2)}
                 </div>
                 <div className="flex-1 min-w-0">

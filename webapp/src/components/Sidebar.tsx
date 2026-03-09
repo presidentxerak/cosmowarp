@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useWallet } from '../context/WalletContext';
+import Logo from './Logo';
 import HexAvatar from './HexAvatar';
 import { shortAddress } from '../engine/crypto';
 
@@ -41,6 +42,21 @@ const menuItems = [
   { id: 'signets', label: 'Signets', icon: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  )},
+  { id: 'fiat-gateway', label: 'Fiat Gateway', icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" />
+      <line x1="12" y1="6" x2="12" y2="8" />
+      <line x1="12" y1="18" x2="12" y2="20" />
+    </svg>
+  )},
+  { id: 'pfp-collection', label: 'PFP Studio', icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 21v-1a5 5 0 0 1 10 0v1" />
     </svg>
   )},
   { id: 'divider1', label: '', icon: null },
@@ -87,7 +103,7 @@ const menuItems = [
       <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   )},
-  { id: 'settings', label: 'Param\u00e8tres', icon: (
+  { id: 'settings', label: 'Paramètres', icon: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -148,7 +164,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer hover-gradient-border ${
+              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer ${
                 activeTab === item.id
                   ? 'opacity-100'
                   : 'opacity-40 hover:opacity-80'
@@ -166,7 +182,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
             className="w-10 h-10 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-all mx-auto"
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           >
-            <span className="text-lg">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
+            <span className="text-lg">{theme === 'dark' ? '☀' : '☽'}</span>
           </button>
         </div>
       </div>
@@ -190,12 +206,8 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
         <div className="p-5 border-b border-current/10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <img
-                src={import.meta.env.BASE_URL + 'logo.svg'}
-                alt="CosmoWarp"
-                className="w-8 h-8 animate-float"
-              />
-              <span className="font-title text-base">CosmoWarp</span>
+              <Logo className="w-8 h-8 animate-float" />
+              <span className="font-title text-base">コスモラレ</span>
             </div>
             <button
               onClick={onClose}
@@ -252,7 +264,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
             onClick={toggleTheme}
             className="w-full flex items-center gap-3 px-2 py-2 text-base opacity-50 hover:opacity-80 cursor-pointer transition-all"
           >
-            <span className="text-xl">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
+            <span className="text-xl">{theme === 'dark' ? '☀' : '☽'}</span>
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>

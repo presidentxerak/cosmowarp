@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import Logo from './Logo';
 
 interface Message {
   id: string;
@@ -10,67 +11,67 @@ interface Message {
 
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
   {
-    keywords: ['wallet', 'portefeuille', 'balance', 'solde'],
-    response: 'Your wallet is the core of CosmoWarp! It stores your Warps tokens and manages your identity on the CosmoMesh. You can send, receive, and mine Warps. Want me to show you your wallet?',
-    suggestion: { label: 'Open Wallet', tab: 'wallet' },
+    keywords: ['wallet', 'portefeuille', 'balance', 'solde', 'compte'],
+    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Warps et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Warps. Vous voulez accéder à votre wallet ?',
+    suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['mine', 'mining', 'miner', 'minage'],
-    response: 'Mining in CosmoWarp uses a proof-of-work system with three difficulty levels: Basic, Crypto, and Deep Mining. Each successful mine rewards you with Warps tokens. The reward decreases as the total supply approaches the 69M cap.',
-    suggestion: { label: 'Open Wallet', tab: 'wallet' },
+    response: 'Le minage sur Cosmorare utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Warps (Ω). La récompense diminue progressivement selon le nombre d\'or.',
+    suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
-    keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace'],
-    response: 'Warts are unique digital assets on CosmoWarp - think of them as encrypted art pieces. You can mint, buy, sell, and collect Warts in the Gallery. Each Wart has rarity levels, editions, and built-in royalties for creators.',
-    suggestion: { label: 'Open Gallery', tab: 'gallery' },
+    keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
+    response: 'Les Cosmorares sont des objets certifiés sur Cosmorare. Chaque objet reçoit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
+    suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {
     keywords: ['send', 'transfer', 'envoyer'],
-    response: 'You can send Warps to any CosmoWarp address. Transactions are processed through the CosmoMesh DAG with 7-layer validation and instant Resonance consensus. No blockchain delays!',
-    suggestion: { label: 'Open Wallet', tab: 'wallet' },
+    response: 'Vous pouvez envoyer des Warps à n\'importe quelle adresse Cosmorare. Les transactions passent par le réseau CosmoMesh DAG avec 7 couches de validation. Instantané et gratuit !',
+    suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
-    keywords: ['cosmomesh', 'mesh', 'dag', 'network'],
-    response: 'CosmoMesh is our revolutionary DAG-based transactional fabric. Unlike traditional blockchains, it uses 7 parallel validation layers and Resonance consensus for near-instant finality. Read the White Paper for the full technical details.',
-    suggestion: { label: 'Read White Paper', tab: 'whitepaper' },
+    keywords: ['cosmomesh', 'mesh', 'dag', 'network', 'reseau', 'réseau'],
+    response: 'CosmoMesh est notre réseau en graphe acyclique dirigé (DAG). Contrairement aux blockchains traditionnelles, il utilise 7 couches de validation parallèles et un consensus par Résonance pour une finalité quasi instantanée.',
+    suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['help', 'aide', 'how', 'comment'],
-    response: 'I\'m here to guide you through CosmoWarp! You can ask me about wallets, mining, Warts (digital art), the CosmoMesh network, or anything else. What would you like to explore?',
-    suggestion: { label: 'Open Help', tab: 'help' },
+    response: 'Je suis là pour vous guider dans Cosmorare ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Que souhaitez-vous explorer ?',
+    suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   },
   {
-    keywords: ['wall', 'post', 'social', 'feed', 'chat'],
-    response: 'The Wall is CosmoWarp\'s decentralized social network. Post text, share Warts, embed external content, and tip posts with Warps. All conversations are encrypted and anonymous.',
-    suggestion: { label: 'Open Wall', tab: 'wall' },
+    keywords: ['wall', 'post', 'social', 'feed', 'chat', 'mur'],
+    response: 'Le Mur est le réseau social décentralisé de Cosmorare. Partagez du texte, des objets certifiés, et tippez les publications avec des Warps. Toutes les conversations sont chiffrées et anonymes.',
+    suggestion: { label: 'Ouvrir le Mur', tab: 'wall' },
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Hello! I\'m Cosmo, your AI guide to the CosmoWarp universe. I can help you navigate the ecosystem, explain features, or answer any questions. What interests you?',
+    response: 'Bonjour ! Je suis Cosmo, votre guide dans l\'univers Cosmorare コスモラレ. Je peux vous expliquer comment certifier un objet rare, miner des Warps, utiliser le paiement, ou naviguer dans l\'écosystème.',
   },
   {
-    keywords: ['who', 'what are you', 'qui es tu', 'cosmo'],
-    response: 'I\'m Cosmo, the AI assistant built into CosmoWarp. I help users navigate the ecosystem, understand features, and make the most of their experience. Think of me as your cosmic guide!',
+    keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
+    response: 'Cosmorare (コスモラレ) est une plateforme de certification pour objets rares. Le Protocole Cosmorare crée des certificats d\'authenticité infalsifiables (CRCERT) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics'],
-    response: 'Warps (symbol: \u03A9) is the native token of CosmoWarp with a fixed supply cap of 69 million. Tokens are earned through mining and can be used for transactions, tipping posts on the Wall, and purchasing Warts in the Gallery.',
-    suggestion: { label: 'Read White Paper', tab: 'whitepaper' },
+    response: 'Le Warp (symbole : Ω) est le token natif de Cosmorare avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
+    suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
-    keywords: ['sdk', 'developer', 'api', 'dev'],
-    response: 'The CosmoWarp SDK lets you build apps and integrations on our ecosystem. It provides wallet management, cryptographic utilities, mining tools, and event-driven APIs.',
-    suggestion: { label: 'Open SDK', tab: 'sdk' },
+    keywords: ['paiement', 'payment', 'payer', 'acheter', 'buy', 'euro', 'carte', 'card', 'paypal', 'fiat'],
+    response: 'Cosmorare intègre une passerelle de paiement ! Achetez des Warps par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Warps contre des euros. Tout est intégré dans l\'app.',
+    suggestion: { label: 'Passerelle de paiement', tab: 'fiat-gateway' },
   },
   {
-    keywords: ['message', 'dm', 'direct'],
-    response: 'Direct messages on CosmoWarp are end-to-end encrypted. You can send private messages to any user on the network. All communications are anonymous and secure.',
-    suggestion: { label: 'Open Messages', tab: 'message' },
+    keywords: ['offline', 'hors ligne', 'internet', 'connexion'],
+    response: 'Cosmorare fonctionne 100% offline ! Grâce au service worker, l\'app se met en cache sur votre appareil. Vos certificats, votre wallet et vos données restent accessibles sans internet. À la reconnexion, tout se synchronise.',
+    suggestion: { label: 'Paramètres', tab: 'settings' },
   },
   {
-    keywords: ['privacy', 'anonymous', 'encrypt', 'secure'],
-    response: 'Privacy is at the core of CosmoWarp. All conversations are encrypted, identities are pseudonymous through CosmoID, and the network uses zero-knowledge principles. Your data stays yours.',
-    suggestion: { label: 'Privacy Policy', tab: 'privacy' },
+    keywords: ['privacy', 'anonymous', 'encrypt', 'secure', 'privé', 'chiffré', 'sécurité'],
+    response: 'La vie privée est au coeur de Cosmorare. Conversations chiffrées, identités pseudonymes, principes zero-knowledge. Vos données restent les vôtres.',
+    suggestion: { label: 'Confidentialité', tab: 'privacy' },
   },
 ];
 
@@ -82,8 +83,8 @@ function getResponse(input: string): { response: string; suggestion?: { label: s
     }
   }
   return {
-    response: 'Interesting question! I\'m still learning, but I can help you explore CosmoWarp. Try asking me about wallets, mining, Warts, the Wall, or the CosmoMesh network. You can also check the Help section for detailed guides.',
-    suggestion: { label: 'Open Help', tab: 'help' },
+    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le réseau CosmoMesh. Vous pouvez aussi consulter la section Aide.',
+    suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   };
 }
 
@@ -92,7 +93,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     {
       id: 'welcome',
       role: 'cosmo',
-      text: 'Welcome to CosmoWarp! I\'m Cosmo, your AI guide. Ask me anything about the ecosystem - wallets, mining, Warts, the Wall, or the CosmoMesh network.',
+      text: 'Bienvenue sur Cosmorare コスモラレ ! Je suis Cosmo, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
       timestamp: Date.now(),
     },
   ]);
@@ -119,7 +120,6 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     setInput('');
     setTyping(true);
 
-    // Simulate AI response with typing delay
     setTimeout(() => {
       const { response, suggestion } = getResponse(text);
       const cosmoMsg: Message = {
@@ -135,10 +135,10 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
   };
 
   const quickActions = [
-    { label: 'What is CosmoWarp?', query: 'What is CosmoWarp?' },
-    { label: 'How to mine?', query: 'How do I mine Warps?' },
-    { label: 'What are Warts?', query: 'What are Warts NFTs?' },
-    { label: 'Tell me about the Wall', query: 'Tell me about the Wall social network' },
+    { label: 'C\'est quoi Cosmorare ?', query: 'C\'est quoi Cosmorare ?' },
+    { label: 'Comment miner ?', query: 'Comment miner des Warps ?' },
+    { label: 'Certifier un objet', query: 'Comment certifier un objet rare ?' },
+    { label: 'Paiement par carte', query: 'Comment acheter avec ma carte ?' },
   ];
 
   return (
@@ -149,11 +149,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'cosmo' && (
               <div className="shrink-0 w-8 h-8 flex items-center justify-center">
-                <img
-                  src={import.meta.env.BASE_URL + 'logo.svg'}
-                  alt="Cosmo"
-                  className="w-6 h-6"
-                />
+                <Logo className="w-6 h-6" />
               </div>
             )}
             <div className={`max-w-[85%] sm:max-w-[70%] ${
@@ -169,7 +165,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
               {msg.suggestion && (
                 <button
                   onClick={() => onNavigate(msg.suggestion!.tab)}
-                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-body-sm font-medium opacity-80 bg-warp-500/15 border border-warp-500/25 hover:bg-warp-500/25 transition-all cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-body-sm font-medium opacity-80 bg-current/5 border border-current/10 hover:bg-current/10 transition-all cursor-pointer"
                 >
                   {msg.suggestion.label}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -184,21 +180,19 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           </div>
         ))}
 
-        {/* Typing indicator */}
         {typing && (
           <div className="flex gap-2 items-start">
             <div className="shrink-0 w-8 h-8 flex items-center justify-center">
-              <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="Cosmo" className="w-6 h-6 animate-pulse" />
+              <Logo className="w-6 h-6 animate-pulse" />
             </div>
             <div className="flex gap-1 px-3 py-3">
-              <span className="w-1.5 h-1.5 bg-warp-400/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-warp-400/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-warp-400/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-1.5 h-1.5 bg-current/10 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-current/10 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-current/10 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
         )}
 
-        {/* Quick actions (only show when few messages) */}
         {messages.length <= 1 && (
           <div className="flex flex-wrap gap-2 pt-2">
             {quickActions.map((action) => (
@@ -231,7 +225,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                     }, 800 + Math.random() * 1200);
                   }, 50);
                 }}
-                className="px-3 py-1.5 text-body-sm opacity-80 border border-current/10 bg-warp-500/5 hover:bg-warp-500/15 transition-all cursor-pointer"
+                className="px-3 py-1.5 text-body-sm opacity-80 border border-current/10 bg-current/5 hover:bg-current/5 transition-all cursor-pointer"
               >
                 {action.label}
               </button>
@@ -249,7 +243,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Ask Cosmo anything..."
+            placeholder="Posez votre question à Cosmo..."
             className="flex-1 warp-input py-2.5"
             disabled={typing}
           />
@@ -257,7 +251,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             onClick={handleSend}
             disabled={!input.trim() || typing}
             className="warp-button px-3 py-2.5 shrink-0 disabled:opacity-30"
-            aria-label="Send"
+            aria-label="Envoyer"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="22" y1="2" x2="11" y2="13" />
@@ -266,7 +260,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           </button>
         </div>
         <p className="text-label opacity-30 mt-1.5 text-center">
-          Cosmo is your AI guide to CosmoWarp. Responses are generated locally.
+          Cosmo est votre guide IA Cosmorare. Réponses générées localement.
         </p>
       </div>
     </div>

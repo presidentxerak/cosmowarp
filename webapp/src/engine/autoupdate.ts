@@ -1,8 +1,8 @@
 /**
- * CosmoWarp Auto-Update Protocol — Automatic System & Security Updates
+ * Cosmorare Auto-Update Protocol — Automatic System & Security Updates
  *
  * Unlike Ethereum where hard forks require coordinated social consensus
- * and months of planning, CosmoWarp supports:
+ * and months of planning, Cosmorare supports:
  *
  * 1. AUTOMATIC SECURITY PATCHES — Critical fixes applied immediately
  *    via signed update manifests. No waiting for "The Merge" equivalent.

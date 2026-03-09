@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Fiat Gateway — EUR/USD/GBP On/Off Ramp
+ * Cosmorare Fiat Gateway — EUR/USD/GBP On/Off Ramp
  *
  * This module provides the INTERFACE for fiat payments.
  * In production, it connects to payment processors (Stripe, PayPal).
@@ -65,7 +65,7 @@ export interface FiatTransaction {
   completedAt?: number;
   error?: string;
   // Fees
-  platformFeePercent: number;     // CosmoWarp platform fee (default 2.5%)
+  platformFeePercent: number;     // Cosmorare platform fee (default 2.5%)
   platformFeeAmount: number;      // Calculated fee
   processorFeeAmount: number;     // Payment processor fee (Stripe ~2.9% + 0.30)
   sellerReceives: number;         // Net amount seller receives in fiat
@@ -111,9 +111,9 @@ export interface GatewayStats {
 
 // ─── Constants ───────────────────────────────────────────
 
-const RATES_KEY = 'cosmowarp_fiat_rates';
-const FIAT_TX_KEY = 'cosmowarp_fiat_tx';
-const FIAT_LISTINGS_KEY = 'cosmowarp_fiat_listings';
+const RATES_KEY = 'cosmorare_fiat_rates';
+const FIAT_TX_KEY = 'cosmorare_fiat_tx';
+const FIAT_LISTINGS_KEY = 'cosmorare_fiat_listings';
 
 const DEFAULT_PLATFORM_FEE = 2.5;   // 2.5% platform fee
 const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> = {
@@ -197,7 +197,7 @@ export class FiatGateway {
 
   set preferredCurrency(currency: FiatCurrency) {
     this._preferredCurrency = currency;
-    storage.setItem('cosmowarp_fiat_currency', currency);
+    storage.setItem('cosmorare_fiat_currency', currency);
   }
 
   // ─── Price Conversion ────────────────────────────────

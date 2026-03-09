@@ -45,7 +45,7 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmowarp_view_user', address);
+    sessionStorage.setItem('cosmorare_view_user', address);
     onNavigate('user-profile');
   };
 
