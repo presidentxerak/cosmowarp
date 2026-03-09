@@ -12,66 +12,66 @@ interface Message {
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
   {
     keywords: ['wallet', 'portefeuille', 'balance', 'solde', 'compte'],
-    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Warps et g\u00e8re votre identit\u00e9 sur le r\u00e9seau. Vous pouvez envoyer, recevoir, et miner des Warps. Vous voulez acc\u00e9der \u00e0 votre wallet ?',
+    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Warps et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Warps. Vous voulez accéder à votre wallet ?',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['mine', 'mining', 'miner', 'minage'],
-    response: 'Le minage sur Cosmorare utilise un syst\u00e8me de preuve de calcul avec 3 niveaux de difficult\u00e9 : L\u00e9ger, Crypto et Minage profond. Chaque minage r\u00e9ussi vous r\u00e9compense en Warps (\u03A9). La r\u00e9compense diminue progressivement selon le nombre d\'or.',
+    response: 'Le minage sur Cosmorare utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Warps (Ω). La récompense diminue progressivement selon le nombre d\'or.',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
-    response: 'Les Cosmorares sont des objets certifi\u00e9s sur Cosmorare. Chaque objet re\u00e7oit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
+    response: 'Les Cosmorares sont des objets certifiés sur Cosmorare. Chaque objet reçoit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
     suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {
     keywords: ['send', 'transfer', 'envoyer'],
-    response: 'Vous pouvez envoyer des Warps \u00e0 n\'importe quelle adresse Cosmorare. Les transactions passent par le r\u00e9seau CosmoMesh DAG avec 7 couches de validation. Instantan\u00e9 et gratuit !',
+    response: 'Vous pouvez envoyer des Warps à n\'importe quelle adresse Cosmorare. Les transactions passent par le réseau CosmoMesh DAG avec 7 couches de validation. Instantané et gratuit !',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
-    keywords: ['cosmomesh', 'mesh', 'dag', 'network', 'reseau', 'r\u00e9seau'],
-    response: 'CosmoMesh est notre r\u00e9seau en graphe acyclique dirig\u00e9 (DAG). Contrairement aux blockchains traditionnelles, il utilise 7 couches de validation parall\u00e8les et un consensus par R\u00e9sonance pour une finalit\u00e9 quasi instantan\u00e9e.',
+    keywords: ['cosmomesh', 'mesh', 'dag', 'network', 'reseau', 'réseau'],
+    response: 'CosmoMesh est notre réseau en graphe acyclique dirigé (DAG). Contrairement aux blockchains traditionnelles, il utilise 7 couches de validation parallèles et un consensus par Résonance pour une finalité quasi instantanée.',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['help', 'aide', 'how', 'comment'],
-    response: 'Je suis l\u00e0 pour vous guider dans Cosmorare ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le r\u00e9seau. Que souhaitez-vous explorer ?',
+    response: 'Je suis là pour vous guider dans Cosmorare ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Que souhaitez-vous explorer ?',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   },
   {
     keywords: ['wall', 'post', 'social', 'feed', 'chat', 'mur'],
-    response: 'Le Mur est le r\u00e9seau social d\u00e9centralis\u00e9 de Cosmorare. Partagez du texte, des objets certifi\u00e9s, et tippez les publications avec des Warps. Toutes les conversations sont chiffr\u00e9es et anonymes.',
+    response: 'Le Mur est le réseau social décentralisé de Cosmorare. Partagez du texte, des objets certifiés, et tippez les publications avec des Warps. Toutes les conversations sont chiffrées et anonymes.',
     suggestion: { label: 'Ouvrir le Mur', tab: 'wall' },
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Bonjour ! Je suis Cosmo, votre guide dans l\'univers Cosmorare \u30B3\u30B9\u30E2\u30E9\u30EC. Je peux vous expliquer comment certifier un objet rare, miner des Warps, utiliser le paiement, ou naviguer dans l\'\u00e9cosyst\u00e8me.',
+    response: 'Bonjour ! Je suis Cosmo, votre guide dans l\'univers Cosmorare コスモラレ. Je peux vous expliquer comment certifier un objet rare, miner des Warps, utiliser le paiement, ou naviguer dans l\'écosystème.',
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
-    response: 'Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC) est une plateforme de certification pour objets rares. Le Protocole Cosmorare cr\u00e9e des certificats d\'authenticit\u00e9 infalsifiables (CRCERT) pour n\'importe quel objet : cartes, sneakers, vinyles, art num\u00e9rique... L\'app fonctionne offline ET online !',
+    response: 'Cosmorare (コスモラレ) est une plateforme de certification pour objets rares. Le Protocole Cosmorare crée des certificats d\'authenticité infalsifiables (CRCERT) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics'],
-    response: 'Le Warp (symbole : \u03A9) est le token natif de Cosmorare avec une supply fixe de 69 millions. On le gagne par le minage et il sert \u00e0 certifier des objets, tipper les publications, et acheter sur la place de march\u00e9.',
+    response: 'Le Warp (symbole : Ω) est le token natif de Cosmorare avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['paiement', 'payment', 'payer', 'acheter', 'buy', 'euro', 'carte', 'card', 'paypal', 'fiat'],
-    response: 'Cosmorare int\u00e8gre une passerelle de paiement ! Achetez des Warps par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Warps contre des euros. Tout est int\u00e9gr\u00e9 dans l\'app.',
+    response: 'Cosmorare intègre une passerelle de paiement ! Achetez des Warps par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Warps contre des euros. Tout est intégré dans l\'app.',
     suggestion: { label: 'Passerelle de paiement', tab: 'fiat-gateway' },
   },
   {
     keywords: ['offline', 'hors ligne', 'internet', 'connexion'],
-    response: 'Cosmorare fonctionne 100% offline ! Gr\u00e2ce au service worker, l\'app se met en cache sur votre appareil. Vos certificats, votre wallet et vos donn\u00e9es restent accessibles sans internet. \u00c0 la reconnexion, tout se synchronise.',
-    suggestion: { label: 'Param\u00e8tres', tab: 'settings' },
+    response: 'Cosmorare fonctionne 100% offline ! Grâce au service worker, l\'app se met en cache sur votre appareil. Vos certificats, votre wallet et vos données restent accessibles sans internet. À la reconnexion, tout se synchronise.',
+    suggestion: { label: 'Paramètres', tab: 'settings' },
   },
   {
-    keywords: ['privacy', 'anonymous', 'encrypt', 'secure', 'priv\u00e9', 'chiffr\u00e9', 's\u00e9curit\u00e9'],
-    response: 'La vie priv\u00e9e est au coeur de Cosmorare. Conversations chiffr\u00e9es, identit\u00e9s pseudonymes, principes zero-knowledge. Vos donn\u00e9es restent les v\u00f4tres.',
-    suggestion: { label: 'Confidentialit\u00e9', tab: 'privacy' },
+    keywords: ['privacy', 'anonymous', 'encrypt', 'secure', 'privé', 'chiffré', 'sécurité'],
+    response: 'La vie privée est au coeur de Cosmorare. Conversations chiffrées, identités pseudonymes, principes zero-knowledge. Vos données restent les vôtres.',
+    suggestion: { label: 'Confidentialité', tab: 'privacy' },
   },
 ];
 
@@ -83,7 +83,7 @@ function getResponse(input: string): { response: string; suggestion?: { label: s
     }
   }
   return {
-    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le r\u00e9seau CosmoMesh. Vous pouvez aussi consulter la section Aide.',
+    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le réseau CosmoMesh. Vous pouvez aussi consulter la section Aide.',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   };
 }
@@ -93,7 +93,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     {
       id: 'welcome',
       role: 'cosmo',
-      text: 'Bienvenue sur Cosmorare \u30B3\u30B9\u30E2\u30E9\u30EC ! Je suis Cosmo, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, r\u00e9seau...',
+      text: 'Bienvenue sur Cosmorare コスモラレ ! Je suis Cosmo, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
       timestamp: Date.now(),
     },
   ]);
@@ -243,7 +243,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Posez votre question \u00e0 Cosmo..."
+            placeholder="Posez votre question à Cosmo..."
             className="flex-1 warp-input py-2.5"
             disabled={typing}
           />
@@ -260,7 +260,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           </button>
         </div>
         <p className="text-label opacity-30 mt-1.5 text-center">
-          Cosmo est votre guide IA Cosmorare. R\u00e9ponses g\u00e9n\u00e9r\u00e9es localement.
+          Cosmo est votre guide IA Cosmorare. Réponses générées localement.
         </p>
       </div>
     </div>

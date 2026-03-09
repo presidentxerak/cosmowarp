@@ -4,13 +4,13 @@ import Logo from './Logo';
 type Section = 'overview' | 'how' | 'certificates' | 'tokenomics' | 'hierarchy' | 'security' | 'roadmap';
 
 const NAV: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: 'Vue d\u2019ensemble', icon: '\u2B21' },
-  { id: 'how', label: 'Comment \u00e7a marche', icon: '\u25CE' },
-  { id: 'certificates', label: 'Certificats', icon: '\u26BF' },
-  { id: 'tokenomics', label: 'Warp (\u03A9)', icon: '\u269B' },
-  { id: 'hierarchy', label: 'Niveaux', icon: '\u2605' },
-  { id: 'security', label: 'S\u00e9curit\u00e9', icon: '\u26A1' },
-  { id: 'roadmap', label: 'Feuille de route', icon: '\u2604' },
+  { id: 'overview', label: 'Vue d’ensemble', icon: '⬡' },
+  { id: 'how', label: 'Comment ça marche', icon: '◎' },
+  { id: 'certificates', label: 'Certificats', icon: '⚿' },
+  { id: 'tokenomics', label: 'Warp (Ω)', icon: '⚛' },
+  { id: 'hierarchy', label: 'Niveaux', icon: '★' },
+  { id: 'security', label: 'Sécurité', icon: '⚡' },
+  { id: 'roadmap', label: 'Feuille de route', icon: '☄' },
 ];
 
 export default function WhitepaperView() {
@@ -27,11 +27,11 @@ export default function WhitepaperView() {
           <div className="flex justify-center mb-4">
             <Logo className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
-          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">{'\u30B3\u30B9\u30E2\u30E9\u30EC'}</h1>
+          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">{'コスモラレ'}</h1>
           <p className="text-base sm:text-base opacity-50 mb-1">Cosmorare Protocole</p>
           <p className="text-body-sm opacity-40 max-w-md mx-auto">
             La plateforme de certification pour objets rares.
-            Certifiez, \u00e9changez et collectionnez en toute confiance.
+            Certifiez, échangez et collectionnez en toute confiance.
           </p>
         </div>
       </div>
@@ -106,20 +106,20 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
 function OverviewSection() {
   return (
     <div>
-      <SectionTitle icon={'\u2B21'} title="Vue d\u2019ensemble" subtitle="Cosmorare en quelques mots" />
+      <SectionTitle icon={'⬡'} title="Vue d’ensemble" subtitle="Cosmorare en quelques mots" />
       <P>
         <span className="opacity-80 font-bold">Cosmorare</span> est une <span className="opacity-80 font-bold">plateforme de certification pour objets rares</span>.
-        Cartes Pok\u00e9mon, sneakers, vinyles, montres, art num\u00e9rique : chaque objet rare m\u00e9rite un certificat
-        d'authenticit\u00e9 infalsifiable. C'est exactement ce que Cosmorare propose.
+        Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat
+        d'authenticité infalsifiable. C'est exactement ce que Cosmorare propose.
       </P>
 
-      <H3>Comment \u00e7a marche en 4 \u00e9tapes</H3>
+      <H3>Comment ça marche en 4 étapes</H3>
       <div className="space-y-3 mb-4">
         {[
-          ['1', 'Cr\u00e9ez votre portefeuille', 'Un mot de passe, une cl\u00e9 de r\u00e9cup\u00e9ration, et vous \u00eates pr\u00eat. Aucune donn\u00e9e personnelle demand\u00e9e.'],
-          ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Cosmorare g\u00e9n\u00e8re un certificat CRCERT infalsifiable avec empreinte num\u00e9rique et signature cryptographique.'],
-          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Cosmorares certifi\u00e9es ou mettez les v\u00f4tres en vente. Paiement par carte, PayPal ou en Warp (\u03A9).'],
-          ['4', 'Collectionnez en confiance', 'Chaque Cosmorare a un historique de propri\u00e9t\u00e9 v\u00e9rifiable. Le certificat est permanent et ne peut \u00eatre falsifi\u00e9.'],
+          ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
+          ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Cosmorare génère un certificat CRCERT infalsifiable avec empreinte numérique et signature cryptographique.'],
+          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Cosmorares certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Warp (Ω).'],
+          ['4', 'Collectionnez en confiance', 'Chaque Cosmorare a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="text-title-md opacity-80 shrink-0 w-8 text-center font-bold">{num}</span>
@@ -134,11 +134,11 @@ function OverviewSection() {
       <H3>Pourquoi Cosmorare ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['\u2713', 'Z\u00e9ro frais', 'Certifier un objet, envoyer des Warps, v\u00e9rifier un certificat : tout est gratuit.'],
-          ['\u2713', 'Infalsifiable', 'Les certificats CRCERT sont prot\u00e9g\u00e9s par de la cryptographie (Ed25519 + SHA-256).'],
-          ['\u2713', 'Paiement simple', 'Carte bancaire, PayPal, SEPA ou Warp (\u03A9). Pas besoin d\u2019exchange crypto.'],
-          ['\u2713', 'D\u00e9centralis\u00e9', 'Vos donn\u00e9es vous appartiennent. Pas d\u2019interm\u00e9diaire, pas de banque.'],
-          ['\u2713', 'Hors ligne', 'L\u2019app fonctionne m\u00eame sans internet gr\u00e2ce au mode PWA.'],
+          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Warps, vérifier un certificat : tout est gratuit.'],
+          ['✓', 'Infalsifiable', 'Les certificats CRCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
+          ['✓', 'Paiement simple', 'Carte bancaire, PayPal, SEPA ou Warp (Ω). Pas besoin d’exchange crypto.'],
+          ['✓', 'Décentralisé', 'Vos données vous appartiennent. Pas d’intermédiaire, pas de banque.'],
+          ['✓', 'Hors ligne', 'L’app fonctionne même sans internet grâce au mode PWA.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="flex gap-3 p-2 rounded-none bg-current/5">
             <span className="text-body-sm opacity-80 shrink-0">{icon}</span>
@@ -158,48 +158,48 @@ function OverviewSection() {
 function HowItWorksSection() {
   return (
     <div>
-      <SectionTitle icon={'\u25CE'} title="Comment \u00e7a marche" subtitle="Le Cosmorare Protocole expliqu\u00e9 simplement" />
+      <SectionTitle icon={'◎'} title="Comment ça marche" subtitle="Le Cosmorare Protocole expliqué simplement" />
       <P>
         Cosmorare repose sur un ensemble de technologies qui travaillent ensemble pour rendre
-        la certification d'objets rares <span className="opacity-80">rapide, gratuite et s\u00e9curis\u00e9e</span>.
-        Voici comment chaque pi\u00e8ce s'embo\u00eete.
+        la certification d'objets rares <span className="opacity-80">rapide, gratuite et sécurisée</span>.
+        Voici comment chaque pièce s'emboîte.
       </P>
 
-      <H3>Le r\u00e9seau : CosmoMesh</H3>
+      <H3>Le réseau : CosmoMesh</H3>
       <P>
-        Imaginez un filet o\u00f9 chaque n\u0153ud est connect\u00e9 \u00e0 plusieurs autres.
+        Imaginez un filet où chaque nœud est connecté à plusieurs autres.
         C'est le <span className="opacity-80 font-bold">CosmoMesh</span> : au lieu d'empiler des blocs
-        un par un (comme une blockchain classique), les transactions sont valid\u00e9es
-        <span className="opacity-80"> en parall\u00e8le</span> sur 7 couches simultan\u00e9es.
-        R\u00e9sultat : confirmation rapide et z\u00e9ro frais.
+        un par un (comme une blockchain classique), les transactions sont validées
+        <span className="opacity-80"> en parallèle</span> sur 7 couches simultanées.
+        Résultat : confirmation rapide et zéro frais.
       </P>
       <div className="grid grid-cols-3 gap-2 mb-4">
         <Stat label="Couches" value="7" />
-        <Stat label="Frais" value="0 \u03A9" />
+        <Stat label="Frais" value="0 Ω" />
         <Stat label="Confirmation" value="~15s" />
       </div>
 
       <H3>Le stockage : CosmoCode</H3>
       <P>
-        Chaque certificat contient une repr\u00e9sentation visuelle de l'objet certifi\u00e9.
+        Chaque certificat contient une représentation visuelle de l'objet certifié.
         <span className="opacity-80 font-bold"> CosmoCode</span> compresse ces images
-        via 7 couches de compression pour les stocker directement sur le r\u00e9seau.
-        Pas de serveur externe qui pourrait dispara\u00eetre : votre certificat est permanent et autosuffisant.
+        via 7 couches de compression pour les stocker directement sur le réseau.
+        Pas de serveur externe qui pourrait disparaître : votre certificat est permanent et autosuffisant.
       </P>
 
-      <H3>L'ex\u00e9cution : CosmoChain</H3>
+      <H3>L'exécution : CosmoChain</H3>
       <P>
-        <span className="opacity-80 font-bold">CosmoChain</span> est le moteur d'ex\u00e9cution.
-        7 shards (zones de traitement) fonctionnent en parall\u00e8le dans votre navigateur
-        gr\u00e2ce aux Web Workers. M\u00eame sur un smartphone, les transactions se traitent
-        en arri\u00e8re-plan sans ralentir l'interface.
+        <span className="opacity-80 font-bold">CosmoChain</span> est le moteur d'exécution.
+        7 shards (zones de traitement) fonctionnent en parallèle dans votre navigateur
+        grâce aux Web Workers. Même sur un smartphone, les transactions se traitent
+        en arrière-plan sans ralentir l'interface.
       </P>
       <div className="space-y-2 mb-4">
         {[
-          ['GRID', 'Stockage des donn\u00e9es'],
+          ['GRID', 'Stockage des données'],
           ['HELIX', 'Transactions et transferts'],
           ['GLYPH', 'Images et certificats visuels'],
-          ['COSMO', 'Identit\u00e9s et comptes'],
+          ['COSMO', 'Identités et comptes'],
           ['CHRONOS', 'Horodatage'],
           ['NEXUS', 'Communication entre shards'],
           ['LUMINA', 'Validation finale'],
@@ -211,16 +211,16 @@ function HowItWorksSection() {
         ))}
       </div>
 
-      <H3>En r\u00e9sum\u00e9</H3>
+      <H3>En résumé</H3>
       <P>
         Quand vous certifiez un objet rare, voici ce qui se passe en coulisses :
       </P>
       <div className="p-4 rounded-none bg-current/5 mb-4 text-body-sm opacity-60 space-y-1">
-        <p>1. Votre photo est compress\u00e9e par <span className="font-bold">CosmoCode</span> (7 couches de compression)</p>
-        <p>2. Un certificat CRCERT est g\u00e9n\u00e9r\u00e9 avec empreinte SHA-256 + signature Ed25519</p>
-        <p>3. Le tout est valid\u00e9 par le <span className="font-bold">CosmoMesh</span> (7 couches parall\u00e8les)</p>
-        <p>4. Le certificat est stock\u00e9 de fa\u00e7on permanente dans <span className="font-bold">CosmoChain</span></p>
-        <p>5. Vous recevez un certificat v\u00e9rifiable \u00e0 tout moment par n'importe qui</p>
+        <p>1. Votre photo est compressée par <span className="font-bold">CosmoCode</span> (7 couches de compression)</p>
+        <p>2. Un certificat CRCERT est généré avec empreinte SHA-256 + signature Ed25519</p>
+        <p>3. Le tout est validé par le <span className="font-bold">CosmoMesh</span> (7 couches parallèles)</p>
+        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">CosmoChain</span></p>
+        <p>5. Vous recevez un certificat vérifiable à tout moment par n'importe qui</p>
       </div>
     </div>
   );
@@ -231,29 +231,29 @@ function HowItWorksSection() {
 function CertificatesSection() {
   return (
     <div>
-      <SectionTitle icon={'\u26BF'} title="Certificats CRCERT" subtitle="Comment vos objets rares sont prot\u00e9g\u00e9s" />
+      <SectionTitle icon={'⚿'} title="Certificats CRCERT" subtitle="Comment vos objets rares sont protégés" />
       <P>
-        Chaque objet certifi\u00e9 sur Cosmorare re\u00e7oit un <span className="opacity-80 font-bold">CRCERT</span> (Certificat Cosmorare).
-        C'est une preuve math\u00e9matique que cet objet est authentique et qu'il vous appartient.
+        Chaque objet certifié sur Cosmorare reçoit un <span className="opacity-80 font-bold">CRCERT</span> (Certificat Cosmorare).
+        C'est une preuve mathématique que cet objet est authentique et qu'il vous appartient.
       </P>
 
       <H3>Qu'est-ce qu'un CRCERT contient ?</H3>
       <div className="p-4 rounded-none bg-current/5 mb-4 font-mono text-body-sm opacity-60 space-y-1">
         <p>CRCERT = {'{'}</p>
-        <p>&nbsp;&nbsp;empreinte: SHA-256(photo de l'objet),</p>
-        <p>&nbsp;&nbsp;signature: Ed25519(votre cl\u00e9 priv\u00e9e),</p>
-        <p>&nbsp;&nbsp;horodatage: date et heure pr\u00e9cises,</p>
-        <p>&nbsp;&nbsp;propri\u00e9taire: votre adresse publique,</p>
-        <p>&nbsp;&nbsp;visuel: image compress\u00e9e de l'objet</p>
+        <p>  empreinte: SHA-256(photo de l'objet),</p>
+        <p>  signature: Ed25519(votre clé privée),</p>
+        <p>  horodatage: date et heure précises,</p>
+        <p>  propriétaire: votre adresse publique,</p>
+        <p>  visuel: image compressée de l'objet</p>
         <p>{'}'}</p>
       </div>
 
       <H3>En termes simples</H3>
       <div className="space-y-3 mb-4">
         {[
-          ['\u{1F4F8}', 'Empreinte num\u00e9rique', 'On prend une "empreinte digitale" de votre objet (SHA-256). Si quelqu\u2019un modifie un seul pixel, l\u2019empreinte change compl\u00e8tement. Impossible de tricher.'],
-          ['\u270D', 'Signature du cr\u00e9ateur', 'Vous signez le certificat avec votre cl\u00e9 priv\u00e9e (Ed25519). C\u2019est comme une signature manuscrite, mais math\u00e9matiquement infalsifiable.'],
-          ['\u{1F512}', 'Permanent et v\u00e9rifiable', 'Le certificat est stock\u00e9 d\u00e9finitivement sur le r\u00e9seau. N\u2019importe qui peut le v\u00e9rifier instantan\u00e9ment, sans autorit\u00e9 centrale.'],
+          ['\u{1F4F8}', 'Empreinte numérique', 'On prend une "empreinte digitale" de votre objet (SHA-256). Si quelqu’un modifie un seul pixel, l’empreinte change complètement. Impossible de tricher.'],
+          ['✍', 'Signature du créateur', 'Vous signez le certificat avec votre clé privée (Ed25519). C’est comme une signature manuscrite, mais mathématiquement infalsifiable.'],
+          ['\u{1F512}', 'Permanent et vérifiable', 'Le certificat est stocké définitivement sur le réseau. N’importe qui peut le vérifier instantanément, sans autorité centrale.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
@@ -265,26 +265,26 @@ function CertificatesSection() {
         ))}
       </div>
 
-      <H3>Comment v\u00e9rifier un certificat ?</H3>
+      <H3>Comment vérifier un certificat ?</H3>
       <P>
-        Sur n'importe quelle Cosmorare, cliquez sur <span className="opacity-80 font-bold">"V\u00e9rifier"</span>.
-        Le syst\u00e8me recalcule l'empreinte de l'objet et la compare au certificat d'origine.
-        Si tout correspond : <span className="opacity-80">\u2714 Authentique</span>.
-        Si quelque chose a \u00e9t\u00e9 modifi\u00e9 : \u2718 le certificat est invalid\u00e9.
+        Sur n'importe quelle Cosmorare, cliquez sur <span className="opacity-80 font-bold">"Vérifier"</span>.
+        Le système recalcule l'empreinte de l'objet et la compare au certificat d'origine.
+        Si tout correspond : <span className="opacity-80">✔ Authentique</span>.
+        Si quelque chose a été modifié : ✘ le certificat est invalidé.
       </P>
 
-      <H3>Raret\u00e9 des Cosmorares</H3>
+      <H3>Rareté des Cosmorares</H3>
       <P>
-        Chaque Cosmorare poss\u00e8de un niveau de raret\u00e9 calcul\u00e9 automatiquement selon le type d'\u00e9dition
-        et la disponibilit\u00e9 :
+        Chaque Cosmorare possède un niveau de rareté calculé automatiquement selon le type d'édition
+        et la disponibilité :
       </P>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
         {[
-          ['\u2726', 'Legendary', 'Pi\u00e8ce unique'],
-          ['\u2605', 'Epic', '\u2264 10 \u00e9ditions'],
-          ['\u25C6', 'Rare', '\u2264 50 \u00e9ditions'],
-          ['\u25C8', 'Uncommon', '\u2264 200 \u00e9ditions'],
-          ['\u25CE', 'Common', 'Illimit\u00e9'],
+          ['✦', 'Legendary', 'Pièce unique'],
+          ['★', 'Epic', '≤ 10 éditions'],
+          ['◆', 'Rare', '≤ 50 éditions'],
+          ['◈', 'Uncommon', '≤ 200 éditions'],
+          ['◎', 'Common', 'Illimité'],
         ].map(([icon, label, desc]) => (
           <div key={label} className="text-center p-2 rounded-none bg-current/5">
             <p className="text-title-sm">{icon}</p>
@@ -294,8 +294,8 @@ function CertificatesSection() {
         ))}
       </div>
       <P>
-        Bonus : les Cosmorares \u00e0 dur\u00e9e limit\u00e9e gagnent un niveau de raret\u00e9 suppl\u00e9mentaire dans les
-        derni\u00e8res 24 heures avant l'expiration.
+        Bonus : les Cosmorares à durée limitée gagnent un niveau de rareté supplémentaire dans les
+        dernières 24 heures avant l'expiration.
       </P>
     </div>
   );
@@ -306,27 +306,27 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={'\u269B'} title="Le Warp (\u03A9)" subtitle="La monnaie de l'\u00e9cosyst\u00e8me Cosmorare" />
+      <SectionTitle icon={'⚛'} title="Le Warp (Ω)" subtitle="La monnaie de l'écosystème Cosmorare" />
       <P>
-        Le <span className="opacity-80 font-bold">Warp (\u03A9)</span> est la monnaie native de Cosmorare.
-        Son offre est fix\u00e9e \u00e0 <span className="opacity-80 font-bold">69 millions</span> d'unit\u00e9s pour toujours.
-        Aucun Warp suppl\u00e9mentaire ne sera jamais cr\u00e9\u00e9.
+        Le <span className="opacity-80 font-bold">Warp (Ω)</span> est la monnaie native de Cosmorare.
+        Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
+        Aucun Warp supplémentaire ne sera jamais créé.
       </P>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <Stat label="Offre totale" value="69M \u03A9" />
+        <Stat label="Offre totale" value="69M Ω" />
         <Stat label="Minage" value="60%" />
         <Stat label="Fondation" value="20%" />
-        <Stat label="Communaut\u00e9" value="20%" />
+        <Stat label="Communauté" value="20%" />
       </div>
 
       <H3>Comment obtenir des Warps ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['\u26CF', 'Miner', 'Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Warps. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez.'],
-          ['\u{1F4B3}', 'Acheter', 'Achetez des Warps directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto.'],
-          ['\u{1F4B8}', 'Vendre des Cosmorares', 'Vendez vos objets rares certifi\u00e9s sur la marketplace et recevez des Warps.'],
-          ['\u{1F381}', 'Airdrops', 'Des Warps sont distribu\u00e9s gratuitement \u00e0 la communaut\u00e9 active.'],
+          ['⛏', 'Miner', 'Exécutez des calculs dans l’app et gagnez des Warps. Plus la difficulté est élevée, plus vous gagnez.'],
+          ['\u{1F4B3}', 'Acheter', 'Achetez des Warps directement par carte bancaire, PayPal ou SEPA. Pas besoin d’exchange crypto.'],
+          ['\u{1F4B8}', 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Warps.'],
+          ['\u{1F381}', 'Airdrops', 'Des Warps sont distribués gratuitement à la communauté active.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="text-title-sm shrink-0">{icon}</span>
@@ -338,18 +338,18 @@ function TokenomicsSection() {
         ))}
       </div>
 
-      <H3>D\u00e9croissance R\u00e9sonante</H3>
+      <H3>Décroissance Résonante</H3>
       <P>
-        Au lieu du "halving" brutal du Bitcoin (r\u00e9compense divis\u00e9e par 2 tous les 4 ans), Cosmorare
-        utilise une courbe douce bas\u00e9e sur le <span className="opacity-80 font-bold">nombre d'or (\u03c6 = 1.618)</span>.
-        Les premiers mineurs sont r\u00e9compens\u00e9s g\u00e9n\u00e9reusement, mais la r\u00e9compense ne s'effondre jamais
-        brutalement. La transition est fluide et pr\u00e9visible.
+        Au lieu du "halving" brutal du Bitcoin (récompense divisée par 2 tous les 4 ans), Cosmorare
+        utilise une courbe douce basée sur le <span className="opacity-80 font-bold">nombre d'or (φ = 1.618)</span>.
+        Les premiers mineurs sont récompensés généreusement, mais la récompense ne s'effondre jamais
+        brutalement. La transition est fluide et prévisible.
       </P>
 
-      <H3>Z\u00e9ro frais \u2014 toujours</H3>
+      <H3>Zéro frais — toujours</H3>
       <P>
-        Envoyer des Warps, certifier un objet, v\u00e9rifier un certificat : tout est gratuit.
-        Le r\u00e9seau se finance par la r\u00e9compense de minage, pas par les frais des utilisateurs.
+        Envoyer des Warps, certifier un objet, vérifier un certificat : tout est gratuit.
+        Le réseau se finance par la récompense de minage, pas par les frais des utilisateurs.
       </P>
     </div>
   );
@@ -360,21 +360,21 @@ function TokenomicsSection() {
 function HierarchySection() {
   return (
     <div>
-      <SectionTitle icon={'\u2605'} title="Niveaux" subtitle="Plus vous utilisez Cosmorare, plus vous \u00eates r\u00e9compens\u00e9" />
+      <SectionTitle icon={'★'} title="Niveaux" subtitle="Plus vous utilisez Cosmorare, plus vous êtes récompensé" />
       <P>
-        Cosmorare r\u00e9compense l'engagement avec un syst\u00e8me de <span className="opacity-80 font-bold">7 niveaux</span>.
-        Plus vous certifiez, \u00e9changez et minez, plus vous montez et plus vos r\u00e9compenses augmentent.
+        Cosmorare récompense l'engagement avec un système de <span className="opacity-80 font-bold">7 niveaux</span>.
+        Plus vous certifiez, échangez et minez, plus vous montez et plus vos récompenses augmentent.
       </P>
 
       <div className="space-y-2 mb-4">
         {[
-          ['Particle', '\u00d71.0', 'Niveau de d\u00e9part. Acc\u00e8s \u00e0 toutes les fonctionnalit\u00e9s.'],
-          ['Wave', '\u00d71.2', '+20% sur les r\u00e9compenses de minage.'],
-          ['Star', '\u00d71.5', 'Fonctionnalit\u00e9s avanc\u00e9es du Mur.'],
-          ['Nebula', '\u00d72.0', 'Double r\u00e9compense sur les certifications.'],
-          ['Galaxy', '\u00d73.0', 'Droit de vote sur le protocole.'],
-          ['Cosmos', '\u00d75.0', 'Acc\u00e8s b\u00eata et fonctionnalit\u00e9s exp\u00e9rimentales.'],
-          ['Lumina', '\u00d77.0', 'Multiplicateur maximal et gouvernance.'],
+          ['Particle', '×1.0', 'Niveau de départ. Accès à toutes les fonctionnalités.'],
+          ['Wave', '×1.2', '+20% sur les récompenses de minage.'],
+          ['Star', '×1.5', 'Fonctionnalités avancées du Mur.'],
+          ['Nebula', '×2.0', 'Double récompense sur les certifications.'],
+          ['Galaxy', '×3.0', 'Droit de vote sur le protocole.'],
+          ['Cosmos', '×5.0', 'Accès bêta et fonctionnalités expérimentales.'],
+          ['Lumina', '×7.0', 'Multiplicateur maximal et gouvernance.'],
         ].map(([name, mult, desc]) => (
           <div key={name} className="flex gap-3 p-3 rounded-none bg-current/5">
             <div className="shrink-0 w-16 text-center">
@@ -388,14 +388,14 @@ function HierarchySection() {
 
       <H3>Comment monter ?</H3>
       <P>
-        La progression est bas\u00e9e sur votre activit\u00e9 r\u00e9elle : certifications cr\u00e9\u00e9es, transactions effectu\u00e9es,
-        participation au minage. Il n'est pas possible d'acheter un niveau \u2014 seule l'utilisation r\u00e9elle compte.
+        La progression est basée sur votre activité réelle : certifications créées, transactions effectuées,
+        participation au minage. Il n'est pas possible d'acheter un niveau — seule l'utilisation réelle compte.
       </P>
 
-      <H3>Bonus de s\u00e9rie</H3>
+      <H3>Bonus de série</H3>
       <P>
-        Utilisez Cosmorare plusieurs jours cons\u00e9cutifs et vos r\u00e9compenses augmentent.
-        Apr\u00e8s 7 jours cons\u00e9cutifs, vous recevez un bonus sp\u00e9cial.
+        Utilisez Cosmorare plusieurs jours consécutifs et vos récompenses augmentent.
+        Après 7 jours consécutifs, vous recevez un bonus spécial.
       </P>
     </div>
   );
@@ -406,18 +406,18 @@ function HierarchySection() {
 function SecuritySection() {
   return (
     <div>
-      <SectionTitle icon={'\u26A1'} title="S\u00e9curit\u00e9" subtitle="Vos donn\u00e9es et certificats sont prot\u00e9g\u00e9s" />
+      <SectionTitle icon={'⚡'} title="Sécurité" subtitle="Vos données et certificats sont protégés" />
       <P>
         Certifier des objets rares exige un haut niveau de confiance.
-        Voici comment Cosmorare prot\u00e8ge vos donn\u00e9es.
+        Voici comment Cosmorare protège vos données.
       </P>
 
       <div className="space-y-3 mb-4">
         {[
-          ['\u{1F510}', 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffr\u00e9s avec AES-GCM. Vos cl\u00e9s priv\u00e9es ne quittent jamais votre appareil. M\u00eame Cosmorare ne peut pas lire vos messages.'],
-          ['\u2714', 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La v\u00e9rification est instantan\u00e9e.'],
-          ['\u{1F4F1}', 'Mode hors ligne (PWA)', 'L\u2019app fonctionne sans internet. Consultez vos certificats et pr\u00e9parez des transactions hors ligne. Tout se synchronise automatiquement \u00e0 la reconnexion.'],
-          ['\u{1F4B3}', 'Paiement int\u00e9gr\u00e9', 'Achetez des Warps par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers n\u00e9cessaire.'],
+          ['\u{1F510}', 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Cosmorare ne peut pas lire vos messages.'],
+          ['✔', 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
+          ['\u{1F4F1}', 'Mode hors ligne (PWA)', 'L’app fonctionne sans internet. Consultez vos certificats et préparez des transactions hors ligne. Tout se synchronise automatiquement à la reconnexion.'],
+          ['\u{1F4B3}', 'Paiement intégré', 'Achetez des Warps par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
@@ -429,12 +429,12 @@ function SecuritySection() {
         ))}
       </div>
 
-      <H3>Vos cl\u00e9s, vos r\u00e8gles</H3>
+      <H3>Vos clés, vos règles</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['Cl\u00e9 priv\u00e9e', 'Jamais transmise. Stock\u00e9e localement, chiffr\u00e9e avec votre mot de passe.'],
-          ['Cl\u00e9 publique', 'Votre identit\u00e9 sur le r\u00e9seau. Partageable librement.'],
-          ['Seed phrase', '12 mots pour r\u00e9cup\u00e9rer votre compte. \u00c0 conserver hors ligne.'],
+          ['Clé privée', 'Jamais transmise. Stockée localement, chiffrée avec votre mot de passe.'],
+          ['Clé publique', 'Votre identité sur le réseau. Partageable librement.'],
+          ['Seed phrase', '12 mots pour récupérer votre compte. À conserver hors ligne.'],
         ].map(([title, desc]) => (
           <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
             <div>
@@ -453,36 +453,36 @@ function SecuritySection() {
 function RoadmapSection() {
   return (
     <div>
-      <SectionTitle icon={'\u2604'} title="Feuille de route" subtitle="\u00c9volution pr\u00e9vue du Cosmorare Protocole" />
+      <SectionTitle icon={'☄'} title="Feuille de route" subtitle="Évolution prévue du Cosmorare Protocole" />
       <P>
-        Cosmorare est un projet vivant qui \u00e9volue continuellement.
+        Cosmorare est un projet vivant qui évolue continuellement.
       </P>
 
       <div className="space-y-4 mb-4">
         {[
-          ['Phase 1 \u2014 Gen\u00e8se', 'T1 2026', [
-            'Lancement du r\u00e9seau CosmoMesh',
+          ['Phase 1 — Genèse', 'T1 2026', [
+            'Lancement du réseau CosmoMesh',
             'Premiers certificats CRCERT',
             'Application PWA avec mode hors ligne',
             'Passerelle de paiement fiat',
           ]],
-          ['Phase 2 \u2014 Expansion', 'T2 2026', [
+          ['Phase 2 — Expansion', 'T2 2026', [
             'Ouverture de la marketplace Cosmorares',
-            'Lancement du Mur (r\u00e9seau social chiffr\u00e9)',
-            'Support de toutes cat\u00e9gories d\u2019objets rares',
-            'Int\u00e9gration SEPA, Apple Pay et Google Pay',
+            'Lancement du Mur (réseau social chiffré)',
+            'Support de toutes catégories d’objets rares',
+            'Intégration SEPA, Apple Pay et Google Pay',
           ]],
-          ['Phase 3 \u2014 Maturit\u00e9', 'T3-T4 2026', [
-            'SDK d\u00e9veloppeur ouvert',
-            'Gouvernance d\u00e9centralis\u00e9e',
-            'Partenariats avec des maisons de vente aux ench\u00e8res',
+          ['Phase 3 — Maturité', 'T3-T4 2026', [
+            'SDK développeur ouvert',
+            'Gouvernance décentralisée',
+            'Partenariats avec des maisons de vente aux enchères',
             'Application mobile native',
           ]],
-          ['Phase 4 \u2014 Cosmos', '2027+', [
-            'Interop\u00e9rabilit\u00e9 avec d\u2019autres protocoles',
-            'Certification d\u2019objets physiques via NFC et QR codes',
-            'IA pour la d\u00e9tection de contrefa\u00e7ons',
-            '\u00c9cosyst\u00e8me d\u2019applications tierces',
+          ['Phase 4 — Cosmos', '2027+', [
+            'Interopérabilité avec d’autres protocoles',
+            'Certification d’objets physiques via NFC et QR codes',
+            'IA pour la détection de contrefaçons',
+            'Écosystème d’applications tierces',
           ]],
         ].map(([phase, date, items]) => (
           <div key={phase as string} className="p-4 rounded-none bg-current/5 border border-current/5">
@@ -493,7 +493,7 @@ function RoadmapSection() {
             <ul className="space-y-1">
               {(items as string[]).map(item => (
                 <li key={item} className="text-body-sm opacity-50 flex gap-2">
-                  <span className="opacity-40 shrink-0">{'\u2192'}</span>
+                  <span className="opacity-40 shrink-0">{'→'}</span>
                   <span>{item}</span>
                 </li>
               ))}
@@ -504,9 +504,9 @@ function RoadmapSection() {
 
       <H3>Rejoignez l'aventure</H3>
       <P>
-        Que vous soyez collectionneur de cartes Pok\u00e9mon, amateur de sneakers, passionn\u00e9 de vinyles
-        ou fan d'art num\u00e9rique, Cosmorare est fait pour vous.
-        Chaque objet rare m\u00e9rite un certificat infalsifiable.
+        Que vous soyez collectionneur de cartes Pokémon, amateur de sneakers, passionné de vinyles
+        ou fan d'art numérique, Cosmorare est fait pour vous.
+        Chaque objet rare mérite un certificat infalsifiable.
       </P>
     </div>
   );
