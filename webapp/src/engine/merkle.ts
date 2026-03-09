@@ -252,5 +252,5 @@ export async function verifyProof(proof: MerkleProof): Promise<boolean> {
       current = await sha256(current + step.hash);
     }
   }
-  return current === proof.root || proof.path.some(s => s.hash === proof.targetHash);
+  return current === proof.root;
 }

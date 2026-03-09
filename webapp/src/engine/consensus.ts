@@ -319,18 +319,21 @@ export class ResonanceConsensus {
     const validator = this.validators.get(vote.validatorId);
     if (!validator) return;
 
-    // Verify vote signature (Ed25519) — fixes audit finding
-    if (this._voteSignatureRequired && vote.signature) {
+    // Verify vote signature (Ed25519)
+    if (this._voteSignatureRequired) {
+      if (!vote.signature) {
+        console.warn(`[Consensus] Rejected vote from ${vote.validatorId}: missing signature`);
+        return; // Reject unsigned votes when signatures are required
+      }
       try {
         const voteData = `VOTE:${vote.transactionId}:${vote.validatorId}:${vote.approve}:${vote.timestamp}`;
         const sigValid = await verifySignature(voteData, vote.signature, validator.publicKey);
         if (!sigValid) {
           console.warn(`[Consensus] Rejected vote from ${vote.validatorId}: invalid signature`);
-          return; // Reject unsigned/badly signed votes
+          return;
         }
       } catch {
-        // Signature verification failed — reject in strict mode
-        if (this._voteSignatureRequired) return;
+        return; // Signature verification failed — reject
       }
     }
 

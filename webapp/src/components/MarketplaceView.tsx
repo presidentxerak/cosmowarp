@@ -110,6 +110,7 @@ export default function MarketplaceView() {
       setMediaType(mType);
       setCreateError('');
     };
+    reader.onerror = () => setCreateError('Failed to read file');
     reader.readAsDataURL(file);
   };
 
