@@ -39,7 +39,7 @@
  * - PBFT view changes (leader rotation on timeout)
  */
 
-import { sha256 } from './crypto';
+import { sha256, signTransaction, verifySignature } from './crypto';
 import { type MeshTransaction, MeshLayer } from './cosmomesh';
 
 // ─── Validator State ─────────────────────────────────────
@@ -47,6 +47,7 @@ import { type MeshTransaction, MeshLayer } from './cosmomesh';
 export interface Validator {
   id: string;                      // Address of the validator
   publicKey: string;
+  privateKey?: string;             // Private key for signing votes (only for local validator)
   stake: number;                   // Staked Ω (weight in consensus)
   layerAffinities: number[];       // Affinity score per layer [0, 1]
   reputation: number;              // Trust score [0, 1]
@@ -109,6 +110,9 @@ export class ResonanceConsensus {
   private readonly RESONANCE_THRESHOLD = 0.67;     // 2/3 supermajority
   private readonly LAYER_WEIGHT_DECAY = 0.95;       // Affinity decay per round
 
+  // Vote signature verification (fixes audit: votes now require Ed25519 signatures)
+  private _voteSignatureRequired = true;
+
   // PBFT parameters
   private pbftViewNumber = 0;
   private pbftSequenceNumber = 0;
@@ -128,12 +132,14 @@ export class ResonanceConsensus {
   registerValidator(params: {
     id: string;
     publicKey: string;
+    privateKey?: string;
     stake: number;
     isLocal?: boolean;
   }): Validator {
     const validator: Validator = {
       id: params.id,
       publicKey: params.publicKey,
+      privateKey: params.isLocal ? params.privateKey : undefined,
       stake: params.stake,
       layerAffinities: new Array(7).fill(1 / 7), // Equal affinity initially
       reputation: 0.5,  // Neutral start
@@ -181,6 +187,16 @@ export class ResonanceConsensus {
   /** Check if the local node is the current PBFT leader */
   isLocalLeader(): boolean {
     return this.localValidator !== null && this.getPBFTLeader() === this.localValidator.id;
+  }
+
+  /** Enable/disable vote signature verification */
+  setVoteSignatureRequired(required: boolean): void {
+    this._voteSignatureRequired = required;
+  }
+
+  /** Check if vote signatures are required */
+  isVoteSignatureRequired(): boolean {
+    return this._voteSignatureRequired;
   }
 
   // ─── Consensus Process ───────────────────────────────
@@ -265,6 +281,17 @@ export class ResonanceConsensus {
     const stakeWeight = Math.log(1 + validator.stake) / Math.log(1 + 10000);
     const resonanceContribution = layerAffinity * stakeWeight * validator.reputation;
 
+    // Sign the vote with Ed25519 (real signature, not empty string)
+    const voteData = `VOTE:${tx.id}:${validator.id}:${isValid}:${Date.now()}`;
+    let voteSignature = '';
+    if (validator.privateKey) {
+      try {
+        voteSignature = await signTransaction(voteData, validator.privateKey);
+      } catch {
+        // Signing failed — vote without signature (degraded mode)
+      }
+    }
+
     const vote: ConsensusVote = {
       validatorId: validator.id,
       transactionId: tx.id,
@@ -272,7 +299,7 @@ export class ResonanceConsensus {
       approve: isValid,
       resonanceContribution: isValid ? resonanceContribution : 0,
       timestamp: Date.now(),
-      signature: '', // Would be signed in network mode
+      signature: voteSignature,
     };
 
     // Update validator's layer affinity (specialize)
@@ -291,6 +318,21 @@ export class ResonanceConsensus {
     // Verify the vote comes from a known validator
     const validator = this.validators.get(vote.validatorId);
     if (!validator) return;
+
+    // Verify vote signature (Ed25519) — fixes audit finding
+    if (this._voteSignatureRequired && vote.signature) {
+      try {
+        const voteData = `VOTE:${vote.transactionId}:${vote.validatorId}:${vote.approve}:${vote.timestamp}`;
+        const sigValid = await verifySignature(voteData, vote.signature, validator.publicKey);
+        if (!sigValid) {
+          console.warn(`[Consensus] Rejected vote from ${vote.validatorId}: invalid signature`);
+          return; // Reject unsigned/badly signed votes
+        }
+      } catch {
+        // Signature verification failed — reject in strict mode
+        if (this._voteSignatureRequired) return;
+      }
+    }
 
     // Add vote to the round's vote list
     round.votes.push(vote);

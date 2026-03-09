@@ -44,6 +44,9 @@ import { encodeTransactionBatch, type CosmoCodeContainer } from './cosmocode';
 import { ShardCoordinator, type ShardMetrics } from './shardworker';
 import { blockDB, txDB, beaconDB, initChainDB } from './chaindb';
 import { storage } from './storage';
+import { getCosmoProtocol, type CosmoProtocol } from './protocol';
+import type { StateInclusionProof, LightClientProof } from './stateproof';
+import type { TamperAlert } from './integrity';
 
 // ─── Constants ────────────────────────────────────────────
 
@@ -54,7 +57,7 @@ export const MAX_TX_PER_SHARD_BLOCK = 1000;        // 1000 TXs per shard block
 export const MAX_TX_PER_SECOND = 7000;             // 7 shards × 1000 TXs = 7000 TPS theoretical
 export const RATE_LIMIT_PER_MINUTE = 100;          // Anti-spam: max 100 TX/min per address
 export const GAS_COST = 0;                         // Zero gas — always free
-export const CHAIN_VERSION = 'CosmoChain-v1';
+export const CHAIN_VERSION = 'CosmoChain-v2.1';
 
 // ─── Shard Types ─────────────────────────────────────────
 
@@ -199,9 +202,15 @@ export class CosmoChain {
   private _networkMode: 'single-node' | 'multi-node' = 'single-node';
   private _connectedPeers: number = 0;
 
+  // CosmoProtocol integration — state proofs, integrity, auto-updates
+  private protocol: CosmoProtocol;
+
   constructor() {
     // Initialize shard coordinator (creates 7 Web Workers if available)
     this.coordinator = new ShardCoordinator();
+
+    // Initialize CosmoProtocol (integrity + state proofs + auto-updates)
+    this.protocol = getCosmoProtocol();
 
     // Initialize all 7 shards
     for (let i = 0; i < SHARD_COUNT; i++) {
@@ -224,14 +233,24 @@ export class CosmoChain {
     // Initialize IndexedDB (async, non-blocking)
     initChainDB().then(ready => {
       this.indexedDBReady = ready;
+      // Start background integrity scanning (every 5 minutes)
+      if (ready) {
+        this.startIntegrityScanning();
+      }
     }).catch(() => {
       this.indexedDBReady = false;
     });
   }
 
+  /** Get the CosmoProtocol instance */
+  getProtocol(): CosmoProtocol {
+    return this.protocol;
+  }
+
   /** Get real infrastructure status — no lies */
   getInfraStatus(): InfraStatus {
     const workerStatus = this.coordinator.getWorkerStatus();
+    const protocolState = this.protocol.getState();
     return {
       indexedDB: this.indexedDBReady,
       webWorkers: workerStatus.real,
@@ -242,6 +261,13 @@ export class CosmoChain {
       storageEngine: this.indexedDBReady ? 'IndexedDB' : 'localStorage',
       isRealParallelism: workerStatus.real > 0,
       honestDescription: this.getHonestDescription(workerStatus.real),
+      // Protocol v2.1 additions
+      protocolVersion: protocolState.version,
+      integrityVerification: protocolState.integrityEnabled,
+      stateProofs: protocolState.stateProofsEnabled,
+      autoUpdates: protocolState.autoUpdatesEnabled,
+      tamperAlerts: protocolState.totalTamperAlerts,
+      activeFeatures: protocolState.activeFeatures,
     };
   }
 
@@ -572,6 +598,9 @@ export class CosmoChain {
             hash: beacon.hash,
           });
         }
+
+        // Check for scheduled protocol updates at this beacon block
+        await this.protocol.checkActivations(beacon.number);
       }
     } finally {
       this.isProcessing = false;
@@ -626,11 +655,15 @@ export class CosmoChain {
       ? await computeMerkleRoot(txHashes)
       : '0'.repeat(64);
 
-    // Compute state root from balances
-    const stateEntries = Array.from(shard.balances.entries()).sort().map(([k, v]) => `${k}:${v}`).join(',');
-    const stateRoot = await sha256(stateEntries || 'empty');
+    // Compute state root via Merkle Patricia Trie (real cryptographic proof)
+    const stateRoot = await this.protocol.updateShardState(
+      shardId,
+      shard.balances,
+      blockNumber
+    );
 
     // Compute block hash
+    const timestamp = Date.now();
     const headerData = [
       CHAIN_VERSION,
       shardId.toString(),
@@ -638,7 +671,7 @@ export class CosmoChain {
       shard.latestBlockHash,
       stateRoot,
       transactionsRoot,
-      Date.now().toString(),
+      timestamp.toString(),
       validator,
     ].join(':');
     const hash = await sha256(headerData);
@@ -649,7 +682,7 @@ export class CosmoChain {
       parentHash: shard.latestBlockHash,
       stateRoot,
       transactionsRoot,
-      timestamp: Date.now(),
+      timestamp,
       validator,
       transactions,
       hash,
@@ -843,6 +876,107 @@ export class CosmoChain {
       }
     }
     return undefined;
+  }
+
+  // ─── State Proof Queries (Better than Ethereum) ──────
+
+  /**
+   * Prove an account balance with a Merkle proof.
+   * The proof can be verified by anyone without the full chain.
+   * Ethereum equivalent: eth_getProof — but ours works per-shard.
+   */
+  async proveBalance(address: string, shardId?: ShardId): Promise<StateInclusionProof | null> {
+    const shard = shardId ?? this.findAddressShard(address);
+    if (shard === undefined) return null;
+    return this.protocol.proveAccountBalance(shard, address);
+  }
+
+  /**
+   * Prove a balance at a historical block number.
+   * Ethereum doesn't support this without an archive node.
+   */
+  async proveBalanceAtBlock(
+    address: string,
+    blockNumber: number,
+    shardId: ShardId
+  ): Promise<StateInclusionProof | null> {
+    return this.protocol.proveBalanceAtBlock(shardId, address, blockNumber);
+  }
+
+  /**
+   * Generate a light client proof for specific accounts.
+   * Allows verification of state without downloading the full chain.
+   */
+  async generateLightClientProof(params: {
+    shardId: ShardId;
+    accounts: string[];
+    validatorPrivateKey: string;
+  }): Promise<LightClientProof | null> {
+    const shard = this.shards.get(params.shardId);
+    if (!shard) return null;
+
+    return this.protocol.generateLightClientProof({
+      blockNumber: shard.latestBlockNumber,
+      shardId: params.shardId,
+      accounts: params.accounts,
+      validatorPrivateKey: params.validatorPrivateKey,
+    });
+  }
+
+  /** Get global state root (across all 7 shards) */
+  getGlobalStateRoot(): string {
+    return this.protocol.getGlobalStateRoot();
+  }
+
+  /** Get shard state root */
+  getShardStateRoot(shardId: ShardId): string {
+    return this.protocol.getShardStateRoot(shardId);
+  }
+
+  /** Get tamper alerts from integrity verifier */
+  getTamperAlerts(): TamperAlert[] {
+    return this.protocol.getTamperAlerts();
+  }
+
+  /** Get the protocol version */
+  getProtocolVersion(): string {
+    return this.protocol.getVersion();
+  }
+
+  /** Get protocol state (features, integrity, updates) */
+  getProtocolState() {
+    return this.protocol.getState();
+  }
+
+  /** Find which shard an address has a balance in */
+  private findAddressShard(address: string): ShardId | undefined {
+    for (const [shardId, shard] of this.shards) {
+      if (shard.balances.has(address)) return shardId;
+    }
+    return undefined;
+  }
+
+  // ─── Integrity Scanning ─────────────────────────────
+
+  private startIntegrityScanning(): void {
+    const params = this.protocol.getParameters();
+    this.protocol.startBackgroundScanning(
+      params.integrityCheckIntervalMs,
+      async () => {
+        const verifier = this.protocol.getVerifier();
+        const latestBlocks = new Map<number, number>();
+        for (const [shardId, shard] of this.shards) {
+          latestBlocks.set(shardId, shard.latestBlockNumber);
+        }
+        return verifier.verifyFullChain({
+          getBlock: (shard, num) => blockDB.getRaw(shard, num),
+          getBeacon: (num) => import('./chaindb').then(m => m.beaconDB.getRaw(num)),
+          shardCount: SHARD_COUNT,
+          latestBlocks,
+          latestBeacon: this.beaconBlocks.length - 1,
+        });
+      }
+    );
   }
 
   // ─── Chain Statistics ──────────────────────────────────
@@ -1052,4 +1186,11 @@ export interface InfraStatus {
   storageEngine: 'IndexedDB' | 'localStorage';
   isRealParallelism: boolean;   // true if at least 1 Web Worker is running
   honestDescription: string;    // Plain English summary
+  // Protocol v2.1 — CosmoCode Protocol additions
+  protocolVersion: string;
+  integrityVerification: boolean;  // Block integrity checked on every read
+  stateProofs: boolean;            // Merkle Patricia Trie state proofs active
+  autoUpdates: boolean;            // Automatic protocol updates enabled
+  tamperAlerts: number;            // Total tamper alerts detected
+  activeFeatures: string[];        // Enabled feature flags
 }
