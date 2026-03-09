@@ -4,7 +4,7 @@ import Logo from './Logo';
 type Section = 'overview' | 'how' | 'certificates' | 'tokenomics' | 'hierarchy' | 'security' | 'roadmap';
 
 const NAV: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: 'Vue d’ensemble', icon: '⬡' },
+  { id: 'overview', label: "Vue d\u2019ensemble", icon: '⬡' },
   { id: 'how', label: 'Comment ça marche', icon: '◎' },
   { id: 'certificates', label: 'Certificats', icon: '⚿' },
   { id: 'tokenomics', label: 'Cosmorare (Ω)', icon: '⚛' },
@@ -106,7 +106,7 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
 function OverviewSection() {
   return (
     <div>
-      <SectionTitle icon={'⬡'} title="Vue d’ensemble" subtitle="Cosmorare en quelques mots" />
+      <SectionTitle icon={'⬡'} title={"Vue d\u2019ensemble"} subtitle="Cosmorare en quelques mots" />
       <P>
         <span className="opacity-80 font-bold">Cosmorare</span> est une <span className="opacity-80 font-bold">plateforme de certification pour objets rares</span>.
         Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat
@@ -136,9 +136,9 @@ function OverviewSection() {
         {[
           ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Cosmorares, vérifier un certificat : tout est gratuit.'],
           ['✓', 'Infalsifiable', 'Les certificats CRCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
-          ['✓', 'Paiement simple', 'Carte bancaire, PayPal, SEPA ou Cosmorare (Ω). Pas besoin d’exchange crypto.’],
-          ['✓', 'Décentralisé', 'Vos données vous appartiennent. Pas d’intermédiaire, pas de banque.'],
-          ['✓', 'Hors ligne', 'L’app fonctionne même sans internet grâce au mode PWA.'],
+          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Cosmorare (Ω). Pas besoin d\u2019exchange crypto."],
+          ['✓', 'Décentralisé', "Vos données vous appartiennent. Pas d\u2019intermédiaire, pas de banque."],
+          ['✓', 'Hors ligne', "L\u2019app fonctionne même sans internet grâce au mode PWA."],
         ].map(([icon, title, desc]) => (
           <div key={title} className="flex gap-3 p-2 rounded-none bg-current/5">
             <span className="text-body-sm opacity-80 shrink-0">{icon}</span>
@@ -251,9 +251,9 @@ function CertificatesSection() {
       <H3>En termes simples</H3>
       <div className="space-y-3 mb-4">
         {[
-          ['\u{1F4F8}', 'Empreinte numérique', 'On prend une "empreinte digitale" de votre objet (SHA-256). Si quelqu’un modifie un seul pixel, l’empreinte change complètement. Impossible de tricher.'],
-          ['✍', 'Signature du créateur', 'Vous signez le certificat avec votre clé privée (Ed25519). C’est comme une signature manuscrite, mais mathématiquement infalsifiable.'],
-          ['\u{1F512}', 'Permanent et vérifiable', 'Le certificat est stocké définitivement sur le réseau. N’importe qui peut le vérifier instantanément, sans autorité centrale.'],
+          ['\u{1F4F8}', 'Empreinte numérique', "On prend une \"empreinte digitale\" de votre objet (SHA-256). Si quelqu\u2019un modifie un seul pixel, l\u2019empreinte change compl\u00e8tement. Impossible de tricher."],
+          ['\u270D', 'Signature du créateur', "Vous signez le certificat avec votre cl\u00e9 priv\u00e9e (Ed25519). C\u2019est comme une signature manuscrite, mais math\u00e9matiquement infalsifiable."],
+          ['\u{1F512}', 'Permanent et vérifiable', "Le certificat est stock\u00e9 d\u00e9finitivement sur le r\u00e9seau. N\u2019importe qui peut le v\u00e9rifier instantan\u00e9ment, sans autorit\u00e9 centrale."],
         ].map(([icon, title, desc]) => (
           <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
@@ -323,8 +323,8 @@ function TokenomicsSection() {
       <H3>Comment obtenir des Cosmorares ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['⛏', 'Miner', 'Exécutez des calculs dans l’app et gagnez des Cosmorares. Plus la difficulté est élevée, plus vous gagnez.'],
-          ['\u{1F4B3}', 'Acheter', 'Achetez des Cosmorares directement par carte bancaire, PayPal ou SEPA. Pas besoin d’exchange crypto.'],
+          ['\u26CF', 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Cosmorares. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
+          ['\u{1F4B3}', 'Acheter', "Achetez des Cosmorares directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
           ['\u{1F4B8}', 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Cosmorares.'],
           ['\u{1F381}', 'Airdrops', 'Des Cosmorares sont distribués gratuitement à la communauté active.'],
         ].map(([icon, title, desc]) => (
@@ -416,7 +416,7 @@ function SecuritySection() {
         {[
           ['\u{1F510}', 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Cosmorare ne peut pas lire vos messages.'],
           ['✔', 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
-          ['\u{1F4F1}', 'Mode hors ligne (PWA)', 'L’app fonctionne sans internet. Consultez vos certificats et préparez des transactions hors ligne. Tout se synchronise automatiquement à la reconnexion.'],
+          ['\u{1F4F1}', 'Mode hors ligne (PWA)', "L\u2019app fonctionne sans internet. Consultez vos certificats et pr\u00e9parez des transactions hors ligne. Tout se synchronise automatiquement \u00e0 la reconnexion."],
           ['\u{1F4B3}', 'Paiement intégré', 'Achetez des Cosmorares par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
@@ -469,7 +469,7 @@ function RoadmapSection() {
           ['Phase 2 — Expansion', 'T2 2026', [
             'Ouverture de la marketplace Cosmorares',
             'Lancement du Mur (réseau social chiffré)',
-            'Support de toutes catégories d’objets rares',
+            "Support de toutes cat\u00e9gories d\u2019objets rares",
             'Intégration SEPA, Apple Pay et Google Pay',
           ]],
           ['Phase 3 — Maturité', 'T3-T4 2026', [
@@ -479,10 +479,10 @@ function RoadmapSection() {
             'Application mobile native',
           ]],
           ['Phase 4 — Cosmos', '2027+', [
-            'Interopérabilité avec d’autres protocoles',
-            'Certification d’objets physiques via NFC et QR codes',
-            'IA pour la détection de contrefaçons',
-            'Écosystème d’applications tierces',
+            "Interop\u00e9rabilit\u00e9 avec d\u2019autres protocoles",
+            "Certification d\u2019objets physiques via NFC et QR codes",
+            "IA pour la d\u00e9tection de contrefaçons",
+            "\u00c9cosyst\u00e8me d\u2019applications tierces",
           ]],
         ].map(([phase, date, items]) => (
           <div key={phase as string} className="p-4 rounded-none bg-current/5 border border-current/5">

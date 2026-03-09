@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useWallet } from '../context/WalletContext';
 
 // ─── Cosmo Chatbot Knowledge Base ────────────────────────
@@ -285,71 +286,81 @@ interface ChatMsg {
 
 // ─── FAQ Data ────────────────────────────────────────────
 
+const FAQ_ICONS: Record<string, ReactNode> = {
+  'Pour commencer': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>,
+  'Minage & Warps': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
+  'Marketplace (Cosmorares)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
+  'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
+  'CosmoMesh & CosmoCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
+  'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
+  'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+};
+
 const FAQ_SECTIONS = [
   {
     title: 'Pour commencer',
-    icon: '◈',
+    icon: 'Pour commencer',
     items: [
-      { q: 'Comment créer un portefeuille ?', a: 'Va dans l’onglet Portefeuille et clique sur « Créer un portefeuille ». Choisis un mot de passe solide et sauvegarde ta clé de récupération en lieu sûr.' },
-      { q: 'Pourquoi mon solde est à 0 ?', a: 'Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Warps en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.' },
-      { q: 'Comment sauvegarder mon portefeuille ?', a: 'Dans Portefeuille → Aperçu, télécharge ta clé de récupération. Garde-la en lieu sûr — il n’y a pas de réinitialisation de mot de passe !' },
+      { q: `Comment créer un portefeuille ?`, a: `Va dans l'onglet Portefeuille et clique sur « Créer un portefeuille ». Choisis un mot de passe solide et sauvegarde ta clé de récupération en lieu sûr.` },
+      { q: `Pourquoi mon solde est à 0 ?`, a: `Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Warps en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.` },
+      { q: `Comment sauvegarder mon portefeuille ?`, a: `Dans Portefeuille → Aperçu, télécharge ta clé de récupération. Garde-la en lieu sûr — il n'y a pas de réinitialisation de mot de passe !` },
     ],
   },
   {
     title: 'Minage & Warps',
-    icon: '⛏',
+    icon: 'Minage & Warps',
     items: [
-      { q: 'Comment miner ?', a: 'Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Warps.' },
-      { q: 'Qu’est-ce que la Décroissance par Résonance ?', a: 'Une courbe de minage progressive basée sur le nombre d’or (φ). Contrairement au halving brutal de Bitcoin, les récompenses diminuent graduellement et de façon prévisible.' },
-      { q: 'Quel est le supply total ?', a: '69 millions de Warps. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.' },
+      { q: `Comment miner ?`, a: `Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Warps.` },
+      { q: `Qu'est-ce que la Décroissance par Résonance ?`, a: `Une courbe de minage progressive basée sur le nombre d'or (φ). Contrairement au halving brutal de Bitcoin, les récompenses diminuent graduellement et de façon prévisible.` },
+      { q: `Quel est le supply total ?`, a: `69 millions de Warps. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.` },
     ],
   },
   {
     title: 'Marketplace (Cosmorares)',
-    icon: '⬢',
+    icon: 'Marketplace (Cosmorares)',
     items: [
-      { q: 'Qu’est-ce qu’une Cosmorare ?', a: 'Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d’Authenticité infalsifiable (CRCERT) sur le protocole Cosmorare.' },
-      { q: 'Quels formats sont supportés ?', a: '.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 50 Mo.' },
-      { q: 'Qu’est-ce que le CRCERT ?', a: 'Certificat d’Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.' },
-      { q: 'Les Cosmorares sont-elles stockées on-chain ?', a: 'Oui ! Avec CosmoMesh, les objets sont compressés via CosmoCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d’IPFS, pas de dépendance à un serveur externe.' },
+      { q: `Qu'est-ce qu'une Cosmorare ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (CRCERT) sur le protocole Cosmorare.` },
+      { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 50 Mo.` },
+      { q: `Qu'est-ce que le CRCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
+      { q: `Les Cosmorares sont-elles stockées on-chain ?`, a: `Oui ! Avec CosmoMesh, les objets sont compressés via CosmoCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
     ],
   },
   {
     title: 'Le Mur (Réseau social)',
-    icon: '◎',
+    icon: 'Le Mur (Réseau social)',
     items: [
-      { q: 'Qu’est-ce que le Mur ?', a: 'Un réseau social chiffré et anonyme au sein de Cosmorare. Publie, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares.' },
-      { q: 'Comment fonctionnent les pourboires ?', a: '1 Cosmorare par utilisateur par post. C’est comme un « like » mais adossé à une vraie valeur.' },
-      { q: 'Qu’est-ce que le ReWarp ?', a: 'Comme un retweet — partage le post de quelqu’un à tes abonnés sur la timeline du Mur.' },
+      { q: `Qu'est-ce que le Mur ?`, a: `Un réseau social chiffré et anonyme au sein de Cosmorare. Publie, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares.` },
+      { q: `Comment fonctionnent les pourboires ?`, a: `1 Cosmorare par utilisateur par post. C'est comme un « like » mais adossé à une vraie valeur.` },
+      { q: `Qu'est-ce que le ReWarp ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur la timeline du Mur.` },
     ],
   },
   {
     title: 'CosmoMesh & CosmoCode',
-    icon: '⛓',
+    icon: 'CosmoMesh & CosmoCode',
     items: [
-      { q: 'Qu’est-ce que CosmoMesh ?', a: 'Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 Ω.' },
-      { q: 'Quelles sont les 7 couches ?', a: 'GRID (<10Ω), HELIX (10-100Ω), GLYPH (100-1KΩ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.' },
-      { q: 'Pourquoi les transactions sont-elles gratuites ?', a: 'Les validateurs gagnent via les récompenses de staking, pas via les frais. L’anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l’échelle du Go.' },
-      { q: 'Qu’est-ce que CosmoCode SVG ?', a: 'Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.' },
-      { q: 'Les Cosmorares sont-elles vraiment stockées on-chain ?', a: 'Oui ! CosmoMesh stocke les objets en tant que CosmoCode SVG compressé dans IndexedDB (stockage local à l’échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.' },
-      { q: 'Qu’est-ce qu’un Beacon Block ?', a: 'Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d’État Global. Cela fournit une finalité inter-couches absolue.' },
+      { q: `Qu'est-ce que CosmoMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 Ω.` },
+      { q: `Quelles sont les 7 couches ?`, a: `GRID (<10Ω), HELIX (10-100Ω), GLYPH (100-1KΩ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.` },
+      { q: `Pourquoi les transactions sont-elles gratuites ?`, a: `Les validateurs gagnent via les récompenses de staking, pas via les frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go.` },
+      { q: `Qu'est-ce que CosmoCode SVG ?`, a: `Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.` },
+      { q: `Les Cosmorares sont-elles vraiment stockées on-chain ?`, a: `Oui ! CosmoMesh stocke les objets en tant que CosmoCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },
+      { q: `Qu'est-ce qu'un Beacon Block ?`, a: `Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d'État Global. Cela fournit une finalité inter-couches absolue.` },
     ],
   },
   {
     title: 'Paiement',
-    icon: '€',
+    icon: 'Paiement',
     items: [
-      { q: 'Puis-je payer par carte bancaire ?', a: 'Oui ! Cosmorare intègre une passerelle fiat complète : carte bancaire, PayPal et virement SEPA.' },
-      { q: 'Faut-il passer par un exchange crypto ?', a: 'Non. Tu peux acheter des Warps et des Cosmorares directement en euros, sans passer par une plateforme d’échange.' },
+      { q: `Puis-je payer par carte bancaire ?`, a: `Oui ! Cosmorare intègre une passerelle fiat complète : carte bancaire, PayPal et virement SEPA.` },
+      { q: `Faut-il passer par un exchange crypto ?`, a: `Non. Tu peux acheter des Warps et des Cosmorares directement en euros, sans passer par une plateforme d'échange.` },
     ],
   },
   {
     title: 'Sécurité',
-    icon: '⚡',
+    icon: 'Sécurité',
     items: [
-      { q: 'Cosmorare est-il sécurisé ?', a: '7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d’état, registre admin chiffré.' },
-      { q: 'Est-ce que ça fonctionne hors ligne ?', a: 'Oui ! Le service worker met l’app en cache pour une utilisation hors ligne. Elle se met aussi à jour automatiquement quand une nouvelle version est disponible.' },
-      { q: 'Où sont stockées mes données ?', a: 'Localement sur ton appareil dans IndexedDB (échelle Go, remplaçant le localStorage). La compression CosmoCode SVG réduit la taille des données structurées de 5-30x. Actuellement mono-nœud ; la sauvegarde multi-nœuds nécessite des pairs P2P.' },
+      { q: `Cosmorare est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré.` },
+      { q: `Est-ce que ça fonctionne hors ligne ?`, a: `Oui ! Le service worker met l'app en cache pour une utilisation hors ligne. Elle se met aussi à jour automatiquement quand une nouvelle version est disponible.` },
+      { q: `Où sont stockées mes données ?`, a: `Localement sur ton appareil dans IndexedDB (échelle Go, remplaçant le localStorage). La compression CosmoCode SVG réduit la taille des données structurées de 5-30x. Actuellement mono-nœud ; la sauvegarde multi-nœuds nécessite des pairs P2P.` },
     ],
   },
 ];
@@ -363,7 +374,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
     {
       id: 'welcome',
       role: 'cosmo',
-      text: `Salut ! Je suis Cosmo ${'⬡'}, ton oracle et guide dans l'univers Cosmorare (コスモラレ). Pose-moi n'importe quelle question — portefeuilles, minage, Cosmorares, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
+      text: `Salut ! Je suis Cosmo, ton oracle et guide dans l'univers Cosmorare (コスモラレ). Pose-moi n'importe quelle question — portefeuilles, minage, Cosmorares, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -402,15 +413,18 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
   };
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
+    <div className="space-y-4 max-w-3xl mx-auto px-[10px] sm:px-0">
       {/* Header */}
       <div className="glass-panel p-5 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{
           background: 'radial-gradient(circle at 50% 50%, #22c55e 0%, transparent 50%)',
         }} />
         <div className="relative">
-          <h1 className="text-title-md font-bold opacity-100 font-title mb-1">
-            {'❓'} Centre d'aide
+          <h1 className="text-title-md font-bold opacity-100 font-title mb-1 flex items-center justify-center gap-2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Centre d'aide
           </h1>
           <p className="text-body-sm opacity-40">
             FAQ & Cosmo — Votre guide IA dans l'univers Cosmorare
@@ -422,23 +436,25 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
       <div className="glass-panel p-1 flex gap-1">
         <button
           onClick={() => setTab('cosmo')}
-          className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             tab === 'cosmo'
               ? 'bg-current/10 opacity-80'
               : 'opacity-50 hover:opacity-90 hover:bg-current/5'
           }`}
         >
-          {'⬡'} Cosmo (Oracle)
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
+          Cosmo (Oracle)
         </button>
         <button
           onClick={() => setTab('faq')}
-          className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             tab === 'faq'
               ? 'bg-current/10 opacity-80'
               : 'opacity-50 hover:opacity-90 hover:bg-current/5'
           }`}
         >
-          {'❓'} FAQ
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+          FAQ
         </button>
       </div>
 
@@ -448,7 +464,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
           {/* Chat header */}
           <div className="p-3 border-b border-current/10 flex items-center gap-3">
             <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0">
-              <span className="text-title-sm">{'⬡'}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
             </div>
             <div>
               <p className="text-base font-bold opacity-90">Cosmo</p>
@@ -471,7 +487,10 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                     : 'bg-current/5 border border-current/10'
                 } p-3`}>
                   {msg.role === 'cosmo' && (
-                    <p className="text-label opacity-80 font-bold mb-1">{'⬡'} Cosmo</p>
+                    <p className="text-label opacity-80 font-bold mb-1 flex items-center gap-1">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
+                      Cosmo
+                    </p>
                   )}
                   <p className="text-body-sm opacity-70 leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                   {msg.navigateTo && msg.navigateTo !== 'help' && (
@@ -479,7 +498,8 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                       onClick={() => onNavigate(msg.navigateTo!)}
                       className="mt-2 text-label opacity-80 hover:opacity-80 cursor-pointer flex items-center gap-1"
                     >
-                      {'→'} Aller à {msg.tabLabel}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                      {' '}Aller à {msg.tabLabel}
                     </button>
                   )}
                 </div>
@@ -504,7 +524,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 disabled={!input.trim()}
                 className="px-4 py-2 bg-current/10 border border-current/15 opacity-80 text-body-sm font-medium cursor-pointer hover:bg-current/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                {'↗'}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
               </button>
             </div>
             <div className="flex gap-2 mt-2 flex-wrap">
@@ -542,7 +562,7 @@ function FaqSection({ section }: { section: typeof FAQ_SECTIONS[number] }) {
   return (
     <div className="glass-panel overflow-hidden">
       <div className="p-3 border-b border-current/10 flex items-center gap-2">
-        <span className="text-title-sm opacity-80">{section.icon}</span>
+        <span className="opacity-80">{FAQ_ICONS[section.icon] || section.icon}</span>
         <h3 className="text-base font-bold opacity-90">{section.title}</h3>
       </div>
       <div>
@@ -554,7 +574,7 @@ function FaqSection({ section }: { section: typeof FAQ_SECTIONS[number] }) {
             >
               <span className="opacity-70 font-medium">{item.q}</span>
               <span className={`opacity-40 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>
-                {'▼'}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
               </span>
             </button>
             {openIndex === i && (
