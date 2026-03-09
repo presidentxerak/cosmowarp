@@ -357,7 +357,6 @@ export default function MessageView() {
 
   // ─── Friends / Search view ────────────────────────────
   if (view === 'friends' || view === 'new-dm') {
-    const displayList = searchQuery.trim() ? searchResults : friends;
     return (
       <div className="flex flex-col h-[calc(100dvh-120px)]">
         <div className="flex items-center gap-3 p-3 border-b border-current/10">
