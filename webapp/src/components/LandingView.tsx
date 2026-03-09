@@ -519,7 +519,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
-  const [heroVideoNum] = useState(() => Math.floor(Math.random() * 6) + 1);
+  const [heroVideoNum] = useState(() => Math.floor(Math.random() * 3) + 1);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const logoSrc = import.meta.env.BASE_URL + 'cosmowarp-logo-white.svg';

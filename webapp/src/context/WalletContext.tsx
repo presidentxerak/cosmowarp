@@ -162,12 +162,48 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch { /* first load */ }
     refreshWartsState(w?.address);
 
-    // Start realtime subscriptions
+    // Start realtime subscriptions + wire up listener
     if (isBackendAvailable()) {
       realtime.start();
     }
 
+    const unsub = realtime.subscribe((event) => {
+      const currentWallet = loadWallet();
+      const addr = currentWallet?.address;
+
+      switch (event.type) {
+        case 'wart_new':
+        case 'wart_update':
+        case 'wart_delete':
+          refreshWartsState(addr);
+          break;
+        case 'transaction_new': {
+          setGlobalTxs(getGlobalTransactions());
+          // Refresh balance from cloud if the tx involves us
+          const tx = event.payload as Record<string, unknown>;
+          if (addr && (tx.from_address === addr || tx.to_address === addr)) {
+            sync.fullSync(addr).then(cloudData => {
+              if (cloudData?.profile && currentWallet) {
+                currentWallet.balance = cloudData.profile.balance;
+                setWallet({ ...currentWallet });
+              }
+            });
+          }
+          break;
+        }
+        case 'notification_new':
+        case 'comment_new':
+          refreshWartsState(addr);
+          break;
+        case 'follow_new':
+        case 'follow_delete':
+          // Social graph updated — no local state to refresh currently
+          break;
+      }
+    });
+
     return () => {
+      unsub();
       realtime.stop();
     };
   }, []);
