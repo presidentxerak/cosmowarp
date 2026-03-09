@@ -90,7 +90,7 @@ import FiatGatewayView from './components/FiatGatewayView';
 import PFPCollectionView from './components/PFPCollectionView';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('wall');
+  const [activeTab, setActiveTab] = useState('landing');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Listen for navigation events from child components
@@ -102,6 +102,19 @@ function App() {
     window.addEventListener('cosmorare-navigate', handler);
     return () => window.removeEventListener('cosmorare-navigate', handler);
   }, []);
+
+  // Landing page renders full-screen without app chrome
+  if (activeTab === 'landing') {
+    return (
+      <AppErrorBoundary>
+        <ThemeProvider>
+        <WalletProvider>
+          <LandingView onNavigate={setActiveTab} />
+        </WalletProvider>
+        </ThemeProvider>
+      </AppErrorBoundary>
+    );
+  }
 
   return (
     <AppErrorBoundary>
@@ -160,8 +173,7 @@ function App() {
             {/* Notifications (from top bar bell) */}
             {activeTab === 'notifications' && <NotificationsView />}
 
-            {/* Legacy */}
-            {activeTab === 'landing' && <LandingView onNavigate={setActiveTab} />}
+            {/* Dev */}
             {activeTab === 'dev' && <DevView />}
           </main>
 
