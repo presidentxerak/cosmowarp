@@ -5,13 +5,14 @@ import {
   getProgressToNextLevel, unlockAdminRegistry, getAdminDashboard,
   unlockCreatorTokens, unlockWalletKey, walletNeedsMigration,
   migrateWallet, exportWallet, importWallet, loginCosmoID, clearWallet,
+  saveWallet,
   type WarpWallet, type Transaction, type SupplyBreakdown,
   type RegistryDashboard, type LevelUpResult, type WalletExport,
 } from '../engine/wallet';
 import type { MiningProof } from '../engine/miner';
 import { generateCosmoLink, parseCosmoLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/cosmomesh';
-import { WartEngine, type Wart } from '../engine/warts';
+import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
 import type { CosmoContract } from '../engine/cosmocontract';
@@ -137,20 +138,62 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setLevelProgress(getProgressToNextLevel(w.address));
       setNeedsMigration(walletNeedsMigration());
 
-      // Pull cloud data if backend is available
+      // Pull cloud data and persist to localStorage for cross-device sync
       if (isBackendAvailable()) {
         sync.fullSync(w.address).then(cloudData => {
-          if (cloudData?.profile) {
-            // Use cloud balance if higher (source of truth)
+          if (!cloudData) return;
+
+          // Sync profile: use cloud balance as source of truth if higher
+          if (cloudData.profile) {
+            let changed = false;
             if (cloudData.profile.balance > w.balance) {
               w.balance = cloudData.profile.balance;
+              changed = true;
+            }
+            if (cloudData.profile.alias && !w.alias) {
+              w.alias = cloudData.profile.alias;
+              changed = true;
+            }
+            if (cloudData.profile.level > w.level) {
+              w.level = cloudData.profile.level;
+              w.levelName = cloudData.profile.levelName;
+              w.levelTitle = cloudData.profile.levelTitle;
+              w.levelSymbol = cloudData.profile.levelSymbol;
+              w.xp = cloudData.profile.xp;
+              w.rewardMultiplier = cloudData.profile.rewardMultiplier;
+              changed = true;
+            }
+            if (changed) {
+              saveWallet(w);
               setWallet({ ...w });
             }
           }
-          if (cloudData?.transactions && cloudData.transactions.length > 0) {
-            setGlobalTxs(prev =>
-              prev.length < cloudData.transactions.length ? cloudData.transactions : prev
-            );
+
+          // Sync transactions: merge cloud txs into localStorage
+          if (cloudData.transactions && cloudData.transactions.length > 0) {
+            const localTxs = getGlobalTransactions();
+            const localIds = new Set(localTxs.map(t => t.id));
+            const newTxs = cloudData.transactions.filter(t => !localIds.has(t.id));
+            if (newTxs.length > 0) {
+              const merged = [...newTxs, ...localTxs]
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, 200);
+              storage.setItem('cosmorare_global_tx', JSON.stringify(merged));
+              setGlobalTxs(merged);
+              // Also update wallet.transactions
+              const addrTxs = merged.filter(t => t.from === w.address || t.to === w.address);
+              if (addrTxs.length > w.transactions.length) {
+                w.transactions = addrTxs;
+                saveWallet(w);
+                setWallet({ ...w });
+              }
+            }
+          }
+
+          // Sync warts: merge cloud warts into local WartEngine
+          if (cloudData.warts && cloudData.warts.length > 0) {
+            mergeCloudWarts(cloudData.warts);
+            refreshWartsState(w.address);
           }
         });
       }
@@ -185,6 +228,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             sync.fullSync(addr).then(cloudData => {
               if (cloudData?.profile && currentWallet) {
                 currentWallet.balance = cloudData.profile.balance;
+                saveWallet(currentWallet);
                 setWallet({ ...currentWallet });
               }
             });
@@ -207,6 +251,77 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       realtime.stop();
     };
   }, []);
+
+  // Merge cloud warts into local WartEngine (for cross-device sync)
+  function mergeCloudWarts(cloudWarts: Record<string, unknown>[]) {
+    const engine = getWartEngine();
+    const localWarts = engine.getAll();
+    const localIds = new Set(localWarts.map(w => w.id));
+
+    for (const row of cloudWarts) {
+      const wartId = row.id as string;
+      if (localIds.has(wartId)) {
+        // Update existing wart with cloud data (ownership, price, listed status)
+        const local = engine.getWart(wartId);
+        if (local) {
+          const cloudUpdated = Number(row.updated_at || 0);
+          // If cloud version is newer, update local
+          if (cloudUpdated > (local.createdAt || 0)) {
+            local.owner = (row.owner as string) || local.owner;
+            local.price = row.price != null ? Number(row.price) : local.price;
+            local.listed = (row.listed as boolean) ?? local.listed;
+            local.title = (row.title as string) || local.title;
+            local.description = (row.description as string) || local.description;
+          }
+        }
+      } else {
+        // New wart from cloud — add to local engine
+        // Download media async for this wart
+        const wartData: Wart = {
+          id: wartId,
+          title: (row.title as string) || '',
+          description: (row.description as string) || '',
+          imageData: '', // Will be loaded on demand
+          mediaType: (row.media_type as Wart['mediaType']) || 'image',
+          creator: (row.creator as string) || '',
+          owner: (row.owner as string) || '',
+          price: row.price != null ? Number(row.price) : null,
+          listed: (row.listed as boolean) || false,
+          createdAt: Number(row.created_at) || Date.now(),
+          history: [],
+          royaltyPercent: Number(row.royalty_percent) || 5,
+          comments: [],
+          editionType: (row.edition_type as Wart['editionType']) || 'unique',
+          maxEditions: row.max_editions != null ? Number(row.max_editions) : null,
+          editionNumber: Number(row.edition_number) || 1,
+          availableUntil: row.available_until != null ? Number(row.available_until) : null,
+          certId: (row.cert_id as string) || undefined,
+          contentFingerprint: (row.content_fingerprint as string) || undefined,
+          creatorSignature: (row.creator_signature as string) || undefined,
+          storageMode: (row.storage_mode as Wart['storageMode']) || 'hybrid',
+          vaultBackup: false,
+        };
+        engine.addFromCloud(wartData);
+
+        // Fetch media in background
+        if (row.media_path) {
+          sync.pullWartWithMedia(wartId).then(fullWart => {
+            if (fullWart?.imageData) {
+              const local = engine.getWart(wartId);
+              if (local) {
+                local.imageData = fullWart.imageData;
+                if (fullWart.contentFingerprint) {
+                  WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
+                }
+                engine.savePublic();
+              }
+            }
+          });
+        }
+      }
+    }
+    engine.savePublic();
+  }
 
   function refreshWartsState(address?: string) {
     const engine = getWartEngine();
@@ -252,13 +367,42 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const engine = getWartEngine();
       await engine.initVault(username, password);
       refreshWartsState(w.address);
-      // Sync: pull cloud data then push local state
-      sync.fullSync(w.address).then(cloudData => {
-        if (cloudData?.profile && cloudData.profile.balance > w.balance) {
+
+      // Pull cloud data and persist locally for cross-device sync
+      const cloudData = await sync.fullSync(w.address);
+      if (cloudData) {
+        // Restore balance from cloud (source of truth)
+        if (cloudData.profile && cloudData.profile.balance > w.balance) {
           w.balance = cloudData.profile.balance;
+          w.level = Math.max(w.level, cloudData.profile.level);
+          w.xp = Math.max(w.xp, cloudData.profile.xp);
+          if (cloudData.profile.alias && !w.alias) w.alias = cloudData.profile.alias;
+          saveWallet(w);
           setWallet({ ...w });
         }
-      });
+        // Restore transactions from cloud
+        if (cloudData.transactions.length > 0) {
+          const localTxs = getGlobalTransactions();
+          const localIds = new Set(localTxs.map(t => t.id));
+          const newTxs = cloudData.transactions.filter(t => !localIds.has(t.id));
+          if (newTxs.length > 0) {
+            const merged = [...newTxs, ...localTxs]
+              .sort((a, b) => b.timestamp - a.timestamp)
+              .slice(0, 200);
+            storage.setItem('cosmorare_global_tx', JSON.stringify(merged));
+            setGlobalTxs(merged);
+            w.transactions = merged.filter(t => t.from === w.address || t.to === w.address);
+            saveWallet(w);
+            setWallet({ ...w });
+          }
+        }
+        // Restore warts from cloud
+        if (cloudData.warts.length > 0) {
+          mergeCloudWarts(cloudData.warts);
+          refreshWartsState(w.address);
+        }
+      }
+      // Push local state to cloud
       sync.syncProfile(w);
       for (const tx of w.transactions) sync.syncTransaction(tx);
       return { success: true, isNew };

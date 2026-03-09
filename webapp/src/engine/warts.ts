@@ -243,6 +243,18 @@ export class WartEngine {
     storage.setItem(STORAGE_KEY, JSON.stringify(arr));
   }
 
+  /** Save warts to localStorage (public access for cloud sync) */
+  savePublic(): void {
+    this.save();
+  }
+
+  /** Add a wart from cloud sync (doesn't trigger save — caller must call savePublic) */
+  addFromCloud(wart: Wart): void {
+    if (!this.warts.has(wart.id)) {
+      this.warts.set(wart.id, wart);
+    }
+  }
+
   private registerCertificate(cert: WartCertificate): void {
     const registry = getCertificateRegistry();
     if (!registry.some(c => c.certId === cert.certId)) {
