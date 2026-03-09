@@ -413,7 +413,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
   };
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto px-[10px] sm:px-0">
+    <div className="space-y-4">
       {/* Header */}
       <div className="glass-panel p-5 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{

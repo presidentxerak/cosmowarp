@@ -73,7 +73,7 @@ export default function SettingsView() {
   };
 
   return (
-    <div className="space-y-4 max-w-lg mx-auto px-[10px] sm:px-0">
+    <div className="space-y-4">
       <div className="glass-panel p-5 text-center">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="inline-block align-text-bottom mr-1">

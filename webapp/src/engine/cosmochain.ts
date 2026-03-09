@@ -45,6 +45,7 @@ import { ShardCoordinator, type ShardMetrics } from './shardworker';
 import { blockDB, txDB, beaconDB, initChainDB } from './chaindb';
 import { storage } from './storage';
 import { getCosmoProtocol, type CosmoProtocol } from './protocol';
+import { ChainSync } from './chain-sync';
 import type { StateInclusionProof, LightClientProof } from './stateproof';
 import type { TamperAlert } from './integrity';
 
@@ -205,12 +206,34 @@ export class CosmoChain {
   // CosmoProtocol integration — state proofs, integrity, auto-updates
   private protocol: CosmoProtocol;
 
+  // Supabase chain sync — multi-node persistence
+  private chainSync: ChainSync;
+
   constructor() {
     // Initialize shard coordinator (creates 7 Web Workers if available)
     this.coordinator = new ShardCoordinator();
 
     // Initialize CosmoProtocol (integrity + state proofs + auto-updates)
     this.protocol = getCosmoProtocol();
+
+    // Initialize Supabase chain sync (multi-node block/tx propagation)
+    this.chainSync = new ChainSync({
+      onRemoteBlock: (block) => {
+        const shard = this.shards.get(block.shard);
+        if (shard && block.number > shard.latestBlockNumber) {
+          shard.blocks.push(block);
+          shard.latestBlockNumber = block.number;
+          shard.latestBlockHash = block.hash;
+        }
+      },
+      onRemoteTransaction: (tx) => {
+        this.applyRemoteTransaction(tx);
+      },
+      onBalanceUpdate: (address, newBalance) => {
+        this.globalBalances.set(address, newBalance);
+      },
+    });
+    this.chainSync.start();
 
     // Initialize all 7 shards
     for (let i = 0; i < SHARD_COUNT; i++) {
@@ -245,6 +268,11 @@ export class CosmoChain {
   /** Get the CosmoProtocol instance */
   getProtocol(): CosmoProtocol {
     return this.protocol;
+  }
+
+  /** Get the ChainSync instance for multi-node persistence */
+  getChainSync(): ChainSync {
+    return this.chainSync;
   }
 
   /** Get real infrastructure status — no lies */
@@ -575,6 +603,12 @@ export class CosmoChain {
             confirmations: tx.confirmations,
             onChainData: tx.onChainData,
           })));
+
+          // Push block + transactions to Supabase for multi-node sync
+          this.chainSync.pushBlock(block);
+          for (const tx of batch) {
+            this.chainSync.pushTransaction(tx);
+          }
         }
       }
 
@@ -597,6 +631,9 @@ export class CosmoChain {
             validator: beacon.validator,
             hash: beacon.hash,
           });
+
+          // Push beacon to Supabase for multi-node sync
+          this.chainSync.pushBeacon(beacon);
         }
 
         // Check for scheduled protocol updates at this beacon block
@@ -635,6 +672,29 @@ export class CosmoChain {
     tx.status = 'confirmed';
     tx.blockNumber = shard.latestBlockNumber + 1;
     tx.confirmations = 1;
+  }
+
+  /**
+   * Apply a transaction received from a remote node via Supabase Realtime.
+   * Only applies balance changes if the transaction is new to this node.
+   */
+  private applyRemoteTransaction(tx: ChainTransaction): void {
+    const shard = this.shards.get(tx.shard);
+    if (!shard) return;
+
+    // Skip if we already processed this transaction locally
+    const existingTx = shard.blocks.some(b =>
+      b.transactions.some((t: ChainTransaction) => t.id === tx.id)
+    );
+    if (existingTx) return;
+
+    // Apply balance changes from remote transaction
+    if (tx.from !== 'COSMO_GENESIS' && tx.from !== 'COSMO_MINE') {
+      const fromBalance = this.globalBalances.get(tx.from) || 0;
+      this.globalBalances.set(tx.from, fromBalance - tx.amount);
+    }
+    const toBalance = this.globalBalances.get(tx.to) || 0;
+    this.globalBalances.set(tx.to, toBalance + tx.amount);
   }
 
   // ─── Block Creation ────────────────────────────────────

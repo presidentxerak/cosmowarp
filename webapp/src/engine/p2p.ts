@@ -97,6 +97,52 @@ export interface SignalData {
   address: string;
 }
 
+// ─── ICE Server Configuration ─────────────────────────────
+//
+// STUN servers: free, used for NAT discovery (works ~80% of the time)
+// TURN servers: relay traffic when direct P2P fails (symmetric NAT, firewalls)
+//
+// For production, deploy your own TURN server (coturn) or use a service:
+//   - Twilio TURN: https://www.twilio.com/stun-turn
+//   - Metered TURN: https://www.metered.ca/turn
+//   - Cloudflare TURN: https://developers.cloudflare.com/calls/turn/
+//
+// Set TURN credentials via environment or config:
+//   window.COSMORARE_TURN_URL, COSMORARE_TURN_USER, COSMORARE_TURN_CREDENTIAL
+
+function getIceServers(): RTCIceServer[] {
+  const servers: RTCIceServer[] = [
+    // Public STUN servers (free, reliable)
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun.cloudflare.com:3478' },
+  ];
+
+  // Add TURN server if configured (required for ~20% of connections behind symmetric NAT)
+  const w = typeof window !== 'undefined' ? (window as unknown as Record<string, string>) : {};
+  const turnUrl = w.COSMORARE_TURN_URL || '';
+  const turnUser = w.COSMORARE_TURN_USER || '';
+  const turnCredential = w.COSMORARE_TURN_CREDENTIAL || '';
+
+  if (turnUrl) {
+    servers.push({
+      urls: turnUrl, // e.g. 'turn:turn.cosmorare.com:3478'
+      username: turnUser,
+      credential: turnCredential,
+    });
+    // Also add TURNS (TLS) variant if using standard port
+    if (turnUrl.startsWith('turn:')) {
+      servers.push({
+        urls: turnUrl.replace('turn:', 'turns:').replace(':3478', ':5349'),
+        username: turnUser,
+        credential: turnCredential,
+      });
+    }
+  }
+
+  return servers;
+}
+
 // ─── CosmoP2P Network ───────────────────────────────────
 
 export class CosmoP2P {
@@ -167,10 +213,7 @@ export class CosmoP2P {
   /** Create an offer to connect to a new peer */
   async createOffer(): Promise<SignalData> {
     const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-      ],
+      iceServers: getIceServers(),
     });
 
     const dataChannel = pc.createDataChannel('cosmomesh', {
@@ -198,10 +241,7 @@ export class CosmoP2P {
   /** Accept an offer from a remote peer */
   async acceptOffer(signal: SignalData): Promise<SignalData> {
     const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-      ],
+      iceServers: getIceServers(),
     });
 
     const peerConn = new PeerConnection(signal.peerId, pc, null, this);

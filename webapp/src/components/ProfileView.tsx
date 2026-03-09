@@ -106,7 +106,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   ];
 
   return (
-    <div className="space-y-0 pb-4 max-w-2xl mx-auto">
+    <div className="space-y-0 pb-4">
       {/* Profile header - centered */}
       <div className="glass-panel p-5 sm:p-6">
         <div className="flex flex-col items-center text-center">
