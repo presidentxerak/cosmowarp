@@ -1,0 +1,49 @@
+/**
+ * Vercel Serverless Function — Exchange Rates
+ * GET  /api/rates — Get current rates
+ * POST /api/rates — Update rates (admin)
+ */
+
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY || 'cosmorare-admin-dev';
+
+// In-memory rates (use Supabase in production for persistence)
+const rates = new Map([
+  ['EUR', { currency: 'EUR', warpsPerUnit: 100, lastUpdated: Date.now(), source: 'manual' }],
+  ['USD', { currency: 'USD', warpsPerUnit: 92, lastUpdated: Date.now(), source: 'manual' }],
+  ['GBP', { currency: 'GBP', warpsPerUnit: 115, lastUpdated: Date.now(), source: 'manual' }],
+  ['JPY', { currency: 'JPY', warpsPerUnit: 0.62, lastUpdated: Date.now(), source: 'manual' }],
+  ['CHF', { currency: 'CHF', warpsPerUnit: 105, lastUpdated: Date.now(), source: 'manual' }],
+]);
+
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  if (req.method === 'GET') {
+    return res.json({ rates: Array.from(rates.values()) });
+  }
+
+  if (req.method === 'POST') {
+    const adminKey = req.headers['x-admin-key'];
+    if (adminKey !== ADMIN_KEY) return res.status(403).json({ error: 'Unauthorized' });
+
+    const { currency, warpsPerUnit, source } = req.body;
+    if (currency && typeof warpsPerUnit === 'number') {
+      rates.set(currency, {
+        currency,
+        warpsPerUnit,
+        lastUpdated: Date.now(),
+        source: source || 'admin',
+      });
+      return res.json({ ok: true, rate: rates.get(currency) });
+    }
+    return res.status(400).json({ error: 'Missing currency or warpsPerUnit' });
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
+}

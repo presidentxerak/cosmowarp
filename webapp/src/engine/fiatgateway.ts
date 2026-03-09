@@ -378,13 +378,13 @@ export class FiatGateway {
     this.transactions.push(tx);
     this.saveTransactions();
 
-    // Attempt backend payment if gateway URL is configured
-    const gatewayUrl = typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).COSMORARE_GATEWAY_URL as string | undefined;
-    if (gatewayUrl) {
+    // Call Vercel serverless API (same origin)
+    const gatewayUrl = typeof window !== 'undefined' ? '' : null;
+    if (gatewayUrl !== null) {
       try {
         tx.status = 'processing';
         this.saveTransactions();
-        const resp = await fetch(`${gatewayUrl}/api/payments/create`, {
+        const resp = await fetch(`/api/payments/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -459,13 +459,13 @@ export class FiatGateway {
 
     this.transactions.push(tx);
 
-    // Attempt backend payout if gateway URL is configured
-    const gatewayUrl = typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).COSMORARE_GATEWAY_URL as string | undefined;
-    if (gatewayUrl) {
+    // Call Vercel serverless API (same origin)
+    const payoutGateway = typeof window !== 'undefined' ? '' : null;
+    if (payoutGateway !== null) {
       try {
         tx.status = 'processing';
         this.saveTransactions();
-        const resp = await fetch(`${gatewayUrl}/api/payouts/create`, {
+        const resp = await fetch(`/api/payouts/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -9,19 +9,21 @@
  *    - Perfect for multi-node testing: open 3 tabs = 3 independent nodes
  *    - REAL cross-tab P2P communication, not a mock
  *
- * 2. RemoteSignaling (WebSocket client)
- *    - Connects to a WebSocket signaling relay server
- *    - For remote peer discovery across different machines
- *    - Auto-reconnect with exponential backoff
- *    - Ready to use when a signaling server is deployed
+ * 2. RemoteSignaling (Supabase Realtime Broadcast)
+ *    - Uses Supabase Realtime Channels for remote peer discovery
+ *    - No custom WebSocket server needed — runs on Supabase free tier
+ *    - Auto-reconnect handled by Supabase client
+ *    - Serverless-compatible (works with Vercel)
  *
  * 3. SignalingManager
  *    - Orchestrates both local and remote signaling
  *    - Always enables BroadcastChannel (cross-tab)
- *    - Optionally connects to remote signaling server
+ *    - Auto-connects to Supabase Realtime if backend is available
  */
 
 import type { CosmoP2P, SignalData } from './p2p';
+import { supabase, isBackendAvailable } from '../lib/supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -220,55 +222,70 @@ export class LocalSignaling {
   }
 }
 
-// ─── RemoteSignaling (WebSocket Client) ──────────────────
+// ─── RemoteSignaling (Supabase Realtime Broadcast) ───────
 
-const INITIAL_RECONNECT_DELAY_MS = 1000;
-const MAX_RECONNECT_DELAY_MS = 30000;
-const RECONNECT_BACKOFF_MULTIPLIER = 2;
+const SUPABASE_SIGNAL_CHANNEL = 'cosmorare-signaling';
 
 export class RemoteSignaling {
-  private ws: WebSocket | null = null;
-  private serverUrl: string;
+  private channel: RealtimeChannel | null = null;
   private localId: string;
   private p2p: CosmoP2P;
   private active: boolean = false;
   private connected: boolean = false;
-  private reconnectAttempts: number = 0;
-  private reconnectDelay: number = INITIAL_RECONNECT_DELAY_MS;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private announceInterval: ReturnType<typeof setInterval> | null = null;
 
-  constructor(serverUrl: string, localId: string, p2p: CosmoP2P) {
-    this.serverUrl = serverUrl;
+  constructor(_serverUrl: string, localId: string, p2p: CosmoP2P) {
     this.localId = localId;
     this.p2p = p2p;
   }
 
   start(): void {
     if (this.active) return;
+    if (!isBackendAvailable() || !supabase) {
+      console.warn('[RemoteSignaling] Supabase not available — remote signaling disabled');
+      return;
+    }
+
     this.active = true;
-    this.connect();
+
+    this.channel = supabase.channel(SUPABASE_SIGNAL_CHANNEL, {
+      config: { broadcast: { self: false } },
+    });
+
+    this.channel
+      .on('broadcast', { event: 'signal' }, (payload) => {
+        const msg = payload.payload as SignalingMessage;
+        this.handleMessage(msg);
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          this.connected = true;
+          console.log('[RemoteSignaling] Connected via Supabase Realtime');
+          this.announce();
+          this.announceInterval = setInterval(() => this.announce(), 5000);
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          this.connected = false;
+        }
+      });
   }
 
   stop(): void {
     this.active = false;
     this.connected = false;
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
+    if (this.announceInterval) {
+      clearInterval(this.announceInterval);
+      this.announceInterval = null;
     }
-    if (this.ws) {
-      // Send leave message before closing
-      this.sendToServer({
+    if (this.channel) {
+      this.broadcast({
         type: 'leave',
         senderId: this.localId,
         payload: null,
         timestamp: Date.now(),
       });
-      this.ws.close();
-      this.ws = null;
+      supabase?.removeChannel(this.channel);
+      this.channel = null;
     }
-    this.reconnectAttempts = 0;
-    this.reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
   }
 
   get isActive(): boolean {
@@ -280,77 +297,20 @@ export class RemoteSignaling {
   }
 
   get attempts(): number {
-    return this.reconnectAttempts;
+    return 0;
   }
 
   get url(): string {
-    return this.serverUrl;
+    return 'supabase-realtime';
   }
 
-  private connect(): void {
-    if (!this.active) return;
-
-    try {
-      this.ws = new WebSocket(this.serverUrl);
-
-      this.ws.onopen = () => {
-        this.connected = true;
-        this.reconnectAttempts = 0;
-        this.reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
-        console.log(`[RemoteSignaling] Connected to ${this.serverUrl}`);
-
-        // Announce to the signaling server
-        this.sendToServer({
-          type: 'announce',
-          senderId: this.localId,
-          payload: { address: this.p2p.getLocalAddress() },
-          timestamp: Date.now(),
-        });
-      };
-
-      this.ws.onmessage = (event: MessageEvent) => {
-        try {
-          const msg = JSON.parse(event.data as string) as SignalingMessage;
-          this.handleMessage(msg);
-        } catch (err) {
-          console.error('[RemoteSignaling] Failed to parse message:', err);
-        }
-      };
-
-      this.ws.onclose = () => {
-        this.connected = false;
-        console.log('[RemoteSignaling] Disconnected');
-        this.scheduleReconnect();
-      };
-
-      this.ws.onerror = (err) => {
-        console.error('[RemoteSignaling] WebSocket error:', err);
-        // onclose will fire after onerror, triggering reconnect
-      };
-    } catch (err) {
-      console.error('[RemoteSignaling] Failed to create WebSocket:', err);
-      this.scheduleReconnect();
-    }
-  }
-
-  private scheduleReconnect(): void {
-    if (!this.active) return;
-
-    this.reconnectAttempts++;
-    console.log(
-      `[RemoteSignaling] Reconnecting in ${this.reconnectDelay}ms (attempt ${this.reconnectAttempts})`
-    );
-
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      this.connect();
-    }, this.reconnectDelay);
-
-    // Exponential backoff
-    this.reconnectDelay = Math.min(
-      this.reconnectDelay * RECONNECT_BACKOFF_MULTIPLIER,
-      MAX_RECONNECT_DELAY_MS
-    );
+  private announce(): void {
+    this.broadcast({
+      type: 'announce',
+      senderId: this.localId,
+      payload: { address: this.p2p.getLocalAddress() },
+      timestamp: Date.now(),
+    });
   }
 
   private async handleMessage(msg: SignalingMessage): Promise<void> {
@@ -358,11 +318,10 @@ export class RemoteSignaling {
 
     switch (msg.type) {
       case 'announce': {
-        // Another peer announced — if our ID is lower, we initiate
         if (this.localId < msg.senderId) {
           try {
             const offer = await this.p2p.createOffer();
-            this.sendToServer({
+            this.broadcast({
               type: 'offer',
               senderId: this.localId,
               targetId: msg.senderId,
@@ -381,7 +340,7 @@ export class RemoteSignaling {
         try {
           const offer = msg.payload as SignalData;
           const answer = await this.p2p.acceptOffer(offer);
-          this.sendToServer({
+          this.broadcast({
             type: 'answer',
             senderId: this.localId,
             targetId: msg.senderId,
@@ -407,9 +366,13 @@ export class RemoteSignaling {
     }
   }
 
-  private sendToServer(msg: SignalingMessage): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(msg));
+  private broadcast(msg: SignalingMessage): void {
+    if (this.channel && this.connected) {
+      this.channel.send({
+        type: 'broadcast',
+        event: 'signal',
+        payload: msg,
+      });
     }
   }
 }
@@ -429,9 +392,9 @@ export class SignalingManager {
     // Always set up local (BroadcastChannel) signaling
     this.local = new LocalSignaling(this.localId, p2p);
 
-    // Optionally set up remote (WebSocket) signaling
-    if (signalingServerUrl) {
-      this.remote = new RemoteSignaling(signalingServerUrl, this.localId, p2p);
+    // Auto-connect to Supabase Realtime if backend is available
+    if (signalingServerUrl || isBackendAvailable()) {
+      this.remote = new RemoteSignaling(signalingServerUrl || 'supabase', this.localId, p2p);
     }
   }
 
@@ -463,15 +426,14 @@ export class SignalingManager {
     };
   }
 
-  /** Connect to a remote signaling server (can be called after construction) */
+  /** Connect to remote signaling (uses Supabase Realtime) */
   connectRemote(serverUrl: string): void {
-    // Stop existing remote signaling if any
     this.remote?.stop();
     this.remote = new RemoteSignaling(serverUrl, this.localId, this.p2p);
     this.remote.start();
   }
 
-  /** Disconnect from remote signaling server */
+  /** Disconnect from remote signaling */
   disconnectRemote(): void {
     this.remote?.stop();
     this.remote = null;
