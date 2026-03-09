@@ -66,6 +66,7 @@ export interface ConsensusRound {
   finalResonance: number;
   finalized: boolean;
   result: 'approved' | 'rejected' | 'pending';
+  isSingleNode?: boolean;  // true = local validation only (honest about it)
 }
 
 // ─── Resonance Consensus Engine ──────────────────────────
@@ -133,8 +134,11 @@ export class ResonanceConsensus {
 
     this.rounds.set(tx.id, round);
 
-    // In local mode (single validator), auto-validate
+    // HONEST: In single-node mode, we auto-validate locally.
+    // This is NOT Byzantine fault tolerant — it's acknowledged local validation.
+    // Real BFT consensus only activates when peers are connected via P2P.
     if (this.localValidator && this.validators.size <= 1) {
+      round.isSingleNode = true;
       const vote = await this.castLocalVote(tx);
       round.votes.push(vote);
       this.finalizeRound(round);
@@ -319,6 +323,8 @@ export class ResonanceConsensus {
     let pending = 0;
     let totalLatency = 0;
     let latencyCount = 0;
+    let singleNodeRounds = 0;
+    let distributedRounds = 0;
 
     for (const round of this.rounds.values()) {
       switch (round.result) {
@@ -330,6 +336,11 @@ export class ResonanceConsensus {
         totalLatency += round.endTime - round.startTime;
         latencyCount++;
       }
+      if (round.isSingleNode) {
+        singleNodeRounds++;
+      } else {
+        distributedRounds++;
+      }
     }
 
     return {
@@ -340,6 +351,8 @@ export class ResonanceConsensus {
       avgLatencyMs: latencyCount > 0 ? totalLatency / latencyCount : 0,
       validatorCount: this.validators.size,
       totalStake: this.getTotalStake(),
+      singleNodeRounds,
+      distributedRounds,
     };
   }
 
@@ -395,4 +408,8 @@ export interface ConsensusStats {
   avgLatencyMs: number;
   validatorCount: number;
   totalStake: number;
+  /** HONEST: how many rounds were single-node (local validation only) */
+  singleNodeRounds: number;
+  /** HONEST: how many rounds had real distributed consensus */
+  distributedRounds: number;
 }

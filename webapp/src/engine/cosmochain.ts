@@ -1,48 +1,48 @@
 /**
- * CosmoChain — Decentralized Blockchain with Parallel Shards
+ * CosmoChain — Blockchain with Parallel Shard Processing
  *
- * A new Ethereum-like blockchain built on CosmoWarp's CosmoCode protocol.
+ * Built on CosmoWarp's CosmoCode protocol with REAL infrastructure:
  *
- * ─── Key Innovations ──────────────────────────────────────
+ * ─── What Is REAL ──────────────────────────────────────────
  *
- * 1. FULL ON-CHAIN SVG STORAGE
- *    Every block, transaction, and NFT is stored as a CosmoCode SVG container.
- *    No off-chain data, no IPFS, no external storage. Everything is on-chain.
+ * 1. REAL CRYPTOGRAPHY — Ed25519 signatures, SHA-256 hashing via Web Crypto API
+ * 2. REAL PARALLEL PROCESSING — Web Workers (OS-level threads), one per shard
+ * 3. REAL STORAGE — IndexedDB (GBs of capacity, not 5MB localStorage)
+ * 4. REAL COMPRESSION — CosmoCode SVG, benchmarked with honest measured ratios
+ * 5. REAL RATE LIMITING — Per-address limits enforced, not just documented
+ * 6. ZERO GAS — Free because validators earn from staking, not user fees
  *
- * 2. 7 PARALLEL SHARDS (10x Speed)
- *    Instead of sequential block processing, CosmoChain runs 7 shards in parallel.
- *    Each shard processes its own transaction queue independently.
- *    Cross-shard transactions are handled atomically via the NEXUS shard.
- *    Result: ~10x throughput vs single-chain architectures.
+ * ─── What Is HONEST ────────────────────────────────────────
  *
- * 3. ZERO GAS COST
- *    Transactions are free. No gas fees, no priority auctions.
- *    Anti-spam is achieved through:
- *    - Rate limiting per address (max 100 TX/minute)
- *    - Stake-weighted priority (stakers get faster processing)
- *    - Proof-of-Resonance consensus (validators earn from staking, not from fees)
+ * - In single-node mode (one browser), consensus is local validation.
+ *   This is acknowledged, not hidden. Real BFT consensus requires multiple
+ *   connected peers via WebRTC.
+ * - Compression ratios are MEASURED, not estimated. Run benchmark.ts to see
+ *   real numbers. Structured data: ~5-30x. Base64 images: ~1-2x.
+ * - "7000 TPS" is theoretical max with 7 worker threads. Real throughput
+ *   depends on hardware. The benchmark measures actual TPS.
+ * - Storage is local (IndexedDB) + P2P sync when peers connect.
+ *   Not "on-chain" in the Ethereum sense until peers replicate blocks.
  *
- * 4. 1000x STORAGE via CosmoCode SVG Compression
- *    All on-chain data is compressed through CosmoCode's 7-layer pipeline.
- *    Transaction batches achieve ~200-1000x compression.
- *    NFT images stored as optimized on-chain SVGs.
- *
- * ─── Architecture ─────────────────────────────────────────
+ * ─── Architecture ──────────────────────────────────────────
  *
  *   Shard 0 (GRID)    → Micro-transactions (<10 Ω)
  *   Shard 1 (HELIX)   → Standard transfers (10-100 Ω)
- *   Shard 2 (GLYPH)   → Large transfers (100-1000 Ω)
+ *   Shard 2 (GLYPH)   → Large transfers (100-1000 Ω) + NFT ops
  *   Shard 3 (COSMO)   → System ops (governance, staking)
  *   Shard 4 (CHRONOS) → Time-locked transactions
  *   Shard 5 (NEXUS)   → Cross-shard bridges & atomic swaps
  *   Shard 6 (LUMINA)  → Genesis, epochs & chain coordination
  *
- *   Each shard produces blocks independently at ~1.5s intervals.
- *   A Beacon Block every 15s anchors all shard states together.
+ *   Each shard runs in its own Web Worker (real OS thread).
+ *   Blocks stored in IndexedDB (persistent, large-capacity).
+ *   Beacon Blocks anchor all 7 shards into a global state root.
  */
 
 import { sha256, signTransaction, verifySignature, isValidAddress, computeTxId } from './crypto';
-import { encodeToCosmoCode, decodeFromCosmoCode, encodeTransactionBatch, type CosmoCodeContainer } from './cosmocode';
+import { encodeTransactionBatch, type CosmoCodeContainer } from './cosmocode';
+import { ShardCoordinator, type ShardMetrics } from './shardworker';
+import { blockDB, txDB, beaconDB, metaDB, type StoredBlock, type StoredTransaction, type StoredBeacon, initChainDB } from './chaindb';
 import { storage } from './storage';
 
 // ─── Constants ────────────────────────────────────────────
@@ -189,11 +189,20 @@ export class CosmoChain {
   private stakes: Map<string, number> = new Map();
   private genesisCreated: boolean = false;
 
-  // Processing pipeline (for parallel execution)
+  // REAL parallel processing via Web Workers
+  private coordinator: ShardCoordinator;
   private processingQueues: Map<ShardId, ChainTransaction[]> = new Map();
   private isProcessing: boolean = false;
 
+  // Infrastructure status
+  private indexedDBReady: boolean = false;
+  private _networkMode: 'single-node' | 'multi-node' = 'single-node';
+  private _connectedPeers: number = 0;
+
   constructor() {
+    // Initialize shard coordinator (creates 7 Web Workers if available)
+    this.coordinator = new ShardCoordinator();
+
     // Initialize all 7 shards
     for (let i = 0; i < SHARD_COUNT; i++) {
       const shardId = i as ShardId;
@@ -211,6 +220,60 @@ export class CosmoChain {
       });
       this.processingQueues.set(shardId, []);
     }
+
+    // Initialize IndexedDB (async, non-blocking)
+    initChainDB().then(ready => {
+      this.indexedDBReady = ready;
+    }).catch(() => {
+      this.indexedDBReady = false;
+    });
+  }
+
+  /** Get real infrastructure status — no lies */
+  getInfraStatus(): InfraStatus {
+    const workerStatus = this.coordinator.getWorkerStatus();
+    return {
+      indexedDB: this.indexedDBReady,
+      webWorkers: workerStatus.real,
+      webWorkersFallback: workerStatus.fallback,
+      networkMode: this._networkMode,
+      connectedPeers: this._connectedPeers,
+      consensusType: this._connectedPeers > 0 ? 'distributed' : 'local-validation',
+      storageEngine: this.indexedDBReady ? 'IndexedDB' : 'localStorage',
+      isRealParallelism: workerStatus.real > 0,
+      honestDescription: this.getHonestDescription(workerStatus.real),
+    };
+  }
+
+  private getHonestDescription(realWorkers: number): string {
+    const parts: string[] = [];
+    if (realWorkers > 0) {
+      parts.push(`${realWorkers}/7 shards run in real OS threads (Web Workers)`);
+    } else {
+      parts.push('Shards process sequentially in main thread (no Web Worker support)');
+    }
+    if (this.indexedDBReady) {
+      parts.push('Data persisted in IndexedDB (GB-scale capacity)');
+    } else {
+      parts.push('Data in localStorage (5-10MB limit)');
+    }
+    if (this._connectedPeers > 0) {
+      parts.push(`${this._connectedPeers} peers connected — real distributed consensus`);
+    } else {
+      parts.push('Single-node mode — local validation only (not Byzantine fault tolerant)');
+    }
+    return parts.join('. ') + '.';
+  }
+
+  /** Update peer count (called by P2P layer) */
+  setPeerCount(count: number): void {
+    this._connectedPeers = count;
+    this._networkMode = count > 0 ? 'multi-node' : 'single-node';
+  }
+
+  /** Get shard worker metrics (real performance data) */
+  getShardWorkerMetrics(): ShardMetrics[] {
+    return this.coordinator.getMetrics();
   }
 
   // ─── Genesis ─────────────────────────────────────────
@@ -387,29 +450,108 @@ export class CosmoChain {
   // ─── Parallel Shard Processing ─────────────────────────
 
   /**
-   * Process all shard queues in parallel.
-   * This is the core of CosmoChain's 10x speed improvement.
-   * Each shard processes its transactions independently and concurrently.
+   * Process all shard queues in REAL parallel (Web Workers).
+   * Each shard runs in its own OS thread via ShardCoordinator.
+   * Falls back to sequential main-thread processing if Workers unavailable.
    */
   async processShardQueues(): Promise<void> {
     if (this.isProcessing) return;
     this.isProcessing = true;
 
     try {
-      // Process all 7 shards in parallel
-      const shardPromises: Promise<void>[] = [];
+      // Dispatch to real Web Worker threads via coordinator
+      const workerResults = await this.coordinator.dispatchToAllShards((shardId) => {
+        const queue = this.processingQueues.get(shardId as ShardId)!;
+        const batch = queue.splice(0, MAX_TX_PER_SHARD_BLOCK);
+        return batch;
+      });
 
-      for (let i = 0; i < SHARD_COUNT; i++) {
-        const shardId = i as ShardId;
+      // Apply results from workers back to main-thread state
+      for (const result of workerResults) {
+        const shardId = result.shardId as ShardId;
+        const shard = this.shards.get(shardId)!;
         const queue = this.processingQueues.get(shardId)!;
 
-        if (queue.length > 0) {
-          shardPromises.push(this.processShardQueue(shardId));
+        // The worker already validated; now apply balance changes in main thread
+        // (Workers can't share memory with main thread, so balances are applied here)
+        const batch = shard.pendingTransactions.splice(0, result.processedCount);
+        for (const tx of batch) {
+          this.applyTransaction(tx, shard);
+        }
+
+        // Create shard block with real processing time from the worker
+        const block = await this.createShardBlock(shardId, batch, 'local');
+        block.processingTimeMs = result.processingTimeMs;
+
+        shard.blocks.push(block);
+        shard.latestBlockNumber = block.number;
+        shard.latestBlockHash = block.hash;
+
+        // Track real TPS
+        if (result.processingTimeMs > 0) {
+          const realTps = result.processedCount / (result.processingTimeMs / 1000);
+          shard.tpsHistory.push(realTps);
+          if (shard.tpsHistory.length > 60) shard.tpsHistory.shift();
+        }
+
+        // Persist block to IndexedDB (real storage)
+        if (this.indexedDBReady) {
+          const rawJson = JSON.stringify(batch);
+          const rawSize = new TextEncoder().encode(rawJson).length;
+
+          // CosmoCode SVG compression (real, measured)
+          let cosmoCodeSVG: string | undefined;
+          let compressedSize = rawSize;
+          try {
+            const txData = batch.map(tx => ({
+              id: tx.id, from: tx.from, to: tx.to, amount: tx.amount,
+              type: tx.type, nonce: tx.nonce, ts: tx.timestamp,
+            }));
+            const container = await encodeTransactionBatch(txData);
+            cosmoCodeSVG = container.svg;
+            compressedSize = new TextEncoder().encode(cosmoCodeSVG).length;
+            block.cosmoCodeSVG = cosmoCodeSVG;
+          } catch {
+            // Compression failed — store raw (honest about it)
+          }
+
+          await blockDB.put({
+            key: `${shardId}:${block.number}`,
+            shard: shardId,
+            number: block.number,
+            parentHash: block.parentHash,
+            stateRoot: block.stateRoot,
+            transactionsRoot: block.transactionsRoot,
+            timestamp: block.timestamp,
+            validator: block.validator,
+            hash: block.hash,
+            txCount: block.txCount,
+            processingTimeMs: block.processingTimeMs,
+            cosmoCodeSVG,
+            rawSize,
+            compressedSize,
+          });
+
+          // Persist transactions to IndexedDB
+          await txDB.putBatch(batch.map(tx => ({
+            id: tx.id,
+            from: tx.from,
+            to: tx.to,
+            amount: tx.amount,
+            timestamp: tx.timestamp,
+            signature: tx.signature,
+            publicKey: tx.publicKey,
+            shard: tx.shard,
+            type: tx.type,
+            memo: tx.memo,
+            nonce: tx.nonce,
+            blockNumber: tx.blockNumber,
+            status: tx.status,
+            confirmations: tx.confirmations,
+            onChainData: tx.onChainData,
+          })));
         }
       }
-
-      // All shards execute simultaneously
-      await Promise.all(shardPromises);
 
       // Check if we need a beacon block
       const totalBlocks = Array.from(this.shards.values())
@@ -418,50 +560,22 @@ export class CosmoChain {
       if (totalBlocks > 0 && totalBlocks % (BEACON_BLOCK_INTERVAL * SHARD_COUNT) === 0) {
         const beacon = await this.createBeaconBlock('system');
         this.beaconBlocks.push(beacon);
+
+        // Persist beacon to IndexedDB
+        if (this.indexedDBReady) {
+          await beaconDB.put({
+            number: beacon.number,
+            shardRoots: beacon.shardRoots,
+            shardHeads: beacon.shardHeads,
+            globalStateRoot: beacon.globalStateRoot,
+            timestamp: beacon.timestamp,
+            validator: beacon.validator,
+            hash: beacon.hash,
+          });
+        }
       }
     } finally {
       this.isProcessing = false;
-    }
-  }
-
-  private async processShardQueue(shardId: ShardId): Promise<void> {
-    const queue = this.processingQueues.get(shardId)!;
-    const shard = this.shards.get(shardId)!;
-
-    if (queue.length === 0) return;
-
-    const startTime = performance.now();
-
-    // Take up to MAX_TX_PER_SHARD_BLOCK transactions
-    const batch = queue.splice(0, MAX_TX_PER_SHARD_BLOCK);
-
-    // Apply all transactions
-    for (const tx of batch) {
-      this.applyTransaction(tx, shard);
-    }
-
-    // Create shard block
-    const block = await this.createShardBlock(shardId, batch, 'local');
-    block.processingTimeMs = performance.now() - startTime;
-
-    shard.blocks.push(block);
-    shard.latestBlockNumber = block.number;
-    shard.latestBlockHash = block.hash;
-
-    // Update TPS tracking
-    shard.tpsHistory.push(batch.length / Math.max(0.001, block.processingTimeMs / 1000));
-    if (shard.tpsHistory.length > 60) shard.tpsHistory.shift();
-
-    // Encode block as CosmoCode SVG (on-chain storage)
-    try {
-      const txData = batch.map(tx => ({
-        id: tx.id, from: tx.from, to: tx.to, amount: tx.amount,
-        type: tx.type, nonce: tx.nonce, ts: tx.timestamp,
-      }));
-      const container = await encodeTransactionBatch(txData);
-      block.cosmoCodeSVG = container.svg;
-    } catch {
-      // SVG encoding is optional — block is still valid without it
     }
   }
 
@@ -734,6 +848,18 @@ export class CosmoChain {
 
   // ─── Chain Statistics ──────────────────────────────────
 
+  /** Get REAL measured compression ratio from IndexedDB data */
+  async getRealCompressionRatio(): Promise<number> {
+    if (!this.indexedDBReady) return this.estimateCompressionRatio();
+    try {
+      const { mediaDB: mDB } = await import('./chaindb');
+      const stats = await mDB.getRealCompressionStats();
+      return stats.ratio;
+    } catch {
+      return this.estimateCompressionRatio();
+    }
+  }
+
   getStats(): ChainStats {
     let totalBlocks = 0;
     let totalTx = 0;
@@ -914,4 +1040,17 @@ export interface ChainStats {
   totalStaked: number;
   addresses: number;
   compressionRatio: number;
+}
+
+/** Honest infrastructure status — no lies, no exaggeration */
+export interface InfraStatus {
+  indexedDB: boolean;
+  webWorkers: number;           // How many shards run in real OS threads
+  webWorkersFallback: number;   // How many shards fall back to main thread
+  networkMode: 'single-node' | 'multi-node';
+  connectedPeers: number;
+  consensusType: 'local-validation' | 'distributed';
+  storageEngine: 'IndexedDB' | 'localStorage';
+  isRealParallelism: boolean;   // true if at least 1 Web Worker is running
+  honestDescription: string;    // Plain English summary
 }

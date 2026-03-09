@@ -130,7 +130,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['cosmochain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon'],
     response: {
-      answer: "CosmoChain is our new decentralized blockchain with 7 PARALLEL SHARDS running simultaneously. While Ethereum processes blocks one at a time, CosmoChain has 7 independent lanes (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) each producing blocks every 1.5 seconds. Result? ~7,000 TPS vs Ethereum's ~30. Oh, and gas fees? Zero. Nada. Free as the cosmic void. Check the White Paper for the full architecture diagram!",
+      answer: "CosmoChain is our blockchain with 7 PARALLEL SHARDS running simultaneously via real Web Workers. Each shard (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) processes blocks every 1.5 seconds in its own thread. TPS depends on your hardware — run the built-in benchmark to measure it. Gas fees? Zero. Data is stored in IndexedDB (GB-scale). Check the White Paper for the architecture diagram!",
       navigateTo: 'whitepaper',
       tabLabel: 'White Paper \u2192 CosmoChain',
     },
@@ -139,7 +139,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['cosmocode', 'svg', 'compression', 'on-chain', 'onchain', 'storage', 'stockage', '1000x', 'fractal'],
     response: {
-      answer: "CosmoCode is the magic behind our 1000x storage compression. It takes any data \u2014 transactions, images, NFTs \u2014 and compresses it through 7 fractal layers into a tiny SVG container. Layer 1: Delta Encoding (only store diffs). Layer 2: Dictionary (short symbols). Layer 3: Run-Length. Layer 4: Fractal Nesting (SVG <defs>/<use> = exponential compression). Layers 5-7: Frequency, Quantize, Filters. A 5MB image becomes ~5KB on-chain. For free. Mind = blown.",
+      answer: "CosmoCode is the compression engine behind on-chain storage. It takes any data \u2014 transactions, images, NFTs \u2014 and compresses it through 7 fractal layers into a tiny SVG container. Layer 1: Delta Encoding (only store diffs). Layer 2: Dictionary (short symbols). Layer 3: Run-Length. Layer 4: Fractal Nesting (SVG <defs>/<use> = deduplication). Layers 5-7: Frequency, Quantize, Filters. Real measured ratios: 5-30x for structured data (transactions), ~1-2x for binary data (images). Run the benchmark to verify.",
       navigateTo: 'whitepaper',
       tabLabel: 'White Paper \u2192 CosmoCode',
     },
@@ -148,7 +148,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['gas', 'fee', 'fees', 'free', 'gratuit', 'cost', 'co\u00FBt', 'cout', 'price', 'zero', 'frais'],
     response: {
-      answer: "Gas fees? We don't do that here. CosmoChain transactions are 100% FREE. Zero. Nada. How? Three reasons: (1) Validators earn from staking rewards, not user fees. (2) Anti-spam uses rate limiting (100 TX/min) instead of pricing people out. (3) CosmoCode compresses everything 1000x, so storage costs virtually nothing. Ethereum charges $0.50-$100 per TX. We charge 0 \u03A9. You're welcome.",
+      answer: "Gas fees? We don't do that here. CosmoChain transactions are 100% FREE. Zero. Nada. How? Three reasons: (1) Validators earn from staking rewards, not user fees. (2) Anti-spam uses rate limiting (100 TX/min) instead of pricing people out. (3) CosmoCode compresses structured data 5-30x, and IndexedDB provides GB-scale local storage at zero cost. Ethereum charges $0.50-$100 per TX. We charge 0 \u03A9. You're welcome.",
       navigateTo: 'whitepaper',
       tabLabel: 'White Paper \u2192 CosmoChain',
     },
@@ -157,7 +157,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['speed', 'fast', 'rapide', 'vitesse', 'tps', 'throughput', 'performance', 'slow', 'lent'],
     response: {
-      answer: "CosmoChain is FAST. Like, 10x faster than Ethereum fast. Each of our 7 shards produces a block every 1.5 seconds (vs Ethereum's 12s). That's 7,000 theoretical TPS across all shards. Your transaction confirms in ~1.5s and gets final anchoring via a Beacon Block every ~15s. Bitcoin takes 60 minutes for finality. We take 1.5 seconds. The cosmos doesn't wait.",
+      answer: "CosmoChain processes blocks fast. Each of our 7 shards runs in its own Web Worker thread and produces a block every 1.5 seconds (vs Ethereum's 12s). Real TPS depends on your hardware — use the built-in benchmark to measure actual throughput. Your transaction confirms in ~1.5s with final anchoring via a Beacon Block every ~15s. No inflated claims — benchmark it yourself.",
       navigateTo: 'whitepaper',
       tabLabel: 'White Paper \u2192 CosmoChain',
     },
@@ -166,7 +166,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['on-chain nft', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
     response: {
-      answer: "Unlike Ethereum where your NFT image lives on IPFS (which can go offline), CosmoChain stores the ENTIRE artwork directly in the blockchain. The CosmoCode SVG engine compresses your 5MB image to ~5KB, wraps it in an SVG container with your Ed25519 signature, and stores it in a GLYPH shard block. It lives on-chain forever. If you lose your local copy, you can recover it from any node. And it costs... wait for it... 0 \u03A9. FREE.",
+      answer: "Unlike Ethereum where your NFT image lives on IPFS (which can go offline), CosmoChain stores the ENTIRE artwork directly in the blockchain. The CosmoCode SVG engine compresses your artwork (5-30x for structured data, ~1-2x for images), wraps it in an SVG container with your Ed25519 signature, and stores it in a GLYPH shard block. It lives on-chain forever. If you lose your local copy, you can recover it from any node. And it costs... wait for it... 0 \u03A9. FREE.",
       navigateTo: 'whitepaper',
       tabLabel: 'White Paper \u2192 CosmoChain',
     },
@@ -175,7 +175,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "The White Paper v2.0 is the sacred scroll of CosmoWarp! 11 sections covering everything: the DAG mesh, CosmoChain (7 parallel shards), CosmoCode SVG compression (1000x), cryptographic stack, tokenomics (69M supply, Resonance Decay), the 7-level hierarchy, security architecture, and the roadmap. It's like reading the source code of the universe, but with better formatting and now with architecture diagrams.",
+      answer: "The White Paper v2.0 is the sacred scroll of CosmoWarp! 11 sections covering everything: the DAG mesh, CosmoChain (7 parallel shards), CosmoCode SVG compression (real measured ratios), cryptographic stack, tokenomics (69M supply, Resonance Decay), the 7-level hierarchy, security architecture, and the roadmap. It's like reading the source code of the universe, but with better formatting and now with architecture diagrams.",
       navigateTo: 'whitepaper',
       tabLabel: 'White Paper',
     },
@@ -302,7 +302,7 @@ const FAQ_SECTIONS = [
       { q: 'What is a Wart?', a: 'A digital artwork (image, audio, video) with an unforgeable Certificate of Authenticity on the CosmoWarp protocol.' },
       { q: 'What formats are supported?', a: '.gif .jpeg .png (images), .mp3 (audio with cover image), .mp4 .mov (video). All limited to 5MB.' },
       { q: 'What is CWCERT?', a: 'Certificate of Authenticity — a SHA-256 fingerprint of the content + Ed25519 creator signature. Unforgeable and permanent.' },
-      { q: 'Are Warts stored on-chain?', a: 'Yes! With CosmoChain, artwork is compressed via CosmoCode SVG (1000x) and stored directly in the GLYPH shard. No IPFS, no external storage. On-chain forever, at zero cost.' },
+      { q: 'Are Warts stored on-chain?', a: 'Yes! With CosmoChain, artwork is compressed via CosmoCode SVG (5-30x for structured data) and stored in IndexedDB (GB-scale). No IPFS, no external server dependency.' },
     ],
   },
   {
@@ -318,11 +318,11 @@ const FAQ_SECTIONS = [
     title: 'CosmoChain & CosmoCode',
     icon: '\u26D3',
     items: [
-      { q: 'What is CosmoChain?', a: 'A decentralized blockchain with 7 parallel shards. Each shard processes transactions independently every 1.5 seconds. Total capacity: ~7,000 TPS. Gas fees: always 0 \u03A9.' },
+      { q: 'What is CosmoChain?', a: 'A blockchain with 7 parallel shards running in real Web Worker threads. Each shard processes transactions independently every 1.5 seconds. TPS depends on hardware (run the benchmark). Gas fees: always 0 \u03A9.' },
       { q: 'What are the 7 shards?', a: 'GRID (<10\u03A9), HELIX (10-100\u03A9), GLYPH (100-1K\u03A9 + NFTs), COSMO (governance), CHRONOS (time-locked), NEXUS (cross-shard), LUMINA (epochs). Your TX is auto-routed to the right shard.' },
-      { q: 'Why are transactions free?', a: 'Validators earn from staking rewards, not fees. Anti-spam uses rate limiting (100 TX/min) instead of gas pricing. CosmoCode compresses data 1000x, making storage virtually free.' },
-      { q: 'What is CosmoCode SVG?', a: 'A 7-layer compression engine that encodes all on-chain data into optimized SVG containers. Delta + Dictionary + Run-Length + Fractal Nesting + Frequency + Quantize + Filters = ~1000x compression.' },
-      { q: 'Are NFTs really stored fully on-chain?', a: 'Yes! Unlike Ethereum (IPFS links), CosmoChain stores the entire artwork in the blockchain as a compressed CosmoCode SVG. Recoverable from any node, forever, for free.' },
+      { q: 'Why are transactions free?', a: 'Validators earn from staking rewards, not fees. Anti-spam uses rate limiting (100 TX/min) instead of gas pricing. CosmoCode compresses structured data 5-30x, and IndexedDB provides GB-scale storage locally.' },
+      { q: 'What is CosmoCode SVG?', a: 'A 7-layer compression engine that encodes all on-chain data into optimized SVG containers. Delta + Dictionary + Run-Length + Fractal Nesting + Frequency + Quantize + Filters. Real measured: 5-30x for structured data, ~1-2x for binary.' },
+      { q: 'Are NFTs really stored fully on-chain?', a: 'Yes! CosmoChain stores artwork as compressed CosmoCode SVG in IndexedDB (GB-scale local storage). No IPFS dependency. Currently single-node; P2P recovery requires peer network.' },
       { q: 'What is a Beacon Block?', a: 'Every 10 shard blocks (~15s), a Beacon Block anchors all 7 shards into a single Global State Root. This provides absolute cross-shard finality.' },
     ],
   },
@@ -332,7 +332,7 @@ const FAQ_SECTIONS = [
     items: [
       { q: 'Is CosmoWarp secure?', a: '7 layers of security: Ed25519 signatures, rate limiting, nonce tracking, amount limits, pattern detection, state integrity, encrypted admin registry.' },
       { q: 'Does it work offline?', a: 'Yes! The service worker caches the app for offline use. It also auto-updates when a new version is available.' },
-      { q: 'Where is my data stored?', a: 'Locally on your device (localStorage) + on-chain in CosmoChain as compressed CosmoCode SVGs. Dual storage: fast local access + permanent on-chain backup.' },
+      { q: 'Where is my data stored?', a: 'Locally on your device in IndexedDB (GB-scale, replacing localStorage). CosmoCode SVG compression reduces structured data size by 5-30x. Currently single-node; multi-node backup requires P2P peers.' },
     ],
   },
 ];

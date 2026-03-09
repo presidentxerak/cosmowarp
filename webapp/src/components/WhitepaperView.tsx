@@ -34,7 +34,7 @@ export default function WhitepaperView() {
           <p className="text-sm sm:text-base text-gray-400 mb-1">White Paper v2.0</p>
           <p className="text-xs text-gray-500 max-w-md mx-auto">
             A post-blockchain transactional fabric with full on-chain SVG storage, 7 parallel shards,
-            zero gas fees, and 1000x compression. Not a chain. Not a coin. A living mesh.
+            zero gas fees, and real SVG compression. Not a chain. Not a coin. A living mesh.
           </p>
         </div>
       </div>
@@ -135,7 +135,7 @@ function OverviewSection() {
         {[
           ['\u25CE', 'CosmoMesh', 'DAG transactional fabric with 7 fractal layers'],
           ['\u26D3', 'CosmoChain', '7 parallel shards, 0 gas, 10x speed, full on-chain SVG'],
-          ['\u25B7', 'CosmoCode', 'SVG compression engine with 1000x storage efficiency'],
+          ['\u25B7', 'CosmoCode', 'SVG compression engine with real measured ratios (5-30x structured data)'],
           ['\u26BF', 'CosmoHash', 'Ed25519 + SHA-256 + AES-GCM cryptographic stack'],
           ['\u223F', 'CosmoLingua', 'Cosmic symbolic language for the protocol'],
           ['\u269B', 'Resonance Decay', 'Golden ratio mining curve (replaces halving)'],
@@ -298,14 +298,23 @@ function CosmoMeshSection() {
 function CosmoChainSection() {
   return (
     <div>
-      <SectionTitle icon={'\u26D3'} title="CosmoChain" subtitle="Decentralized Blockchain with Parallel Shards & Full On-Chain SVG" />
+      <SectionTitle icon={'\u26D3'} title="CosmoChain" subtitle="Parallel Shard Processing with Real Infrastructure" />
       <P>
-        CosmoChain is the next evolution of the CosmoWarp protocol. A fully decentralized blockchain
-        inspired by Ethereum but reimagined with <span className="text-warp-400 font-bold">7 parallel shards</span>,
+        CosmoChain is the transaction layer of the CosmoWarp protocol. It uses
+        <span className="text-warp-400 font-bold"> 7 real Web Worker threads</span> (OS-level parallelism),
         <span className="text-energy-400 font-bold"> zero gas fees</span>,
-        <span className="text-star-400 font-bold"> 10x transaction speed</span>, and
-        <span className="text-nebula-400 font-bold"> 1000x on-chain storage</span> via CosmoCode SVG compression.
+        <span className="text-star-400 font-bold"> IndexedDB persistence</span> (GB-scale vs 5MB localStorage), and
+        <span className="text-nebula-400 font-bold"> CosmoCode SVG compression</span> with measured ratios.
       </P>
+      <div className="p-3 rounded-none bg-amber-500/5 border border-amber-500/20 mb-4">
+        <p className="text-[10px] text-amber-400 font-bold mb-1">{'\u26A0'} HONEST STATUS</p>
+        <p className="text-[10px] text-amber-400/70 leading-relaxed">
+          In single-user mode, consensus is local validation — not Byzantine fault tolerant.
+          Real distributed consensus activates when peers connect via WebRTC P2P.
+          Compression ratios are benchmarked (run benchmark.ts), not estimated.
+          Storage is IndexedDB (local, GB-scale) synced to peers when connected.
+        </p>
+      </div>
 
       <H3>How It Works For You (User Flow)</H3>
       <P>
@@ -348,7 +357,7 @@ function CosmoChainSection() {
             <div className="w-8 h-8 bg-nebula-500/20 border border-nebula-500/30 flex items-center justify-center shrink-0 text-sm text-nebula-400 font-bold">4</div>
             <div className="flex-1">
               <p className="text-xs font-bold text-gray-200">CosmoCode compresses everything into SVG</p>
-              <p className="text-[10px] text-gray-500">Your TX data (or NFT artwork) is compressed through 7 fractal layers and encoded as an SVG container. 1000x smaller than raw data.</p>
+              <p className="text-[10px] text-gray-500">Your TX data (or NFT artwork) is compressed through 7 layers and encoded as an SVG container. Structured data achieves 5-30x compression; images ~1-2x.</p>
             </div>
           </div>
           <div className="ml-4 border-l-2 border-nebula-500/20 h-4" />
@@ -407,8 +416,8 @@ function CosmoChainSection() {
 \u2502     \u2502  \u2192 Color Quantize    \u2502    \u2502
 \u2502     \u2502  \u2192 Filter Chains     \u2502    \u2502
 \u2502     \u2502                      \u2502    \u2502
-\u2502     \u2502  Result: ~1000x      \u2502    \u2502
-\u2502     \u2502  compression ratio   \u2502    \u2502
+\u2502     \u2502  Result: 5-30x\u2502    \u2502
+\u2502     \u2502  (structured data)\u2502    \u2502
 \u2502     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518    \u2502
 \u2502            |                       \u2502
 \u2502            v                       \u2502
@@ -525,14 +534,16 @@ function CosmoChainSection() {
           </thead>
           <tbody className="text-gray-400">
             {[
-              ['Block Time', '10 min', '12 sec', '1.5 sec'],
-              ['TPS', '~7', '~30', '~7,000'],
-              ['Gas Fee', '$1-50', '$0.5-100', 'FREE (0 \u03A9)'],
-              ['NFT Storage', 'Off-chain', 'Off-chain (IPFS)', 'Full on-chain SVG'],
-              ['Storage Cost', 'N/A', '$0.01-10/KB', 'FREE (0 \u03A9)'],
-              ['Shards', '1', '1 (planned 64)', '7 (live)'],
-              ['Finality', '60 min', '~15 min', '~1.5 sec'],
-              ['Compression', 'None', 'None', '1000x (CosmoCode)'],
+              ['Block Time', '10 min', '12 sec', '1.5 sec (per shard)'],
+              ['TPS (measured)', '~7', '~30', 'Varies (benchmark it)'],
+              ['Gas Fee', '$1-50', '$0.5-100', '0 \u03A9 (free)'],
+              ['NFT Storage', 'Off-chain', 'Off-chain (IPFS)', 'IndexedDB + SVG compression'],
+              ['Storage Engine', 'LevelDB', 'LevelDB', 'IndexedDB (GB-scale)'],
+              ['Shards', '1', '1 (planned 64)', '7 Web Workers'],
+              ['Finality', '60 min', '~15 min', 'Local: instant / P2P: ~15s'],
+              ['Compression', 'None', 'None', '5-30x measured (CosmoCode)'],
+              ['Validators', '900,000+', '900,000+', '1 (single-node) to N (P2P)'],
+              ['Network', 'Global', 'Global', 'Local + WebRTC P2P'],
             ].map(([metric, btc, eth, cw]) => (
               <tr key={metric} className="border-b border-gray-800/30">
                 <td className="py-1.5 text-gray-300">{metric}</td>
@@ -555,7 +566,7 @@ function CosmoChainSection() {
         {[
           ['\u269B', 'Staking Rewards', 'Validators earn from staking, not from user fees. Users stake Warps, validators earn a cut of mining rewards proportional to their stake.'],
           ['\u26A1', 'Rate Limiting', 'Anti-spam is enforced through rate limits (100 TX/min per address) instead of pricing out attackers with fees.'],
-          ['\u25B7', 'CosmoCode Compression', 'Storage is 1000x cheaper because everything is compressed. What costs $10 on Ethereum costs nothing here because it takes 1000x less space.'],
+          ['\u25B7', 'CosmoCode Compression', 'Storage costs are reduced through real SVG compression (5-30x for structured data). Combined with IndexedDB for GB-scale local storage, this eliminates the need for gas-based storage pricing.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="p-3 rounded-none bg-cosmic-900/40">
             <div className="flex items-center gap-2 mb-1">
@@ -633,12 +644,12 @@ function CosmoChainSection() {
 function CosmoCodeSection() {
   return (
     <div>
-      <SectionTitle icon={'\u25B7'} title="CosmoCode" subtitle="SVG Fractal Compression Engine (1000x Storage)" />
+      <SectionTitle icon={'\u25B7'} title="CosmoCode" subtitle="SVG Compression Engine (Real Measured Ratios)" />
       <P>
         CosmoCode is the compression engine that makes full on-chain storage possible.
         It encodes ALL blockchain data — transactions, NFT artwork, metadata — into optimized
         <span className="text-energy-400 font-bold"> SVG containers</span> using a 7-layer fractal
-        compression pipeline that achieves <span className="text-warp-400 font-bold">~1000x</span> storage efficiency.
+        compression pipeline. Real measured ratios: <span className="text-warp-400 font-bold">5-30x</span> for structured data (transactions, metadata), <span className="text-warp-400 font-bold">~1-2x</span> for binary data (images). Run the built-in benchmark to verify.
       </P>
 
       <H3>Why SVG?</H3>
@@ -665,13 +676,13 @@ function CosmoCodeSection() {
       </P>
       <div className="space-y-2 mb-4">
         {[
-          ['Layer 1', 'Delta Encoding', 'Only stores differences from previous data. Sequential transactions share ~80% of their structure, so we only store the 20% that changed.', '~5-50x', 'text-blue-400'],
-          ['Layer 2', 'Dictionary Compression', 'Replaces common strings ("transaction", "signature", "publicKey") with short symbols (\u00A7t, \u00A7s, \u00A7p). A global dictionary shared across the entire chain.', '~5-20x', 'text-green-400'],
-          ['Layer 3', 'Run-Length SVG Paths', 'Encodes repetitive sequences (like hex strings with repeated chars) as compact notation. "AAABBB" becomes "3A3B".', '~2-10x', 'text-yellow-400'],
-          ['Layer 4', 'Fractal Nesting', 'The key innovation. Uses SVG <defs>/<use> to define repeated patterns once and reference them everywhere. Exponential compression for structured data.', '~10-100x', 'text-purple-400'],
-          ['Layer 5', 'Frequency Encoding', 'Maps the most common byte pairs to single Unicode characters. Huffman-inspired variable-length encoding.', '~2-5x', 'text-cyan-400'],
-          ['Layer 6', 'Color Quantization', 'For images: reduces the color palette to essential colors. Removes visual noise that adds no perceivable quality.', '~2-4x', 'text-orange-400'],
-          ['Layer 7', 'Filter Chains', 'Reusable SVG filter pipelines that encode common transforms without repeating them.', '~1.5-3x', 'text-amber-300'],
+          ['Layer 1', 'Delta Encoding', 'Only stores differences from previous data. Sequential transactions share common structure, so we only store what changed. Most effective on batches of similar data.', '~1.5-3x', 'text-blue-400'],
+          ['Layer 2', 'Dictionary Compression', 'Replaces common strings ("transaction", "signature", "publicKey") with short symbols (\u00A7t, \u00A7s, \u00A7p). Effective on JSON-like structured data.', '~1.5-3x', 'text-green-400'],
+          ['Layer 3', 'Run-Length SVG Paths', 'Encodes repetitive sequences (like hex strings with repeated chars) as compact notation. "AAABBB" becomes "3A3B".', '~1.2-2x', 'text-yellow-400'],
+          ['Layer 4', 'Fractal Nesting', 'Uses SVG <defs>/<use> to define repeated patterns once and reference them everywhere. Most effective on highly repetitive structured data.', '~1.5-5x', 'text-purple-400'],
+          ['Layer 5', 'Frequency Encoding', 'Maps the most common byte pairs to single Unicode characters. Huffman-inspired variable-length encoding.', '~1.2-2x', 'text-cyan-400'],
+          ['Layer 6', 'Color Quantization', 'For images: reduces the color palette to essential colors. Minimal effect on already-compressed binary data.', '~1-1.5x', 'text-orange-400'],
+          ['Layer 7', 'Filter Chains', 'Reusable SVG filter pipelines that encode common transforms without repeating them.', '~1-1.3x', 'text-amber-300'],
         ].map(([layer, title, desc, ratio, color]) => (
           <div key={title} className="p-3 rounded-none bg-cosmic-900/40">
             <div className="flex items-center gap-2 mb-1">
@@ -687,17 +698,18 @@ function CosmoCodeSection() {
       <H3>Compression Pipeline Diagram</H3>
       <div className="p-4 rounded-none bg-cosmic-900/60 border border-gray-700/20 mb-4 overflow-x-auto">
         <pre className="text-[10px] sm:text-[11px] text-gray-400 font-mono whitespace-pre leading-relaxed">{`
-  RAW DATA (1,000 KB)
+  STRUCTURED DATA (100 KB, e.g. TX batch)
    |
-   |\u2500\u2500 Layer 1: Delta Encode \u2500\u2500\u2500\u2500\u2500\u2500\u2192 200 KB  (5x)
-   |\u2500\u2500 Layer 2: Dictionary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192  40 KB  (5x)
-   |\u2500\u2500 Layer 3: Run-Length \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192  20 KB  (2x)
-   |\u2500\u2500 Layer 4: Fractal Nesting \u2500\u2500\u2500\u2192   4 KB  (5x)
-   |\u2500\u2500 Layer 5: Frequency Encode \u2500\u2500\u2192   2 KB  (2x)
-   |\u2500\u2500 Layer 6: Quantize \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192 1.5 KB  (1.3x)
-   |\u2500\u2500 Layer 7: Filter Chains \u2500\u2500\u2500\u2500\u2192   1 KB  (1.5x)
+   |\u2500\u2500 Layer 1: Delta Encode \u2500\u2500\u2500\u2500\u2500\u2500\u2192 50 KB   (2x)
+   |\u2500\u2500 Layer 2: Dictionary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192  25 KB  (2x)
+   |\u2500\u2500 Layer 3: Run-Length \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192  15 KB  (1.7x)
+   |\u2500\u2500 Layer 4: Fractal Nesting \u2500\u2500\u2500\u2192   8 KB  (1.9x)
+   |\u2500\u2500 Layer 5: Frequency Encode \u2500\u2500\u2192   5 KB  (1.6x)
+   |\u2500\u2500 Layer 6: Quantize \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192   4 KB  (1.2x)
+   |\u2500\u2500 Layer 7: Filter Chains \u2500\u2500\u2500\u2500\u2192 3.5 KB  (1.1x)
    v
-  SVG CONTAINER (1 KB) = 1000x compression
+  SVG CONTAINER (~3.5 KB) = ~30x compression (structured data)
+  Note: Binary data (images) achieves ~1-2x only. Run benchmark to verify.
 `}</pre>
       </div>
 
@@ -722,10 +734,10 @@ function CosmoCodeSection() {
 
       <H3>Real-World Compression Ratios</H3>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="TX BATCH (100)" value="~200x" color="text-warp-400" />
-        <Stat label="STATE SNAPSHOT" value="~50x" color="text-energy-400" />
-        <Stat label="SVG ARTWORK" value="~1x (native)" color="text-star-400" />
-        <Stat label="FULL BLOCK" value="~1000x" color="text-nebula-400" />
+        <Stat label="TX BATCH (100)" value="~5-30x" color="text-warp-400" />
+        <Stat label="STATE SNAPSHOT" value="~3-10x" color="text-energy-400" />
+        <Stat label="SVG ARTWORK" value="~1-2x" color="text-star-400" />
+        <Stat label="BASE64 IMAGES" value="~1x" color="text-nebula-400" />
       </div>
     </div>
   );
@@ -1072,7 +1084,7 @@ function RoadmapSection() {
         {[
           { phase: 'Phase 1', title: 'Genesis', status: 'Completed', color: 'text-green-400', items: ['CosmoVM + CosmoASM instruction set', 'Ed25519, SHA-256, AES-GCM cryptography', 'CosmoMesh DAG with 7 fractal layers', 'Resonance Consensus protocol', 'WebRTC P2P mesh networking', 'Web application (React + Vite)'] },
           { phase: 'Phase 2', title: 'Expansion', status: 'Completed', color: 'text-green-400', items: ['69M supply with Resonance Decay', 'Account hierarchy (7 levels)', 'Admin registry (AES-GCM encrypted)', 'Security hardening (7 layers)', 'Chrome Extension', 'Public SDK for developers'] },
-          { phase: 'Phase 3', title: 'CosmoChain', status: 'Completed', color: 'text-green-400', items: ['CosmoChain blockchain with 7 parallel shards', 'CosmoCode SVG compression engine (1000x)', 'Zero gas fee model with rate limiting', 'Full on-chain SVG storage for NFTs', 'Beacon Block cross-shard finality', 'Dual-layer architecture (Mesh + Chain)'] },
+          { phase: 'Phase 3', title: 'CosmoChain', status: 'Completed', color: 'text-green-400', items: ['CosmoChain blockchain with 7 parallel shards', 'CosmoCode SVG compression engine (real measured ratios)', 'Zero gas fee model with rate limiting', 'Full on-chain SVG storage for NFTs', 'Beacon Block cross-shard finality', 'Dual-layer architecture (Mesh + Chain)'] },
           { phase: 'Phase 4', title: 'Ecosystem', status: 'In Progress', color: 'text-amber-400', items: ['White Paper v2 & landing page', 'API documentation', 'SDK marketplace', 'Community governance', 'Mobile-first responsive design', 'Extension ecosystem'] },
           { phase: 'Phase 5', title: 'Horizon', status: 'Planned', color: 'text-gray-500', items: ['Mobile apps (iOS + Android)', 'Hardware wallet support', 'Cross-chain bridges (Ethereum, Solana)', 'Governance DAO', 'Art & services marketplace', 'Global P2P relay network'] },
         ].map(phase => (
