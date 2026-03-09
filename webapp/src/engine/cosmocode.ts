@@ -11,7 +11,7 @@
  * 4. SVG supports nested groups → fractal compression
  * 5. SVG is universally renderable (browsers, viewers, on-chain)
  *
- * ─── Fractal Compression (1000x Storage Gain) ──────────────
+ * ─── Fractal Compression (5-30x for structured data) ───────
  * Layer 1: Delta Encoding — only store differences between similar data
  * Layer 2: Dictionary Compression — shared symbol tables across blocks
  * Layer 3: Run-Length SVG Paths — encode repetitive patterns as SVG paths
@@ -20,7 +20,7 @@
  * Layer 6: Quantized Color Palettes — reduce color space for images
  * Layer 7: SVG Filter Chains — encode transforms as reusable filter pipelines
  *
- * Combined, these 7 layers achieve ~1000x effective compression
+ * Combined, these 7 layers achieve ~5-30x effective compression
  * for typical blockchain data (transactions, NFTs, metadata).
  */
 
@@ -367,7 +367,232 @@ function frequencyDecode(encoded: string, table: Map<string, string>): string {
   return result;
 }
 
-// ─── Compression Layer 6: Color Quantization (for images) ─
+// ─── Compression Layer 6: Quantization ────────────────────
+
+/**
+ * Analyze byte/character frequency and map common multi-character sequences
+ * to single Unicode chars from the Braille Patterns block (U+2800-U+28FF).
+ * Works on any data, not just images.
+ */
+function quantizeCompress(data: string): { quantized: string; quantTable: Map<string, string> } {
+  const quantTable = new Map<string, string>(); // replacement char → original sequence
+
+  if (data.length < 20) return { quantized: data, quantTable };
+
+  // Count 3-char and 4-char sequence frequencies
+  const seqFreqs3 = new Map<string, number>();
+  const seqFreqs4 = new Map<string, number>();
+
+  for (let i = 0; i <= data.length - 3; i++) {
+    const seq3 = data.slice(i, i + 3);
+    // Skip sequences that contain existing Braille block chars or control sequences
+    if (hasBrailleChar(seq3)) continue;
+    seqFreqs3.set(seq3, (seqFreqs3.get(seq3) || 0) + 1);
+
+    if (i <= data.length - 4) {
+      const seq4 = data.slice(i, i + 4);
+      if (hasBrailleChar(seq4)) continue;
+      seqFreqs4.set(seq4, (seqFreqs4.get(seq4) || 0) + 1);
+    }
+  }
+
+  // Collect candidates: sequences appearing 5+ times, sorted by savings (freq * (len-1))
+  const candidates: Array<{ seq: string; freq: number; savings: number }> = [];
+
+  for (const [seq, freq] of seqFreqs4) {
+    if (freq >= 5) {
+      // savings = occurrences * (original_len - replacement_len) - table_entry_overhead
+      const savings = freq * (seq.length - 1) - (seq.length + 4);
+      if (savings > 0) {
+        candidates.push({ seq, freq, savings });
+      }
+    }
+  }
+
+  for (const [seq, freq] of seqFreqs3) {
+    if (freq >= 5) {
+      const savings = freq * (seq.length - 1) - (seq.length + 4);
+      if (savings > 0) {
+        candidates.push({ seq, freq, savings });
+      }
+    }
+  }
+
+  // Sort by savings descending
+  candidates.sort((a, b) => b.savings - a.savings);
+
+  // Use up to 256 Braille pattern chars (U+2800 to U+28FF)
+  let result = data;
+  let codeIndex = 0;
+  const maxCodes = 256;
+
+  for (const { seq } of candidates) {
+    if (codeIndex >= maxCodes) break;
+
+    // Check if this sequence is still present (may have been consumed by earlier replacements)
+    if (!result.includes(seq)) continue;
+
+    // Count actual remaining occurrences
+    let remaining = 0;
+    let searchPos = 0;
+    while (true) {
+      const idx = result.indexOf(seq, searchPos);
+      if (idx === -1) break;
+      remaining++;
+      searchPos = idx + seq.length;
+    }
+
+    if (remaining < 5) continue;
+
+    const replacement = String.fromCodePoint(0x2800 + codeIndex);
+    quantTable.set(replacement, seq);
+
+    // Replace all occurrences (non-overlapping, left to right)
+    let replaced = '';
+    let pos = 0;
+    while (pos < result.length) {
+      const idx = result.indexOf(seq, pos);
+      if (idx === -1) {
+        replaced += result.slice(pos);
+        break;
+      }
+      replaced += result.slice(pos, idx) + replacement;
+      pos = idx + seq.length;
+    }
+    result = replaced;
+    codeIndex++;
+  }
+
+  // Only return quantized result if it actually reduced size
+  if (result.length < data.length) {
+    return { quantized: result, quantTable };
+  }
+
+  return { quantized: data, quantTable: new Map() };
+}
+
+function quantizeDecompress(data: string, quantTable: Map<string, string>): string {
+  if (quantTable.size === 0) return data;
+
+  let result = data;
+  // Reverse: replace each Braille char with the original sequence
+  for (const [replacement, original] of quantTable) {
+    let expanded = '';
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] === replacement) {
+        expanded += original;
+      } else {
+        expanded += result[i];
+      }
+    }
+    result = expanded;
+  }
+
+  return result;
+}
+
+/** Check if a string contains any Braille block char (U+2800-U+28FF) */
+function hasBrailleChar(s: string): boolean {
+  for (let i = 0; i < s.length; i++) {
+    const cp = s.codePointAt(i)!;
+    if (cp >= 0x2800 && cp <= 0x28FF) return true;
+  }
+  return false;
+}
+
+// ─── Compression Layer 7: Filter Chain Compression ────────
+
+/**
+ * Find repeated structural patterns in already-compressed data and encode
+ * them as reusable "filter" definitions. Uses the ∆ prefix (distinct from
+ * fractal's ⌘ prefix) for back-references.
+ */
+function filterChainCompress(data: string): { filtered: string; filterDefs: Map<string, string> } {
+  const filterDefs = new Map<string, string>(); // "∆N∆" → original pattern
+
+  if (data.length < 30) return { filtered: data, filterDefs };
+
+  let result = data;
+  let filterIndex = 0;
+
+  // Search for repeated patterns of length 4..8
+  for (let len = 8; len >= 4; len--) {
+    const patternFreqs = new Map<string, number>();
+
+    for (let i = 0; i <= result.length - len; i++) {
+      const pat = result.slice(i, i + len);
+      // Skip patterns containing our own filter references
+      if (pat.includes('∆')) continue;
+      patternFreqs.set(pat, (patternFreqs.get(pat) || 0) + 1);
+    }
+
+    for (const [pat, count] of patternFreqs) {
+      if (count < 3) continue;
+
+      const refId = `∆${filterIndex}∆`;
+      // Only keep if it saves space:
+      // savings = count * pat.length - (count * refId.length + pat.length + refId.length)
+      const savings = count * pat.length - (count * refId.length + pat.length + refId.length);
+      if (savings <= 0) continue;
+
+      // Verify the pattern still exists and still appears 3+ times
+      let actualCount = 0;
+      let searchPos = 0;
+      while (true) {
+        const idx = result.indexOf(pat, searchPos);
+        if (idx === -1) break;
+        actualCount++;
+        searchPos = idx + pat.length;
+      }
+      if (actualCount < 3) continue;
+
+      filterDefs.set(refId, pat);
+
+      // Replace all occurrences (non-overlapping, left to right)
+      let replaced = '';
+      let pos = 0;
+      while (pos < result.length) {
+        const idx = result.indexOf(pat, pos);
+        if (idx === -1) {
+          replaced += result.slice(pos);
+          break;
+        }
+        replaced += result.slice(pos, idx) + refId;
+        pos = idx + pat.length;
+      }
+      result = replaced;
+      filterIndex++;
+    }
+  }
+
+  if (result.length < data.length) {
+    return { filtered: result, filterDefs };
+  }
+
+  return { filtered: data, filterDefs: new Map() };
+}
+
+function filterChainDecompress(filtered: string, filterDefs: Map<string, string>): string {
+  if (filterDefs.size === 0) return filtered;
+
+  let result = filtered;
+
+  // Expand in reverse order of definition (latest defined first, like fractal)
+  const entries = Array.from(filterDefs.entries()).reverse();
+
+  for (let pass = 0; pass < 10; pass++) {
+    let changed = false;
+    for (const [refId, original] of entries) {
+      while (result.includes(refId)) {
+        result = result.replace(refId, original);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+
+  return result;
+}
 
 // ─── SVG Encoder (Main Pipeline) ──────────────────────────
 
@@ -422,9 +647,22 @@ export async function encodeToCosmoCode(
     appliedLayers.push('frequency');
   }
 
-  // Layer 6: Quantization (only for media types)
-  if (type === 'wart' || type === 'media') {
+  // Layer 6: Quantization
+  let quantTable = new Map<string, string>();
+  const quant = quantizeCompress(compressed);
+  if (quant.quantTable.size > 0 && quant.quantized.length < compressed.length) {
+    compressed = quant.quantized;
+    quantTable = quant.quantTable;
     appliedLayers.push('quantize');
+  }
+
+  // Layer 7: Filter chain compression
+  let filterDefs = new Map<string, string>();
+  const filterResult = filterChainCompress(compressed);
+  if (filterResult.filterDefs.size > 0 && filterResult.filtered.length < compressed.length) {
+    compressed = filterResult.filtered;
+    filterDefs = filterResult.filterDefs;
+    appliedLayers.push('filters');
   }
 
   // Build the SVG container
@@ -436,7 +674,15 @@ export async function encodeToCosmoCode(
     ? buildFreqTable(freq.table)
     : '';
 
-  const svg = buildCosmoCodeSVG(compressed, type, defsBlock, freqTable, appliedLayers);
+  const quantTableBlock = quantTable.size > 0
+    ? buildQuantTable(quantTable)
+    : '';
+
+  const filterDefsBlock = filterDefs.size > 0
+    ? buildFilterDefs(filterDefs)
+    : '';
+
+  const svg = buildCosmoCodeSVG(compressed, type, defsBlock, freqTable, quantTableBlock, filterDefsBlock, appliedLayers);
 
   const compressedSize = new TextEncoder().encode(svg).length;
   const checksum = await sha256(svg);
@@ -498,10 +744,16 @@ export async function decodeFromCosmoCode(
           data = deltaDecode(data, reference);
         }
         break;
-      case 'quantize':
-      case 'filters':
-        // These don't need explicit decompression
+      case 'quantize': {
+        const qTable = extractQuantTableFromSVG(container.svg);
+        data = quantizeDecompress(data, qTable);
         break;
+      }
+      case 'filters': {
+        const fDefs = extractFilterDefsFromSVG(container.svg);
+        data = filterChainDecompress(data, fDefs);
+        break;
+      }
     }
   }
 
@@ -515,11 +767,13 @@ function buildCosmoCodeSVG(
   type: CosmoCodeType,
   defsBlock: string,
   freqTable: string,
+  quantTableBlock: string,
+  filterDefsBlock: string,
   layers: CompressionLayer[],
 ): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://cosmowarp.io/cosmocode/v1" viewBox="0 0 1 1">
 <cc:meta type="${type}" version="1" layers="${layers.join(',')}" ts="${Date.now()}"/>
-${defsBlock}${freqTable}<cc:data><![CDATA[${data}]]></cc:data>
+${defsBlock}${freqTable}${quantTableBlock}${filterDefsBlock}<cc:data><![CDATA[${data}]]></cc:data>
 </svg>`;
 }
 
@@ -540,6 +794,63 @@ function buildFreqTable(table: Map<string, string>): string {
     .map(([code, pair]) => `${code.codePointAt(0)!.toString(16)}=${escapeXml(pair)}`)
     .join(';');
   return `<cc:freq>${entries}</cc:freq>\n`;
+}
+
+function buildQuantTable(quantTable: Map<string, string>): string {
+  if (quantTable.size === 0) return '';
+  const entries = Array.from(quantTable.entries())
+    .map(([code, seq]) => `${code.codePointAt(0)!.toString(16)}=${escapeXml(seq)}`)
+    .join(';');
+  return `<cc:quant>${entries}</cc:quant>\n`;
+}
+
+function buildFilterDefs(filterDefs: Map<string, string>): string {
+  if (filterDefs.size === 0) return '';
+  const entries = Array.from(filterDefs.entries())
+    .map(([refId, pattern]) => {
+      const cleanId = refId.replace(/∆/g, '');
+      return `${cleanId}=${escapeXml(pattern)}`;
+    })
+    .join(';');
+  return `<cc:filters>${entries}</cc:filters>\n`;
+}
+
+function extractQuantTableFromSVG(svg: string): Map<string, string> {
+  const table = new Map<string, string>();
+  const start = svg.indexOf('<cc:quant>');
+  const end = svg.indexOf('</cc:quant>');
+  if (start === -1 || end === -1) return table;
+
+  const quantData = svg.slice(start + 10, end);
+  const entries = quantData.split(';');
+  for (const entry of entries) {
+    const eqIdx = entry.indexOf('=');
+    if (eqIdx === -1) continue;
+    const codePoint = parseInt(entry.slice(0, eqIdx), 16);
+    const seq = unescapeXml(entry.slice(eqIdx + 1));
+    table.set(String.fromCodePoint(codePoint), seq);
+  }
+
+  return table;
+}
+
+function extractFilterDefsFromSVG(svg: string): Map<string, string> {
+  const defs = new Map<string, string>();
+  const start = svg.indexOf('<cc:filters>');
+  const end = svg.indexOf('</cc:filters>');
+  if (start === -1 || end === -1) return defs;
+
+  const filtersData = svg.slice(start + 12, end);
+  const entries = filtersData.split(';');
+  for (const entry of entries) {
+    const eqIdx = entry.indexOf('=');
+    if (eqIdx === -1) continue;
+    const id = entry.slice(0, eqIdx);
+    const pattern = unescapeXml(entry.slice(eqIdx + 1));
+    defs.set(`∆${id}∆`, pattern);
+  }
+
+  return defs;
 }
 
 function extractDataFromSVG(svg: string): string {

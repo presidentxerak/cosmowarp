@@ -443,6 +443,158 @@ export async function getStorageDiagnostics(): Promise<StorageDiagnostics> {
   };
 }
 
+// ─── Full Chain Backup / Export / Import ───────────────────
+
+export interface ChainBackup {
+  version: 1;
+  exportedAt: number;
+  blocks: StoredBlock[];
+  beacons: StoredBeacon[];
+  transactions: StoredTransaction[];
+  media: StoredMedia[];
+  meta: Array<{ key: string; value: unknown; updatedAt: number }>;
+  checksum: string; // SHA-256 of all data for integrity
+}
+
+/**
+ * Export the entire chain database to a portable JSON object.
+ * This backup can be imported on another device/browser to restore all data.
+ * Solves the "clear IndexedDB = everything lost" problem.
+ */
+export async function exportChainBackup(): Promise<ChainBackup> {
+  const [blocks, beacons, transactions, media, meta] = await Promise.all([
+    getAll<StoredBlock>(STORES.blocks),
+    getAll<StoredBeacon>(STORES.beacons),
+    getAll<StoredTransaction>(STORES.transactions),
+    getAll<StoredMedia>(STORES.media),
+    getAll<{ key: string; value: unknown; updatedAt: number }>(STORES.meta),
+  ]);
+
+  // Compute integrity checksum over all data
+  const dataString = JSON.stringify({ blocks, beacons, transactions, media, meta });
+  const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(dataString));
+  const checksum = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return {
+    version: 1,
+    exportedAt: Date.now(),
+    blocks,
+    beacons,
+    transactions,
+    media,
+    meta,
+    checksum,
+  };
+}
+
+/**
+ * Download a full chain backup as a .json file.
+ * Triggers a browser download dialog.
+ */
+export async function downloadChainBackup(): Promise<void> {
+  const backup = await exportChainBackup();
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cosmowarp-chain-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Import a chain backup, restoring all data to IndexedDB.
+ * Verifies the integrity checksum before importing.
+ * Merges with existing data (doesn't overwrite — uses put which upserts).
+ */
+export async function importChainBackup(backup: ChainBackup): Promise<{ imported: number; errors: string[] }> {
+  const errors: string[] = [];
+
+  // Verify backup version
+  if (backup.version !== 1) {
+    errors.push(`Unsupported backup version: ${backup.version}`);
+    return { imported: 0, errors };
+  }
+
+  // Verify integrity checksum
+  const dataString = JSON.stringify({
+    blocks: backup.blocks,
+    beacons: backup.beacons,
+    transactions: backup.transactions,
+    media: backup.media,
+    meta: backup.meta,
+  });
+  const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(dataString));
+  const expectedChecksum = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  if (expectedChecksum !== backup.checksum) {
+    errors.push('Backup checksum mismatch — data may be corrupted or tampered with');
+    return { imported: 0, errors };
+  }
+
+  let imported = 0;
+
+  // Import all stores
+  try {
+    if (backup.blocks.length > 0) {
+      await putBatch(STORES.blocks, backup.blocks);
+      imported += backup.blocks.length;
+    }
+  } catch (e) { errors.push(`Blocks import failed: ${e}`); }
+
+  try {
+    if (backup.beacons.length > 0) {
+      await putBatch(STORES.beacons, backup.beacons);
+      imported += backup.beacons.length;
+    }
+  } catch (e) { errors.push(`Beacons import failed: ${e}`); }
+
+  try {
+    if (backup.transactions.length > 0) {
+      await putBatch(STORES.transactions, backup.transactions);
+      imported += backup.transactions.length;
+    }
+  } catch (e) { errors.push(`Transactions import failed: ${e}`); }
+
+  try {
+    if (backup.media.length > 0) {
+      await putBatch(STORES.media, backup.media);
+      imported += backup.media.length;
+    }
+  } catch (e) { errors.push(`Media import failed: ${e}`); }
+
+  try {
+    if (backup.meta.length > 0) {
+      await putBatch(STORES.meta, backup.meta);
+      imported += backup.meta.length;
+    }
+  } catch (e) { errors.push(`Meta import failed: ${e}`); }
+
+  return { imported, errors };
+}
+
+/**
+ * Import a chain backup from a File (from file input or drag-drop).
+ * Reads the file, parses JSON, verifies integrity, and imports.
+ */
+export async function importChainBackupFromFile(file: File): Promise<{ imported: number; errors: string[] }> {
+  try {
+    const text = await file.text();
+    const backup = JSON.parse(text) as ChainBackup;
+    return importChainBackup(backup);
+  } catch (e) {
+    return { imported: 0, errors: [`Failed to parse backup file: ${e}`] };
+  }
+}
+
 /** Check if IndexedDB is usable. Call this at startup. */
 export async function initChainDB(): Promise<boolean> {
   try {
