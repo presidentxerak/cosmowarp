@@ -93,32 +93,43 @@ export default function PFPCollectionView() {
     refreshCollection();
   };
 
+  const [uploadError, setUploadError] = useState('');
+
   const handleVariantUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return;
+    if (file.size > 2 * 1024 * 1024) { setUploadError('File must be under 2MB'); return; }
+    setUploadError('');
     const reader = new FileReader();
     reader.onload = () => setVariantImage(reader.result as string);
     reader.readAsDataURL(file);
   };
+
+  const [bulkProgress, setBulkProgress] = useState('');
 
   const handleBulkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !selectedCollection || !bulkUploadLayerId) return;
     const engine = PFPCollectionEngine.load();
     let loaded = 0;
+    let skipped = 0;
     const total = files.length;
+    setBulkProgress(`0/${total}`);
     Array.from(files).forEach(file => {
-      if (file.size > 2 * 1024 * 1024) { loaded++; return; }
+      if (file.size > 2 * 1024 * 1024) { loaded++; skipped++; setBulkProgress(`${loaded}/${total}`); return; }
       const reader = new FileReader();
       reader.onload = () => {
         const varName = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
         engine.addVariant(selectedCollection.id, bulkUploadLayerId, varName, reader.result as string, 50);
         loaded++;
+        setBulkProgress(`${loaded}/${total}`);
         if (loaded >= total) {
           refreshCollection();
+          setBulkProgress(skipped > 0 ? `Done (${skipped} skipped — over 2MB)` : '');
+          setTimeout(() => setBulkProgress(''), 3000);
         }
       };
+      reader.onerror = () => { loaded++; skipped++; setBulkProgress(`${loaded}/${total}`); };
       reader.readAsDataURL(file);
     });
     setBulkUploadLayerId('');
@@ -400,6 +411,9 @@ export default function PFPCollectionView() {
                       <button onClick={() => handleRemoveLayer(layer.id)} className="text-body-sm opacity-30 hover:opacity-70 cursor-pointer transition-opacity">
                         Remove
                       </button>
+                      {bulkProgress && (
+                        <span className="text-label opacity-50">{bulkProgress}</span>
+                      )}
                     </div>
                   </div>
 
@@ -424,6 +438,7 @@ export default function PFPCollectionView() {
                   {addingVariantLayerId === layer.id && (
                     <div className="mt-4 p-4 bg-current/5 space-y-3">
                       <input ref={fileRef} type="file" accept="image/png" className="hidden" onChange={handleVariantUpload} />
+                      {uploadError && <p className="text-body-sm p-2 bg-current/5 border border-current/15 opacity-70">{uploadError}</p>}
                       <div className="flex gap-3">
                         <input
                           className="warp-input flex-1"

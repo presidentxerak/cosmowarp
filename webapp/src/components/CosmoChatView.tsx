@@ -101,10 +101,13 @@ export default function CosmoChatView() {
   };
 
   // ─── Media upload ──────────────────────────────────────
+  const [mediaError, setMediaError] = useState('');
+
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert('File must be under 5MB'); return; }
+    if (file.size > 5 * 1024 * 1024) { setMediaError('File must be under 5MB'); setTimeout(() => setMediaError(''), 3000); return; }
+    setMediaError('');
 
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     let mType: 'image' | 'audio' | 'video' = 'image';
@@ -597,6 +600,7 @@ export default function CosmoChatView() {
                       </button>
                     </div>
                   )}
+                  {mediaError && <p className="text-body-sm p-2 bg-current/5 border border-current/15 opacity-70 mb-1">{mediaError}</p>}
                   <div className="flex items-center gap-2 flex-wrap">
                     <input ref={fileRef} type="file" accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov" className="hidden" onChange={handleMediaUpload} />
                     <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => fileRef.current?.click()}>

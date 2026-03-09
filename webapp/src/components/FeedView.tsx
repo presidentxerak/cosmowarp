@@ -82,7 +82,7 @@ export default function FeedView() {
                     <span className="text-label opacity-30">{timeAgo(tx.timestamp)}</span>
                     {tx.layer !== undefined && (
                       <span className="text-label px-1.5 py-0.5 rounded-none bg-current/5 opacity-80/70">
-                        {LAYER_NAMES[tx.layer]}
+                        {LAYER_NAMES[tx.layer] || `L${tx.layer}`}
                       </span>
                     )}
                   </div>

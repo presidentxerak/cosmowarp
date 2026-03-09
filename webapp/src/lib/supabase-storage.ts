@@ -162,8 +162,10 @@ export async function downloadMediaAsDataUrl(path: string): Promise<string | nul
 
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
+      const timeout = setTimeout(() => { reader.abort(); resolve(null); }, 30000);
+      reader.onload = () => { clearTimeout(timeout); resolve(reader.result as string ?? null); };
+      reader.onerror = () => { clearTimeout(timeout); resolve(null); };
+      reader.onabort = () => { clearTimeout(timeout); resolve(null); };
       reader.readAsDataURL(data);
     });
   } catch {

@@ -437,8 +437,16 @@ export default function WalletView() {
 
   // ─── Send handler ──────────────────────────────────────
   const handleSend = async () => {
+    const addr = sendTo.trim();
+    if (!addr.startsWith('CW') || addr.length < 10) {
+      setSendResult({ success: false, message: 'Invalid address — must start with CW' }); return;
+    }
+    if (addr === wallet.address) {
+      setSendResult({ success: false, message: 'Cannot send to yourself' }); return;
+    }
     const amt = parseFloat(sendAmount);
-    if (isNaN(amt)) { setSendResult({ success: false, message: 'Invalid amount' }); return; }
+    if (isNaN(amt) || amt <= 0) { setSendResult({ success: false, message: 'Invalid amount' }); return; }
+    if (amt > wallet.balance) { setSendResult({ success: false, message: 'Insufficient balance' }); return; }
     setSending(true);
     try {
       const res = await send(sendTo.trim(), amt, sendMemo || undefined);

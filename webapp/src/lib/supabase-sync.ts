@@ -80,8 +80,12 @@ export async function syncWart(wart: Wart): Promise<void> {
     // Upsert wart metadata to database
     await db.upsertWart(wart, mediaPath || undefined, audioCoverPath || undefined);
 
+    if (!mediaPath) {
+      console.warn('[Sync] Media upload failed for wart', wart.id, '— metadata saved without remote media');
+    }
     setSyncStatus('idle');
-  } catch {
+  } catch (err) {
+    console.error('[Sync] syncWart failed:', err instanceof Error ? err.message : err);
     setSyncStatus('error');
   }
 }
@@ -105,9 +109,13 @@ export async function syncWartDelete(wartId: string): Promise<void> {
   if (!isBackendAvailable()) return;
   try {
     await db.deleteWartRemote(wartId);
-    await media.deleteMedia(`warts/${wartId}/main.*`);
-  } catch {
-    // Non-critical
+    // Delete known media paths (Supabase Storage doesn't support glob patterns)
+    await Promise.allSettled([
+      media.deleteMedia(`warts/${wartId}/main`),
+      media.deleteMedia(`warts/${wartId}/cover`),
+    ]);
+  } catch (err) {
+    console.error('[Sync] syncWartDelete failed:', err instanceof Error ? err.message : err);
   }
 }
 
