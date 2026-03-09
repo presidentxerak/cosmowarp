@@ -92,16 +92,6 @@ function keyToNibbles(key: string): Nibble[] {
   return nibbles;
 }
 
-function nibblesToKey(nibbles: Nibble[]): string {
-  const chars: string[] = [];
-  for (let i = 0; i < nibbles.length; i += 2) {
-    const high = nibbles[i] || 0;
-    const low = nibbles[i + 1] || 0;
-    chars.push(String.fromCharCode((high << 4) | low));
-  }
-  return chars.join('');
-}
-
 function sharedPrefix(a: Nibble[], b: Nibble[]): number {
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;

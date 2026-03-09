@@ -48,7 +48,7 @@
  * - Contract state is stored on-chain via CosmoChain
  */
 
-import { sha256, signTransaction, verifySignature } from './crypto';
+import { sha256, signTransaction } from './crypto';
 import { storage } from './storage';
 
 // ─── Contract Types ──────────────────────────────────────

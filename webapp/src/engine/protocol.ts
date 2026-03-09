@@ -36,7 +36,7 @@ import { BlockIntegrityVerifier, getIntegrityVerifier } from './integrity';
 import type { TamperAlert, VerificationResult } from './integrity';
 import { MerklePatriciaTrie } from './stateproof';
 import type { StateInclusionProof, LightClientProof } from './stateproof';
-import { AutoUpdateEngine, CURRENT_VERSION, versionToString } from './autoupdate';
+import { AutoUpdateEngine } from './autoupdate';
 import type { UpdateManifest, ChainParameters, FeatureFlag } from './autoupdate';
 import { sha256, signTransaction } from './crypto';
 import type { StoredBlock, StoredBeacon } from './chaindb';
@@ -84,7 +84,7 @@ export class CosmoProtocol {
   private eventListeners: Array<(event: ProtocolEvent) => void> = [];
 
   // Background scan state
-  private scanRunning = false;
+  scanRunning = false;
 
   constructor() {
     this.verifier = getIntegrityVerifier();

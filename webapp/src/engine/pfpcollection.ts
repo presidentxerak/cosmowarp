@@ -94,7 +94,7 @@ export class PFPCollectionEngine {
     return new PFPCollectionEngine(loadCollections());
   }
 
-  private save(): void {
+  public save(): void {
     saveCollections(this.collections);
   }
 

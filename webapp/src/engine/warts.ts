@@ -28,7 +28,7 @@ import { sha256, signTransaction } from './crypto';
 import { imageToOnChainSVG, extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
 import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from './cosmovault';
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
-import { FiatGateway, type FiatListing, type FiatTransaction, type FiatCurrency, getCurrencySymbol, formatFiatPrice } from './fiatgateway';
+import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
 
 // ─── Types ───────────────────────────────────────────────
 

@@ -14,7 +14,7 @@ export default function MarketplaceView() {
     wallet, unlocked, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart,
     deleteWart, editWart, addWartComment, verifyWartCertificate, refreshWarts,
-    listWartFiat, buyWartFiat, getWartFiatPrice, addToVault,
+    listWartFiat, buyWartFiat, getWartFiatPrice,
   } = useWallet();
 
   const [tab, setTab] = useState<Tab>('marketplace');
