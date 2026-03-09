@@ -403,7 +403,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No Warts created</p>
+              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

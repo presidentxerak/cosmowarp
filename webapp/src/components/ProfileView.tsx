@@ -270,7 +270,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'warts' && (
           myCreated.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No Warts created yet</p>
+              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Gallery</button>
             </div>
           ) : (
@@ -295,7 +295,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'collected' && (
           myCollection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No Warts in collection</p>
+              <p className="opacity-40 text-base">Aucune Cosmorare dans la collection</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Browse Gallery</button>
             </div>
           ) : (

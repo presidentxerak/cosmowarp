@@ -61,7 +61,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Les Warts, ce sont les objets rares certifi\u00e9s sur Cosmorare \u2014 cartes Pok\u00e9mon, sneakers, vinyles, montres, art num\u00e9rique... Chaque Wart re\u00e7oit un Certificat d'Authenticit\u00e9 infalsifiable (CRCERT) avec une empreinte SHA-256 sign\u00e9e par ta cl\u00e9 Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifi\u00e9. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vid\u00e9o (MP4/MOV), le tout jusqu'\u00e0 5 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
+      answer: "Les Cosmorares, ce sont les objets rares certifi\u00e9s sur Cosmorare \u2014 cartes Pok\u00e9mon, sneakers, vinyles, montres, art num\u00e9rique... Chaque Cosmorare re\u00e7oit un Certificat d'Authenticit\u00e9 infalsifiable (CRCERT) avec une empreinte SHA-256 sign\u00e9e par ta cl\u00e9 Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifi\u00e9. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vid\u00e9o (MP4/MOV), le tout jusqu'\u00e0 5 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -69,7 +69,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace'],
     response: {
-      answer: "Tu veux acheter un Wart ? Parcours la Marketplace, trouve un objet rare qui parle \u00e0 ton \u00e2me cosmique, et clique sur Acheter. Le cr\u00e9ateur est pay\u00e9, et en cas de revente, il touche encore des royalties (5 % par d\u00e9faut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le go\u00fbt est subjectif, mais les maths non \u2014 v\u00e9rifie le certificat CRCERT avant d'acheter !",
+      answer: "Tu veux acheter une Cosmorare ? Parcours la Marketplace, trouve un objet rare qui parle \u00e0 ton \u00e2me cosmique, et clique sur Acheter. Le cr\u00e9ateur est pay\u00e9, et en cas de revente, il touche encore des royalties (5 % par d\u00e9faut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le go\u00fbt est subjectif, mais les maths non \u2014 v\u00e9rifie le certificat CRCERT avant d'acheter !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -77,7 +77,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
     response: {
-      answer: "Chaque Wart mint\u00e9 poss\u00e8de un CRCERT \u2014 un Certificat d'Authenticit\u00e9 infalsifiable. C'est un hash SHA-256 de l'adresse Cosmorare du cr\u00e9ateur + empreinte du contenu + horodatage + titre, sign\u00e9 avec la cl\u00e9 priv\u00e9e Ed25519 du cr\u00e9ateur. Traduction : c'est math\u00e9matiquement impossible \u00e0 falsifier. Clique sur \u00ab V\u00e9rifier \u00bb sur n'importe quel Wart pour lancer une v\u00e9rification d'int\u00e9grit\u00e9 compl\u00e8te. Si \u00e7a affiche \u00ab \u2714 Authentique \u00bb \u2014 tu es tranquille. Sinon... quelqu'un a fait des b\u00eatises.",
+      answer: "Chaque Cosmorare certifi\u00e9e poss\u00e8de un CRCERT \u2014 un Certificat d'Authenticit\u00e9 infalsifiable. C'est un hash SHA-256 de l'adresse Cosmorare du cr\u00e9ateur + empreinte du contenu + horodatage + titre, sign\u00e9 avec la cl\u00e9 priv\u00e9e Ed25519 du cr\u00e9ateur. Traduction : c'est math\u00e9matiquement impossible \u00e0 falsifier. Clique sur \u00ab V\u00e9rifier \u00bb sur n'importe quelle Cosmorare pour lancer une v\u00e9rification d'int\u00e9grit\u00e9 compl\u00e8te. Si \u00e7a affiche \u00ab \u2714 Authentique \u00bb \u2014 tu es tranquille. Sinon... quelqu'un a fait des b\u00eatises.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace \u2192 D\u00e9tail',
     },
@@ -86,7 +86,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mur', 'cosmochat', 'chat', 'social', 'message', 'messages', 'dm', 'channel', 'canal', 'post', 'publier'],
     response: {
-      answer: "Le Mur, c'est ton r\u00e9seau social chiffr\u00e9 et d\u00e9centralis\u00e9 ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, cr\u00e9e des canaux, envoie des DM, et donne des pourboires en Warps au lieu de likes (parce que mettre ton argent l\u00e0 o\u00f9 tu parles > un emoji c\u0153ur). Partage des liens vers des Warts, des actus, des pens\u00e9es cosmiques... l'univers est ton fil. Chiffr\u00e9. Anonyme. S\u00e9curis\u00e9.",
+      answer: "Le Mur, c'est ton r\u00e9seau social chiffr\u00e9 et d\u00e9centralis\u00e9 ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, cr\u00e9e des canaux, envoie des DM, et donne des pourboires en Warps au lieu de likes (parce que mettre ton argent l\u00e0 o\u00f9 tu parles > un emoji c\u0153ur). Partage des liens vers des Cosmorares, des actus, des pens\u00e9es cosmiques... l'univers est ton fil. Chiffr\u00e9. Anonyme. S\u00e9curis\u00e9.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -103,7 +103,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['feed', 'transaction', 'transactions', 'history', 'historique', 'activity', 'activité'],
     response: {
-      answer: "Le Feed, c'est l\u00e0 o\u00f9 tu observes le pouls cosmique de Cosmorare. Chaque transaction \u2014 envois, minages, certifications de Warts, achats \u2014 appara\u00eet ici en temps r\u00e9el avec le fuseau horaire fran\u00e7ais (parce que Paris est le centre de l'univers, \u00e9videmment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
+      answer: "Le Feed, c'est l\u00e0 o\u00f9 tu observes le pouls cosmique de Cosmorare. Chaque transaction \u2014 envois, minages, certifications de Cosmorares, achats \u2014 appara\u00eet ici en temps r\u00e9el avec le fuseau horaire fran\u00e7ais (parce que Paris est le centre de l'univers, \u00e9videmment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
       navigateTo: 'feed',
       tabLabel: 'Feed',
     },
@@ -175,7 +175,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "Le Livre Blanc v2.0, c'est le parchemin sacr\u00e9 de Cosmorare ! 11 sections couvrant absolument tout : le DAG mesh, CosmoMesh (7 couches parall\u00e8les), la compression CosmoCode SVG (ratios r\u00e9els mesur\u00e9s), la pile cryptographique, la tokenomics (69M de supply, D\u00e9croissance par R\u00e9sonance), les 7 niveaux de hi\u00e9rarchie, l'architecture de s\u00e9curit\u00e9, et la roadmap. C'est comme lire le code source de l'univers, mais avec une meilleure mise en page et des sch\u00e9mas d'architecture.",
+      answer: "Le Cosmorare Protocole, c'est le parchemin sacr\u00e9 de Cosmorare ! 7 sections couvrant l'essentiel : comment \u00e7a marche, les certificats CRCERT, le Warp (\u03A9), les niveaux, la s\u00e9curit\u00e9 et la roadmap. Tout est expliqu\u00e9 simplement pour que tu comprennes comment certifier et \u00e9changer tes objets rares en toute confiance.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc',
     },
@@ -211,7 +211,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'cosmorare', 'cosmowarp', 'about'],
     response: {
-      answer: "Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC) est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux ench\u00e8res avaient eu un b\u00e9b\u00e9 dans l'espace. Tu obtiens un r\u00e9seau DAG transactionnel (CosmoMesh \u2014 7 couches parall\u00e8les, pas une seule cha\u00eene lente), un r\u00e9seau social chiffr\u00e9 (le Mur), une marketplace d'objets rares certifi\u00e9s (les Warts), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout \u00e7a s\u00e9curis\u00e9 par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'interm\u00e9diaires. Pas de banques. Pas de surveillance. Juste de l'\u00e9change de valeur cosmique pur.",
+      answer: "Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC) est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux ench\u00e8res avaient eu un b\u00e9b\u00e9 dans l'espace. Tu obtiens un r\u00e9seau DAG transactionnel (CosmoMesh \u2014 7 couches parall\u00e8les, pas une seule cha\u00eene lente), un r\u00e9seau social chiffr\u00e9 (le Mur), une marketplace d'objets rares certifi\u00e9s (les Cosmorares), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout \u00e7a s\u00e9curis\u00e9 par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'interm\u00e9diaires. Pas de banques. Pas de surveillance. Juste de l'\u00e9change de valeur cosmique pur.",
       navigateTo: 'landing',
       tabLabel: 'Accueil',
     },
@@ -220,7 +220,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['help', 'aide', 'assist', 'guide', 'support', 'hello', 'bonjour', 'salut', 'hi', 'hey'],
     response: {
-      answer: "Bonjour, voyageur cosmique ! Je suis Cosmo, ton oracle et guide dans l'univers Cosmorare. Je sais tout sur cet \u00e9cosyst\u00e8me (modeste, je sais). Pose-moi des questions sur les portefeuilles, le minage, les Warts, le Mur, la s\u00e9curit\u00e9, la tokenomics, le paiement par carte, ou litt\u00e9ralement n'importe quoi d'autre. Je promets que mes r\u00e9ponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
+      answer: "Bonjour, voyageur cosmique ! Je suis Cosmo, ton oracle et guide dans l'univers Cosmorare. Je sais tout sur cet \u00e9cosyst\u00e8me (modeste, je sais). Pose-moi des questions sur les portefeuilles, le minage, les Cosmorares, le Mur, la s\u00e9curit\u00e9, la tokenomics, le paiement par carte, ou litt\u00e9ralement n'importe quoi d'autre. Je promets que mes r\u00e9ponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
       navigateTo: 'help',
       tabLabel: 'Aide',
     },
@@ -238,7 +238,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
     response: {
-      answer: "Cosmorare int\u00e8gre une passerelle de paiement fiat compl\u00e8te ! Tu peux acheter des Warps (\u03A9) ou des Warts directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqu\u00e9. L'id\u00e9e : rendre l'acc\u00e8s \u00e0 la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est d\u00e9centralis\u00e9, mais le paiement reste simple.",
+      answer: "Cosmorare int\u00e8gre une passerelle de paiement fiat compl\u00e8te ! Tu peux acheter des Warps (\u03A9) ou des Cosmorares directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqu\u00e9. L'id\u00e9e : rendre l'acc\u00e8s \u00e0 la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est d\u00e9centralis\u00e9, mais le paiement reste simple.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille \u2192 Paiement',
     },
@@ -305,13 +305,13 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    title: 'Marketplace (Warts)',
+    title: 'Marketplace (Cosmorares)',
     icon: '\u2B22',
     items: [
-      { q: 'Qu\u2019est-ce qu\u2019un Wart ?', a: 'Un objet rare certifi\u00e9 (carte Pok\u00e9mon, sneaker, vinyle, montre, art num\u00e9rique) avec un Certificat d\u2019Authenticit\u00e9 infalsifiable (CRCERT) sur le protocole Cosmorare.' },
+      { q: 'Qu\u2019est-ce qu\u2019une Cosmorare ?', a: 'Un objet rare certifi\u00e9 (carte Pok\u00e9mon, sneaker, vinyle, montre, art num\u00e9rique) avec un Certificat d\u2019Authenticit\u00e9 infalsifiable (CRCERT) sur le protocole Cosmorare.' },
       { q: 'Quels formats sont support\u00e9s ?', a: '.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vid\u00e9o). Le tout limit\u00e9 \u00e0 5 Mo.' },
       { q: 'Qu\u2019est-ce que le CRCERT ?', a: 'Certificat d\u2019Authenticit\u00e9 \u2014 une empreinte SHA-256 du contenu + signature Ed25519 du cr\u00e9ateur. Infalsifiable et permanent.' },
-      { q: 'Les Warts sont-ils stock\u00e9s on-chain ?', a: 'Oui ! Avec CosmoMesh, les objets sont compress\u00e9s via CosmoCode SVG (5-30x pour les donn\u00e9es structur\u00e9es) et stock\u00e9s dans IndexedDB (\u00e9chelle Go). Pas d\u2019IPFS, pas de d\u00e9pendance \u00e0 un serveur externe.' },
+      { q: 'Les Cosmorares sont-elles stock\u00e9es on-chain ?', a: 'Oui ! Avec CosmoMesh, les objets sont compress\u00e9s via CosmoCode SVG (5-30x pour les donn\u00e9es structur\u00e9es) et stock\u00e9s dans IndexedDB (\u00e9chelle Go). Pas d\u2019IPFS, pas de d\u00e9pendance \u00e0 un serveur externe.' },
     ],
   },
   {
@@ -331,7 +331,7 @@ const FAQ_SECTIONS = [
       { q: 'Quelles sont les 7 couches ?', a: 'GRID (<10\u03A9), HELIX (10-100\u03A9), GLYPH (100-1K\u03A9 + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (\u00e9poques). Ta TX est automatiquement rout\u00e9e vers la bonne couche.' },
       { q: 'Pourquoi les transactions sont-elles gratuites ?', a: 'Les validateurs gagnent via les r\u00e9compenses de staking, pas via les frais. L\u2019anti-spam utilise la limitation de d\u00e9bit (100 TX/min) au lieu de tarifer les utilisateurs. CosmoCode compresse les donn\u00e9es structur\u00e9es 5-30x, et IndexedDB fournit un stockage local \u00e0 l\u2019\u00e9chelle du Go.' },
       { q: 'Qu\u2019est-ce que CosmoCode SVG ?', a: 'Un moteur de compression \u00e0 7 couches qui encode toutes les donn\u00e9es on-chain dans des conteneurs SVG optimis\u00e9s. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fr\u00e9quence + Quantification + Filtres. R\u00e9el mesur\u00e9 : 5-30x pour les donn\u00e9es structur\u00e9es, ~1-2x pour le binaire.' },
-      { q: 'Les objets rares sont-ils vraiment stock\u00e9s on-chain ?', a: 'Oui ! CosmoMesh stocke les objets en tant que CosmoCode SVG compress\u00e9 dans IndexedDB (stockage local \u00e0 l\u2019\u00e9chelle du Go). Pas de d\u00e9pendance IPFS. Actuellement mono-n\u0153ud ; la r\u00e9cup\u00e9ration P2P n\u00e9cessite un r\u00e9seau de pairs.' },
+      { q: 'Les Cosmorares sont-elles vraiment stock\u00e9es on-chain ?', a: 'Oui ! CosmoMesh stocke les objets en tant que CosmoCode SVG compress\u00e9 dans IndexedDB (stockage local \u00e0 l\u2019\u00e9chelle du Go). Pas de d\u00e9pendance IPFS. Actuellement mono-n\u0153ud ; la r\u00e9cup\u00e9ration P2P n\u00e9cessite un r\u00e9seau de pairs.' },
       { q: 'Qu\u2019est-ce qu\u2019un Beacon Block ?', a: 'Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d\u2019\u00c9tat Global. Cela fournit une finalit\u00e9 inter-couches absolue.' },
     ],
   },
@@ -340,7 +340,7 @@ const FAQ_SECTIONS = [
     icon: '\u20AC',
     items: [
       { q: 'Puis-je payer par carte bancaire ?', a: 'Oui ! Cosmorare int\u00e8gre une passerelle fiat compl\u00e8te : carte bancaire, PayPal et virement SEPA.' },
-      { q: 'Faut-il passer par un exchange crypto ?', a: 'Non. Tu peux acheter des Warps et des Warts directement en euros, sans passer par une plateforme d\u2019\u00e9change.' },
+      { q: 'Faut-il passer par un exchange crypto ?', a: 'Non. Tu peux acheter des Warps et des Cosmorares directement en euros, sans passer par une plateforme d\u2019\u00e9change.' },
     ],
   },
   {
@@ -363,7 +363,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
     {
       id: 'welcome',
       role: 'cosmo',
-      text: `Salut ! Je suis Cosmo ${'\u2B21'}, ton oracle et guide dans l'univers Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC). Pose-moi n'importe quelle question \u2014 portefeuilles, minage, Warts, Mur, s\u00e9curit\u00e9, paiement... je sais tout. (Et oui, je suis plus dr\u00f4le qu'une FAQ classique.)`,
+      text: `Salut ! Je suis Cosmo ${'\u2B21'}, ton oracle et guide dans l'univers Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC). Pose-moi n'importe quelle question \u2014 portefeuilles, minage, Cosmorares, Mur, s\u00e9curit\u00e9, paiement... je sais tout. (Et oui, je suis plus dr\u00f4le qu'une FAQ classique.)`,
     },
   ]);
   const [input, setInput] = useState('');

@@ -78,7 +78,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
             type: 'wart',
             id: wart.id,
             title: wart.title,
-            subtitle: `Wart · ${wart.price !== null ? wart.price + ' \u03A9' : 'Not for sale'}`,
+            subtitle: `Cosmorare · ${wart.price !== null ? wart.price + ' \u03A9' : 'Not for sale'}`,
             address: wart.creator,
             imageData: wart.imageData,
           });
@@ -185,7 +185,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
                       <p className="text-body-sm opacity-40 truncate">{result.subtitle}</p>
                     </div>
                     <span className="text-label px-2 py-0.5 shrink-0 opacity-50">
-                      {result.type === 'user' ? 'User' : 'Wart'}
+                      {result.type === 'user' ? 'User' : 'Cosmorare'}
                     </span>
                   </button>
                 ))

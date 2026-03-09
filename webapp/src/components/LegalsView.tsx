@@ -19,7 +19,7 @@ export default function LegalsView() {
                 transactions, or personal information.
               </p>
               <p>
-                Warps tokens and Warts digital assets are experimental cryptographic tokens. Their value
+                Warps tokens and Cosmorares digital assets are experimental cryptographic tokens. Their value
                 is not guaranteed and may fluctuate. Cosmorare Foundation makes no promises regarding
                 the monetary value of these assets.
               </p>
@@ -35,7 +35,7 @@ export default function LegalsView() {
                 available under the project's license terms.
               </p>
               <p>
-                User-generated content (posts, Warts, messages) remains the property of their creators.
+                User-generated content (posts, Cosmorares, messages) remains the property of their creators.
                 By posting content on the Wall, you grant other users the right to view and interact
                 with your content on the Cosmorare network.
               </p>

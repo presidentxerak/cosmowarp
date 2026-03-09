@@ -1,5 +1,5 @@
 /**
- * Tests for CosmoCode Protocol v2.1 — State Proofs, Integrity, Auto-Updates
+ * Tests for Cosmorare Protocole v2.1 — State Proofs, Integrity, Auto-Updates
  *
  * Tests the 4 new modules that fix all critical audit findings:
  * 1. stateproof.ts — Merkle Patricia Trie (surpasses Ethereum's MPT)

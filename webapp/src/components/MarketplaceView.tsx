@@ -76,7 +76,7 @@ export default function MarketplaceView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Create a wallet first to access the Warts marketplace.</p>
+        <p className="text-base opacity-50">Créez un portefeuille pour accéder à la marketplace Cosmorares.</p>
       </div>
     );
   }
@@ -84,7 +84,7 @@ export default function MarketplaceView() {
   if (!unlocked) {
     return (
       <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Unlock your wallet to access the Warts marketplace.</p>
+        <p className="text-base opacity-50">Déverrouillez votre portefeuille pour accéder à la marketplace Cosmorares.</p>
       </div>
     );
   }
@@ -1009,9 +1009,9 @@ export default function MarketplaceView() {
       {tab === 'marketplace' && (
         <>
           <div className="glass-panel p-4 text-center">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2B22'} Warts Marketplace</h2>
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2B22'} Marketplace Cosmorares</h2>
             <p className="text-body-sm opacity-40">
-              Unique digital artworks stored on the Cosmorare protocol. Buy, sell, and collect Warts.
+              Objets rares certifiés sur le protocole Cosmorare. Achetez, vendez et collectionnez.
             </p>
           </div>
 
@@ -1035,13 +1035,13 @@ export default function MarketplaceView() {
           {activeMarketplace.length === 0 ? (
             <div className="glass-panel p-8 text-center">
               <p className="text-2xl mb-2">{'\u2742'}</p>
-              <p className="opacity-50 text-current text-base">No Warts listed yet.</p>
-              <p className="text-body-sm opacity-40 mt-1">Be the first to create and list a Wart!</p>
+              <p className="opacity-50 text-current text-base">Aucune Cosmorare en vente.</p>
+              <p className="text-body-sm opacity-40 mt-1">Soyez le premier à créer et certifier une Cosmorare !</p>
               <button
                 className="warp-button text-body-sm mt-3 px-4 py-2"
                 onClick={() => setTab('create')}
               >
-                Create a Wart
+                Créer une Cosmorare
               </button>
             </div>
           ) : (
@@ -1060,13 +1060,13 @@ export default function MarketplaceView() {
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u25C8'} My Collection</h2>
             <p className="text-body-sm opacity-40">
-              Warts you own ({myCollection.length}) and created ({myCreated.length})
+              Cosmorares que vous possédez ({myCollection.length}) et créées ({myCreated.length})
             </p>
           </div>
 
           {myCollection.length === 0 ? (
             <div className="glass-panel p-8 text-center">
-              <p className="opacity-50 text-current text-base">You don't own any Warts yet.</p>
+              <p className="opacity-50 text-current text-base">Vous ne possédez aucune Cosmorare.</p>
               <button
                 className="warp-button text-body-sm mt-3 px-4 py-2"
                 onClick={() => setTab('marketplace')}
@@ -1087,10 +1087,10 @@ export default function MarketplaceView() {
       {/* ─── Create Tab ────────────────────────────────────── */}
       {tab === 'create' && (
         <div className="glass-panel p-5">
-          <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title text-center">{'\u2742'} Create a Wart</h2>
+          <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title text-center">{'\u2742'} Créer une Cosmorare</h2>
           <p className="text-body-sm opacity-40 mb-4 text-center">
-            Mint a unique digital artwork on the Cosmorare protocol.
-            You'll earn royalties on every resale.
+            Certifiez un objet rare unique sur le protocole Cosmorare.
+            Vous toucherez des royalties à chaque revente.
           </p>
 
           <div className="space-y-4 max-w-md mx-auto">
@@ -1227,7 +1227,7 @@ export default function MarketplaceView() {
               <p className="text-[10px] opacity-40 mt-1">
                 {durationHours
                   ? `Expires ${formatDateFR(Date.now() + parseFloat(durationHours) * 3600000)} (Paris). Rarity increases as deadline approaches.`
-                  : 'Leave empty for no time limit. Time-limited Warts gain rarity as deadline approaches.'}
+                  : 'Laisser vide pour aucune limite. Les Cosmorares à durée limitée gagnent en rareté à l\'approche de la deadline.'}
               </p>
             </div>
 
@@ -1302,21 +1302,21 @@ export default function MarketplaceView() {
                   Minting...
                 </span>
               ) : (
-                <>{'\u2742'} Mint Wart</>
+                <>{'\u2742'} Certifier</>
               )}
             </button>
           </div>
 
           {/* Protocol info */}
           <div className="mt-6 pt-4 border-t border-current/10 max-w-md mx-auto">
-            <h3 className="text-base font-bold opacity-70 mb-2 text-center">How Warts Work</h3>
+            <h3 className="text-base font-bold opacity-70 mb-2 text-center">Comment ça marche</h3>
             <div className="text-[11px] opacity-40 space-y-1">
-              <p>1. Upload your artwork and set a title</p>
-              <p>2. Choose edition type: Unique (1/1), Limited, or Unlimited</p>
-              <p>3. Set an optional time limit — rarity increases as deadline approaches</p>
-              <p>4. List it for sale on the marketplace at your price</p>
-              <p>5. Buyers pay in Warp ({'\u03A9'}) — ownership transfers instantly</p>
-              <p>6. You earn royalties on every future resale ({royalty || 5}%)</p>
+              <p>1. Uploadez votre objet rare et donnez-lui un titre</p>
+              <p>2. Choisissez le type d'édition : Unique (1/1), Limitée ou Illimitée</p>
+              <p>3. Ajoutez une durée limitée (optionnel) — la rareté augmente à l'approche de la deadline</p>
+              <p>4. Mettez en vente sur la marketplace au prix de votre choix</p>
+              <p>5. L'acheteur paie en Warp ({'\u03A9'}) — le transfert est instantané</p>
+              <p>6. Vous touchez des royalties sur chaque revente ({royalty || 5}%)</p>
             </div>
           </div>
         </div>

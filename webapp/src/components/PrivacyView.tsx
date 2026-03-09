@@ -67,7 +67,7 @@ export default function PrivacyView() {
                 network is represented by a cryptographic address, not by personal information.
               </p>
               <p>
-                Posts on the Wall, Warts transactions, and all network activity are associated
+                Posts on the Wall, Cosmorares transactions, and all network activity are associated
                 with your CosmoID address, maintaining your anonymity.
               </p>
             </div>

@@ -421,7 +421,7 @@ export default function FiatGatewayView() {
                   <span>Fee: {getCurrencySymbol(tx.fiatCurrency)}{(tx.platformFeeAmount + tx.processorFeeAmount).toFixed(2)}</span>
                 </div>
                 {tx.wartTitle && (
-                  <p className="text-label opacity-40 mt-1">Wart: {tx.wartTitle}</p>
+                  <p className="text-label opacity-40 mt-1">Cosmorare: {tx.wartTitle}</p>
                 )}
               </div>
             ))

@@ -22,7 +22,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
-    response: 'Les Warts sont des objets certifi\u00e9s sur Cosmorare. Chaque objet re\u00e7oit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
+    response: 'Les Cosmorares sont des objets certifi\u00e9s sur Cosmorare. Chaque objet re\u00e7oit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
     suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {

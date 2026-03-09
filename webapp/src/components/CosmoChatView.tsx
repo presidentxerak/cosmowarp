@@ -281,7 +281,7 @@ export default function CosmoChatView() {
         {/* Content */}
         {post.content && <p className="text-base opacity-70 mb-1 whitespace-pre-wrap">{post.content}</p>}
         {post.wartLink && (
-          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Wart: {post.wartLink}</p>
+          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Cosmorare: {post.wartLink}</p>
         )}
         <MediaContent post={post} />
 
@@ -368,7 +368,7 @@ export default function CosmoChatView() {
           </div>
 
           {post.content && <p className="text-base opacity-70 whitespace-pre-wrap mb-3">{post.content}</p>}
-          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Wart: {post.wartLink}</p>}
+          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Cosmorare: {post.wartLink}</p>}
           <MediaContent post={post} />
 
           {/* Stats bar */}
@@ -604,7 +604,7 @@ export default function CosmoChatView() {
                     </button>
                     <input
                       className="warp-input text-label py-1 px-2 w-36"
-                      placeholder="Wart link (optional)"
+                      placeholder="Lien Cosmorare (optionnel)"
                       value={composeWartLink}
                       onChange={e => setComposeWartLink(e.target.value)}
                     />

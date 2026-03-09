@@ -76,7 +76,7 @@ export default function FondationView() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'\u2B22'}</span>
-                <span><span className="opacity-90">Warts</span> - Objets rares certifi\u00e9s sur la place de march\u00e9</span>
+                <span><span className="opacity-90">Cosmorares</span> - Objets rares certifi\u00e9s sur la place de march\u00e9</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'\u25CE'}</span>
