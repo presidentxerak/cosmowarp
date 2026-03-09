@@ -11,12 +11,20 @@
  * layers based on its participation history. Consensus emerges from
  * cross-layer resonance patterns.
  *
+ * ─── CosmoChain Integration ───────────────────────────────
+ * With CosmoChain, validators now participate in shard-level consensus.
+ * Each validator specializes in 1-3 shards based on their affinity.
+ * Shard blocks achieve finality through Resonance Consensus.
+ * Beacon blocks achieve cross-shard consensus every 10 shard blocks.
+ * Zero gas cost — validators earn from staking rewards, not from fees.
+ *
  * Properties:
  * - Byzantine fault tolerant (up to f < n/3 malicious validators)
  * - Instant finality (no waiting for block confirmations)
- * - Parallel validation (7 independent validation lanes)
+ * - Parallel validation (7 independent shards)
  * - Energy efficient (no mining, just validation work)
- * - Self-organizing (validators naturally specialize)
+ * - Self-organizing (validators naturally specialize in shards)
+ * - Zero gas (free transactions for users)
  */
 
 import { sha256 } from './crypto';

@@ -28,6 +28,7 @@ import { TokenomicsEngine, AIRDROP_AMOUNT, type SupplyBreakdown } from './tokeno
 import { HierarchyEngine, HIERARCHY_LEVELS, type HierarchyLevel, type LevelUpResult } from './hierarchy';
 import { AdminRegistry, type RegistryDashboard } from './registry';
 import { SecurityManager } from './security';
+import { CosmoChain, type ChainStats } from './cosmochain';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -91,6 +92,7 @@ let tokenomicsInstance: TokenomicsEngine | null = null;
 let hierarchyInstance: HierarchyEngine | null = null;
 let registryInstance: AdminRegistry | null = null;
 let securityInstance: SecurityManager | null = null;
+let cosmoChainInstance: CosmoChain | null = null;
 
 export function getMesh(): CosmoMesh {
   if (!meshInstance) {
@@ -152,6 +154,21 @@ export function getSecurity(): SecurityManager {
   return securityInstance;
 }
 
+/** Get or create the CosmoChain instance (new blockchain with parallel shards) */
+export function getCosmoChain(): CosmoChain {
+  if (!cosmoChainInstance) {
+    cosmoChainInstance = CosmoChain.load() || new CosmoChain();
+    // Bridge CosmoMesh → CosmoChain for dual-layer persistence
+    getMesh().connectCosmoChain(cosmoChainInstance);
+  }
+  return cosmoChainInstance;
+}
+
+/** Get CosmoChain statistics */
+export function getChainStats(): ChainStats {
+  return getCosmoChain().getStats();
+}
+
 function saveMesh(): void {
   if (meshInstance) {
     storage.setItem(MESH_STORAGE_KEY, meshInstance.serialize());
@@ -169,6 +186,7 @@ function saveEngines(): void {
   saveConsensus();
   getTokenomics().save();
   getHierarchy().save();
+  if (cosmoChainInstance) cosmoChainInstance.save();
 }
 
 // ─── ID Generation ───────────────────────────────────────

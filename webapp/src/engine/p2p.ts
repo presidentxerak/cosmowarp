@@ -49,6 +49,10 @@ export const MessageType = {
   PONG:              'pong',
   SYNC_REQUEST:      'sync_request',
   SYNC_RESPONSE:     'sync_response',
+  // CosmoChain block propagation
+  SHARD_BLOCK:       'shard_block',
+  BEACON_BLOCK:      'beacon_block',
+  COSMOCODE_SVG:     'cosmocode_svg',
 } as const;
 
 export type MessageType = (typeof MessageType)[keyof typeof MessageType];
