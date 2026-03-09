@@ -518,7 +518,7 @@ export default function GenerativeArtView() {
             </div>
 
             <div>
-              <label className="text-[10px] opacity-50 block mb-1">PRICE IN WARPS (optional)</label>
+              <label className="text-[10px] opacity-50 block mb-1">PRICE IN COSMORARES (optional)</label>
               <input
                 className="warp-input"
                 type="number"

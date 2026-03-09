@@ -94,7 +94,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['tip', 'tips', 'pourboire', 'like', 'aimer', 'rewarp', 'retweet', 'share', 'partager'],
     response: {
-      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Warp (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReWarp (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReWarps, vues et favoris. C'est comme X, mais avec une âme.",
+      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Cosmorare (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReWarp (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReWarps, vues et favoris. C'est comme X, mais avec une âme.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -175,7 +175,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "Le Cosmorare Protocole, c'est le parchemin sacré de Cosmorare ! 7 sections couvrant l'essentiel : comment ça marche, les certificats CRCERT, le Warp (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
+      answer: "Le Cosmorare Protocole, c'est le parchemin sacré de Cosmorare ! 7 sections couvrant l'essentiel : comment ça marche, les certificats CRCERT, le Cosmorare (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc',
     },
@@ -318,8 +318,8 @@ const FAQ_SECTIONS = [
     title: 'Le Mur (Réseau social)',
     icon: '◎',
     items: [
-      { q: 'Qu’est-ce que le Mur ?', a: 'Un réseau social chiffré et anonyme au sein de Cosmorare. Publie, crée des canaux, envoie des DM, et donne des pourboires en Warps.' },
-      { q: 'Comment fonctionnent les pourboires ?', a: '1 Warp par utilisateur par post. C’est comme un « like » mais adossé à une vraie valeur.' },
+      { q: 'Qu’est-ce que le Mur ?', a: 'Un réseau social chiffré et anonyme au sein de Cosmorare. Publie, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares.' },
+      { q: 'Comment fonctionnent les pourboires ?', a: '1 Cosmorare par utilisateur par post. C’est comme un « like » mais adossé à une vraie valeur.' },
       { q: 'Qu’est-ce que le ReWarp ?', a: 'Comme un retweet — partage le post de quelqu’un à tes abonnés sur la timeline du Mur.' },
     ],
   },

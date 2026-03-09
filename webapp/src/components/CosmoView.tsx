@@ -12,7 +12,7 @@ interface Message {
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
   {
     keywords: ['wallet', 'portefeuille', 'balance', 'solde', 'compte'],
-    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Warps et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Warps. Vous voulez accéder à votre wallet ?',
+    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Warps et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Cosmorares. Vous voulez accéder à votre wallet ?',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
@@ -47,7 +47,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Bonjour ! Je suis Cosmo, votre guide dans l\'univers Cosmorare コスモラレ. Je peux vous expliquer comment certifier un objet rare, miner des Warps, utiliser le paiement, ou naviguer dans l\'écosystème.',
+    response: 'Bonjour ! Je suis Cosmo, votre guide dans l\'univers Cosmorare コスモラレ. Je peux vous expliquer comment certifier un objet rare, miner des Cosmorares, utiliser le paiement, ou naviguer dans l\'écosystème.',
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
@@ -55,12 +55,12 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics'],
-    response: 'Le Warp (symbole : Ω) est le token natif de Cosmorare avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
+    response: 'Le Cosmorare (symbole : Ω) est le token natif de Cosmorare avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['paiement', 'payment', 'payer', 'acheter', 'buy', 'euro', 'carte', 'card', 'paypal', 'fiat'],
-    response: 'Cosmorare intègre une passerelle de paiement ! Achetez des Warps par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Warps contre des euros. Tout est intégré dans l\'app.',
+    response: 'Cosmorare intègre une passerelle de paiement ! Achetez des Cosmorares par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Cosmorares contre des euros. Tout est intégré dans l\'app.',
     suggestion: { label: 'Passerelle de paiement', tab: 'fiat-gateway' },
   },
   {
@@ -136,7 +136,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
 
   const quickActions = [
     { label: 'C\'est quoi Cosmorare ?', query: 'C\'est quoi Cosmorare ?' },
-    { label: 'Comment miner ?', query: 'Comment miner des Warps ?' },
+    { label: 'Comment miner ?', query: 'Comment miner des Cosmorares ?' },
     { label: 'Certifier un objet', query: 'Comment certifier un objet rare ?' },
     { label: 'Paiement par carte', query: 'Comment acheter avec ma carte ?' },
   ];

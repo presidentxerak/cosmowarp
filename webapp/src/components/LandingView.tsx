@@ -25,7 +25,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     publishTitle: 'Publier',
     publishDesc: 'Publiez vos créations — art numérique, photo, musique, objets physiques. Votre certificat prouve que vous en êtes l\'auteur et le premier propriétaire.',
     exchange: 'Échanger',
-    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement en Warps (Ω) ou en euros.',
+    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement en Cosmorares (Ω) ou en euros.',
     forCreators: 'Pour les créateurs',
     publishWorks: 'Publiez vos oeuvres',
     step1: 'Créez votre profil',
@@ -35,7 +35,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step3: 'Certification automatique',
     step3Desc: 'Cosmorare calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat CRCERT est créé instantanément.',
     step4: 'Mise en vente',
-    step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Warps (Ω) ou via la passerelle de paiement en euros.',
+    step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Cosmorares (Ω) ou via la passerelle de paiement en euros.',
     publishWork: 'Publier une oeuvre',
     forCollectors: 'Pour les collectionneurs',
     collectCertified: 'Collectionnez des oeuvres certifiées',
@@ -43,7 +43,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     explore: 'Explorer',
     exploreDesc: 'Parcourez la marketplace et découvrez des oeuvres de créateurs du monde entier.',
     buy: 'Acheter',
-    buyDesc: 'Payez en Warps (Ω) ou en euros via la passerelle de paiement intégrée.',
+    buyDesc: 'Payez en Cosmorares (Ω) ou en euros via la passerelle de paiement intégrée.',
     own: 'Posséder',
     ownDesc: 'Chaque achat transfère le certificat CRCERT sur votre wallet. Vous êtes le propriétaire vérifié.',
     resell: 'Revendre',
@@ -71,7 +71,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     crypto: 'Cryptographie de pointe',
     cryptoDesc: 'Signatures Ed25519, hachage SHA-256, chiffrement AES-GCM. Les mêmes standards que Signal et Tor.',
     tokenomics: 'Tokenomics équitable',
-    tokenomicsDesc: 'Le token Warp (Ω) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
+    tokenomicsDesc: 'Le token Cosmorare (Ω) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
     totalSupply: 'Supply totale',
     goldenRatio: 'Ratio d\'or (minage)',
     layers: 'Couches du réseau',
@@ -107,7 +107,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     publishTitle: 'Publish',
     publishDesc: 'Publish your creations — digital art, photos, music, physical objects. Your certificate proves you are the author and first owner.',
     exchange: 'Exchange',
-    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay in Warps (Ω) or in euros.',
+    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay in Cosmorares (Ω) or in euros.',
     forCreators: 'For creators',
     publishWorks: 'Publish your works',
     step1: 'Create your profile',
@@ -117,7 +117,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step3: 'Automatic certification',
     step3Desc: 'Cosmorare computes the SHA-256 fingerprint of the file and signs it with your private key. The CRCERT certificate is created instantly.',
     step4: 'Listed for sale',
-    step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Warps (Ω) or via the integrated euro payment gateway.',
+    step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Cosmorares (Ω) or via the integrated euro payment gateway.',
     publishWork: 'Publish a work',
     forCollectors: 'For collectors',
     collectCertified: 'Collect certified works',
@@ -125,7 +125,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     explore: 'Explore',
     exploreDesc: 'Browse the marketplace and discover works from creators worldwide.',
     buy: 'Buy',
-    buyDesc: 'Pay in Warps (Ω) or in euros via the integrated payment gateway.',
+    buyDesc: 'Pay in Cosmorares (Ω) or in euros via the integrated payment gateway.',
     own: 'Own',
     ownDesc: 'Each purchase transfers the CRCERT certificate to your wallet. You are the verified owner.',
     resell: 'Resell',
@@ -153,7 +153,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     crypto: 'Cutting-edge Cryptography',
     cryptoDesc: 'Ed25519 signatures, SHA-256 hashing, AES-GCM encryption. The same standards as Signal and Tor.',
     tokenomics: 'Fair Tokenomics',
-    tokenomicsDesc: 'The Warp (Ω) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
+    tokenomicsDesc: 'The Cosmorare (Ω) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
     totalSupply: 'Total Supply',
     goldenRatio: 'Golden Ratio (mining)',
     layers: 'Network Layers',
@@ -235,7 +235,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     crypto: '最先端の暗号技術',
     cryptoDesc: 'Ed25519署名、SHA-256ハッシュ、AES-GCM暗号化。SignalやTorと同じ標準。',
     tokenomics: '公平なトケノミクス',
-    tokenomicsDesc: 'Warp（Ω）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
+    tokenomicsDesc: 'Cosmorare（Ω）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
     totalSupply: '総供給量',
     goldenRatio: '黄金比（マイニング）',
     layers: 'ネットワークレイヤー',
@@ -416,15 +416,13 @@ function HexGrid() {
       {hexagons.map(h => (
         <svg
           key={h.key}
-          className="absolute hex-float"
+          className="absolute"
           style={{
             width: h.size,
             height: h.size,
             left: `${h.left}%`,
             top: `${h.top}%`,
             opacity: h.opacity,
-            animationDelay: `${h.delay}s`,
-            animationDuration: `${h.duration}s`,
           }}
           viewBox="0 0 100 100"
         >
@@ -656,7 +654,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
         {/* Gradient overlays */}
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 100%)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.16) 40%, rgba(0,0,0,0.56) 100%)',
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{
           background: 'radial-gradient(ellipse at 50% 40%, rgba(168,85,247,0.08) 0%, transparent 60%), radial-gradient(ellipse at 30% 70%, rgba(6,182,212,0.06) 0%, transparent 50%)',

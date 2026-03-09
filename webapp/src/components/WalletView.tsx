@@ -5,6 +5,7 @@ import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 import MineView from './MineView';
 import Logo from './Logo';
+import HexAvatar from './HexAvatar';
 
 type WalletTab = 'overview' | 'send' | 'mine';
 type AuthTab = 'signup' | 'signin';
@@ -497,19 +498,17 @@ export default function WalletView() {
           {/* Balance Card */}
           <div className="glass-panel p-5 text-center animate-pulse-glow">
             <div className="flex justify-center mb-3">
-              <div className="profile-icon-ring">
-                <img src={import.meta.env.BASE_URL + 'profile.svg'} alt="Profile" className="profile-icon w-16 h-16 sm:w-20 sm:h-20" />
-              </div>
+              <HexAvatar address={wallet.address} size={80} />
             </div>
             <div className="flex items-center justify-center gap-2 mb-1">
               <span className={`text-title-sm ${levelDef.color}`}>{wallet.levelSymbol}</span>
               <span className={`text-body-sm font-bold ${levelDef.color}`}>{wallet.levelTitle}</span>
             </div>
-            <p className="text-body-sm opacity-50 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Warp Balance'}</p>
+            <p className="text-body-sm opacity-50 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Cosmorare Balance'}</p>
             <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1 animate-float">
               {wallet.balance.toLocaleString()} <span className="text-title-lg">{'\u03A9'}</span>
             </div>
-            <p className="text-label opacity-40">WARP ENERGY UNITS</p>
+            <p className="text-label opacity-40">COSMORARE ENERGY UNITS</p>
             <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
               {wallet.isAdmin && <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-60 border border-current/10">ADMIN</span>}
               <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10">{'\u2B21'} CosmoID</span>

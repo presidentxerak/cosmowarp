@@ -1364,7 +1364,7 @@ export default function MarketplaceView() {
               <p>2. Choisissez le type d'édition : Unique (1/1), Limitée ou Illimitée</p>
               <p>3. Ajoutez une durée limitée (optionnel) — la rareté augmente à l'approche de la deadline</p>
               <p>4. Mettez en vente sur la marketplace au prix de votre choix</p>
-              <p>5. L'acheteur paie en Warp ({'\u03A9'}) — le transfert est instantané</p>
+              <p>5. L'acheteur paie en Cosmorare ({'\u03A9'}) — le transfert est instantané</p>
               <p>6. Vous touchez des royalties sur chaque revente ({royalty || 5}%)</p>
             </div>
           </div>

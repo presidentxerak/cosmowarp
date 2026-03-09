@@ -111,7 +111,7 @@ export default function MineView() {
     <div className="space-y-4">
       {/* Mining Control */}
       <div className="glass-panel p-5">
-        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u26CF'} Warp Mining</h2>
+        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u26CF'} Cosmorare Mining</h2>
         <p className="text-body-sm opacity-40 mb-3">
           Real SHA-256 Proof-of-Work. Find a nonce where hash &lt; difficulty target.
         </p>

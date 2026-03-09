@@ -7,7 +7,7 @@ const NAV: { id: Section; label: string; icon: string }[] = [
   { id: 'overview', label: 'Vue d’ensemble', icon: '⬡' },
   { id: 'how', label: 'Comment ça marche', icon: '◎' },
   { id: 'certificates', label: 'Certificats', icon: '⚿' },
-  { id: 'tokenomics', label: 'Warp (Ω)', icon: '⚛' },
+  { id: 'tokenomics', label: 'Cosmorare (Ω)', icon: '⚛' },
   { id: 'hierarchy', label: 'Niveaux', icon: '★' },
   { id: 'security', label: 'Sécurité', icon: '⚡' },
   { id: 'roadmap', label: 'Feuille de route', icon: '☄' },
@@ -118,7 +118,7 @@ function OverviewSection() {
         {[
           ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
           ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Cosmorare génère un certificat CRCERT infalsifiable avec empreinte numérique et signature cryptographique.'],
-          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Cosmorares certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Warp (Ω).'],
+          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Cosmorares certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Cosmorare (Ω).'],
           ['4', 'Collectionnez en confiance', 'Chaque Cosmorare a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 p-3 rounded-none bg-current/5">
@@ -134,9 +134,9 @@ function OverviewSection() {
       <H3>Pourquoi Cosmorare ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Warps, vérifier un certificat : tout est gratuit.'],
+          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Cosmorares, vérifier un certificat : tout est gratuit.'],
           ['✓', 'Infalsifiable', 'Les certificats CRCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
-          ['✓', 'Paiement simple', 'Carte bancaire, PayPal, SEPA ou Warp (Ω). Pas besoin d’exchange crypto.'],
+          ['✓', 'Paiement simple', 'Carte bancaire, PayPal, SEPA ou Cosmorare (Ω). Pas besoin d’exchange crypto.’],
           ['✓', 'Décentralisé', 'Vos données vous appartiennent. Pas d’intermédiaire, pas de banque.'],
           ['✓', 'Hors ligne', 'L’app fonctionne même sans internet grâce au mode PWA.'],
         ].map(([icon, title, desc]) => (
@@ -306,11 +306,11 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={'⚛'} title="Le Warp (Ω)" subtitle="La monnaie de l'écosystème Cosmorare" />
+      <SectionTitle icon={'⚛'} title="Le Cosmorare (Ω)" subtitle="La monnaie de l'écosystème Cosmorare" />
       <P>
-        Le <span className="opacity-80 font-bold">Warp (Ω)</span> est la monnaie native de Cosmorare.
+        Le <span className="opacity-80 font-bold">Cosmorare (Ω)</span> est la monnaie native de Cosmorare.
         Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
-        Aucun Warp supplémentaire ne sera jamais créé.
+        Aucun Cosmorare supplémentaire ne sera jamais créé.
       </P>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
@@ -320,13 +320,13 @@ function TokenomicsSection() {
         <Stat label="Communauté" value="20%" />
       </div>
 
-      <H3>Comment obtenir des Warps ?</H3>
+      <H3>Comment obtenir des Cosmorares ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['⛏', 'Miner', 'Exécutez des calculs dans l’app et gagnez des Warps. Plus la difficulté est élevée, plus vous gagnez.'],
-          ['\u{1F4B3}', 'Acheter', 'Achetez des Warps directement par carte bancaire, PayPal ou SEPA. Pas besoin d’exchange crypto.'],
-          ['\u{1F4B8}', 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Warps.'],
-          ['\u{1F381}', 'Airdrops', 'Des Warps sont distribués gratuitement à la communauté active.'],
+          ['⛏', 'Miner', 'Exécutez des calculs dans l’app et gagnez des Cosmorares. Plus la difficulté est élevée, plus vous gagnez.'],
+          ['\u{1F4B3}', 'Acheter', 'Achetez des Cosmorares directement par carte bancaire, PayPal ou SEPA. Pas besoin d’exchange crypto.'],
+          ['\u{1F4B8}', 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Cosmorares.'],
+          ['\u{1F381}', 'Airdrops', 'Des Cosmorares sont distribués gratuitement à la communauté active.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="text-title-sm shrink-0">{icon}</span>
@@ -348,7 +348,7 @@ function TokenomicsSection() {
 
       <H3>Zéro frais — toujours</H3>
       <P>
-        Envoyer des Warps, certifier un objet, vérifier un certificat : tout est gratuit.
+        Envoyer des Cosmorares, certifier un objet, vérifier un certificat : tout est gratuit.
         Le réseau se finance par la récompense de minage, pas par les frais des utilisateurs.
       </P>
     </div>
@@ -417,7 +417,7 @@ function SecuritySection() {
           ['\u{1F510}', 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Cosmorare ne peut pas lire vos messages.'],
           ['✔', 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
           ['\u{1F4F1}', 'Mode hors ligne (PWA)', 'L’app fonctionne sans internet. Consultez vos certificats et préparez des transactions hors ligne. Tout se synchronise automatiquement à la reconnexion.'],
-          ['\u{1F4B3}', 'Paiement intégré', 'Achetez des Warps par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
+          ['\u{1F4B3}', 'Paiement intégré', 'Achetez des Cosmorares par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
