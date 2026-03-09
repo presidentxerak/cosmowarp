@@ -44,6 +44,21 @@ const menuItems = [
       <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
     </svg>
   )},
+  { id: 'fiat-gateway', label: 'Fiat Gateway', icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" />
+      <line x1="12" y1="6" x2="12" y2="8" />
+      <line x1="12" y1="18" x2="12" y2="20" />
+    </svg>
+  )},
+  { id: 'pfp-collection', label: 'PFP Studio', icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 21v-1a5 5 0 0 1 10 0v1" />
+    </svg>
+  )},
   { id: 'divider1', label: '', icon: null },
   { id: 'whitepaper', label: 'White Paper', icon: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

@@ -86,6 +86,8 @@ import DevView from './components/DevView';
 import UserProfileView from './components/UserProfileView';
 import DiscoverView from './components/DiscoverView';
 import VaultView from './components/VaultView';
+import FiatGatewayView from './components/FiatGatewayView';
+import PFPCollectionView from './components/PFPCollectionView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('wall');
@@ -150,6 +152,10 @@ function App() {
             {/* Social */}
             {activeTab === 'user-profile' && <UserProfileView onNavigate={setActiveTab} />}
             {activeTab === 'discover' && <DiscoverView onNavigate={setActiveTab} />}
+
+            {/* Fiat Gateway & PFP */}
+            {activeTab === 'fiat-gateway' && <FiatGatewayView />}
+            {activeTab === 'pfp-collection' && <PFPCollectionView />}
 
             {/* Notifications (from top bar bell) */}
             {activeTab === 'notifications' && <NotificationsView />}

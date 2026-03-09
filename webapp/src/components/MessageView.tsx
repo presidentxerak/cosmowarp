@@ -21,7 +21,30 @@ export default function MessageView() {
     }
   };
 
-  useEffect(() => { refresh(); }, [wallet]);
+  useEffect(() => {
+    refresh();
+    // Auto-open DM if navigated from user profile
+    if (wallet) {
+      const dmTo = sessionStorage.getItem('cosmowarp_dm_to');
+      if (dmTo) {
+        sessionStorage.removeItem('cosmowarp_dm_to');
+        const e = CosmoChatEngine.load();
+        const alias = wallet.alias || shortAddress(wallet.address);
+        // Find existing thread or create one
+        const existingThreads = e.getThreads(wallet.address);
+        const existing = existingThreads.find(t => t.participants.includes(dmTo));
+        if (existing) {
+          setSelectedThread(existing);
+        } else {
+          e.sendDM(wallet.address, alias, dmTo, 'Hey!');
+          const updated = e.getThreads(wallet.address);
+          const newThread = updated.find(t => t.participants.includes(dmTo));
+          if (newThread) setSelectedThread(newThread);
+          setThreads(updated);
+        }
+      }
+    }
+  }, [wallet]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
