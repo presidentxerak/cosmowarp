@@ -511,7 +511,7 @@ function CosmoChainSection() {
           ['CHRONOS', '4', 'Time', 'Time-locked transactions (vesting, escrow)', 'text-cyan-400'],
           ['NEXUS', '5', 'Bridge', 'Cross-shard atomic transfers', 'text-orange-400'],
           ['LUMINA', '6', 'Chain', 'Genesis, epoch transitions, beacon anchors', 'text-amber-300'],
-        ].map(([name, id, range, desc, color]) => (
+        ].map(([name, _id, range, desc, color]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40">
             <span className={`text-xs font-bold w-16 ${color}`}>{name}</span>
             <span className="text-[10px] text-gray-500 w-16">{range}</span>

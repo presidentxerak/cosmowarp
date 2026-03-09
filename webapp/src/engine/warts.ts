@@ -25,7 +25,7 @@
 
 import { storage } from './storage';
 import { sha256, signTransaction } from './crypto';
-import { encodeToCosmoCode, imageToOnChainSVG, extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
+import { imageToOnChainSVG, extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
 
 // ─── Types ───────────────────────────────────────────────
 

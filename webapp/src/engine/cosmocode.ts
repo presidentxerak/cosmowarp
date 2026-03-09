@@ -106,10 +106,6 @@ const GLOBAL_DICTIONARY: Map<string, string> = new Map([
   ['§/S', '</svg>'],
 ]);
 
-// Reverse lookup for decompression
-const REVERSE_DICTIONARY: Map<string, string> = new Map(
-  Array.from(GLOBAL_DICTIONARY.entries()).map(([k, v]) => [v, k])
-);
 
 // ─── Compression Layer 1: Delta Encoding ──────────────────
 
@@ -373,27 +369,6 @@ function frequencyDecode(encoded: string, table: Map<string, string>): string {
 
 // ─── Compression Layer 6: Color Quantization (for images) ─
 
-/**
- * For image data encoded as base64, quantize the color palette.
- * Reduces unique colors from millions to a compact palette.
- * Only applied to 'wart' and 'media' types.
- */
-function quantizeBase64(base64Data: string): string {
-  // For SVG output, we keep base64 but add a palette hint
-  // The real savings come from the other compression layers
-  // This layer mainly marks the data for efficient re-encoding
-  if (base64Data.length > 1000) {
-    // Chunk the base64 into palette-aligned blocks
-    const chunkSize = 76; // Standard base64 line length
-    const lines: string[] = [];
-    for (let i = 0; i < base64Data.length; i += chunkSize) {
-      lines.push(base64Data.slice(i, i + chunkSize));
-    }
-    return lines.join('\n');
-  }
-  return base64Data;
-}
-
 // ─── SVG Encoder (Main Pipeline) ──────────────────────────
 
 /**
@@ -542,9 +517,6 @@ function buildCosmoCodeSVG(
   freqTable: string,
   layers: CompressionLayer[],
 ): string {
-  // Escape XML special characters in data
-  const escapedData = escapeXml(data);
-
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://cosmowarp.io/cosmocode/v1" viewBox="0 0 1 1">
 <cc:meta type="${type}" version="1" layers="${layers.join(',')}" ts="${Date.now()}"/>
 ${defsBlock}${freqTable}<cc:data><![CDATA[${data}]]></cc:data>

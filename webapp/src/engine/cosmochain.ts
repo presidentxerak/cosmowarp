@@ -42,7 +42,7 @@
 import { sha256, signTransaction, verifySignature, isValidAddress, computeTxId } from './crypto';
 import { encodeTransactionBatch, type CosmoCodeContainer } from './cosmocode';
 import { ShardCoordinator, type ShardMetrics } from './shardworker';
-import { blockDB, txDB, beaconDB, metaDB, type StoredBlock, type StoredTransaction, type StoredBeacon, initChainDB } from './chaindb';
+import { blockDB, txDB, beaconDB, initChainDB } from './chaindb';
 import { storage } from './storage';
 
 // ─── Constants ────────────────────────────────────────────
@@ -470,7 +470,6 @@ export class CosmoChain {
       for (const result of workerResults) {
         const shardId = result.shardId as ShardId;
         const shard = this.shards.get(shardId)!;
-        const queue = this.processingQueues.get(shardId)!;
 
         // The worker already validated; now apply balance changes in main thread
         // (Workers can't share memory with main thread, so balances are applied here)

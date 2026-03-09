@@ -9,7 +9,6 @@
  */
 
 import { encodeToCosmoCode, decodeFromCosmoCode, encodeTransactionBatch, type CosmoCodeContainer, type CosmoCodeType } from './cosmocode';
-import { sha256 } from './crypto';
 
 // ─── Benchmark Result Types ──────────────────────────────
 
