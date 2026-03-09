@@ -85,6 +85,7 @@ import LandingView from './components/LandingView';
 import DevView from './components/DevView';
 import UserProfileView from './components/UserProfileView';
 import DiscoverView from './components/DiscoverView';
+import VaultView from './components/VaultView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('wall');
@@ -137,6 +138,7 @@ function App() {
             {activeTab === 'signets' && <SignetsView />}
             {activeTab === 'whitepaper' && <WhitepaperView />}
             {activeTab === 'fondation' && <FondationView />}
+            {activeTab === 'vault' && <VaultView />}
             {activeTab === 'admin' && <AdminView />}
             {activeTab === 'sdk' && <SDKView />}
             {activeTab === 'console' && <ConsoleView />}

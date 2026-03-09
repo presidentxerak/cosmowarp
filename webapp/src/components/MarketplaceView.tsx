@@ -3,6 +3,7 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
 import type { Wart } from '../engine/warts';
+import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 
 import PFPCollectionView from './PFPCollectionView';
 
@@ -13,6 +14,7 @@ export default function MarketplaceView() {
     wallet, unlocked, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart,
     deleteWart, editWart, addWartComment, verifyWartCertificate, refreshWarts,
+    listWartFiat, buyWartFiat, getWartFiatPrice, addToVault,
   } = useWallet();
 
   const [tab, setTab] = useState<Tab>('marketplace');
@@ -57,6 +59,12 @@ export default function MarketplaceView() {
   // Certificate verification
   const [certStatus, setCertStatus] = useState<{ valid: boolean; reason: string } | null>(null);
   const [verifying, setVerifying] = useState(false);
+
+  // Fiat pricing
+  const [fiatPriceInput, setFiatPriceInput] = useState('');
+  const [fiatCurrency, setFiatCurrency] = useState<FiatCurrency>('EUR');
+  const [pricingMode, setPricingMode] = useState<'crypto' | 'fiat'>('crypto');
+  const [buyingFiat, setBuyingFiat] = useState(false);
 
   if (!wallet) {
     return (
@@ -152,11 +160,35 @@ export default function MarketplaceView() {
     }
   };
 
+  const handleBuyFiat = async (wart: Wart) => {
+    setBuyingFiat(true);
+    setBuyResult(null);
+    const result = await buyWartFiat(wart.id, 'card');
+    setBuyResult({
+      success: result.success,
+      message: result.success
+        ? `Bought "${wart.title}" with ${wart.fiatCurrency ? getCurrencySymbol(wart.fiatCurrency) : ''}${wart.priceFiat?.toFixed(2) || ''}!`
+        : result.error || 'Failed',
+    });
+    setBuyingFiat(false);
+    if (result.success) {
+      setSelectedWart(null);
+      setTimeout(() => setBuyResult(null), 3000);
+    }
+  };
+
   const handleList = (wart: Wart) => {
-    const p = parseFloat(listPrice);
-    if (isNaN(p) || p <= 0) return;
-    listWart(wart.id, p);
-    setListPrice('');
+    if (pricingMode === 'fiat') {
+      const fp = parseFloat(fiatPriceInput);
+      if (isNaN(fp) || fp <= 0) return;
+      listWartFiat(wart.id, fp, fiatCurrency);
+      setFiatPriceInput('');
+    } else {
+      const p = parseFloat(listPrice);
+      if (isNaN(p) || p <= 0) return;
+      listWart(wart.id, p);
+      setListPrice('');
+    }
     setSelectedWart(null);
   };
 
@@ -327,7 +359,19 @@ export default function MarketplaceView() {
         <EditionInfo wart={wart} compact />
         <div className="flex items-center justify-between mt-2">
           {wart.listed && wart.price !== null ? (
-            <span className="text-sm font-bold text-energy-400">{wart.price} {'\u03A9'}</span>
+            <div>
+              <span className="text-sm font-bold text-energy-400">{wart.price} {'\u03A9'}</span>
+              {wart.priceFiat && wart.fiatCurrency && (
+                <span className="text-[10px] text-gray-400 ml-1">
+                  ({getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)})
+                </span>
+              )}
+              {!wart.priceFiat && (
+                <span className="text-[10px] text-gray-500 ml-1">
+                  ({getWartFiatPrice(wart.id) || ''})
+                </span>
+              )}
+            </div>
           ) : (
             <span className="text-xs text-gray-500">Not listed</span>
           )}
@@ -336,13 +380,24 @@ export default function MarketplaceView() {
           )}
         </div>
         {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet.address && (
-          <button
-            className="warp-button w-full text-xs mt-2 py-1.5"
-            onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-            disabled={buying || wallet.balance < wart.price}
-          >
-            Buy for {wart.price} {'\u03A9'}
-          </button>
+          <div className="flex gap-1 mt-2">
+            <button
+              className="warp-button flex-1 text-xs py-1.5"
+              onClick={e => { e.stopPropagation(); handleBuy(wart); }}
+              disabled={buying || wallet.balance < wart.price}
+            >
+              {wart.price} {'\u03A9'}
+            </button>
+            {wart.priceFiat && wart.fiatCurrency && (
+              <button
+                className="flex-1 text-xs py-1.5 bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 transition-colors cursor-pointer"
+                onClick={e => { e.stopPropagation(); handleBuyFiat(wart); }}
+                disabled={buyingFiat}
+              >
+                {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)}
+              </button>
+            )}
+          </div>
         )}
       </div>
     );
@@ -548,6 +603,14 @@ export default function MarketplaceView() {
                   <div className="glass-panel p-3 mb-3 text-center">
                     <p className="text-[10px] text-gray-500">CURRENT PRICE</p>
                     <p className="text-2xl font-bold text-energy-400">{wart.price} {'\u03A9'}</p>
+                    {wart.priceFiat && wart.fiatCurrency && (
+                      <p className="text-sm text-gray-400">
+                        {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)} {wart.fiatCurrency}
+                      </p>
+                    )}
+                    {!wart.priceFiat && (
+                      <p className="text-xs text-gray-500">{getWartFiatPrice(wart.id)}</p>
+                    )}
                   </div>
                 )}
 
@@ -561,15 +624,26 @@ export default function MarketplaceView() {
                   </div>
                 )}
 
-                {/* Buy button (not mine, listed, not expired) */}
+                {/* Buy buttons (not mine, listed, not expired) */}
                 {!isMine && wart.listed && wart.price !== null && !expired && (
-                  <button
-                    className="warp-button w-full py-3 text-base mb-3"
-                    onClick={() => handleBuy(wart)}
-                    disabled={buying || wallet.balance < wart.price}
-                  >
-                    {buying ? 'Processing...' : `Buy for ${wart.price} \u03A9`}
-                  </button>
+                  <div className="space-y-2 mb-3">
+                    <button
+                      className="warp-button w-full py-3 text-base"
+                      onClick={() => handleBuy(wart)}
+                      disabled={buying || wallet.balance < wart.price}
+                    >
+                      {buying ? 'Processing...' : `Buy with ${wart.price} \u03A9`}
+                    </button>
+                    {wart.priceFiat && wart.fiatCurrency && (
+                      <button
+                        className="w-full py-3 text-base bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 transition-colors cursor-pointer"
+                        onClick={() => handleBuyFiat(wart)}
+                        disabled={buyingFiat}
+                      >
+                        {buyingFiat ? 'Processing payment...' : `Pay ${getCurrencySymbol(wart.fiatCurrency)}${wart.priceFiat.toFixed(2)} (Card/PayPal)`}
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 {/* Owner actions */}
@@ -608,21 +682,70 @@ export default function MarketplaceView() {
                         Remove from Sale
                       </button>
                     ) : (
-                      <div className="flex gap-2">
-                        <input
-                          className="warp-input flex-1 text-sm"
-                          type="number"
-                          placeholder="Price in \u03A9"
-                          value={listPrice}
-                          onChange={e => setListPrice(e.target.value)}
-                        />
-                        <button
-                          className="warp-button text-sm px-4"
-                          onClick={() => handleList(wart)}
-                          disabled={!listPrice}
-                        >
-                          List for Sale
-                        </button>
+                      <div className="space-y-2">
+                        {/* Pricing mode toggle */}
+                        <div className="flex gap-1">
+                          <button
+                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'crypto' ? 'bg-warp-500/20 text-warp-300 border border-warp-500/30' : 'text-gray-500 border border-white/5 hover:bg-white/5'}`}
+                            onClick={() => setPricingMode('crypto')}
+                          >
+                            {'\u03A9'} Crypto
+                          </button>
+                          <button
+                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'fiat' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'text-gray-500 border border-white/5 hover:bg-white/5'}`}
+                            onClick={() => setPricingMode('fiat')}
+                          >
+                            {'\u20AC'} Fiat
+                          </button>
+                        </div>
+
+                        {pricingMode === 'crypto' ? (
+                          <div className="flex gap-2">
+                            <input
+                              className="warp-input flex-1 text-sm"
+                              type="number"
+                              placeholder="Price in \u03A9"
+                              value={listPrice}
+                              onChange={e => setListPrice(e.target.value)}
+                            />
+                            <button
+                              className="warp-button text-sm px-4"
+                              onClick={() => handleList(wart)}
+                              disabled={!listPrice}
+                            >
+                              List
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <select
+                              className="warp-input text-sm w-20"
+                              value={fiatCurrency}
+                              onChange={e => setFiatCurrency(e.target.value as FiatCurrency)}
+                            >
+                              <option value="EUR">{'\u20AC'} EUR</option>
+                              <option value="USD">$ USD</option>
+                              <option value="GBP">{'\u00A3'} GBP</option>
+                            </select>
+                            <input
+                              className="warp-input flex-1 text-sm"
+                              type="number"
+                              placeholder="Price"
+                              value={fiatPriceInput}
+                              onChange={e => setFiatPriceInput(e.target.value)}
+                            />
+                            <button
+                              className="text-sm px-4 bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30 transition-colors cursor-pointer"
+                              onClick={() => handleList(wart)}
+                              disabled={!fiatPriceInput}
+                            >
+                              List
+                            </button>
+                          </div>
+                        )}
+                        <p className="text-[10px] text-gray-500">
+                          {pricingMode === 'fiat' ? 'Buyers can pay with card, PayPal, or bank transfer' : 'Buyers pay with Warps (\u03A9)'}
+                        </p>
                       </div>
                     )}
 

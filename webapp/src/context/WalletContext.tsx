@@ -13,6 +13,9 @@ import { generateCosmoLink, parseCosmoLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/cosmomesh';
 import { WartEngine, type Wart } from '../engine/warts';
 import { storage } from '../engine/storage';
+import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
+import type { CosmoContract } from '../engine/cosmocontract';
+import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -57,6 +60,20 @@ interface WalletContextType {
   addWartComment: (wartId: string, content: string) => boolean;
   verifyWartCertificate: (wartId: string) => Promise<{ valid: boolean; reason: string }>;
   refreshWarts: () => void;
+  // Vault operations
+  vaultStats: VaultStats | null;
+  addToVault: (wartId: string) => Promise<boolean>;
+  addAllToVault: () => Promise<{ added: number; failed: number }>;
+  generateRecoveryKit: (recoveryPassword: string) => Promise<RecoveryKit | null>;
+  restoreFromRecoveryKit: (kit: RecoveryKit, recoveryPassword: string) => Promise<{ restored: number; failed: number; errors: string[] }>;
+  // Fiat operations
+  listWartFiat: (wartId: string, priceFiat: number, currency: FiatCurrency) => boolean;
+  buyWartFiat: (wartId: string, paymentMethod: 'card' | 'paypal' | 'sepa') => Promise<{ success: boolean; fiatTx?: FiatTransaction; error?: string }>;
+  getWartFiatPrice: (wartId: string) => string | null;
+  // Contract operations
+  createAuction: (wartId: string, startPrice: number, durationHours: number, reservePrice?: number) => Promise<CosmoContract | null>;
+  getWartContracts: (wartId: string) => CosmoContract[];
+  getActiveAuctions: () => CosmoContract[];
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -75,6 +92,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [marketplace, setMarketplace] = useState<Wart[]>([]);
   const [myCollection, setMyCollection] = useState<Wart[]>([]);
   const [myCreated, setMyCreated] = useState<Wart[]>([]);
+  const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wartEngineRef = useRef<WartEngine | null>(null);
 
@@ -130,6 +148,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (address) {
       setMyCollection(engine.getCollection(address));
       setMyCreated(engine.getCreated(address));
+      setVaultStats(engine.getVaultStats(address));
     }
   }
 
@@ -159,6 +178,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setSupplyInfo(getSupplyBreakdown());
       } catch { /* first load */ }
       setLevelProgress(getProgressToNextLevel(w.address));
+      // Initialize vault with CosmoID credentials
+      const engine = getWartEngine();
+      await engine.initVault(username, password);
       refreshWartsState(w.address);
       return { success: true, isNew };
     } catch (err) {
@@ -492,6 +514,93 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     refreshWartsState(wallet?.address);
   }, [wallet]);
 
+  // ─── Vault Operations ──────────────────────────────────
+
+  const doAddToVault = useCallback(async (wartId: string): Promise<boolean> => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const result = await engine.addToVault(wartId, wallet.address);
+    if (result) refreshWartsState(wallet.address);
+    return !!result;
+  }, [wallet]);
+
+  const doAddAllToVault = useCallback(async (): Promise<{ added: number; failed: number }> => {
+    if (!wallet) return { added: 0, failed: 0 };
+    const engine = getWartEngine();
+    const result = await engine.addAllToVault(wallet.address);
+    refreshWartsState(wallet.address);
+    return result;
+  }, [wallet]);
+
+  const doGenerateRecoveryKit = useCallback(async (recoveryPassword: string): Promise<RecoveryKit | null> => {
+    if (!wallet || !wallet.privateKey) return null;
+    const engine = getWartEngine();
+    try {
+      return await engine.generateRecoveryKit(wallet.address, recoveryPassword, wallet.privateKey);
+    } catch {
+      return null;
+    }
+  }, [wallet]);
+
+  const doRestoreFromRecoveryKit = useCallback(async (kit: RecoveryKit, recoveryPassword: string): Promise<{ restored: number; failed: number; errors: string[] }> => {
+    if (!wallet) return { restored: 0, failed: 0, errors: ['No wallet'] };
+    const engine = getWartEngine();
+    const result = await engine.restoreFromRecoveryKit(kit, recoveryPassword, wallet.address);
+    refreshWartsState(wallet.address);
+    return result;
+  }, [wallet]);
+
+  // ─── Fiat Operations ───────────────────────────────────
+
+  const doListWartFiat = useCallback((wartId: string, priceFiat: number, currency: FiatCurrency): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const ok = engine.listWithFiat(wartId, wallet.address, priceFiat, currency);
+    if (ok) refreshWartsState(wallet.address);
+    return ok;
+  }, [wallet]);
+
+  const doBuyWartFiat = useCallback(async (wartId: string, paymentMethod: 'card' | 'paypal' | 'sepa'): Promise<{ success: boolean; fiatTx?: FiatTransaction; error?: string }> => {
+    if (!wallet || !wallet.privateKey) return { success: false, error: 'Wallet locked' };
+    const engine = getWartEngine();
+    const txId = Date.now().toString(36);
+    const result = await engine.buyWithFiat({ wartId, buyerAddress: wallet.address, paymentMethod, txId });
+    if (result.success) refreshWartsState(wallet.address);
+    return result;
+  }, [wallet]);
+
+  const doGetWartFiatPrice = useCallback((wartId: string): string | null => {
+    const engine = getWartEngine();
+    return engine.getFiatPrice(wartId);
+  }, []);
+
+  // ─── Contract Operations ──────────────────────────────
+
+  const doCreateAuction = useCallback(async (wartId: string, startPrice: number, durationHours: number, reservePrice?: number): Promise<CosmoContract | null> => {
+    if (!wallet || !wallet.privateKey) return null;
+    const engine = getWartEngine();
+    const contract = await engine.createAuction({
+      wartId,
+      sellerAddress: wallet.address,
+      sellerPrivateKey: wallet.privateKey,
+      startPrice,
+      reservePrice,
+      durationHours,
+    });
+    if (contract) refreshWartsState(wallet.address);
+    return contract;
+  }, [wallet]);
+
+  const doGetWartContracts = useCallback((wartId: string): CosmoContract[] => {
+    const engine = getWartEngine();
+    return engine.getWartContracts(wartId);
+  }, []);
+
+  const doGetActiveAuctions = useCallback((): CosmoContract[] => {
+    const engine = getWartEngine();
+    return engine.getActiveAuctions();
+  }, []);
+
   return (
     <WalletContext.Provider value={{
       wallet, unlocked, needsMigration, globalTxs, meshStats, supplyInfo,
@@ -505,6 +614,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       mintWart, buyWart, listWart, delistWart, transferWart,
       deleteWart: doDeleteWart, editWart: doEditWart,
       addWartComment: doAddWartComment, verifyWartCertificate, refreshWarts,
+      // Vault
+      vaultStats,
+      addToVault: doAddToVault,
+      addAllToVault: doAddAllToVault,
+      generateRecoveryKit: doGenerateRecoveryKit,
+      restoreFromRecoveryKit: doRestoreFromRecoveryKit,
+      // Fiat
+      listWartFiat: doListWartFiat,
+      buyWartFiat: doBuyWartFiat,
+      getWartFiatPrice: doGetWartFiatPrice,
+      // Contracts
+      createAuction: doCreateAuction,
+      getWartContracts: doGetWartContracts,
+      getActiveAuctions: doGetActiveAuctions,
     }}>
       {children}
     </WalletContext.Provider>
