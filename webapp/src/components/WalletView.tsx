@@ -4,6 +4,7 @@ import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 import MineView from './MineView';
+import Logo from './Logo';
 
 type WalletTab = 'overview' | 'send' | 'mine';
 type AuthTab = 'signup' | 'signin';
@@ -59,7 +60,7 @@ export default function WalletView() {
 
   // Spinner component
   const Spinner = () => (
-    <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+    <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
   );
 
   // ─── CosmoID Sign Up handler ────────────────────────────
@@ -115,7 +116,7 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
         <div className="flex justify-center mb-4">
-          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
+          <Logo className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
         <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-title">CosmoWarp</h2>
         <p className="text-body-sm opacity-40 mb-5">
@@ -128,7 +129,7 @@ export default function WalletView() {
             onClick={() => setAuthTab('signup')}
             className={`flex-1 py-2.5 text-base font-bold transition-colors cursor-pointer ${
               authTab === 'signup'
-                ? 'bg-current/5 opacity-80 border-b-2 border-warp-400'
+                ? 'bg-current/5 opacity-80 border-b-2 border-current/20'
                 : 'opacity-40 hover:opacity-70 hover:bg-current/5'
             }`}
           >
@@ -138,7 +139,7 @@ export default function WalletView() {
             onClick={() => setAuthTab('signin')}
             className={`flex-1 py-2.5 text-base font-bold transition-colors cursor-pointer ${
               authTab === 'signin'
-                ? 'bg-current/5 opacity-80 border-b-2 border-warp-400'
+                ? 'bg-current/5 opacity-80 border-b-2 border-current/20'
                 : 'opacity-40 hover:opacity-70 hover:bg-current/5'
             }`}
           >
@@ -152,7 +153,7 @@ export default function WalletView() {
               Create your wallet and receive 1,000 {'\u03A9'} airdrop.
             </p>
 
-            <div className="p-3 bg-warp-500/5 border border-current/10 text-left">
+            <div className="p-3 bg-current/5 border border-current/10 text-left">
               <p className="text-label opacity-80 font-bold mb-1">CosmoID</p>
               <p className="text-label opacity-50">Same username + password = same wallet on any device. No backup file needed.</p>
             </div>
@@ -396,7 +397,7 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
         <div className="flex justify-center mb-3">
-          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-14 h-14 sm:w-16 sm:h-16 opacity-60" />
+          <Logo className="w-14 h-14 sm:w-16 sm:h-16 opacity-60" />
         </div>
         <p className="text-base opacity-50 mb-1">Welcome back</p>
         <h2 className="text-title-md font-bold opacity-100 mb-1 font-title">{wallet.alias ? `@${wallet.alias}` : shortAddress(wallet.address)}</h2>
@@ -471,7 +472,7 @@ export default function WalletView() {
               onClick={() => setWalletTab(t.id)}
               className={`flex-1 px-3 py-2 rounded-none text-body-sm font-medium transition-all cursor-pointer ${
                 walletTab === t.id
-                  ? 'bg-warp-500/30 opacity-80'
+                  ? 'bg-current/10 opacity-80'
                   : 'opacity-50 hover:opacity-90 hover:bg-current/5'
               }`}
             >
@@ -504,7 +505,7 @@ export default function WalletView() {
               {wallet.isAdmin && <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-60 border border-current/10">ADMIN</span>}
               <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10">{'\u2B21'} CosmoID</span>
               <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10">{'\u26BF'} ENCRYPTED</span>
-              <button onClick={lock} className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-70 border border-red-500/30 hover:bg-red-500/20 transition-colors cursor-pointer">{'\u274C'} Lock</button>
+              <button onClick={lock} className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-70 border border-current/15 hover:bg-current/5 transition-colors cursor-pointer">{'\u274C'} Lock</button>
             </div>
           </div>
 
@@ -537,7 +538,7 @@ export default function WalletView() {
             </div>
             <div className="flex items-center gap-2 text-label opacity-40 mb-2">
               <span>Reward: <span className="opacity-80">{wallet.rewardMultiplier}x</span></span>
-              <span>Streak: <span className="text-star-400">{wallet.streakDays} days</span></span>
+              <span>Streak: <span className="opacity-80">{wallet.streakDays} days</span></span>
             </div>
             {nextLevel ? (
               <div>
@@ -546,17 +547,17 @@ export default function WalletView() {
                   <span>{levelProgress}%</span>
                 </div>
                 <div className="w-full bg-current/5 rounded-none h-2">
-                  <div className="h-2 rounded-none transition-all duration-500" style={{ width: `${levelProgress}%`, background: 'linear-gradient(90deg, #a855f7, #06b6d4)' }} />
+                  <div className="h-2 rounded-none transition-all duration-500" style={{ width: `${levelProgress}%`, background: 'currentColor', opacity: 0.3 }} />
                 </div>
               </div>
-            ) : <p className="text-label text-amber-300">Maximum level reached!</p>}
+            ) : <p className="text-label opacity-80">Maximum level reached!</p>}
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.transactions.length}</p><p className="text-label opacity-40">TXs</p></div>
             <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.transactions.filter(t => t.type === 'mine').length}</p><p className="text-label opacity-40">MINED</p></div>
-            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold text-star-400">{wallet.transactions.filter(t => t.type === 'send').reduce((a, t) => a + t.amount, 0)}</p><p className="text-label opacity-40">SENT</p></div>
+            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.transactions.filter(t => t.type === 'send').reduce((a, t) => a + t.amount, 0)}</p><p className="text-label opacity-40">SENT</p></div>
             <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.streakDays}</p><p className="text-label opacity-40">STREAK</p></div>
           </div>
 
@@ -567,9 +568,9 @@ export default function WalletView() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
                 <div><span className="opacity-40">Total Supply:</span><span className="opacity-80 ml-1">{supplyInfo.total.toLocaleString()}</span></div>
                 <div><span className="opacity-40">Circulating:</span><span className="opacity-80 ml-1">{supplyInfo.circulating.toLocaleString()}</span></div>
-                <div><span className="opacity-40">Mining Reward:</span><span className="text-star-400 ml-1">{supplyInfo.currentReward.toFixed(2)} {'\u03A9'}</span></div>
+                <div><span className="opacity-40">Mining Reward:</span><span className="opacity-80 ml-1">{supplyInfo.currentReward.toFixed(2)} {'\u03A9'}</span></div>
                 <div><span className="opacity-40">Epoch:</span><span className="opacity-80 ml-1">{supplyInfo.currentEpoch}</span></div>
-                <div><span className="opacity-40">Mined:</span><span className="text-cyan-400 ml-1">{supplyInfo.percentMined.toFixed(2)}%</span></div>
+                <div><span className="opacity-40">Mined:</span><span className="opacity-80 ml-1">{supplyInfo.percentMined.toFixed(2)}%</span></div>
                 <div><span className="opacity-40">Burned:</span><span className="opacity-70 ml-1">{supplyInfo.burned.toLocaleString()}</span></div>
               </div>
             </div>
@@ -582,7 +583,7 @@ export default function WalletView() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
                 <div><span className="opacity-40">DAG Nodes:</span><span className="opacity-80 ml-1">{meshStats.totalTransactions}</span></div>
                 <div><span className="opacity-40">Active Tips:</span><span className="opacity-80 ml-1">{meshStats.totalTips}</span></div>
-                <div><span className="opacity-40">Avg Resonance:</span><span className="text-star-400 ml-1">{(meshStats.avgResonance * 100).toFixed(1)}%</span></div>
+                <div><span className="opacity-40">Avg Resonance:</span><span className="opacity-80 ml-1">{(meshStats.avgResonance * 100).toFixed(1)}%</span></div>
                 <div><span className="opacity-40">Finalized:</span><span className="opacity-80 ml-1">{meshStats.finalizedCount}</span></div>
                 <div><span className="opacity-40">Max Depth:</span><span className="opacity-80 ml-1">{meshStats.maxDepth}</span></div>
                 <div><span className="opacity-40">TPS:</span><span className="opacity-80 ml-1">{meshStats.totalTps.toFixed(2)}</span></div>
@@ -600,10 +601,10 @@ export default function WalletView() {
                 {recentTxs.map(tx => (
                   <div key={tx.id} className="flex items-center gap-3 p-2 rounded-none bg-current/5 text-body-sm">
                     <span className={`text-base ${
-                      tx.type === 'mine' ? 'text-star-400' : tx.type === 'send' ? 'opacity-80' :
+                      tx.type === 'mine' ? 'opacity-80' : tx.type === 'send' ? 'opacity-80' :
                       tx.type === 'genesis' || tx.type === 'airdrop' ? 'opacity-80' : tx.type === 'level_up' ? 'opacity-60' :
-                      tx.type === 'wart_mint' ? 'text-pink-400' : tx.type === 'wart_buy' ? 'text-cyan-400' :
-                      tx.type === 'wart_transfer' ? 'text-purple-400' : 'opacity-80'
+                      tx.type === 'wart_mint' ? 'opacity-80' : tx.type === 'wart_buy' ? 'opacity-80' :
+                      tx.type === 'wart_transfer' ? 'opacity-80' : 'opacity-80'
                     }`}>
                       {tx.type === 'mine' ? '\u26CF' : tx.type === 'send' ? '\u2197' :
                        tx.type === 'genesis' || tx.type === 'airdrop' ? '\u2B21' : tx.type === 'level_up' ? '\u2605' :
@@ -659,7 +660,7 @@ export default function WalletView() {
                 <input className="warp-input" placeholder="What's this for?" value={sendMemo} onChange={e => setSendMemo(e.target.value)} />
               </div>
               {sendResult && (
-                <div className={`text-base p-3 rounded-none ${sendResult.success ? 'bg-current/5 border border-current/10 opacity-80' : 'bg-current/5 border border-red-500/30 opacity-70'}`}>
+                <div className={`text-base p-3 rounded-none ${sendResult.success ? 'bg-current/5 border border-current/10 opacity-80' : 'bg-current/5 border border-current/15 opacity-70'}`}>
                   {sendResult.message}
                 </div>
               )}

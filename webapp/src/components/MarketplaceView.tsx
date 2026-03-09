@@ -4,6 +4,7 @@ import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
+import { generatePhygitalCert, verifyCert, generatePrintableSVG, type PhygitalCertificate } from '../engine/phygital';
 
 import PFPCollectionView from './PFPCollectionView';
 
@@ -65,6 +66,12 @@ export default function MarketplaceView() {
   const [fiatCurrency, setFiatCurrency] = useState<FiatCurrency>('EUR');
   const [pricingMode, setPricingMode] = useState<'crypto' | 'fiat'>('crypto');
   const [buyingFiat, setBuyingFiat] = useState(false);
+
+  // Phygital certificate
+  const [phygitalCert, setPhygitalCert] = useState<PhygitalCertificate | null>(null);
+  const [generatingPhygital, setGeneratingPhygital] = useState(false);
+  const [phygitalVerifyInput, setPhygitalVerifyInput] = useState('');
+  const [phygitalVerifyResult, setPhygitalVerifyResult] = useState<PhygitalCertificate | null | undefined>(undefined);
 
   if (!wallet) {
     return (
@@ -310,9 +317,9 @@ export default function MarketplaceView() {
     return (
       <div className={`flex items-center gap-2 flex-wrap ${compact ? 'text-[10px]' : 'text-body-sm'}`}>
         {wart.editionType === 'unique' ? (
-          <span className="text-amber-400">1/1</span>
+          <span className="opacity-80">1/1</span>
         ) : wart.editionType === 'limited' && wart.maxEditions !== null ? (
-          <span className="text-purple-400">#{wart.editionNumber}/{wart.maxEditions}</span>
+          <span className="opacity-80">#{wart.editionNumber}/{wart.maxEditions}</span>
         ) : (
           <span className="opacity-40">#{wart.editionNumber}</span>
         )}
@@ -333,7 +340,7 @@ export default function MarketplaceView() {
 
     return (
       <div
-        className={`glass-panel p-3 cursor-pointer hover:border-warp-400/40 transition-all ${expired ? 'opacity-50' : ''}`}
+        className={`glass-panel p-3 cursor-pointer hover:border-current/20/40 transition-all ${expired ? 'opacity-50' : ''}`}
         onClick={() => openDetail(wart)}
       >
         <div className="aspect-square mb-2 overflow-hidden rounded-none bg-current/5 relative">
@@ -342,7 +349,7 @@ export default function MarketplaceView() {
             <RarityBadge wart={wart} />
           </div>
           {wart.certId && (
-            <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-green-500/20 border border-green-500/30">
+            <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-current/10 border border-current/15">
               <span className="text-[9px] opacity-80">{'\u2714'} Cert</span>
             </div>
           )}
@@ -390,7 +397,7 @@ export default function MarketplaceView() {
             </button>
             {wart.priceFiat && wart.fiatCurrency && (
               <button
-                className="flex-1 text-body-sm py-1.5 bg-green-500/20 opacity-80 border border-green-500/30 hover:bg-green-500/30 transition-colors cursor-pointer"
+                className="flex-1 text-body-sm py-1.5 bg-current/10 opacity-80 border border-current/15 hover:bg-current/15 transition-colors cursor-pointer"
                 onClick={e => { e.stopPropagation(); handleBuyFiat(wart); }}
                 disabled={buyingFiat}
               >
@@ -522,11 +529,11 @@ export default function MarketplaceView() {
                   </div>
                   <div>
                     <span className="opacity-40">Royalty:</span>
-                    <span className="text-star-400 ml-1">{wart.royaltyPercent}%</span>
+                    <span className="opacity-80 ml-1">{wart.royaltyPercent}%</span>
                   </div>
                   <div>
                     <span className="opacity-40">Sales:</span>
-                    <span className="text-nebula-400 ml-1">{wart.history.length}</span>
+                    <span className="opacity-80 ml-1">{wart.history.length}</span>
                   </div>
                   <div>
                     <span className="opacity-40">Edition:</span>
@@ -546,8 +553,8 @@ export default function MarketplaceView() {
                 {wart.availableUntil !== null && (
                   <div className={`text-body-sm p-2 mb-3 border ${
                     expired
-                      ? 'bg-red-500/10 border-red-500/20 opacity-70'
-                      : 'bg-energy-500/10 border-energy-500/20 opacity-80'
+                      ? 'bg-current/5 border-current/10 opacity-70'
+                      : 'bg-current/5 border-current/10 opacity-80'
                   }`}>
                     {expired ? (
                       <>{'\u23F0'} Expired on {formatDateFR(wart.availableUntil)} (Paris)</>
@@ -589,14 +596,121 @@ export default function MarketplaceView() {
                     {certStatus && (
                       <div className={`text-body-sm p-2 border ${
                         certStatus.valid
-                          ? 'bg-green-500/10 border-green-500/20 opacity-80'
-                          : 'bg-red-500/10 border-red-500/20 opacity-70'
+                          ? 'bg-current/5 border-current/10 opacity-80'
+                          : 'bg-current/5 border-current/15 opacity-70'
                       }`}>
                         {certStatus.valid ? '\u2714' : '\u2718'} {certStatus.reason}
                       </div>
                     )}
                   </div>
                 )}
+
+                {/* Phygital Authentication */}
+                {wart.certId && (isCreator || isMine) && (
+                  <div className="glass-panel p-3 mb-3 space-y-2">
+                    <h4 className="text-body-sm font-bold opacity-70">{'\u2B22'} Phygital Authentication</h4>
+                    <p className="text-[10px] opacity-40">
+                      Generate a printable hash signature to physically attach to your artwork and authenticate it.
+                    </p>
+                    {phygitalCert && phygitalCert.wartId === wart.id ? (
+                      <div className="space-y-2">
+                        <div className="p-3 bg-current/5 border border-current/10 text-center">
+                          <p className="text-label opacity-40 mb-1">VERIFICATION CODE</p>
+                          <p className="text-title-md font-bold opacity-90 tracking-widest">{phygitalCert.verificationCode}</p>
+                          <p className="text-[10px] opacity-30 mt-1 font-mono break-all">{phygitalCert.certHash}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            className="warp-button flex-1 text-body-sm py-2"
+                            onClick={() => {
+                              navigator.clipboard.writeText(phygitalCert.verificationCode);
+                            }}
+                          >
+                            Copy Code
+                          </button>
+                          <button
+                            className="warp-button flex-1 text-body-sm py-2"
+                            onClick={() => {
+                              const svg = generatePrintableSVG(phygitalCert);
+                              const blob = new Blob([svg], { type: 'image/svg+xml' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `phygital-${phygitalCert.verificationCode}.svg`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
+                            Download Print
+                          </button>
+                        </div>
+                        <p className="text-[10px] opacity-30">Print the SVG and attach it to your physical artwork. Anyone can verify with the code above.</p>
+                      </div>
+                    ) : (
+                      <button
+                        className="warp-button w-full text-body-sm py-2"
+                        onClick={async () => {
+                          setGeneratingPhygital(true);
+                          try {
+                            const cert = await generatePhygitalCert(
+                              wart.id,
+                              wart.title,
+                              wart.creator,
+                              wart.owner,
+                              wart.contentFingerprint || '',
+                              wart.editionNumber,
+                              wart.maxEditions,
+                            );
+                            setPhygitalCert(cert);
+                          } catch { /* ignore */ }
+                          setGeneratingPhygital(false);
+                        }}
+                        disabled={generatingPhygital}
+                      >
+                        {generatingPhygital ? 'Generating...' : 'Generate Phygital Certificate'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Phygital Verification (anyone) */}
+                <div className="glass-panel p-3 mb-3 space-y-2">
+                  <h4 className="text-body-sm font-bold opacity-70">{'\u2714'} Verify Phygital</h4>
+                  <p className="text-[10px] opacity-40">Enter a verification code from a physical artwork to check authenticity.</p>
+                  <div className="flex gap-2">
+                    <input
+                      className="warp-input flex-1 text-body-sm py-2"
+                      placeholder="XXXX-XXXX-XXXX"
+                      value={phygitalVerifyInput}
+                      onChange={e => { setPhygitalVerifyInput(e.target.value); setPhygitalVerifyResult(undefined); }}
+                    />
+                    <button
+                      className="warp-button text-body-sm px-3 py-2"
+                      onClick={() => {
+                        const result = verifyCert(phygitalVerifyInput);
+                        setPhygitalVerifyResult(result);
+                      }}
+                      disabled={!phygitalVerifyInput.trim()}
+                    >
+                      Verify
+                    </button>
+                  </div>
+                  {phygitalVerifyResult !== undefined && (
+                    phygitalVerifyResult ? (
+                      <div className="p-2 bg-current/5 border border-current/10 text-body-sm">
+                        <p className="opacity-80 font-bold">{'\u2714'} Authentic</p>
+                        <p className="text-[10px] opacity-50">Title: {phygitalVerifyResult.wartTitle}</p>
+                        <p className="text-[10px] opacity-50">Creator: {shortAddress(phygitalVerifyResult.creatorAddress)}</p>
+                        <p className="text-[10px] opacity-50">Edition: {phygitalVerifyResult.editionInfo}</p>
+                        <p className="text-[10px] opacity-50">Date: {new Date(phygitalVerifyResult.createdAt).toLocaleDateString('fr-FR')}</p>
+                      </div>
+                    ) : (
+                      <div className="p-2 bg-current/5 border border-current/15 text-body-sm opacity-70">
+                        {'\u2718'} No certificate found for this code.
+                      </div>
+                    )
+                  )}
+                </div>
 
                 {/* Price & Actions */}
                 {wart.listed && wart.price !== null && (
@@ -617,8 +731,8 @@ export default function MarketplaceView() {
                 {buyResult && (
                   <div className={`text-base p-3 rounded-none mb-3 ${
                     buyResult.success
-                      ? 'bg-green-500/10 border border-green-500/30 opacity-80'
-                      : 'bg-red-500/10 border border-red-500/30 opacity-70'
+                      ? 'bg-current/5 border border-current/15 opacity-80'
+                      : 'bg-current/5 border border-current/15 opacity-70'
                   }`}>
                     {buyResult.message}
                   </div>
@@ -636,7 +750,7 @@ export default function MarketplaceView() {
                     </button>
                     {wart.priceFiat && wart.fiatCurrency && (
                       <button
-                        className="w-full py-3 text-base bg-green-500/20 opacity-80 border border-green-500/30 hover:bg-green-500/30 transition-colors cursor-pointer"
+                        className="w-full py-3 text-base bg-current/10 opacity-80 border border-current/15 hover:bg-current/15 transition-colors cursor-pointer"
                         onClick={() => handleBuyFiat(wart)}
                         disabled={buyingFiat}
                       >
@@ -659,14 +773,14 @@ export default function MarketplaceView() {
                       </button>
                       {!confirmDelete ? (
                         <button
-                          className="flex-1 py-2 text-base font-bold border transition-all cursor-pointer bg-red-500/10 border-red-500/30 opacity-70 hover:bg-red-500/20"
+                          className="flex-1 py-2 text-base font-bold border transition-all cursor-pointer bg-current/5 border-current/15 opacity-70 hover:bg-current/10"
                           onClick={() => setConfirmDelete(true)}
                         >
                           {'\u2716'} Delete
                         </button>
                       ) : (
                         <button
-                          className="flex-1 py-2 text-base font-bold border transition-all cursor-pointer bg-red-500/30 border-red-500/50 text-red-300 hover:bg-red-500/40"
+                          className="flex-1 py-2 text-base font-bold border transition-all cursor-pointer bg-current/10 border-current/20 opacity-70 hover:bg-current/10"
                           onClick={() => handleDelete(wart)}
                         >
                           Confirm Delete?
@@ -686,13 +800,13 @@ export default function MarketplaceView() {
                         {/* Pricing mode toggle */}
                         <div className="flex gap-1">
                           <button
-                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'crypto' ? 'bg-warp-500/20 opacity-80 border border-warp-500/30' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
+                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'crypto' ? 'bg-current/5 opacity-80 border border-current/10' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
                             onClick={() => setPricingMode('crypto')}
                           >
                             {'\u03A9'} Crypto
                           </button>
                           <button
-                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'fiat' ? 'bg-green-500/20 opacity-80 border border-green-500/30' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
+                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'fiat' ? 'bg-current/10 opacity-80 border border-current/15' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
                             onClick={() => setPricingMode('fiat')}
                           >
                             {'\u20AC'} Fiat
@@ -735,7 +849,7 @@ export default function MarketplaceView() {
                               onChange={e => setFiatPriceInput(e.target.value)}
                             />
                             <button
-                              className="text-base px-4 bg-green-500/20 opacity-80 border border-green-500/30 hover:bg-green-500/30 transition-colors cursor-pointer"
+                              className="text-base px-4 bg-current/10 opacity-80 border border-current/15 hover:bg-current/15 transition-colors cursor-pointer"
                               onClick={() => handleList(wart)}
                               disabled={!fiatPriceInput}
                             >
@@ -792,7 +906,7 @@ export default function MarketplaceView() {
             ) : (
               wart.comments.map(c => (
                 <div key={c.id} className="flex gap-2">
-                  <div className="w-6 h-6 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-[10px] opacity-80 font-bold shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-current/5 border border-current/10 flex items-center justify-center text-[10px] opacity-80 font-bold shrink-0 mt-0.5">
                     {c.authorAlias.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -814,7 +928,7 @@ export default function MarketplaceView() {
             <h3 className="text-base font-bold opacity-70 mb-3">Transfer History</h3>
             <div className="space-y-2">
               {wart.history.map((h, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-none bg-cosmic-900/40 text-body-sm">
+                <div key={i} className="flex items-center gap-3 p-2 rounded-none bg-current/5 text-body-sm">
                   <span className="opacity-80">{'\u21C4'}</span>
                   <div className="flex-1 min-w-0">
                     <p className="opacity-70 truncate">
@@ -881,7 +995,7 @@ export default function MarketplaceView() {
               onClick={() => setTab(t.id)}
               className={`flex-1 px-3 py-2 rounded-none text-body-sm font-medium transition-all cursor-pointer ${
                 tab === t.id
-                  ? 'bg-warp-500/30 opacity-80'
+                  ? 'bg-current/10 opacity-80'
                   : 'opacity-50 text-current hover:opacity-90 hover:bg-white/5'
               }`}
             >
@@ -909,7 +1023,7 @@ export default function MarketplaceView() {
                 onClick={() => setCategoryFilter(cat.id)}
                 className={`px-3 py-1.5 text-body-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
                   categoryFilter === cat.id
-                    ? 'bg-warp-500/30 border border-warp-500/50 opacity-80'
+                    ? 'bg-current/10 border border-current/20 opacity-80'
                     : 'bg-transparent border border-white/10 opacity-50 text-current hover:border-white/20 hover:opacity-70'
                 }`}
               >
@@ -1066,7 +1180,7 @@ export default function MarketplaceView() {
                     key={et}
                     className={`flex-1 py-2 text-body-sm font-medium border transition-all cursor-pointer ${
                       editionType === et
-                        ? 'bg-warp-500/30 border-warp-500/50 opacity-80'
+                        ? 'bg-current/10 border-current/20 opacity-80'
                         : 'bg-transparent border-white/10 opacity-50 text-current hover:border-white/20'
                     }`}
                     onClick={() => setEditionType(et)}
@@ -1150,7 +1264,7 @@ export default function MarketplaceView() {
             </div>
 
             {/* Rarity Preview */}
-            <div className="text-body-sm p-3 border border-current/10 bg-cosmic-900/40">
+            <div className="text-body-sm p-3 border border-current/10 bg-current/5">
               <span className="opacity-40">Estimated rarity: </span>
               {(() => {
                 const previewRarity = editionType === 'unique' ? 'legendary'
@@ -1167,12 +1281,12 @@ export default function MarketplaceView() {
             </div>
 
             {createError && (
-              <div className="text-base p-3 rounded-none bg-red-500/10 border border-red-500/30 opacity-70">
+              <div className="text-base p-3 rounded-none bg-current/5 border border-current/15 opacity-70">
                 {createError}
               </div>
             )}
             {createSuccess && (
-              <div className="text-base p-3 rounded-none bg-green-500/10 border border-green-500/30 opacity-80">
+              <div className="text-base p-3 rounded-none bg-current/5 border border-current/15 opacity-80">
                 {createSuccess}
               </div>
             )}
@@ -1184,7 +1298,7 @@ export default function MarketplaceView() {
             >
               {creating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+                  <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
                   Minting...
                 </span>
               ) : (

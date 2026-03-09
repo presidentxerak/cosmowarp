@@ -167,7 +167,7 @@ export default function ConsoleView() {
 
       <div
         ref={scrollRef}
-        className="flex-1 bg-cosmic-900/80 rounded-none p-3 overflow-y-auto text-body-sm font-mono mb-2 cursor-text"
+        className="flex-1 bg-current/5 rounded-none p-3 overflow-y-auto text-body-sm font-mono mb-2 cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {lines.map((line, i) => (
@@ -181,7 +181,7 @@ export default function ConsoleView() {
           </div>
         ))}
         {buffer.length > 0 && (
-          <div className="text-yellow-500/60">... {buffer.length} lines buffered</div>
+          <div className="opacity-40">... {buffer.length} lines buffered</div>
         )}
       </div>
 

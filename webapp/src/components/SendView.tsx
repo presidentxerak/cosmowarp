@@ -105,7 +105,7 @@ export default function SendView() {
             <div className={`text-base p-3 rounded-none ${
               result.success
                 ? 'bg-current/5 border border-current/10 opacity-80'
-                : 'bg-current/5 border border-red-500/30 opacity-70'
+                : 'bg-current/5 border border-current/15 opacity-70'
             }`}>
               {result.message}
             </div>
@@ -118,7 +118,7 @@ export default function SendView() {
           >
             {sending ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+                <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
                 Signing & Validating...
               </span>
             ) : (

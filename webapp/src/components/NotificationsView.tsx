@@ -16,7 +16,7 @@ export default function NotificationsView() {
 
   const typeColor = (type: string) => {
     switch (type) {
-      case 'mine': return 'text-star-400';
+      case 'mine': return 'opacity-80';
       case 'send': return 'opacity-80';
       case 'genesis': return 'opacity-80';
       default: return 'opacity-80';
@@ -58,7 +58,7 @@ export default function NotificationsView() {
           <div className="flex gap-4 text-label opacity-40 flex-wrap">
             <span>DAG: <span className="opacity-80">{meshStats.totalTransactions}</span></span>
             <span>Tips: <span className="opacity-80">{meshStats.totalTips}</span></span>
-            <span>Resonance: <span className="text-star-400">{(meshStats.avgResonance * 100).toFixed(0)}%</span></span>
+            <span>Resonance: <span className="opacity-80">{(meshStats.avgResonance * 100).toFixed(0)}%</span></span>
             <span>Depth: <span className="opacity-80">{meshStats.maxDepth}</span></span>
           </div>
         </div>

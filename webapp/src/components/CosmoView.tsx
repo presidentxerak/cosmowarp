@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import Logo from './Logo';
 
 interface Message {
   id: string;
@@ -149,11 +150,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'cosmo' && (
               <div className="shrink-0 w-8 h-8 flex items-center justify-center">
-                <img
-                  src={import.meta.env.BASE_URL + 'logo.svg'}
-                  alt="Cosmo"
-                  className="w-6 h-6"
-                />
+                <Logo className="w-6 h-6" />
               </div>
             )}
             <div className={`max-w-[85%] sm:max-w-[70%] ${
@@ -169,7 +166,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
               {msg.suggestion && (
                 <button
                   onClick={() => onNavigate(msg.suggestion!.tab)}
-                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-body-sm font-medium opacity-80 bg-warp-500/15 border border-warp-500/25 hover:bg-warp-500/25 transition-all cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-body-sm font-medium opacity-80 bg-current/5 border border-current/10 hover:bg-current/10 transition-all cursor-pointer"
                 >
                   {msg.suggestion.label}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -188,12 +185,12 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
         {typing && (
           <div className="flex gap-2 items-start">
             <div className="shrink-0 w-8 h-8 flex items-center justify-center">
-              <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="Cosmo" className="w-6 h-6 animate-pulse" />
+              <Logo className="w-6 h-6 animate-pulse" />
             </div>
             <div className="flex gap-1 px-3 py-3">
-              <span className="w-1.5 h-1.5 bg-warp-400/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-warp-400/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-warp-400/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-1.5 h-1.5 bg-current/10 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-current/10 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-current/10 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
         )}
@@ -231,7 +228,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                     }, 800 + Math.random() * 1200);
                   }, 50);
                 }}
-                className="px-3 py-1.5 text-body-sm opacity-80 border border-current/10 bg-warp-500/5 hover:bg-warp-500/15 transition-all cursor-pointer"
+                className="px-3 py-1.5 text-body-sm opacity-80 border border-current/10 bg-current/5 hover:bg-current/5 transition-all cursor-pointer"
               >
                 {action.label}
               </button>

@@ -6,18 +6,8 @@
   --color-cosmic-700: #131650;
   --color-cosmic-600: #1a1d6b;
   --color-cosmic-500: #2a2d8b;
-  --color-warp-500: #a855f7;
-  --color-warp-400: #c084fc;
-  --color-warp-300: #d8b4fe;
-  --color-energy-500: #06b6d4;
-  --color-energy-400: #22d3ee;
-  --color-energy-300: #67e8f9;
-  --color-nebula-500: #ec4899;
-  --color-nebula-400: #f472b6;
-  --color-star-500: #eab308;
-  --color-star-400: #facc15;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
-  --font-title: 'Silkscreen', 'JetBrains Mono', monospace;
+  --font-mono: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-title: 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
 @layer base {
@@ -75,14 +65,7 @@
   --color-cosmic-600: #eeeeee;
   --color-cosmic-500: #e0e0e0;
 
-  --color-warp-500: #9333ea;
-  --color-warp-400: #a855f7;
-  --color-warp-300: #7c3aed;
-  --color-energy-500: #0891b2;
-  --color-energy-400: #0e7490;
-  --color-energy-300: #06b6d4;
-  --color-nebula-400: #db2777;
-  --color-star-400: #ca8a04;
+
 }
 
 [data-theme="light"] body {
@@ -93,8 +76,8 @@
 /* ─── Animations ─────────────────────────────────────── */
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.2); }
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); }
+  50% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
 }
 
 @keyframes warp-spin {
@@ -111,50 +94,7 @@
 .animate-warp-spin { animation: warp-spin 8s linear infinite; }
 .animate-float { animation: float 3s ease-in-out infinite; }
 
-/* ─── Gradient border hover animation ────────────────── */
-
-@keyframes gradient-border-rotate {
-  0% { --gradient-angle: 0deg; }
-  100% { --gradient-angle: 360deg; }
-}
-
-@property --gradient-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.hover-gradient-border {
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.hover-gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 4px;
-  background: conic-gradient(
-    from var(--gradient-angle),
-    #ec4899,
-    #8b5cf6,
-    #3b82f6,
-    #10b981,
-    #ec4899
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  animation: gradient-border-rotate 3s linear infinite;
-}
-
-.hover-gradient-border:hover::before {
-  opacity: 1;
-}
+/* ─── No gradient border — removed for monochrome design ── */
 
 /* ─── Hex Avatar Animation ─────────────────────────── */
 
@@ -232,7 +172,7 @@
 /* ─── Buttons — sharp, no outlines, large shadow ────── */
 
 .warp-button {
-  @apply px-5 py-3 font-bold text-base transition-all duration-200 cursor-pointer;
+  @apply px-5 py-3 font-medium text-base transition-all duration-200 cursor-pointer;
   background: rgba(255, 255, 255, 0.08);
   border: none;
   color: #ffffff;
@@ -240,40 +180,12 @@
   position: relative;
 }
 
-.warp-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 4px;
-  background: conic-gradient(
-    from var(--gradient-angle, 0deg),
-    #ec4899,
-    #8b5cf6,
-    #3b82f6,
-    #10b981,
-    #ec4899
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  animation: gradient-border-rotate 3s linear infinite;
-}
-
-.warp-button:hover::before {
-  opacity: 1;
-}
-
 .warp-button:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 .warp-button:active { transform: scale(0.95); }
 .warp-button:disabled { opacity: 0.3; cursor: not-allowed; }
-.warp-button:disabled::before { display: none; }
 
 [data-theme="light"] .warp-button {
   background: rgba(0, 0, 0, 0.05);
@@ -400,7 +312,7 @@ main > div > * {
 .text-body-sm { font-size: 0.875rem; line-height: 1.5; }
 .text-label { font-size: 0.75rem; line-height: 1.4; letter-spacing: 0.05em; text-transform: uppercase; }
 
-/* ─── Cards with hover gradient border ───────────────── */
+/* ─── Cards — monochrome ─────────────────────────────── */
 
 .card {
   background: rgba(0, 0, 0, 0.9);
@@ -410,33 +322,6 @@ main > div > * {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   position: relative;
   transition: all 0.3s ease;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: 4px;
-  background: conic-gradient(
-    from var(--gradient-angle, 0deg),
-    #ec4899,
-    #8b5cf6,
-    #3b82f6,
-    #10b981,
-    #ec4899
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  animation: gradient-border-rotate 3s linear infinite;
-}
-
-.card:hover::before {
-  opacity: 1;
 }
 
 .card:hover {

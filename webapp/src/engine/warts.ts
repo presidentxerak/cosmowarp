@@ -103,11 +103,11 @@ export interface Wart {
 // ─── Rarity Computation ─────────────────────────────────
 
 export const RARITY_CONFIG: Record<WartRarity, { label: string; color: string; badge: string }> = {
-  legendary: { label: 'Legendary', color: 'text-amber-400',  badge: '\u2726' },
-  epic:      { label: 'Epic',      color: 'text-purple-400', badge: '\u2605' },
-  rare:      { label: 'Rare',      color: 'text-blue-400',   badge: '\u25C6' },
-  uncommon:  { label: 'Uncommon',  color: 'text-green-400',  badge: '\u25C8' },
-  common:    { label: 'Common',    color: 'text-gray-400',   badge: '\u25CE' },
+  legendary: { label: 'Legendary', color: 'opacity-80',  badge: '\u2726' },
+  epic:      { label: 'Epic',      color: 'opacity-80', badge: '\u2605' },
+  rare:      { label: 'Rare',      color: 'opacity-80',   badge: '\u25C6' },
+  uncommon:  { label: 'Uncommon',  color: 'opacity-80',  badge: '\u25C8' },
+  common:    { label: 'Common',    color: 'opacity-40',   badge: '\u25CE' },
 };
 
 export function computeRarity(wart: Wart): WartRarity {

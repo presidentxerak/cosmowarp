@@ -27,7 +27,7 @@ export default function LegalsView() {
           </section>
 
           <section>
-            <h3 className="text-base font-bold text-energy-300 mb-2">Intellectual Property</h3>
+            <h3 className="text-base font-bold opacity-90 mb-2">Intellectual Property</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <p>
                 The CosmoWarp software, CosmoMesh protocol, and associated documentation are the
@@ -43,7 +43,7 @@ export default function LegalsView() {
           </section>
 
           <section>
-            <h3 className="text-base font-bold text-star-400 mb-2">Disclaimer</h3>
+            <h3 className="text-base font-bold opacity-80 mb-2">Disclaimer</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <p>
                 CosmoWarp is provided "as is" without warranty of any kind. The CosmoWarp Foundation

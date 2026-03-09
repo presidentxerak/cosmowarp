@@ -65,7 +65,7 @@ export default function AdminView() {
         >
           {unlocking ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
+              <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
               Decrypting...
             </span>
           ) : (
@@ -79,7 +79,7 @@ export default function AdminView() {
   return (
     <div className="space-y-4">
       {/* Admin Header */}
-      <div className="glass-panel p-4 border-amber-500/20">
+      <div className="glass-panel p-4 border-current/15">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-title-sm font-bold opacity-60 font-title">{'\u26BF'} Admin Registry</h2>
@@ -105,7 +105,7 @@ export default function AdminView() {
               <p className="text-label opacity-40">CIRCULATING</p>
             </div>
             <div className="glass-panel p-3 text-center bg-current/5">
-              <p className="text-title-sm font-bold text-star-400">{supplyInfo.totalMined.toLocaleString()}</p>
+              <p className="text-title-sm font-bold opacity-80">{supplyInfo.totalMined.toLocaleString()}</p>
               <p className="text-label opacity-40">TOTAL MINED</p>
             </div>
             <div className="glass-panel p-3 text-center bg-current/5">
@@ -120,7 +120,7 @@ export default function AdminView() {
             </div>
             <div>
               <span className="opacity-40">Mining Pool:</span>
-              <span className="text-cyan-400 ml-1">{supplyInfo.miningPoolRemaining.toLocaleString()}</span>
+              <span className="opacity-80 ml-1">{supplyInfo.miningPoolRemaining.toLocaleString()}</span>
             </div>
             <div>
               <span className="opacity-40">Airdrop Pool:</span>
@@ -170,7 +170,7 @@ export default function AdminView() {
                 <p className="text-label opacity-40">TOTAL TXs</p>
               </div>
               <div className="glass-panel p-3 text-center bg-current/5">
-                <p className="text-title-sm font-bold text-star-400">{adminDashboard.activeLast24h}</p>
+                <p className="text-title-sm font-bold opacity-80">{adminDashboard.activeLast24h}</p>
                 <p className="text-label opacity-40">ACTIVE 24H</p>
               </div>
             </div>
@@ -201,14 +201,14 @@ export default function AdminView() {
               ) : (
                 adminDashboard.recentEvents.map(event => (
                   <div key={event.id} className={`text-[11px] p-2 rounded-none ${
-                    event.severity === 'critical' ? 'bg-current/5 border border-red-500/20' :
-                    event.severity === 'warning' ? 'bg-yellow-500/10 border border-yellow-500/20' :
+                    event.severity === 'critical' ? 'bg-current/5 border border-current/20' :
+                    event.severity === 'warning' ? 'bg-current/5 border border-current/15' :
                     'bg-current/5'
                   }`}>
                     <div className="flex items-center gap-2">
                       <span className={
                         event.severity === 'critical' ? 'opacity-70' :
-                        event.severity === 'warning' ? 'text-yellow-400' :
+                        event.severity === 'warning' ? 'opacity-80' :
                         'opacity-50'
                       }>
                         {event.severity === 'critical' ? '\u26A0' : event.severity === 'warning' ? '\u26A1' : '\u25CE'}

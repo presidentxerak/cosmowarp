@@ -41,7 +41,7 @@ export default function SDKView() {
               onClick={() => setTab(t.id)}
               className={`px-3 py-1.5 rounded-none text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 tab === t.id
-                  ? 'bg-warp-500/30 opacity-80'
+                  ? 'bg-current/10 opacity-80'
                   : 'opacity-40 hover:opacity-70 hover:bg-current/5'
               }`}
             >

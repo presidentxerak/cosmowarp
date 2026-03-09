@@ -20,7 +20,7 @@ export default function PrivacyView() {
           </div>
 
           <section>
-            <h3 className="text-base font-bold text-energy-300 mb-2">Data We Don't Collect</h3>
+            <h3 className="text-base font-bold opacity-90 mb-2">Data We Don't Collect</h3>
             <ul className="space-y-1.5 text-body-sm opacity-50">
               <li className="flex items-start gap-2">
                 <span className="opacity-80 mt-0.5">{'\u2713'}</span>
@@ -46,7 +46,7 @@ export default function PrivacyView() {
           </section>
 
           <section>
-            <h3 className="text-base font-bold text-star-400 mb-2">Encryption</h3>
+            <h3 className="text-base font-bold opacity-80 mb-2">Encryption</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <p>
                 All communications on CosmoWarp are encrypted. Direct messages use end-to-end

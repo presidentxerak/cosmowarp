@@ -257,7 +257,7 @@ export default function CosmoChatView() {
     }
 
     return (
-      <div className="glass-panel p-3 cursor-pointer hover:border-warp-400/20 transition-all" onClick={() => setSelectedPost(post)}>
+      <div className="glass-panel p-3 cursor-pointer hover:border-current/10 transition-all" onClick={() => setSelectedPost(post)}>
         {/* Author row */}
         <div className="flex items-center gap-2 mb-1">
           <div className="shrink-0" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>
@@ -333,7 +333,7 @@ export default function CosmoChatView() {
           {/* Bookmark */}
           <button
             className={`text-body-sm cursor-pointer ${
-              hasBookmarked ? 'text-star-400' : 'opacity-40 hover:text-star-400'
+              hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleBookmark(post); }}
           >
@@ -389,7 +389,7 @@ export default function CosmoChatView() {
             <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
               {'\u2197'} Share
             </button>
-            <button className={`text-body-sm cursor-pointer ${hasBookmarked ? 'text-star-400' : 'opacity-40 hover:text-star-400'}`} onClick={() => handleBookmark(post)}>
+            <button className={`text-body-sm cursor-pointer ${hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleBookmark(post)}>
               {hasBookmarked ? '\u2605' : '\u2606'} Save
             </button>
           </div>
@@ -500,7 +500,7 @@ export default function CosmoChatView() {
                   <div className={`max-w-[80%] p-2 text-body-sm ${
                     m.from === wallet.address
                       ? 'bg-current/5 border border-current/10 opacity-90'
-                      : 'bg-cosmic-900/80 border border-current/10 opacity-70'
+                      : 'bg-current/5 border border-current/10 opacity-70'
                   }`}>
                     <span className="text-label font-bold opacity-80">@{m.fromAlias}</span>
                     <p className="mt-0.5">{m.content}</p>
@@ -551,7 +551,7 @@ export default function CosmoChatView() {
             onClick={() => setTab(t.id)}
             className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
-                ? 'border-warp-400 opacity-80'
+                ? 'border-current/20 opacity-80'
                 : 'border-transparent opacity-50 hover:opacity-90 hover:bg-current/5'
             }`}
           >
@@ -680,7 +680,7 @@ export default function CosmoChatView() {
               {channels.map(ch => (
                 <div
                   key={ch.id}
-                  className="glass-panel p-3 cursor-pointer hover:border-warp-400/20 transition-all"
+                  className="glass-panel p-3 cursor-pointer hover:border-current/10 transition-all"
                   onClick={() => setSelectedChannel(ch)}
                 >
                   <div className="flex items-center justify-between">

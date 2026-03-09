@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import Logo from './Logo';
 
 export default function Header({ activeTab, setActiveTab }: {
   activeTab: string;
@@ -57,20 +58,18 @@ export default function Header({ activeTab, setActiveTab }: {
       <div className="flex items-center gap-3 p-3 sm:p-4">
         {/* Logo + title */}
         <div className="flex items-center gap-2 shrink-0">
-          <img
-            src={import.meta.env.BASE_URL + 'logo.svg'}
-            alt="CosmoWarp"
+          <Logo
             className="w-7 h-7 sm:w-8 sm:h-8 animate-float cursor-pointer"
             onClick={() => selectTab('landing')}
           />
           <div className="hidden sm:block">
             <h1
-              className="text-base font-bold text-gray-100 leading-tight cursor-pointer font-title"
+              className="text-base font-bold opacity-90 leading-tight cursor-pointer font-title"
               onClick={() => selectTab('landing')}
             >
               CosmoWarp
             </h1>
-            <p className="text-[10px] text-gray-500">Terminal v2.0</p>
+            <p className="text-[10px] opacity-40">Terminal v2.0</p>
           </div>
         </div>
 
@@ -82,8 +81,8 @@ export default function Header({ activeTab, setActiveTab }: {
               onClick={() => selectTab(tab.id)}
               className={`px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-warp-500/30 text-warp-300 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  ? 'bg-current/10 opacity-80 '
+                  : 'opacity-40 hover:opacity-80 hover:bg-white/5'
               }`}
             >
               {tab.icon} {tab.label}
@@ -96,8 +95,8 @@ export default function Header({ activeTab, setActiveTab }: {
               onClick={() => setMenuOpen(!menuOpen)}
               className={`px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                 moreTabs.some(t => t.id === activeTab)
-                  ? 'bg-warp-500/30 text-warp-300'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  ? 'bg-current/10 opacity-80'
+                  : 'opacity-40 hover:opacity-80 hover:bg-white/5'
               }`}
             >
               {'\u2261'} More
@@ -110,8 +109,8 @@ export default function Header({ activeTab, setActiveTab }: {
                     onClick={() => selectTab(tab.id)}
                     className={`w-full text-left px-3 py-2 text-xs transition-all cursor-pointer ${
                       activeTab === tab.id
-                        ? 'bg-warp-500/30 text-warp-300'
-                        : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                        ? 'bg-current/10 opacity-80'
+                        : 'opacity-40 hover:opacity-80 hover:bg-white/5'
                     }`}
                   >
                     {tab.icon} {tab.label}
@@ -124,7 +123,7 @@ export default function Header({ activeTab, setActiveTab }: {
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer text-gray-400 hover:text-gray-200 hover:bg-white/5"
+            className="px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer opacity-40 hover:opacity-80 hover:bg-white/5"
             aria-label="Toggle theme"
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
@@ -134,19 +133,19 @@ export default function Header({ activeTab, setActiveTab }: {
 
         {/* Mobile: active tab label + theme toggle + burger button */}
         <div className="flex items-center gap-1 ml-auto sm:hidden">
-          <span className="text-xs text-gray-100 font-medium">
+          <span className="text-xs opacity-90 font-medium">
             {activeLabel ? `${activeLabel.icon} ${activeLabel.label}` : ''}
           </span>
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-warp-300 transition-all cursor-pointer"
+            className="flex items-center justify-center w-10 h-10 opacity-40 hover:opacity-80 transition-all cursor-pointer"
             aria-label="Toggle theme"
           >
             <span className="text-base">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
           </button>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center justify-center w-10 h-10 text-gray-300 hover:text-warp-300 hover:bg-white/5 transition-all cursor-pointer"
+            className="flex items-center justify-center w-10 h-10 opacity-50 hover:opacity-80 hover:bg-white/5 transition-all cursor-pointer"
             aria-label="Menu"
           >
             {menuOpen ? (
@@ -172,8 +171,8 @@ export default function Header({ activeTab, setActiveTab }: {
                 onClick={() => selectTab(tab.id)}
                 className={`flex flex-col items-center gap-1 py-3 px-2 text-center transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-warp-500/20 text-warp-300 shadow-[0_0_8px_rgba(168,85,247,0.2)]'
-                    : 'text-gray-400 active:bg-white/5'
+                    ? 'bg-current/5 opacity-80 '
+                    : 'opacity-40 active:bg-white/5'
                 }`}
               >
                 <span className="text-lg leading-none">{tab.icon}</span>

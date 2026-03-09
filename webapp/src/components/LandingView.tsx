@@ -1,4 +1,5 @@
 import { useWallet } from '../context/WalletContext';
+import Logo from './Logo';
 
 export default function LandingView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet } = useWallet();
@@ -12,11 +13,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           background: 'radial-gradient(circle at 20% 20%, #a855f7 0%, transparent 40%), radial-gradient(circle at 80% 80%, #06b6d4 0%, transparent 40%), radial-gradient(circle at 50% 50%, #f59e0b 0%, transparent 30%)',
         }} />
         <div className="relative">
-          <img
-            src={import.meta.env.BASE_URL + 'logo.svg'}
-            alt="CosmoWarp"
-            className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-6 animate-float"
-          />
+          <Logo className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-6 animate-float" />
           <h1 className="text-3xl sm:text-5xl font-bold opacity-100 mb-3 font-title">
             CosmoWarp
           </h1>
@@ -29,7 +26,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           </p>
           <button
             onClick={() => onNavigate('wallet')}
-            className="px-8 py-3 bg-warp-500/30 border border-warp-500/50 text-warp-300 font-bold text-base hover:bg-warp-500/50 transition-all cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+            className="px-8 py-3 bg-current/10 border border-current/20 opacity-80 font-bold text-base hover:bg-current/50 transition-all cursor-pointer  hover:"
           >
             {wallet ? '\u25C8 Open Wallet' : '\u25C8 Connect'}
           </button>
@@ -48,22 +45,22 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               icon: '\u{1F3E6}',
               title: 'Centralized Finance',
               desc: 'Banks control your money. They freeze accounts, impose limits, charge hidden fees, and operate on their schedule — not yours.',
-              color: 'text-red-400',
+              color: 'opacity-80',
             },
             {
               icon: '\u26D3',
               title: 'Blockchain Limits',
               desc: 'Bitcoin is slow and wastes energy. Ethereum has high gas fees. Both rely on linear block chains that bottleneck at scale.',
-              color: 'text-orange-400',
+              color: 'opacity-80',
             },
             {
               icon: '\u{1F441}',
               title: 'Surveillance Economy',
               desc: 'Every transaction you make is tracked, profiled, and sold. Your financial identity belongs to corporations, not to you.',
-              color: 'text-yellow-400',
+              color: 'opacity-80',
             },
           ].map(card => (
-            <div key={card.title} className="p-4 bg-cosmic-900/40 border border-gray-700/10">
+            <div key={card.title} className="p-4 bg-current/5 border border-current/5">
               <span className="text-2xl block mb-2">{card.icon}</span>
               <h3 className={`text-base font-bold ${card.color} mb-2`}>{card.title}</h3>
               <p className="text-body-sm opacity-50 leading-relaxed">{card.desc}</p>
@@ -96,16 +93,16 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               icon: '\u26BF',
               title: 'Real Cryptography',
               desc: 'Ed25519 signatures, SHA-256 hashing, AES-GCM encryption. Industry-standard, battle-tested primitives. No shortcuts.',
-              color: 'text-star-400',
+              color: 'opacity-80',
             },
             {
               icon: '\u2726',
               title: 'Certificate of Authenticity',
               desc: 'Every digital artwork (Wart) receives an unforgeable CWCERT certificate with SHA-256 fingerprint and creator Ed25519 signature. Permanent, tamper-proof.',
-              color: 'text-green-400',
+              color: 'opacity-80',
             },
           ].map(card => (
-            <div key={card.title} className="p-4 bg-cosmic-900/40 border border-gray-700/10">
+            <div key={card.title} className="p-4 bg-current/5 border border-current/5">
               <span className={`text-2xl block mb-2 ${card.color}`}>{card.icon}</span>
               <h3 className={`text-base font-bold ${card.color} mb-2`}>{card.title}</h3>
               <p className="text-body-sm opacity-50 leading-relaxed">{card.desc}</p>
@@ -130,7 +127,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             <button
               key={s.step}
               onClick={() => onNavigate(s.action)}
-              className="p-4 bg-cosmic-900/40 border border-gray-700/10 text-left hover:bg-warp-500/10 hover:border-warp-500/20 transition-all cursor-pointer group"
+              className="p-4 bg-current/5 border border-current/5 text-left hover:bg-current/5 hover:border-current/10 transition-all cursor-pointer group"
             >
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl opacity-80 opacity-30 group-hover:opacity-80 transition-opacity">{s.step}</span>
@@ -152,16 +149,16 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { icon: '\u25C8', label: 'Wallet', desc: 'Send, receive, mine', tab: 'wallet', color: 'opacity-80' },
-            { icon: '\u2B22', label: 'Wart Market', desc: 'Digital art marketplace', tab: 'warts', color: 'text-amber-400' },
-            { icon: '\u25CE', label: 'CosmoChat', desc: 'Social network', tab: 'cosmochat', color: 'text-cyan-400' },
+            { icon: '\u2B22', label: 'Wart Market', desc: 'Digital art marketplace', tab: 'warts', color: 'opacity-80' },
+            { icon: '\u25CE', label: 'CosmoChat', desc: 'Social network', tab: 'cosmochat', color: 'opacity-80' },
             { icon: '\u25C9', label: 'Feed', desc: 'Transaction history', tab: 'feed', color: 'opacity-80' },
-            { icon: '\u2B21', label: 'White Paper', desc: 'Full documentation', tab: 'whitepaper', color: 'text-purple-400' },
-            { icon: '\u2753', label: 'Help & Cosmo', desc: 'AI guide + FAQ', tab: 'help', color: 'text-green-400' },
+            { icon: '\u2B21', label: 'White Paper', desc: 'Full documentation', tab: 'whitepaper', color: 'opacity-80' },
+            { icon: '\u2753', label: 'Help & Cosmo', desc: 'AI guide + FAQ', tab: 'help', color: 'opacity-80' },
           ].map(item => (
             <button
               key={item.label}
               onClick={() => onNavigate(item.tab)}
-              className="p-3 bg-cosmic-900/40 border border-gray-700/10 text-center hover:bg-warp-500/10 transition-all cursor-pointer"
+              className="p-3 bg-current/5 border border-current/5 text-center hover:bg-current/5 transition-all cursor-pointer"
             >
               <span className={`text-xl block mb-1 ${item.color}`}>{item.icon}</span>
               <p className="text-body-sm font-bold opacity-90">{item.label}</p>
@@ -176,8 +173,8 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         {[
           { value: '69M', label: 'Total Supply', color: 'opacity-80' },
           { value: '\u03C6', label: 'Golden Ratio Mining', color: 'opacity-80' },
-          { value: '7', label: 'Mesh Layers', color: 'text-star-400' },
-          { value: '\u221E', label: 'Offline + Online', color: 'text-cyan-400' },
+          { value: '7', label: 'Mesh Layers', color: 'opacity-80' },
+          { value: '\u221E', label: 'Offline + Online', color: 'opacity-80' },
         ].map(s => (
           <div key={s.label} className="glass-panel p-4 text-center">
             <p className={`text-2xl sm:text-3xl font-bold ${s.color}`}>{s.value}</p>
@@ -201,13 +198,13 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => onNavigate('wallet')}
-              className="px-8 py-3 bg-warp-500/30 border border-warp-500/50 text-warp-300 font-bold text-base hover:bg-warp-500/50 transition-all cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+              className="px-8 py-3 bg-current/10 border border-current/20 opacity-80 font-bold text-base hover:bg-current/50 transition-all cursor-pointer "
             >
               {wallet ? '\u25C8 Open Wallet' : '\u2B21 Create Wallet'}
             </button>
             <button
               onClick={() => onNavigate('whitepaper')}
-              className="px-8 py-3 bg-white/5 border border-gray-700/30 opacity-70 text-base hover:bg-white/10 transition-all cursor-pointer"
+              className="px-8 py-3 bg-white/5 border border-current/10 opacity-70 text-base hover:bg-white/10 transition-all cursor-pointer"
             >
               {'\u2B21'} Read White Paper
             </button>
@@ -215,7 +212,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         </div>
       </div>
 
-      <p className="text-center text-[10px] text-gray-600">
+      <p className="text-center text-[10px] opacity-30">
         CosmoWarp Foundation {'\u2B21'} — A post-blockchain transactional fabric for humanity
       </p>
     </div>

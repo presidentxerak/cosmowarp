@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useWallet } from '../context/WalletContext';
+import Logo from './Logo';
 import HexAvatar from './HexAvatar';
 import { shortAddress } from '../engine/crypto';
 
@@ -148,7 +149,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer hover-gradient-border ${
+              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer ${
                 activeTab === item.id
                   ? 'opacity-100'
                   : 'opacity-40 hover:opacity-80'
@@ -190,11 +191,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
         <div className="p-5 border-b border-current/10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <img
-                src={import.meta.env.BASE_URL + 'logo.svg'}
-                alt="CosmoWarp"
-                className="w-8 h-8 animate-float"
-              />
+              <Logo className="w-8 h-8 animate-float" />
               <span className="font-title text-base">CosmoWarp</span>
             </div>
             <button

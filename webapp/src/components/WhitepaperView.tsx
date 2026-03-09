@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Logo from './Logo';
 
 type Section = 'overview' | 'foundation' | 'cosmomesh' | 'cosmochain' | 'cosmocode' | 'cosmohash' | 'cosmolingua' | 'tokenomics' | 'hierarchy' | 'security' | 'roadmap';
 
@@ -28,7 +29,7 @@ export default function WhitepaperView() {
         }} />
         <div className="relative">
           <div className="flex justify-center mb-4">
-            <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
+            <Logo className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
           <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">CosmoWarp</h1>
           <p className="text-base sm:text-base opacity-50 mb-1">White Paper v2.0</p>
@@ -48,7 +49,7 @@ export default function WhitepaperView() {
               onClick={() => setSection(n.id)}
               className={`flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-2 sm:py-1.5 rounded-none text-label sm:text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 section === n.id
-                  ? 'bg-warp-500/30 opacity-80'
+                  ? 'bg-current/10 opacity-80'
                   : 'opacity-40 hover:opacity-70 hover:bg-current/5'
               }`}
             >
@@ -155,7 +156,7 @@ function OverviewSection() {
       <div className="overflow-x-auto">
         <table className="w-full text-body-sm">
           <thead>
-            <tr className="border-b border-gray-700/30">
+            <tr className="border-b border-current/10">
               <th className="py-2 text-left opacity-40">Feature</th>
               <th className="py-2 text-center opacity-40">Fiat</th>
               <th className="py-2 text-center opacity-40">Blockchain</th>
@@ -212,12 +213,12 @@ function FoundationSection() {
         {[
           ['\u25CE', 'CosmoMesh', 'The transactional fabric. A DAG with 7 fractal validation layers that processes transactions in parallel, achieving near-instant settlement.', 'opacity-80'],
           ['\u25B7', 'CosmoCode', 'The programming language. CosmoASM is a custom instruction set for the CosmoVM virtual machine, enabling smart contracts and proof-of-computation mining.', 'opacity-80'],
-          ['\u26BF', 'CosmoHash', 'The cryptographic foundation. Ed25519 digital signatures, SHA-256 hashing, and AES-GCM authenticated encryption form the security backbone.', 'text-star-400'],
+          ['\u26BF', 'CosmoHash', 'The cryptographic foundation. Ed25519 digital signatures, SHA-256 hashing, and AES-GCM authenticated encryption form the security backbone.', 'opacity-80'],
           ['\u223F', 'CosmoLingua', 'The symbolic language. Greek letters (\u03A9, \u03C6, \u03C8), cosmic symbols, and fractal naming create a unique cultural identity for the protocol.', 'opacity-80'],
-          ['\u269B', 'CosmoVault', 'The tokenomics engine. Manages the 69M supply, Resonance Decay curve, airdrops, streak rewards, and creator lock.', 'text-cyan-400'],
-          ['\u2B21', 'CosmoSDK', 'The developer toolkit. Open-source API for building apps, extensions, and integrations on the CosmoWarp ecosystem.', 'text-orange-400'],
+          ['\u269B', 'CosmoVault', 'The tokenomics engine. Manages the 69M supply, Resonance Decay curve, airdrops, streak rewards, and creator lock.', 'opacity-80'],
+          ['\u2B21', 'CosmoSDK', 'The developer toolkit. Open-source API for building apps, extensions, and integrations on the CosmoWarp ecosystem.', 'opacity-80'],
         ].map(([icon, title, desc, color]) => (
-          <div key={title} className="p-4 rounded-none bg-current/5 border border-gray-700/10">
+          <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
               <span className={`text-title-sm ${color}`}>{icon}</span>
               <span className={`text-base font-bold ${color}`}>{title}</span>
@@ -259,12 +260,12 @@ function CosmoMeshSection() {
       <div className="space-y-1 mb-4">
         {[
           ['GRID', 'Micro-transactions (< 10 \u03A9)', 'opacity-50'],
-          ['HELIX', 'Standard transfers (10-100 \u03A9)', 'text-blue-400'],
-          ['GLYPH', 'Large transfers (100-1000 \u03A9)', 'text-yellow-400'],
-          ['COSMO', 'System operations (governance)', 'text-purple-400'],
-          ['CHRONOS', 'Time-locked transactions', 'text-cyan-400'],
-          ['NEXUS', 'Cross-layer bridges', 'text-orange-400'],
-          ['LUMINA', 'Genesis & epoch transitions', 'text-amber-300'],
+          ['HELIX', 'Standard transfers (10-100 \u03A9)', 'opacity-80'],
+          ['GLYPH', 'Large transfers (100-1000 \u03A9)', 'opacity-80'],
+          ['COSMO', 'System operations (governance)', 'opacity-80'],
+          ['CHRONOS', 'Time-locked transactions', 'opacity-80'],
+          ['NEXUS', 'Cross-layer bridges', 'opacity-80'],
+          ['LUMINA', 'Genesis & epoch transitions', 'opacity-80'],
         ].map(([name, desc, color]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
             <span className={`text-body-sm font-bold w-20 ${color}`}>{name}</span>
@@ -303,10 +304,10 @@ function CosmoChainSection() {
         CosmoChain is the transaction layer of the CosmoWarp protocol. It uses
         <span className="opacity-80 font-bold"> 7 real Web Worker threads</span> (OS-level parallelism),
         <span className="opacity-80 font-bold"> zero gas fees</span>,
-        <span className="text-star-400 font-bold"> IndexedDB persistence</span> (GB-scale vs 5MB localStorage), and
+        <span className="opacity-80 font-bold"> IndexedDB persistence</span> (GB-scale vs 5MB localStorage), and
         <span className="opacity-80 font-bold"> CosmoCode SVG compression</span> with measured ratios.
       </P>
-      <div className="p-3 rounded-none bg-amber-500/5 border border-amber-500/20 mb-4">
+      <div className="p-3 rounded-none bg-current/5 border border-current/15 mb-4">
         <p className="text-label opacity-60 font-bold mb-1">{'\u26A0'} HONEST STATUS</p>
         <p className="text-label opacity-60/70 leading-relaxed">
           In single-user mode, consensus is local validation — not Byzantine fault tolerant.
@@ -336,16 +337,16 @@ function CosmoChainSection() {
           <div className="ml-4 border-l-2 border-current/10 h-4" />
           {/* Step 2 */}
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-energy-500/20 border border-energy-500/30 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">2</div>
+            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">2</div>
             <div className="flex-1">
               <p className="text-body-sm font-bold opacity-90">CosmoChain routes to the right shard</p>
               <p className="text-label opacity-40">Your TX is automatically assigned to 1 of 7 parallel shards based on its type and amount. No action needed from you.</p>
             </div>
           </div>
-          <div className="ml-4 border-l-2 border-energy-500/20 h-4" />
+          <div className="ml-4 border-l-2 border-current/10 h-4" />
           {/* Step 3 */}
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-star-500/20 border border-star-500/30 flex items-center justify-center shrink-0 text-base text-star-400 font-bold">3</div>
+            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">3</div>
             <div className="flex-1">
               <p className="text-body-sm font-bold opacity-90">All 7 shards process in parallel</p>
               <p className="text-label opacity-40">While your TX processes on its shard, 6 other shards handle other users' TXs simultaneously = 10x faster than single-chain.</p>
@@ -363,13 +364,13 @@ function CosmoChainSection() {
           <div className="ml-4 border-l-2 border-nebula-500/20 h-4" />
           {/* Step 5 */}
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0 text-base text-cyan-400 font-bold">5</div>
+            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">5</div>
             <div className="flex-1">
               <p className="text-body-sm font-bold opacity-90">Stored fully on-chain in the shard block</p>
               <p className="text-label opacity-40">The compressed SVG is stored directly in the blockchain. No IPFS, no external server. Your data lives on-chain forever, for free.</p>
             </div>
           </div>
-          <div className="ml-4 border-l-2 border-cyan-500/20 h-4" />
+          <div className="ml-4 border-l-2 border-current/10 h-4" />
           {/* Step 6 */}
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">{'\u2713'}</div>
@@ -505,12 +506,12 @@ function CosmoChainSection() {
       <div className="space-y-1 mb-4">
         {[
           ['GRID', '0', '< 10 \u03A9', 'Micro-payments, tips, small transfers', 'opacity-50'],
-          ['HELIX', '1', '10-100 \u03A9', 'Standard peer-to-peer transfers', 'text-blue-400'],
-          ['GLYPH', '2', '100-1K \u03A9', 'Large transfers + NFT operations (mint/buy)', 'text-yellow-400'],
-          ['COSMO', '3', 'System', 'Governance, staking, unstaking', 'text-purple-400'],
-          ['CHRONOS', '4', 'Time', 'Time-locked transactions (vesting, escrow)', 'text-cyan-400'],
-          ['NEXUS', '5', 'Bridge', 'Cross-shard atomic transfers', 'text-orange-400'],
-          ['LUMINA', '6', 'Chain', 'Genesis, epoch transitions, beacon anchors', 'text-amber-300'],
+          ['HELIX', '1', '10-100 \u03A9', 'Standard peer-to-peer transfers', 'opacity-80'],
+          ['GLYPH', '2', '100-1K \u03A9', 'Large transfers + NFT operations (mint/buy)', 'opacity-80'],
+          ['COSMO', '3', 'System', 'Governance, staking, unstaking', 'opacity-80'],
+          ['CHRONOS', '4', 'Time', 'Time-locked transactions (vesting, escrow)', 'opacity-80'],
+          ['NEXUS', '5', 'Bridge', 'Cross-shard atomic transfers', 'opacity-80'],
+          ['LUMINA', '6', 'Chain', 'Genesis, epoch transitions, beacon anchors', 'opacity-80'],
         ].map(([name, _id, range, desc, color]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
             <span className={`text-body-sm font-bold w-16 ${color}`}>{name}</span>
@@ -525,7 +526,7 @@ function CosmoChainSection() {
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-body-sm">
           <thead>
-            <tr className="border-b border-gray-700/30">
+            <tr className="border-b border-current/10">
               <th className="py-2 text-left opacity-40">Metric</th>
               <th className="py-2 text-center opacity-40">Bitcoin</th>
               <th className="py-2 text-center opacity-40">Ethereum</th>
@@ -616,7 +617,7 @@ function CosmoChainSection() {
         instant UX + permanent decentralized storage.
       </P>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="p-3 rounded-none bg-current/5 border border-energy-500/10">
+        <div className="p-3 rounded-none bg-current/5 border border-current/10">
           <p className="text-body-sm font-bold opacity-80 mb-1">{'\u25CE'} CosmoMesh (Layer 1)</p>
           <ul className="text-label opacity-40 space-y-1">
             <li>{'\u2192'} DAG instant settlement</li>
@@ -625,7 +626,7 @@ function CosmoChainSection() {
             <li>{'\u2192'} P2P gossip propagation</li>
           </ul>
         </div>
-        <div className="p-3 rounded-none bg-current/5 border border-warp-500/10">
+        <div className="p-3 rounded-none bg-current/5 border border-current/10">
           <p className="text-body-sm font-bold opacity-80 mb-1">{'\u26D3'} CosmoChain (Layer 2)</p>
           <ul className="text-label opacity-40 space-y-1">
             <li>{'\u2192'} Full on-chain SVG storage</li>
@@ -676,13 +677,13 @@ function CosmoCodeSection() {
       </P>
       <div className="space-y-2 mb-4">
         {[
-          ['Layer 1', 'Delta Encoding', 'Only stores differences from previous data. Sequential transactions share common structure, so we only store what changed. Most effective on batches of similar data.', '~1.5-3x', 'text-blue-400'],
+          ['Layer 1', 'Delta Encoding', 'Only stores differences from previous data. Sequential transactions share common structure, so we only store what changed. Most effective on batches of similar data.', '~1.5-3x', 'opacity-80'],
           ['Layer 2', 'Dictionary Compression', 'Replaces common strings ("transaction", "signature", "publicKey") with short symbols (\u00A7t, \u00A7s, \u00A7p). Effective on JSON-like structured data.', '~1.5-3x', 'opacity-80'],
-          ['Layer 3', 'Run-Length SVG Paths', 'Encodes repetitive sequences (like hex strings with repeated chars) as compact notation. "AAABBB" becomes "3A3B".', '~1.2-2x', 'text-yellow-400'],
-          ['Layer 4', 'Fractal Nesting', 'Uses SVG <defs>/<use> to define repeated patterns once and reference them everywhere. Most effective on highly repetitive structured data.', '~1.5-5x', 'text-purple-400'],
-          ['Layer 5', 'Frequency Encoding', 'Maps the most common byte pairs to single Unicode characters. Huffman-inspired variable-length encoding.', '~1.2-2x', 'text-cyan-400'],
-          ['Layer 6', 'Color Quantization', 'For images: reduces the color palette to essential colors. Minimal effect on already-compressed binary data.', '~1-1.5x', 'text-orange-400'],
-          ['Layer 7', 'Filter Chains', 'Reusable SVG filter pipelines that encode common transforms without repeating them.', '~1-1.3x', 'text-amber-300'],
+          ['Layer 3', 'Run-Length SVG Paths', 'Encodes repetitive sequences (like hex strings with repeated chars) as compact notation. "AAABBB" becomes "3A3B".', '~1.2-2x', 'opacity-80'],
+          ['Layer 4', 'Fractal Nesting', 'Uses SVG <defs>/<use> to define repeated patterns once and reference them everywhere. Most effective on highly repetitive structured data.', '~1.5-5x', 'opacity-80'],
+          ['Layer 5', 'Frequency Encoding', 'Maps the most common byte pairs to single Unicode characters. Huffman-inspired variable-length encoding.', '~1.2-2x', 'opacity-80'],
+          ['Layer 6', 'Color Quantization', 'For images: reduces the color palette to essential colors. Minimal effect on already-compressed binary data.', '~1-1.5x', 'opacity-80'],
+          ['Layer 7', 'Filter Chains', 'Reusable SVG filter pipelines that encode common transforms without repeating them.', '~1-1.3x', 'opacity-80'],
         ].map(([layer, title, desc, ratio, color]) => (
           <div key={title} className="p-3 rounded-none bg-current/5">
             <div className="flex items-center gap-2 mb-1">
@@ -736,7 +737,7 @@ function CosmoCodeSection() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="TX BATCH (100)" value="~5-30x" color="opacity-80" />
         <Stat label="STATE SNAPSHOT" value="~3-10x" color="opacity-80" />
-        <Stat label="SVG ARTWORK" value="~1-2x" color="text-star-400" />
+        <Stat label="SVG ARTWORK" value="~1-2x" color="opacity-80" />
         <Stat label="BASE64 IMAGES" value="~1x" color="opacity-80" />
       </div>
     </div>
@@ -778,7 +779,7 @@ function CosmoHashSection() {
       <div className="grid grid-cols-1 gap-3 mt-4 sm:grid-cols-3">
         <Stat label="SIGNATURES" value="Ed25519" color="opacity-80" />
         <Stat label="HASHING" value="SHA-256" color="opacity-80" />
-        <Stat label="ENCRYPTION" value="AES-GCM" color="text-star-400" />
+        <Stat label="ENCRYPTION" value="AES-GCM" color="opacity-80" />
       </div>
     </div>
   );
@@ -800,13 +801,13 @@ function CosmoLinguaSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {[
           ['\u03A9', 'Omega', 'Unit of value (Warps)', 'opacity-80'],
-          ['\u03C6', 'Phi', 'Golden ratio (Resonance Decay)', 'text-star-400'],
+          ['\u03C6', 'Phi', 'Golden ratio (Resonance Decay)', 'opacity-80'],
           ['\u03C8', 'Psi', 'Wave function (consensus)', 'opacity-80'],
           ['\u2B21', 'Hexagon', 'CosmoWarp identity symbol', 'opacity-80'],
           ['\u223F', 'Wave', 'Resonance and harmony', 'opacity-80'],
-          ['\u269B', 'Atom', 'Fundamental transaction unit', 'text-cyan-400'],
+          ['\u269B', 'Atom', 'Fundamental transaction unit', 'opacity-80'],
           ['\u2604', 'Comet', 'High-energy operations', 'opacity-80'],
-          ['\u2600', 'Sun', 'Lumina \u2014 highest level', 'text-amber-300'],
+          ['\u2600', 'Sun', 'Lumina \u2014 highest level', 'opacity-80'],
         ].map(([sym, name, desc, color]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
             <span className={`text-title-lg w-8 text-center ${color}`}>{sym}</span>
@@ -826,12 +827,12 @@ function CosmoLinguaSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {[
           ['\u2022', 'Particle', 'Quantum seed \u2014 the origin point', 'opacity-50'],
-          ['\u223F', 'Wave', 'Harmonic traveler through the mesh', 'text-blue-400'],
-          ['\u2605', 'Star', 'Stellar navigator \u2014 a guiding light', 'text-yellow-400'],
-          ['\u2604', 'Nebula', 'Architect shaping the cosmic fabric', 'text-purple-400'],
-          ['\u269B', 'Galaxy', 'Galactic guardian of the network', 'text-cyan-400'],
-          ['\u2B21', 'Cosmos', 'Sovereign of the cosmic order', 'text-orange-400'],
-          ['\u2600', 'Lumina', 'Transcendent \u2014 you ARE the light', 'text-amber-300'],
+          ['\u223F', 'Wave', 'Harmonic traveler through the mesh', 'opacity-80'],
+          ['\u2605', 'Star', 'Stellar navigator \u2014 a guiding light', 'opacity-80'],
+          ['\u2604', 'Nebula', 'Architect shaping the cosmic fabric', 'opacity-80'],
+          ['\u269B', 'Galaxy', 'Galactic guardian of the network', 'opacity-80'],
+          ['\u2B21', 'Cosmos', 'Sovereign of the cosmic order', 'opacity-80'],
+          ['\u2600', 'Lumina', 'Transcendent \u2014 you ARE the light', 'opacity-80'],
         ].map(([sym, name, desc, color]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
             <span className={`text-title-lg w-8 text-center ${color}`}>{sym}</span>
@@ -932,14 +933,14 @@ function TokenomicsSection() {
         <Stat label="TOTAL SUPPLY" value="69M" color="opacity-80" />
         <Stat label="CREATOR LOCK" value="1M" color="opacity-60" />
         <Stat label="AIRDROP POOL" value="10M" color="opacity-80" />
-        <Stat label="MINING POOL" value="58M" color="text-star-400" />
+        <Stat label="MINING POOL" value="58M" color="opacity-80" />
       </div>
 
       <H3>Distribution</H3>
       <div className="space-y-2 mb-4">
         {[
           ['Mining Pool', '58,000,000 CW (84%)', 'Distributed via Resonance Decay to miners', 'bg-current/5'],
-          ['Airdrop Pool', '10,000,000 CW (14.5%)', '1,000 CW per new wallet', 'bg-energy-500/20'],
+          ['Airdrop Pool', '10,000,000 CW (14.5%)', '1,000 CW per new wallet', 'bg-current/5'],
           ['Creator Lock', '1,000,000 CW (1.5%)', 'Locked, unlockable by admin at any time', 'bg-current/5'],
         ].map(([title, amount, desc, bg]) => (
           <div key={title} className={`p-3 rounded-none ${bg}`}>
@@ -988,7 +989,7 @@ function TokenomicsSection() {
       <H3>Streak Rewards</H3>
       <P>
         On December 31, accounts that have made at least 1 transaction per day for 365 consecutive
-        days receive <span className="text-star-400 font-bold">10,000 CW</span> as a loyalty reward.
+        days receive <span className="opacity-80 font-bold">10,000 CW</span> as a loyalty reward.
         This incentivizes consistent, long-term participation over speculation.
       </P>
     </div>
@@ -1009,14 +1010,14 @@ function HierarchySection() {
       <div className="space-y-2">
         {[
           { sym: '\u2022', name: 'Particle', title: 'Quantum Seed', mult: '1.0x', min: '0 TX', bonus: '0 CW', color: 'opacity-50', desc: 'Every journey begins with a single particle.' },
-          { sym: '\u223F', name: 'Wave', title: 'Harmonic Traveler', mult: '1.2x', min: '10 TX', bonus: '100 CW', color: 'text-blue-400', desc: 'Your transactions ripple through the mesh.' },
-          { sym: '\u2605', name: 'Star', title: 'Stellar Navigator', mult: '1.5x', min: '50 TX', bonus: '250 CW', color: 'text-yellow-400', desc: 'A guiding light in the CosmoMesh.' },
-          { sym: '\u2604', name: 'Nebula', title: 'Nebula Architect', mult: '2.0x', min: '200 TX', bonus: '500 CW', color: 'text-purple-400', desc: 'You shape the fabric of the mesh.' },
-          { sym: '\u269B', name: 'Galaxy', title: 'Galactic Guardian', mult: '2.5x', min: '500 TX', bonus: '1,000 CW', color: 'text-cyan-400', desc: 'A gravitational center of the network.' },
-          { sym: '\u2B21', name: 'Cosmos', title: 'Cosmic Sovereign', mult: '3.5x', min: '2,000 TX', bonus: '2,500 CW', color: 'text-orange-400', desc: 'Sovereign of the cosmic order.' },
-          { sym: '\u2600', name: 'Lumina', title: 'Lumina Transcendent', mult: '5.0x', min: '10,000 TX', bonus: '5,000 CW', color: 'text-amber-300', desc: 'Transcended beyond the mesh. You ARE the light.' },
+          { sym: '\u223F', name: 'Wave', title: 'Harmonic Traveler', mult: '1.2x', min: '10 TX', bonus: '100 CW', color: 'opacity-80', desc: 'Your transactions ripple through the mesh.' },
+          { sym: '\u2605', name: 'Star', title: 'Stellar Navigator', mult: '1.5x', min: '50 TX', bonus: '250 CW', color: 'opacity-80', desc: 'A guiding light in the CosmoMesh.' },
+          { sym: '\u2604', name: 'Nebula', title: 'Nebula Architect', mult: '2.0x', min: '200 TX', bonus: '500 CW', color: 'opacity-80', desc: 'You shape the fabric of the mesh.' },
+          { sym: '\u269B', name: 'Galaxy', title: 'Galactic Guardian', mult: '2.5x', min: '500 TX', bonus: '1,000 CW', color: 'opacity-80', desc: 'A gravitational center of the network.' },
+          { sym: '\u2B21', name: 'Cosmos', title: 'Cosmic Sovereign', mult: '3.5x', min: '2,000 TX', bonus: '2,500 CW', color: 'opacity-80', desc: 'Sovereign of the cosmic order.' },
+          { sym: '\u2600', name: 'Lumina', title: 'Lumina Transcendent', mult: '5.0x', min: '10,000 TX', bonus: '5,000 CW', color: 'opacity-80', desc: 'Transcended beyond the mesh. You ARE the light.' },
         ].map(level => (
-          <div key={level.name} className="p-3 rounded-none bg-current/5 border border-gray-700/10">
+          <div key={level.name} className="p-3 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-3">
               <span className={`text-title-lg ${level.color}`}>{level.sym}</span>
               <div className="flex-1">
@@ -1029,7 +1030,7 @@ function HierarchySection() {
               <div className="text-right shrink-0">
                 <p className="text-body-sm opacity-80 font-bold">{level.mult}</p>
                 <p className="text-label opacity-40">{level.min}</p>
-                <p className="text-label text-star-400">+{level.bonus}</p>
+                <p className="text-label opacity-80">+{level.bonus}</p>
               </div>
             </div>
           </div>
@@ -1088,7 +1089,7 @@ function RoadmapSection() {
           { phase: 'Phase 4', title: 'Ecosystem', status: 'In Progress', color: 'opacity-60', items: ['White Paper v2 & landing page', 'API documentation', 'SDK marketplace', 'Community governance', 'Mobile-first responsive design', 'Extension ecosystem'] },
           { phase: 'Phase 5', title: 'Horizon', status: 'Planned', color: 'opacity-40', items: ['Mobile apps (iOS + Android)', 'Hardware wallet support', 'Cross-chain bridges (Ethereum, Solana)', 'Governance DAO', 'Art & services marketplace', 'Global P2P relay network'] },
         ].map(phase => (
-          <div key={phase.phase} className="p-4 rounded-none bg-current/5 border border-gray-700/10">
+          <div key={phase.phase} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-body-sm font-bold opacity-80">{phase.phase}</span>
               <span className="text-base font-bold opacity-90">{phase.title}</span>

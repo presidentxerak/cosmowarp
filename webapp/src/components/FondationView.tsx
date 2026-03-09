@@ -1,9 +1,11 @@
+import Logo from './Logo';
+
 export default function FondationView() {
   return (
     <div className="space-y-4 pb-4">
       <div className="glass-panel p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-4">
-          <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-10 h-10 animate-float" />
+          <Logo className="w-10 h-10 animate-float" />
           <div>
             <h2 className="text-title-md font-bold opacity-100 font-title">CosmoWarp Foundation</h2>
             <p className="text-body-sm opacity-40">Building the future of decentralized finance</p>
@@ -29,7 +31,7 @@ export default function FondationView() {
                 Protect user privacy through end-to-end encryption
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-star-400 mt-0.5">{'\u25C8'}</span>
+                <span className="opacity-80 mt-0.5">{'\u25C8'}</span>
                 Foster a community-driven ecosystem of digital art and creation
               </li>
               <li className="flex items-start gap-2">
@@ -40,7 +42,7 @@ export default function FondationView() {
           </div>
 
           <div className="glass-panel p-4">
-            <h3 className="text-base font-bold text-energy-300 mb-2">Core Values</h3>
+            <h3 className="text-base font-bold opacity-90 mb-2">Core Values</h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-body-sm font-medium opacity-90">Decentralization</p>
@@ -62,7 +64,7 @@ export default function FondationView() {
           </div>
 
           <div className="glass-panel p-4">
-            <h3 className="text-base font-bold text-star-400 mb-2">Ecosystem</h3>
+            <h3 className="text-base font-bold opacity-80 mb-2">Ecosystem</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'\u03A9'}</span>
@@ -73,7 +75,7 @@ export default function FondationView() {
                 <span><span className="opacity-90">Warts</span> - Digital art NFTs with royalties</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-star-400">{'\u25CE'}</span>
+                <span className="opacity-80">{'\u25CE'}</span>
                 <span><span className="opacity-90">Wall</span> - Decentralized social network</span>
               </div>
               <div className="flex items-center gap-2">

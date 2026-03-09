@@ -407,7 +407,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
           onClick={() => setTab('cosmo')}
           className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
             tab === 'cosmo'
-              ? 'bg-warp-500/30 opacity-80'
+              ? 'bg-current/10 opacity-80'
               : 'opacity-50 hover:opacity-90 hover:bg-current/5'
           }`}
         >
@@ -417,7 +417,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
           onClick={() => setTab('faq')}
           className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
             tab === 'faq'
-              ? 'bg-warp-500/30 opacity-80'
+              ? 'bg-current/10 opacity-80'
               : 'opacity-50 hover:opacity-90 hover:bg-current/5'
           }`}
         >
@@ -480,12 +480,12 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask Cosmo anything..."
-                className="flex-1 bg-current/5 border border-gray-700/30 px-3 py-2 text-body-sm opacity-90 placeholder-gray-600 outline-none focus:border-warp-500/40"
+                className="flex-1 bg-current/5 border border-current/10 px-3 py-2 text-body-sm opacity-90 placeholder-current/30 outline-none focus:border-current/15"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="px-4 py-2 bg-warp-500/30 border border-warp-500/40 opacity-80 text-body-sm font-medium cursor-pointer hover:bg-warp-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-current/10 border border-current/15 opacity-80 text-body-sm font-medium cursor-pointer hover:bg-current/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {'\u2197'}
               </button>

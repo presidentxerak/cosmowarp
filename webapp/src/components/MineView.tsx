@@ -121,7 +121,7 @@ export default function MineView() {
           <span>Difficulty: <span className="opacity-80">{diffState.currentDifficulty} bits</span></span>
           <span>Block: <span className="opacity-80">#{diffState.blocksMined}</span></span>
           <span>Reward: <span className="opacity-80">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u03A9'}</span></span>
-          <span>Multiplier: <span className="text-star-400">{wallet.rewardMultiplier}x</span></span>
+          <span>Multiplier: <span className="opacity-80">{wallet.rewardMultiplier}x</span></span>
           <span>Epoch: <span className="opacity-80">{supplyInfo?.currentEpoch || 0}</span></span>
         </div>
 
@@ -132,12 +132,12 @@ export default function MineView() {
             <p className="text-label opacity-30 font-mono">
               {'0'.repeat(Math.floor(diffState.currentDifficulty / 4))}
               <span className="opacity-40">{'f'.repeat(Math.max(0, 16 - Math.floor(diffState.currentDifficulty / 4)))}</span>
-              <span className="text-gray-700">...</span>
+              <span className="opacity-30">...</span>
             </p>
           </div>
-          <div className="w-full h-1.5 bg-cosmic-900/80 overflow-hidden">
+          <div className="w-full h-1.5 bg-current/5 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-energy-500 to-warp-500 transition-all duration-300"
+              className="h-full bg-current/30 transition-all duration-300"
               style={{ width: `${(diffState.currentDifficulty / 32) * 100}%` }}
             />
           </div>
@@ -157,7 +157,7 @@ export default function MineView() {
           </button>
         ) : (
           <button
-            className="w-full py-3 text-base font-medium bg-red-500/20 border border-red-500/40 text-red-300 hover:bg-red-500/30 transition-colors cursor-pointer"
+            className="w-full py-3 text-base font-medium bg-current/5 border border-current/15 opacity-70 hover:bg-current/10 transition-colors cursor-pointer"
             onClick={stopMining}
           >
             {'\u25A0'} Stop Mining
@@ -219,7 +219,7 @@ export default function MineView() {
               <div className="flex justify-between text-label mb-1">
                 <span className="opacity-40">BEST HASH ({progress.bestZeroBits}/{progress.targetBits} bits)</span>
               </div>
-              <div className="bg-cosmic-900/80 p-2 font-mono text-label break-all">
+              <div className="bg-current/5 p-2 font-mono text-label break-all">
                 <span className="opacity-80">
                   {progress.bestHash.slice(0, Math.floor(progress.bestZeroBits / 4))}
                 </span>
@@ -227,9 +227,9 @@ export default function MineView() {
                   {progress.bestHash.slice(Math.floor(progress.bestZeroBits / 4))}
                 </span>
               </div>
-              <div className="w-full h-1 bg-cosmic-900/80 mt-1 overflow-hidden">
+              <div className="w-full h-1 bg-current/5 mt-1 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-warp-500 to-energy-500 transition-all duration-200"
+                  className="h-full bg-current/30 transition-all duration-200"
                   style={{ width: `${Math.min(100, (progress.bestZeroBits / progress.targetBits) * 100)}%` }}
                 />
               </div>
@@ -240,7 +240,7 @@ export default function MineView() {
           {lastHash && !mining && (
             <div className="mt-3">
               <p className="text-label opacity-40 mb-1">WINNING HASH</p>
-              <div className="bg-cosmic-900/80 p-2 font-mono text-label break-all">
+              <div className="bg-current/5 p-2 font-mono text-label break-all">
                 <span className="opacity-80">
                   {lastHash.slice(0, Math.floor(diffState.currentDifficulty / 4))}
                 </span>
