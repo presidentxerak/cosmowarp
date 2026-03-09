@@ -16,6 +16,10 @@ import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
 import type { CosmoContract } from '../engine/cosmocontract';
 import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
+// ─── Supabase Sync ──────────────────────────────────────────
+import * as sync from '../lib/supabase-sync';
+import { realtime } from '../lib/supabase-realtime';
+import { isBackendAvailable } from '../lib/supabase';
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -125,13 +129,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, [unlocked, resetTimer]);
 
-  // ─── Load wallet on mount ──────────────────────────────
+  // ─── Load wallet on mount + Supabase sync ──────────────
   useEffect(() => {
     const w = loadWallet();
     if (w) {
       setWallet(w);
       setLevelProgress(getProgressToNextLevel(w.address));
       setNeedsMigration(walletNeedsMigration());
+
+      // Pull cloud data if backend is available
+      if (isBackendAvailable()) {
+        sync.fullSync(w.address).then(cloudData => {
+          if (cloudData?.profile) {
+            // Use cloud balance if higher (source of truth)
+            if (cloudData.profile.balance > w.balance) {
+              w.balance = cloudData.profile.balance;
+              setWallet({ ...w });
+            }
+          }
+          if (cloudData?.transactions && cloudData.transactions.length > 0) {
+            setGlobalTxs(prev =>
+              prev.length < cloudData.transactions.length ? cloudData.transactions : prev
+            );
+          }
+        });
+      }
     }
     setGlobalTxs(getGlobalTransactions());
     try {
@@ -139,6 +161,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setSupplyInfo(getSupplyBreakdown());
     } catch { /* first load */ }
     refreshWartsState(w?.address);
+
+    // Start realtime subscriptions
+    if (isBackendAvailable()) {
+      realtime.start();
+    }
+
+    return () => {
+      realtime.stop();
+    };
   }, []);
 
   function refreshWartsState(address?: string) {
@@ -162,6 +193,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setSupplyInfo(getSupplyBreakdown());
     setLevelProgress(0);
     refreshWartsState(w.address);
+    // Sync to Supabase
+    sync.syncProfile(w);
+    for (const tx of w.transactions) sync.syncTransaction(tx);
   }, []);
 
   // ─── CosmoID Login ───────────────────────────────────────
@@ -182,6 +216,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const engine = getWartEngine();
       await engine.initVault(username, password);
       refreshWartsState(w.address);
+      // Sync: pull cloud data then push local state
+      sync.fullSync(w.address).then(cloudData => {
+        if (cloudData?.profile && cloudData.profile.balance > w.balance) {
+          w.balance = cloudData.profile.balance;
+          setWallet({ ...w });
+        }
+      });
+      sync.syncProfile(w);
+      for (const tx of w.transactions) sync.syncTransaction(tx);
       return { success: true, isNew };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Login failed' };
@@ -300,6 +343,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setSupplyInfo(getSupplyBreakdown());
       setLevelProgress(getProgressToNextLevel(wallet.address));
       if (result.levelUp) setLastLevelUp(result.levelUp);
+      // Sync to Supabase (atomic transfer + transaction record)
+      sync.atomicTransfer(wallet.address, to, amount);
+      sync.syncProfile(wallet);
+      if (result.tx) sync.syncTransaction(result.tx);
     }
     return result;
   }, [wallet]);
@@ -314,6 +361,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setSupplyInfo(getSupplyBreakdown());
     setLevelProgress(getProgressToNextLevel(wallet.address));
     if (result.levelUp) setLastLevelUp(result.levelUp);
+    // Sync to Supabase
+    sync.syncProfile(wallet);
+    sync.syncTransaction(result.tx);
     return result;
   }, [wallet]);
 
@@ -383,6 +433,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setWallet({ ...wallet });
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
+    // Sync to Supabase (wart + media + transaction)
+    sync.syncWart(wart);
+    sync.syncProfile(wallet);
+    if (wart.certId) {
+      sync.syncCertificate({
+        certId: wart.certId,
+        contentFingerprint: wart.contentFingerprint || '',
+        creatorSignature: wart.creatorSignature || '',
+        creator: wart.creator,
+        wartId: wart.id,
+        title: wart.title,
+        issuedAt: wart.createdAt,
+      });
+    }
     return wart;
   }, [wallet]);
 
@@ -431,6 +495,26 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setWallet({ ...wallet });
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
+    // Sync purchase to Supabase (atomic operation)
+    sync.atomicPurchaseWart({
+      wartId,
+      buyer: wallet.address,
+      price,
+      royaltyAmount,
+      creator,
+      seller,
+      txId,
+    });
+    sync.syncProfile(wallet);
+    sync.syncTransaction(buyTx);
+    sync.syncNotification({
+      recipient: seller,
+      sender: wallet.address,
+      type: 'sale',
+      title: 'Artwork sold!',
+      body: `${wart.title} was purchased for ${price} \u03A9`,
+      refId: wartId,
+    });
     return { success: true };
   }, [wallet]);
 
@@ -438,7 +522,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet) return false;
     const engine = getWartEngine();
     const ok = engine.list(wartId, price, wallet.address);
-    if (ok) refreshWartsState(wallet.address);
+    if (ok) {
+      refreshWartsState(wallet.address);
+      const wart = engine.getWart(wartId);
+      if (wart) sync.syncWartMetadata(wart);
+    }
     return ok;
   }, [wallet]);
 
@@ -446,7 +534,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet) return false;
     const engine = getWartEngine();
     const ok = engine.delist(wartId, wallet.address);
-    if (ok) refreshWartsState(wallet.address);
+    if (ok) {
+      refreshWartsState(wallet.address);
+      const wart = engine.getWart(wartId);
+      if (wart) sync.syncWartMetadata(wart);
+    }
     return ok;
   }, [wallet]);
 
@@ -474,6 +566,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setWallet({ ...wallet });
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
+    // Sync transfer to Supabase
+    const updatedWart = engine.getWart(wartId);
+    if (updatedWart) sync.syncWartMetadata(updatedWart);
+    sync.syncTransferHistory(wartId, { from: wallet.address, to: toAddress, price: 0, timestamp: Date.now(), txId: '' });
+    sync.syncTransaction(tx);
+    sync.syncNotification({
+      recipient: toAddress,
+      sender: wallet.address,
+      type: 'transfer',
+      title: 'Artwork received!',
+      body: `You received: ${wart.title}`,
+      refId: wartId,
+    });
     return { success: true };
   }, [wallet]);
 
@@ -481,7 +586,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet) return false;
     const engine = getWartEngine();
     const ok = engine.delete(wartId, wallet.address);
-    if (ok) refreshWartsState(wallet.address);
+    if (ok) {
+      refreshWartsState(wallet.address);
+      sync.syncWartDelete(wartId);
+    }
     return ok;
   }, [wallet]);
 
@@ -492,7 +600,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet) return false;
     const engine = getWartEngine();
     const ok = engine.update(wartId, wallet.address, updates);
-    if (ok) refreshWartsState(wallet.address);
+    if (ok) {
+      refreshWartsState(wallet.address);
+      const wart = engine.getWart(wartId);
+      if (wart) sync.syncWartMetadata(wart);
+    }
     return ok;
   }, [wallet]);
 
@@ -501,7 +613,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const alias = wallet.alias || wallet.address.slice(0, 10);
     const comment = engine.addComment(wartId, wallet.address, alias, content);
-    if (comment) refreshWartsState(wallet.address);
+    if (comment) {
+      refreshWartsState(wallet.address);
+      sync.syncComment(wartId, comment);
+      // Notify wart owner
+      const wart = engine.getWart(wartId);
+      if (wart && wart.owner !== wallet.address) {
+        sync.syncNotification({
+          recipient: wart.owner,
+          sender: wallet.address,
+          type: 'comment',
+          title: 'New comment',
+          body: `${alias} commented on ${wart.title}`,
+          refId: wartId,
+        });
+      }
+    }
     return !!comment;
   }, [wallet]);
 
