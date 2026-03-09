@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import * as THREE from 'three';
 
 const isMobile = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -30,6 +31,7 @@ function isWebGLAvailable(): boolean {
 export default function CosmicBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasError, setHasError] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (hasError) return;
@@ -45,14 +47,20 @@ export default function CosmicBackground() {
     const PARTICLE_COUNT = mobile ? 400 : 1500;
     const TUNNEL_RINGS = mobile ? 14 : 28;
 
+    const isDark = theme === 'dark';
+    // In dark mode: white traces on black. In light mode: black traces on white.
+    const traceColor = isDark ? 0xffffff : 0x000000;
+    const bgColor = isDark ? 0x000000 : 0xffffff;
+    const traceOpacityBase = isDark ? 0.08 : 0.06;
+    const fogColor = bgColor;
+
     let renderer: THREE.WebGLRenderer | null = null;
     let animationId = 0;
     let disposed = false;
 
     try {
-      // ─── Scene ───────────────────────────────────────
       const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x0a0a1a, 0.018);
+      scene.fog = new THREE.FogExp2(fogColor, 0.018);
 
       const camera = new THREE.PerspectiveCamera(
         75,
@@ -71,11 +79,10 @@ export default function CosmicBackground() {
       });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1 : 1.5));
-      renderer.setClearColor(0x0a0a1a, 1);
+      renderer.setClearColor(bgColor, 1);
 
       const canvas = renderer.domElement;
 
-      // Handle WebGL context loss (common on iOS Safari)
       function onContextLost(e: Event) {
         e.preventDefault();
         if (animationId) cancelAnimationFrame(animationId);
@@ -89,14 +96,7 @@ export default function CosmicBackground() {
 
       container.appendChild(canvas);
 
-      const colorPalette = [
-        new THREE.Color(0xa855f7),
-        new THREE.Color(0x06b6d4),
-        new THREE.Color(0xec4899),
-        new THREE.Color(0xd8b4fe),
-        new THREE.Color(0x67e8f9),
-        new THREE.Color(0x7c3aed),
-      ];
+      const baseColor = new THREE.Color(traceColor);
 
       // ─── Hexagonal Tunnel Rings ──────────────────────
       const tunnelGroup = new THREE.Group();
@@ -109,12 +109,11 @@ export default function CosmicBackground() {
 
         const verts = hexagonVertices(radius, z);
         const geo = new THREE.BufferGeometry().setFromPoints([...verts, verts[0]]);
-        const color = colorPalette[i % colorPalette.length].clone();
         const mat = new THREE.LineBasicMaterial({
-          color,
+          color: baseColor,
           transparent: true,
-          opacity: 0.15 + (1 - t) * 0.25,
-          blending: THREE.AdditiveBlending,
+          opacity: traceOpacityBase + (1 - t) * 0.15,
+          blending: isDark ? THREE.AdditiveBlending : THREE.NormalBlending,
         });
         const line = new THREE.LineLoop(geo, mat);
         tunnelGroup.add(line);
@@ -139,10 +138,10 @@ export default function CosmicBackground() {
         }
         const geo = new THREE.BufferGeometry().setFromPoints(linePoints);
         const mat = new THREE.LineBasicMaterial({
-          color: colorPalette[v],
+          color: baseColor,
           transparent: true,
-          opacity: 0.08,
-          blending: THREE.AdditiveBlending,
+          opacity: traceOpacityBase * 0.5,
+          blending: isDark ? THREE.AdditiveBlending : THREE.NormalBlending,
         });
         edgeGroup.add(new THREE.Line(geo, mat));
       }
@@ -164,10 +163,9 @@ export default function CosmicBackground() {
         positions[i3] = Math.cos(angle) * radius;
         positions[i3 + 1] = Math.sin(angle) * radius;
         positions[i3 + 2] = z;
-        const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-        pColors[i3] = color.r;
-        pColors[i3 + 1] = color.g;
-        pColors[i3 + 2] = color.b;
+        pColors[i3] = baseColor.r;
+        pColors[i3 + 1] = baseColor.g;
+        pColors[i3 + 2] = baseColor.b;
         pSizes[i] = 0.5 + Math.random() * 2.0;
         speeds[i] = 5 + Math.random() * 15;
       }
@@ -176,10 +174,13 @@ export default function CosmicBackground() {
       particleGeo.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
       particleGeo.setAttribute('aSize', new THREE.BufferAttribute(pSizes, 1));
 
+      const particleAlphaMax = isDark ? 0.5 : 0.3;
+
       const particleMat = new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
           uPixelRatio: { value: renderer.getPixelRatio() },
+          uAlphaMax: { value: particleAlphaMax },
         },
         vertexShader: `
           precision mediump float;
@@ -189,11 +190,12 @@ export default function CosmicBackground() {
           varying float vAlpha;
           uniform float uTime;
           uniform float uPixelRatio;
+          uniform float uAlphaMax;
           void main() {
             vColor = color;
             vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
             float dist = -mvPosition.z;
-            vAlpha = smoothstep(80.0, 5.0, dist) * 0.7;
+            vAlpha = smoothstep(80.0, 5.0, dist) * uAlphaMax;
             gl_PointSize = aSize * uPixelRatio * (15.0 / max(dist, 1.0));
             gl_Position = projectionMatrix * mvPosition;
           }
@@ -211,7 +213,7 @@ export default function CosmicBackground() {
           }
         `,
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        blending: isDark ? THREE.AdditiveBlending : THREE.NormalBlending,
         depthWrite: false,
       });
 
@@ -219,8 +221,12 @@ export default function CosmicBackground() {
 
       // ─── Central Hex Glow ────────────────────────────
       const glowGeo = new THREE.CircleGeometry(2.5, 6);
+      const glowColorVal = isDark ? 1.0 : 0.0;
       const glowMat = new THREE.ShaderMaterial({
-        uniforms: { uTime: { value: 0 } },
+        uniforms: {
+          uTime: { value: 0 },
+          uColorVal: { value: glowColorVal },
+        },
         vertexShader: `
           precision mediump float;
           varying vec2 vUv;
@@ -232,22 +238,20 @@ export default function CosmicBackground() {
         fragmentShader: `
           precision mediump float;
           uniform float uTime;
+          uniform float uColorVal;
           varying vec2 vUv;
           void main() {
             vec2 center = vUv - 0.5;
             float dist = length(center);
             float ring = smoothstep(0.3, 0.35, dist) * (1.0 - smoothstep(0.35, 0.5, dist));
-            vec3 purple = vec3(0.66, 0.33, 0.97);
-            vec3 cyan = vec3(0.02, 0.71, 0.83);
-            float t = sin(uTime * 0.5) * 0.5 + 0.5;
-            vec3 col = mix(purple, cyan, t);
+            vec3 col = vec3(uColorVal);
             float pulse = 0.5 + 0.5 * sin(uTime * 0.8);
-            float alpha = (ring * 0.6 + (1.0 - smoothstep(0.0, 0.5, dist)) * 0.15) * pulse;
+            float alpha = (ring * 0.4 + (1.0 - smoothstep(0.0, 0.5, dist)) * 0.1) * pulse;
             gl_FragColor = vec4(col, alpha);
           }
         `,
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        blending: isDark ? THREE.AdditiveBlending : THREE.NormalBlending,
         depthWrite: false,
         side: THREE.DoubleSide,
       });
@@ -274,7 +278,7 @@ export default function CosmicBackground() {
             lines.scale.set(breathe, breathe, 1);
             const mat = lines.material as THREE.LineBasicMaterial;
             const wave = Math.sin(elapsed * 0.6 - i * 0.4) * 0.5 + 0.5;
-            mat.opacity = (0.08 + (1 - t) * 0.2) * (0.5 + wave * 0.5);
+            mat.opacity = (traceOpacityBase + (1 - t) * 0.15) * (0.5 + wave * 0.5);
           });
 
           const posArr = particleGeo.attributes.position.array as Float32Array;
@@ -348,7 +352,7 @@ export default function CosmicBackground() {
       setHasError(true);
       return () => { disposed = true; };
     }
-  }, [hasError]);
+  }, [hasError, theme]);
 
   if (hasError) {
     return (
@@ -356,7 +360,7 @@ export default function CosmicBackground() {
         className="fixed inset-0 -z-10"
         style={{
           pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at center, #131650 0%, #0a0a1a 70%)',
+          background: theme === 'dark' ? '#000000' : '#ffffff',
         }}
       />
     );

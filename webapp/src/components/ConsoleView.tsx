@@ -159,23 +159,23 @@ export default function ConsoleView() {
   return (
     <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100dvh - 140px)', minHeight: '250px', maxHeight: '85dvh' }}>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-bold text-warp-300">{'\u25B7'} CosmoCode Console</h2>
-        <button className="warp-button text-[10px] px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>
+        <h2 className="text-base font-bold opacity-80">{'\u25B7'} CosmoCode Console</h2>
+        <button className="warp-button text-label px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>
           Clear
         </button>
       </div>
 
       <div
         ref={scrollRef}
-        className="flex-1 bg-cosmic-900/80 rounded-none p-3 overflow-y-auto text-xs font-mono mb-2 cursor-text"
+        className="flex-1 bg-cosmic-900/80 rounded-none p-3 overflow-y-auto text-body-sm font-mono mb-2 cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {lines.map((line, i) => (
           <div key={i} className={
-            line.type === 'input' ? 'text-warp-300' :
-            line.type === 'output' ? 'text-energy-400' :
-            line.type === 'error' ? 'text-red-400' :
-            'text-gray-500'
+            line.type === 'input' ? 'opacity-80' :
+            line.type === 'output' ? 'opacity-80' :
+            line.type === 'error' ? 'opacity-70' :
+            'opacity-40'
           }>
             {line.text || '\u00A0'}
           </div>
@@ -186,10 +186,10 @@ export default function ConsoleView() {
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-warp-400 text-sm">{'\u276F'}</span>
+        <span className="opacity-80 text-base">{'\u276F'}</span>
         <input
           ref={inputRef}
-          className="flex-1 bg-transparent border-none outline-none text-sm text-gray-100 placeholder:text-gray-600"
+          className="flex-1 bg-transparent border-none outline-none text-base opacity-100 placeholder:opacity-30"
           placeholder="Text to hash, or /help"
           value={input}
           onChange={e => setInput(e.target.value)}

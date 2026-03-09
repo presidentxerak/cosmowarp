@@ -27,7 +27,7 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
   if (!wallet || !unlocked) {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
-        <p className="text-gray-400 text-sm">Unlock your wallet to discover users</p>
+        <p className="opacity-50 text-base">Unlock your wallet to discover users</p>
       </div>
     );
   }
@@ -61,8 +61,8 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
   return (
     <div className="space-y-3 pb-4">
       <div className="px-1 pt-2">
-        <h2 className="text-lg font-bold text-gray-100 font-title">Discover</h2>
-        <p className="text-xs text-gray-500">Find artists and collectors to follow</p>
+        <h2 className="text-title-sm font-bold opacity-100 font-title">Discover</h2>
+        <p className="text-body-sm opacity-40">Find artists and collectors to follow</p>
       </div>
 
       {/* Search */}
@@ -72,23 +72,23 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search users..."
-          className="warp-input text-sm py-2"
+          className="warp-input text-base py-2"
         />
       </div>
 
       {/* Suggestions */}
       {!searchQuery && suggestions.length > 0 && (
         <div className="px-1">
-          <p className="text-xs text-gray-500 mb-2">Suggested for you</p>
+          <p className="text-body-sm opacity-40 mb-2">Suggested for you</p>
         </div>
       )}
 
       {displayUsers.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-sm">
+          <p className="opacity-40 text-base">
             {searchQuery ? 'No users found' : 'No users to discover yet'}
           </p>
-          <p className="text-gray-600 text-xs mt-1">
+          <p className="opacity-30 text-body-sm mt-1">
             Post on the Wall to let others find you
           </p>
         </div>
@@ -103,12 +103,12 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
                 onClick={() => handleViewUser(user.address)}
                 className="flex-1 min-w-0 text-left cursor-pointer"
               >
-                <p className="text-sm font-medium text-gray-200 truncate">{user.alias}</p>
-                <p className="text-[10px] text-gray-500 truncate">{shortAddress(user.address)}</p>
+                <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
+                <p className="text-label opacity-40 truncate">{shortAddress(user.address)}</p>
                 {user.bio && (
-                  <p className="text-[11px] text-gray-400 mt-0.5 truncate">{user.bio}</p>
+                  <p className="text-[11px] opacity-50 mt-0.5 truncate">{user.bio}</p>
                 )}
-                <p className="text-[10px] text-gray-600 mt-0.5">
+                <p className="text-label opacity-30 mt-0.5">
                   {user.followers.length} followers
                 </p>
               </button>
@@ -116,14 +116,14 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
                 {followedMap[user.address] ? (
                   <button
                     onClick={() => handleUnfollow(user.address)}
-                    className="text-xs px-3 py-1.5 border border-warp-500/30 text-warp-300 cursor-pointer hover:bg-warp-500/10 transition-colors"
+                    className="text-body-sm px-3 py-1.5 border border-current/10 opacity-80 cursor-pointer hover:bg-current/5 transition-colors"
                   >
                     Following
                   </button>
                 ) : (
                   <button
                     onClick={() => handleFollow(user.address)}
-                    className="warp-button text-xs px-4 py-1.5"
+                    className="warp-button text-body-sm px-4 py-1.5"
                   >
                     Follow
                   </button>

@@ -73,13 +73,13 @@ export default function CosmoChatView() {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
         <div className="text-center px-6">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto text-gray-600 mb-3">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto opacity-30 mb-3">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          <h2 className="text-lg font-bold text-gray-100 mb-1 font-title">Wall</h2>
-          <p className="text-gray-400 text-sm">Create and unlock your wallet to access the Wall.</p>
-          <p className="text-gray-600 text-xs mt-1">Encrypted anonymous social network</p>
+          <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Wall</h2>
+          <p className="opacity-50 text-base">Create and unlock your wallet to access the Wall.</p>
+          <p className="opacity-30 text-body-sm mt-1">Encrypted anonymous social network</p>
         </div>
       </div>
     );
@@ -214,7 +214,7 @@ export default function CosmoChatView() {
     if (!post.mediaData) return null;
     if (post.mediaType === 'audio') {
       return (
-        <div className="mt-2 p-3 bg-cosmic-900/60 flex items-center gap-3">
+        <div className="mt-2 p-3 bg-current/5 flex items-center gap-3">
           {post.audioCover && (
             <img src={post.audioCover} alt="" className="w-12 h-12 object-cover shrink-0" />
           )}
@@ -246,11 +246,11 @@ export default function CosmoChatView() {
       const original = engine.getOriginalPost(post.originalPostId);
       return (
         <div className="glass-panel p-3">
-          <p className="text-[10px] text-gray-500 mb-2">
-            {'\u21C4'} <span className="text-warp-400">@{post.authorAlias}</span> ReWarped
+          <p className="text-label opacity-40 mb-2">
+            {'\u21C4'} <span className="opacity-80">@{post.authorAlias}</span> ReWarped
           </p>
           {original ? <PostCard post={original} /> : (
-            <p className="text-xs text-gray-500 italic">Original post deleted</p>
+            <p className="text-body-sm opacity-40 italic">Original post deleted</p>
           )}
         </div>
       );
@@ -264,12 +264,12 @@ export default function CosmoChatView() {
             <HexAvatar address={post.author} size={32} className="cursor-pointer" />
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-sm font-bold text-gray-200 cursor-pointer hover:text-warp-300" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>@{post.authorAlias}</span>
-            <span className="text-[10px] text-gray-500 ml-2">{timeAgo(post.timestamp)}</span>
+            <span className="text-base font-bold opacity-90 cursor-pointer hover:opacity-80" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>@{post.authorAlias}</span>
+            <span className="text-label opacity-40 ml-2">{timeAgo(post.timestamp)}</span>
           </div>
           {isMine && (
             <button
-              className="text-gray-600 hover:text-red-400 text-xs cursor-pointer"
+              className="opacity-30 hover:opacity-70 text-body-sm cursor-pointer"
               onClick={e => { e.stopPropagation(); handleDeletePost(post); }}
               title="Delete"
             >
@@ -279,24 +279,24 @@ export default function CosmoChatView() {
         </div>
 
         {/* Content */}
-        {post.content && <p className="text-sm text-gray-300 mb-1 whitespace-pre-wrap">{post.content}</p>}
+        {post.content && <p className="text-base opacity-70 mb-1 whitespace-pre-wrap">{post.content}</p>}
         {post.wartLink && (
-          <p className="text-xs text-warp-400 mb-1">{'\u2B22'} Wart: {post.wartLink}</p>
+          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Wart: {post.wartLink}</p>
         )}
         <MediaContent post={post} />
 
         {/* Action bar (X-style) */}
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5">
+        <div className="flex items-center justify-between mt-3 pt-2 border-t border-current/10">
           {/* Comments */}
-          <button className="flex items-center gap-1 text-gray-500 hover:text-warp-300 text-xs cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedPost(post); }}>
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 text-body-sm cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedPost(post); }}>
             <span>{'\u25CB'}</span>
             <span>{post.comments.length || ''}</span>
           </button>
 
           {/* ReWarp */}
           <button
-            className={`flex items-center gap-1 text-xs cursor-pointer ${
-              post.rewarps.includes(wallet.address) ? 'text-green-400' : 'text-gray-500 hover:text-green-400'
+            className={`flex items-center gap-1 text-body-sm cursor-pointer ${
+              post.rewarps.includes(wallet.address) ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleRewarp(post); }}
           >
@@ -306,25 +306,25 @@ export default function CosmoChatView() {
 
           {/* Tip (heart) */}
           <button
-            className={`flex items-center gap-1 text-xs cursor-pointer ${
-              hasTipped ? 'text-energy-400' : 'text-gray-500 hover:text-energy-400'
+            className={`flex items-center gap-1 text-body-sm cursor-pointer ${
+              hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleTip(post); }}
           >
             <span>{hasTipped ? '\u2665' : '\u2661'}</span>
             <span>{post.tipCount || ''}</span>
-            {post.tipCount > 0 && <span className="text-[10px] text-energy-400">{'\u03A9'}</span>}
+            {post.tipCount > 0 && <span className="text-label opacity-80">{'\u03A9'}</span>}
           </button>
 
           {/* Views */}
-          <span className="flex items-center gap-1 text-gray-600 text-xs">
+          <span className="flex items-center gap-1 opacity-30 text-body-sm">
             <span>{'\u25C9'}</span>
             <span>{formatViews(post.views)}</span>
           </span>
 
           {/* Share */}
           <button
-            className="text-gray-500 hover:text-warp-300 text-xs cursor-pointer"
+            className="opacity-40 hover:opacity-80 text-body-sm cursor-pointer"
             onClick={e => { e.stopPropagation(); handleShare(post); }}
           >
             {'\u2197'}
@@ -332,8 +332,8 @@ export default function CosmoChatView() {
 
           {/* Bookmark */}
           <button
-            className={`text-xs cursor-pointer ${
-              hasBookmarked ? 'text-star-400' : 'text-gray-500 hover:text-star-400'
+            className={`text-body-sm cursor-pointer ${
+              hasBookmarked ? 'text-star-400' : 'opacity-40 hover:text-star-400'
             }`}
             onClick={e => { e.stopPropagation(); handleBookmark(post); }}
           >
@@ -352,7 +352,7 @@ export default function CosmoChatView() {
 
     return (
       <div className="space-y-4 max-w-lg mx-auto">
-        <button className="text-xs text-gray-400 hover:text-gray-200 cursor-pointer" onClick={() => setSelectedPost(null)}>
+        <button className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer" onClick={() => setSelectedPost(null)}>
           {'\u2190'} Back
         </button>
 
@@ -362,34 +362,34 @@ export default function CosmoChatView() {
               <HexAvatar address={post.author} size={40} />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-200 cursor-pointer hover:text-warp-300" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</p>
-              <p className="text-[10px] text-gray-500">{new Date(post.timestamp).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</p>
+              <p className="text-base font-bold opacity-90 cursor-pointer hover:opacity-80" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</p>
+              <p className="text-label opacity-40">{new Date(post.timestamp).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</p>
             </div>
           </div>
 
-          {post.content && <p className="text-sm text-gray-300 whitespace-pre-wrap mb-3">{post.content}</p>}
-          {post.wartLink && <p className="text-xs text-warp-400 mb-2">{'\u2B22'} Wart: {post.wartLink}</p>}
+          {post.content && <p className="text-base opacity-70 whitespace-pre-wrap mb-3">{post.content}</p>}
+          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Wart: {post.wartLink}</p>}
           <MediaContent post={post} />
 
           {/* Stats bar */}
-          <div className="flex gap-4 mt-3 pt-3 border-t border-white/5 text-xs text-gray-500">
+          <div className="flex gap-4 mt-3 pt-3 border-t border-current/10 text-body-sm opacity-40">
             <span>{post.rewarpCount} ReWarps</span>
             <span>{post.tipCount} Tips ({post.tipCount} {'\u03A9'})</span>
             <span>{formatViews(post.views)} views</span>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-            <button className={`text-xs cursor-pointer ${hasTipped ? 'text-energy-400' : 'text-gray-500 hover:text-energy-400'}`} onClick={() => handleTip(post)}>
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-current/10">
+            <button className={`text-body-sm cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
               {hasTipped ? '\u2665' : '\u2661'} Tip 1{'\u03A9'}
             </button>
-            <button className="text-xs text-gray-500 hover:text-green-400 cursor-pointer" onClick={() => handleRewarp(post)}>
+            <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
               {'\u21C4'} ReWarp
             </button>
-            <button className="text-xs text-gray-500 hover:text-warp-300 cursor-pointer" onClick={() => handleShare(post)}>
+            <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
               {'\u2197'} Share
             </button>
-            <button className={`text-xs cursor-pointer ${hasBookmarked ? 'text-star-400' : 'text-gray-500 hover:text-star-400'}`} onClick={() => handleBookmark(post)}>
+            <button className={`text-body-sm cursor-pointer ${hasBookmarked ? 'text-star-400' : 'opacity-40 hover:text-star-400'}`} onClick={() => handleBookmark(post)}>
               {hasBookmarked ? '\u2605' : '\u2606'} Save
             </button>
           </div>
@@ -397,36 +397,36 @@ export default function CosmoChatView() {
 
         {/* Comments */}
         <div className="glass-panel p-4">
-          <h3 className="text-sm font-bold text-gray-300 mb-3">Comments ({post.comments.length})</h3>
+          <h3 className="text-base font-bold opacity-70 mb-3">Comments ({post.comments.length})</h3>
 
           <div className="flex gap-2 mb-4">
             <input
-              className="warp-input flex-1 text-sm"
+              className="warp-input flex-1 text-base"
               placeholder="Add a comment..."
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleComment(post.id); }}
             />
-            <button className="warp-button text-xs px-3" onClick={() => handleComment(post.id)} disabled={!commentText.trim()}>
+            <button className="warp-button text-body-sm px-3" onClick={() => handleComment(post.id)} disabled={!commentText.trim()}>
               Post
             </button>
           </div>
 
           <div className="space-y-3">
             {post.comments.length === 0 ? (
-              <p className="text-xs text-gray-500 text-center py-2">No comments yet</p>
+              <p className="text-body-sm opacity-40 text-center py-2">No comments yet</p>
             ) : (
               post.comments.map(c => (
                 <div key={c.id} className="flex gap-2">
-                  <div className="w-6 h-6 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center text-[10px] text-warp-300 font-bold shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-current/5 border border-current/10 flex items-center justify-center text-label opacity-80 font-bold shrink-0 mt-0.5">
                     {c.authorAlias.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-200">@{c.authorAlias}</span>
-                      <span className="text-[10px] text-gray-500">{timeAgo(c.timestamp)}</span>
+                      <span className="text-body-sm font-bold opacity-90">@{c.authorAlias}</span>
+                      <span className="text-label opacity-40">{timeAgo(c.timestamp)}</span>
                     </div>
-                    <p className="text-xs text-gray-400">{c.content}</p>
+                    <p className="text-body-sm opacity-50">{c.content}</p>
                   </div>
                 </div>
               ))
@@ -443,23 +443,23 @@ export default function CosmoChatView() {
     return (
       <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSharePost(null)}>
         <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
-          <h3 className="text-sm font-bold text-gray-200">Share Post</h3>
-          <button className="warp-button w-full text-xs py-2" onClick={() => copyPostLink(sharePost)}>
+          <h3 className="text-base font-bold opacity-90">Share Post</h3>
+          <button className="warp-button w-full text-body-sm py-2" onClick={() => copyPostLink(sharePost)}>
             {'\u2398'} Copy Link
           </button>
-          <button className="warp-button w-full text-xs py-2" onClick={() => {
+          <button className="warp-button w-full text-body-sm py-2" onClick={() => {
             window.open(`mailto:?subject=CosmoChat Post&body=${encodeURIComponent(sharePost.content)}`, '_blank');
             setSharePost(null);
           }}>
             {'\u2709'} Email
           </button>
-          <button className="warp-button w-full text-xs py-2" onClick={() => {
+          <button className="warp-button w-full text-body-sm py-2" onClick={() => {
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(sharePost.content.slice(0, 280))}`, '_blank');
             setSharePost(null);
           }}>
             Share on X
           </button>
-          <button className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer w-full text-center" onClick={() => setSharePost(null)}>
+          <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={() => setSharePost(null)}>
             Cancel
           </button>
         </div>
@@ -474,37 +474,37 @@ export default function CosmoChatView() {
 
     return (
       <div className="space-y-4 max-w-lg mx-auto">
-        <button className="text-xs text-gray-400 hover:text-gray-200 cursor-pointer" onClick={() => setSelectedChannel(null)}>
+        <button className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer" onClick={() => setSelectedChannel(null)}>
           {'\u2190'} Back to Channels
         </button>
 
         <div className="glass-panel p-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-bold text-gray-200">#{ch.name}</h3>
-              <p className="text-[10px] text-gray-500">{ch.description} &middot; {ch.members.length} members</p>
+              <h3 className="text-base font-bold opacity-90">#{ch.name}</h3>
+              <p className="text-label opacity-40">{ch.description} &middot; {ch.members.length} members</p>
             </div>
             {!isMember && (
-              <button className="warp-button text-xs px-3" onClick={() => { handleJoinChannel(ch); setSelectedChannel(engine.getChannel(ch.id)); }}>
+              <button className="warp-button text-body-sm px-3" onClick={() => { handleJoinChannel(ch); setSelectedChannel(engine.getChannel(ch.id)); }}>
                 Join
               </button>
             )}
           </div>
 
-          <div ref={channelScrollRef} className="bg-cosmic-900/60 p-3 h-64 overflow-y-auto space-y-2 mb-3">
+          <div ref={channelScrollRef} className="bg-current/5 p-3 h-64 overflow-y-auto space-y-2 mb-3">
             {ch.messages.length === 0 ? (
-              <p className="text-xs text-gray-600 text-center py-8">No messages yet. Start the conversation!</p>
+              <p className="text-body-sm opacity-30 text-center py-8">No messages yet. Start the conversation!</p>
             ) : (
               ch.messages.map(m => (
                 <div key={m.id} className={`flex gap-2 ${m.from === wallet.address ? 'justify-end' : ''}`}>
-                  <div className={`max-w-[80%] p-2 text-xs ${
+                  <div className={`max-w-[80%] p-2 text-body-sm ${
                     m.from === wallet.address
-                      ? 'bg-warp-500/20 border border-warp-500/30 text-gray-200'
-                      : 'bg-cosmic-900/80 border border-white/5 text-gray-300'
+                      ? 'bg-current/5 border border-current/10 opacity-90'
+                      : 'bg-cosmic-900/80 border border-current/10 opacity-70'
                   }`}>
-                    <span className="text-[10px] font-bold text-warp-400">@{m.fromAlias}</span>
+                    <span className="text-label font-bold opacity-80">@{m.fromAlias}</span>
                     <p className="mt-0.5">{m.content}</p>
-                    <span className="text-[9px] text-gray-600 block text-right mt-1">{timeAgo(m.timestamp)}</span>
+                    <span className="text-label opacity-30 block text-right mt-1">{timeAgo(m.timestamp)}</span>
                   </div>
                 </div>
               ))
@@ -514,13 +514,13 @@ export default function CosmoChatView() {
           {isMember && (
             <div className="flex gap-2">
               <input
-                className="warp-input flex-1 text-sm"
+                className="warp-input flex-1 text-base"
                 placeholder="Type a message..."
                 value={channelMsg}
                 onChange={e => setChannelMsg(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSendChannelMsg(); }}
               />
-              <button className="warp-button text-xs px-3" onClick={handleSendChannelMsg} disabled={!channelMsg.trim()}>
+              <button className="warp-button text-body-sm px-3" onClick={handleSendChannelMsg} disabled={!channelMsg.trim()}>
                 Send
               </button>
             </div>
@@ -544,15 +544,15 @@ export default function CosmoChatView() {
       <ShareModal />
 
       {/* Sub-tabs */}
-      <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-2 pt-2">
+      <div className="flex gap-1 overflow-x-auto border-b border-current/10 px-2 pt-2">
         {tabList.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+            className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
-                ? 'border-warp-400 text-warp-300'
-                : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                ? 'border-warp-400 opacity-80'
+                : 'border-transparent opacity-50 hover:opacity-90 hover:bg-current/5'
             }`}
           >
             {t.label}
@@ -570,7 +570,7 @@ export default function CosmoChatView() {
                 <HexAvatar address={wallet.address} size={32} className="shrink-0" />
                 <div className="flex-1 space-y-2">
                   <textarea
-                    className="warp-input min-h-[60px] resize-y text-sm"
+                    className="warp-input min-h-[60px] resize-y text-base"
                     placeholder="What's happening in the cosmos?"
                     value={composeText}
                     onChange={e => setComposeText(e.target.value)}
@@ -582,7 +582,7 @@ export default function CosmoChatView() {
                       {composeMediaType === 'video' && <video src={composeMedia} className="max-h-32" />}
                       {composeMediaType === 'audio' && <audio src={composeMedia} controls className="h-8" />}
                       <button
-                        className="absolute top-0 right-0 bg-black/70 text-white text-xs px-1 cursor-pointer"
+                        className="absolute top-0 right-0 bg-black/70 text-white text-body-sm px-1 cursor-pointer"
                         onClick={() => { setComposeMedia(''); setComposeMediaType(''); }}
                       >
                         {'\u2716'}
@@ -592,24 +592,24 @@ export default function CosmoChatView() {
                   {composeMediaType === 'audio' && (
                     <div>
                       <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
-                      <button className="text-[10px] text-gray-500 hover:text-gray-300 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
+                      <button className="text-label opacity-40 hover:opacity-70 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
                         + Add cover image for audio
                       </button>
                     </div>
                   )}
                   <div className="flex items-center gap-2 flex-wrap">
                     <input ref={fileRef} type="file" accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov" className="hidden" onChange={handleMediaUpload} />
-                    <button className="text-xs text-gray-500 hover:text-warp-300 cursor-pointer" onClick={() => fileRef.current?.click()}>
+                    <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => fileRef.current?.click()}>
                       {'\u2B06'} Media
                     </button>
                     <input
-                      className="warp-input text-[10px] py-1 px-2 w-36"
+                      className="warp-input text-label py-1 px-2 w-36"
                       placeholder="Wart link (optional)"
                       value={composeWartLink}
                       onChange={e => setComposeWartLink(e.target.value)}
                     />
                     <button
-                      className="warp-button text-xs px-4 py-1.5 ml-auto"
+                      className="warp-button text-body-sm px-4 py-1.5 ml-auto"
                       onClick={handlePost}
                       disabled={posting || (!composeText.trim() && !composeMedia)}
                     >
@@ -624,8 +624,8 @@ export default function CosmoChatView() {
           {/* Posts feed */}
           {displayPosts.length === 0 ? (
             <div className="glass-panel p-8 text-center">
-              <p className="text-2xl mb-2">{'\u25CE'}</p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-title-lg mb-2">{'\u25CE'}</p>
+              <p className="opacity-50 text-base">
                 {'No posts yet. Be the first to post!'}
               </p>
             </div>
@@ -643,8 +643,8 @@ export default function CosmoChatView() {
       {tab === 'channels' && (
         <>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-300">Channels</h3>
-            <button className="warp-button text-xs px-3 py-1.5" onClick={() => setShowCreateChannel(!showCreateChannel)}>
+            <h3 className="text-base font-bold opacity-70">Channels</h3>
+            <button className="warp-button text-body-sm px-3 py-1.5" onClick={() => setShowCreateChannel(!showCreateChannel)}>
               + New
             </button>
           </div>
@@ -652,20 +652,20 @@ export default function CosmoChatView() {
           {showCreateChannel && (
             <div className="glass-panel p-4 space-y-3">
               <input
-                className="warp-input text-sm"
+                className="warp-input text-base"
                 placeholder="Channel name"
                 value={newChannelName}
                 onChange={e => setNewChannelName(e.target.value)}
                 maxLength={30}
               />
               <input
-                className="warp-input text-sm"
+                className="warp-input text-base"
                 placeholder="Description (optional)"
                 value={newChannelDesc}
                 onChange={e => setNewChannelDesc(e.target.value)}
                 maxLength={100}
               />
-              <button className="warp-button w-full text-xs py-2" onClick={handleCreateChannel} disabled={!newChannelName.trim()}>
+              <button className="warp-button w-full text-body-sm py-2" onClick={handleCreateChannel} disabled={!newChannelName.trim()}>
                 Create Channel
               </button>
             </div>
@@ -673,7 +673,7 @@ export default function CosmoChatView() {
 
           {channels.length === 0 ? (
             <div className="glass-panel p-8 text-center">
-              <p className="text-gray-400 text-sm">No channels yet. Create the first one!</p>
+              <p className="opacity-50 text-base">No channels yet. Create the first one!</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -685,12 +685,12 @@ export default function CosmoChatView() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-200">#{ch.name}</h4>
-                      <p className="text-[10px] text-gray-500">{ch.description || 'No description'}</p>
+                      <h4 className="text-base font-bold opacity-90">#{ch.name}</h4>
+                      <p className="text-label opacity-40">{ch.description || 'No description'}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-gray-500">{ch.members.length} members</p>
-                      <p className="text-[10px] text-gray-600">{ch.messages.length} msgs</p>
+                      <p className="text-label opacity-40">{ch.members.length} members</p>
+                      <p className="text-label opacity-30">{ch.messages.length} msgs</p>
                     </div>
                   </div>
                 </div>

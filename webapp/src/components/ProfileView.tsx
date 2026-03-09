@@ -53,7 +53,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
         <div className="text-center px-6">
           <HexAvatar address="default" size={64} className="mx-auto mb-4" />
-          <p className="text-gray-400 text-sm">Unlock your wallet to view profile</p>
+          <p className="opacity-50 text-base">Unlock your wallet to view profile</p>
         </div>
       </div>
     );
@@ -127,15 +127,15 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} />
           </div>
 
-          <h2 className="text-xl font-bold text-gray-100 font-title">{alias}</h2>
-          <p className="text-[11px] text-gray-500 font-mono mt-0.5">{wallet.address}</p>
+          <h2 className="text-title-md font-bold opacity-100 font-title">{alias}</h2>
+          <p className="text-[11px] opacity-40 font-mono mt-0.5">{wallet.address}</p>
 
           {/* Balance & Level */}
           <div className="flex gap-4 mt-2 items-center">
-            <span className="text-sm font-bold text-energy-400">{wallet.balance.toFixed(2)} {'\u03A9'}</span>
-            <span className="text-xs text-gray-500">|</span>
-            <span className="text-sm font-bold text-warp-400">Lv.{wallet.level || 1}</span>
-            <span className="text-[10px] text-gray-500">{wallet.levelName}</span>
+            <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u03A9'}</span>
+            <span className="text-body-sm opacity-40">|</span>
+            <span className="text-base font-bold opacity-80">Lv.{wallet.level || 1}</span>
+            <span className="text-label opacity-40">{wallet.levelName}</span>
           </div>
 
           {/* Bio */}
@@ -143,7 +143,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             {editingBio ? (
               <div className="flex gap-2">
                 <input
-                  className="warp-input flex-1 text-xs py-1.5"
+                  className="warp-input flex-1 text-body-sm py-1.5"
                   value={bioInput}
                   onChange={(e) => setBioInput(e.target.value)}
                   placeholder="Tell us about yourself..."
@@ -151,12 +151,12 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   onKeyDown={(e) => { if (e.key === 'Enter') handleSaveBio(); }}
                   autoFocus
                 />
-                <button onClick={handleSaveBio} className="warp-button text-xs px-3 py-1.5">Save</button>
-                <button onClick={() => setEditingBio(false)} className="text-xs text-gray-500 cursor-pointer">Cancel</button>
+                <button onClick={handleSaveBio} className="warp-button text-body-sm px-3 py-1.5">Save</button>
+                <button onClick={() => setEditingBio(false)} className="text-body-sm opacity-40 cursor-pointer">Cancel</button>
               </div>
             ) : (
               <p
-                className="text-xs text-gray-400 cursor-pointer hover:text-gray-300 transition-colors"
+                className="text-body-sm opacity-50 cursor-pointer hover:opacity-70 transition-colors"
                 onClick={() => { setBioInput(bio); setEditingBio(true); }}
               >
                 {bio || 'Tap to add a bio...'}
@@ -167,26 +167,26 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Social links */}
           <div className="mt-2 flex flex-wrap gap-3 justify-center items-center">
             {website && (
-              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-energy-400 hover:text-energy-300 flex items-center gap-1">
+              <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-energy-300 flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 {website.replace(/^https?:\/\//, '').slice(0, 30)}
               </a>
             )}
             {instagram && (
-              <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-nebula-400 hover:text-nebula-500 flex items-center gap-1">
+              <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-nebula-500 flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
                 @{instagram.replace('@', '')}
               </a>
             )}
             {twitter && (
-              <a href={`https://x.com/${twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-warp-300 hover:text-warp-400 flex items-center gap-1">
+              <a href={`https://x.com/${twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:opacity-80 flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 @{twitter.replace('@', '')}
               </a>
             )}
             <button
               onClick={() => { setLinkWebsite(website); setLinkInstagram(instagram); setLinkTwitter(twitter); setEditingLinks(!editingLinks); }}
-              className="text-[10px] text-gray-600 hover:text-gray-400 cursor-pointer"
+              className="text-label opacity-30 hover:opacity-50 cursor-pointer"
             >
               {editingLinks ? 'Cancel' : (website || instagram || twitter ? 'Edit links' : '+ Add links')}
             </button>
@@ -195,45 +195,45 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Edit links form */}
           {editingLinks && (
             <div className="mt-3 w-full max-w-sm space-y-2">
-              <input className="warp-input text-xs py-1.5" value={linkWebsite} onChange={e => setLinkWebsite(e.target.value)} placeholder="Website URL" />
-              <input className="warp-input text-xs py-1.5" value={linkInstagram} onChange={e => setLinkInstagram(e.target.value)} placeholder="Instagram username" />
-              <input className="warp-input text-xs py-1.5" value={linkTwitter} onChange={e => setLinkTwitter(e.target.value)} placeholder="X (Twitter) username" />
-              <button onClick={handleSaveLinks} className="warp-button text-xs w-full py-1.5">Save Links</button>
+              <input className="warp-input text-body-sm py-1.5" value={linkWebsite} onChange={e => setLinkWebsite(e.target.value)} placeholder="Website URL" />
+              <input className="warp-input text-body-sm py-1.5" value={linkInstagram} onChange={e => setLinkInstagram(e.target.value)} placeholder="Instagram username" />
+              <input className="warp-input text-body-sm py-1.5" value={linkTwitter} onChange={e => setLinkTwitter(e.target.value)} placeholder="X (Twitter) username" />
+              <button onClick={handleSaveLinks} className="warp-button text-body-sm w-full py-1.5">Save Links</button>
             </div>
           )}
 
           {/* Stats row */}
-          <div className="flex gap-6 mt-4 text-xs">
-            <button onClick={() => setTab('followers')} className="cursor-pointer hover:text-warp-300 transition-colors text-center">
-              <span className="block font-bold text-gray-200 text-base">{followersCount}</span>
-              <span className="text-gray-500">Followers</span>
+          <div className="flex gap-6 mt-4 text-body-sm">
+            <button onClick={() => setTab('followers')} className="cursor-pointer hover:opacity-80 transition-colors text-center">
+              <span className="block font-bold opacity-90 text-base">{followersCount}</span>
+              <span className="opacity-40">Followers</span>
             </button>
-            <button onClick={() => setTab('following')} className="cursor-pointer hover:text-warp-300 transition-colors text-center">
-              <span className="block font-bold text-gray-200 text-base">{followingCount}</span>
-              <span className="text-gray-500">Following</span>
+            <button onClick={() => setTab('following')} className="cursor-pointer hover:opacity-80 transition-colors text-center">
+              <span className="block font-bold opacity-90 text-base">{followingCount}</span>
+              <span className="opacity-40">Following</span>
             </button>
             <div className="text-center">
-              <span className="block font-bold text-gray-200 text-base">{posts.length}</span>
-              <span className="text-gray-500">Posts</span>
+              <span className="block font-bold opacity-90 text-base">{posts.length}</span>
+              <span className="opacity-40">Posts</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/5 overflow-x-auto">
+      <div className="flex border-b border-current/10 overflow-x-auto">
         {tabList.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+            className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
-                ? 'border-warp-400 text-warp-300'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
+                ? 'border-warp-400 opacity-80'
+                : 'border-transparent opacity-40 hover:opacity-70'
             }`}
           >
             {t.label}
-            {t.count !== undefined && <span className="ml-1 text-[10px] text-gray-600">{t.count}</span>}
+            {t.count !== undefined && <span className="ml-1 text-label opacity-30">{t.count}</span>}
           </button>
         ))}
       </div>
@@ -244,18 +244,18 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'posts' && (
           posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">No posts yet</p>
-              <button onClick={() => onNavigate('wall')} className="text-xs text-warp-400 mt-2 cursor-pointer">Go to Wall</button>
+              <p className="opacity-40 text-base">No posts yet</p>
+              <button onClick={() => onNavigate('wall')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Wall</button>
             </div>
           ) : (
             <div className="space-y-2">
               {posts.map(post => (
                 <div key={post.id} className="glass-panel p-3">
-                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{post.content}</p>
+                  <p className="text-base opacity-70 whitespace-pre-wrap">{post.content}</p>
                   {post.mediaData && post.mediaType === 'image' && (
                     <img src={post.mediaData} alt="" className="mt-2 w-full max-h-64 object-cover" />
                   )}
-                  <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
+                  <div className="flex gap-4 mt-2 text-label opacity-40">
                     <span>{post.tipCount} tips</span>
                     <span>{post.rewarpCount} rewarps</span>
                     <span>{post.comments.length} comments</span>
@@ -270,8 +270,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'warts' && (
           myCreated.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">No Warts created yet</p>
-              <button onClick={() => onNavigate('gallery')} className="text-xs text-warp-400 mt-2 cursor-pointer">Go to Gallery</button>
+              <p className="opacity-40 text-base">No Warts created yet</p>
+              <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Gallery</button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -283,8 +283,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   {wart.mediaType === 'audio' && wart.audioCover && (
                     <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
                   )}
-                  <p className="text-xs font-medium text-gray-200 mt-1 truncate">{wart.title}</p>
-                  <p className="text-[10px] text-gray-500">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
+                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
+                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
                 </div>
               ))}
             </div>
@@ -295,8 +295,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'collected' && (
           myCollection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">No Warts in collection</p>
-              <button onClick={() => onNavigate('gallery')} className="text-xs text-warp-400 mt-2 cursor-pointer">Browse Gallery</button>
+              <p className="opacity-40 text-base">No Warts in collection</p>
+              <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Browse Gallery</button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -305,8 +305,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   {wart.mediaType !== 'audio' && wart.imageData && (
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
                   )}
-                  <p className="text-xs font-medium text-gray-200 mt-1 truncate">{wart.title}</p>
-                  <p className="text-[10px] text-gray-500">by {shortAddress(wart.creator)}</p>
+                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
+                  <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
                 </div>
               ))}
             </div>
@@ -317,7 +317,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'followers' && (
           followersList.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">No followers yet</p>
+              <p className="opacity-40 text-base">No followers yet</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -325,12 +325,12 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                 <button
                   key={user.address}
                   onClick={() => handleViewUser(user.address)}
-                  className="w-full flex items-center gap-3 p-3 glass-panel hover:bg-white/5 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-3 p-3 glass-panel hover:bg-current/5 transition-colors cursor-pointer text-left"
                 >
                   <HexAvatar address={user.address} size={36} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-200 truncate">{user.alias}</p>
-                    <p className="text-[10px] text-gray-500 truncate">{shortAddress(user.address)}</p>
+                    <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
+                    <p className="text-label opacity-40 truncate">{shortAddress(user.address)}</p>
                   </div>
                 </button>
               ))}
@@ -342,8 +342,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'following' && (
           followingList.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">Not following anyone yet</p>
-              <button onClick={() => onNavigate('discover')} className="text-xs text-warp-400 mt-2 cursor-pointer">Discover users</button>
+              <p className="opacity-40 text-base">Not following anyone yet</p>
+              <button onClick={() => onNavigate('discover')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Discover users</button>
             </div>
           ) : (
             <div className="space-y-1">
@@ -351,12 +351,12 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                 <button
                   key={user.address}
                   onClick={() => handleViewUser(user.address)}
-                  className="w-full flex items-center gap-3 p-3 glass-panel hover:bg-white/5 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-3 p-3 glass-panel hover:bg-current/5 transition-colors cursor-pointer text-left"
                 >
                   <HexAvatar address={user.address} size={36} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-200 truncate">{user.alias}</p>
-                    <p className="text-[10px] text-gray-500 truncate">{shortAddress(user.address)}</p>
+                    <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
+                    <p className="text-label opacity-40 truncate">{shortAddress(user.address)}</p>
                   </div>
                 </button>
               ))}
@@ -369,18 +369,18 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       <div className="glass-panel p-4 space-y-2 mt-4">
         <button
           onClick={lock}
-          className="w-full text-left px-3 py-2.5 text-sm text-gray-300 hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-3"
+          className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-500">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-40">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           Lock Wallet
         </button>
         <button
           onClick={() => { if (confirm('Sign out? Make sure you have a backup.')) signOut(); }}
-          className="w-full text-left px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-3"
+          className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-red-400/70">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-70/70">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           Sign Out

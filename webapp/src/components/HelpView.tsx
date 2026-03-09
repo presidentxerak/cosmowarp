@@ -392,10 +392,10 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
           background: 'radial-gradient(circle at 50% 50%, #22c55e 0%, transparent 50%)',
         }} />
         <div className="relative">
-          <h1 className="text-xl font-bold text-gray-100 font-title mb-1">
+          <h1 className="text-title-md font-bold opacity-100 font-title mb-1">
             {'\u2753'} Help Center
           </h1>
-          <p className="text-xs text-gray-500">
+          <p className="text-body-sm opacity-40">
             FAQ & Cosmo — Your AI guide to the CosmoWarp universe
           </p>
         </div>
@@ -405,20 +405,20 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
       <div className="glass-panel p-1 flex gap-1">
         <button
           onClick={() => setTab('cosmo')}
-          className={`flex-1 py-2 text-xs font-medium transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
             tab === 'cosmo'
-              ? 'bg-warp-500/30 text-warp-300'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+              ? 'bg-warp-500/30 opacity-80'
+              : 'opacity-50 hover:opacity-90 hover:bg-current/5'
           }`}
         >
           {'\u2B21'} Cosmo (Oracle)
         </button>
         <button
           onClick={() => setTab('faq')}
-          className={`flex-1 py-2 text-xs font-medium transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
             tab === 'faq'
-              ? 'bg-warp-500/30 text-warp-300'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+              ? 'bg-warp-500/30 opacity-80'
+              : 'opacity-50 hover:opacity-90 hover:bg-current/5'
           }`}
         >
           {'\u2753'} FAQ
@@ -429,16 +429,16 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
       {tab === 'cosmo' && (
         <div className="glass-panel flex flex-col" style={{ height: '65vh', minHeight: 400 }}>
           {/* Chat header */}
-          <div className="p-3 border-b border-white/5 flex items-center gap-3">
-            <div className="w-8 h-8 bg-warp-500/20 border border-warp-500/30 flex items-center justify-center shrink-0">
-              <span className="text-lg">{'\u2B21'}</span>
+          <div className="p-3 border-b border-current/10 flex items-center gap-3">
+            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0">
+              <span className="text-title-sm">{'\u2B21'}</span>
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-200">Cosmo</p>
-              <p className="text-[10px] text-green-400">Online — Oracle of CosmoWarp</p>
+              <p className="text-base font-bold opacity-90">Cosmo</p>
+              <p className="text-label opacity-80">Online — Oracle of CosmoWarp</p>
             </div>
             {wallet && (
-              <span className="text-[10px] text-gray-600 ml-auto">
+              <span className="text-label opacity-30 ml-auto">
                 {wallet.alias || wallet.address.slice(0, 10)}
               </span>
             )}
@@ -450,17 +450,17 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] ${
                   msg.role === 'user'
-                    ? 'bg-warp-500/20 border border-warp-500/20'
-                    : 'bg-white/5 border border-white/5'
+                    ? 'bg-current/5 border border-current/10'
+                    : 'bg-current/5 border border-current/10'
                 } p-3`}>
                   {msg.role === 'cosmo' && (
-                    <p className="text-[10px] text-warp-400 font-bold mb-1">{'\u2B21'} Cosmo</p>
+                    <p className="text-label opacity-80 font-bold mb-1">{'\u2B21'} Cosmo</p>
                   )}
-                  <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                  <p className="text-body-sm opacity-70 leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                   {msg.navigateTo && msg.navigateTo !== 'help' && (
                     <button
                       onClick={() => onNavigate(msg.navigateTo!)}
-                      className="mt-2 text-[10px] text-warp-400 hover:text-warp-300 cursor-pointer flex items-center gap-1"
+                      className="mt-2 text-label opacity-80 hover:opacity-80 cursor-pointer flex items-center gap-1"
                     >
                       {'\u2192'} Go to {msg.tabLabel}
                     </button>
@@ -472,7 +472,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-white/5">
+          <div className="p-3 border-t border-current/10">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -480,12 +480,12 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask Cosmo anything..."
-                className="flex-1 bg-white/5 border border-gray-700/30 px-3 py-2 text-xs text-gray-200 placeholder-gray-600 outline-none focus:border-warp-500/40"
+                className="flex-1 bg-current/5 border border-gray-700/30 px-3 py-2 text-body-sm opacity-90 placeholder-gray-600 outline-none focus:border-warp-500/40"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="px-4 py-2 bg-warp-500/30 border border-warp-500/40 text-warp-300 text-xs font-medium cursor-pointer hover:bg-warp-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-warp-500/30 border border-warp-500/40 opacity-80 text-body-sm font-medium cursor-pointer hover:bg-warp-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {'\u2197'}
               </button>
@@ -495,7 +495,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}
-                  className="text-[10px] text-gray-500 hover:text-warp-400 cursor-pointer px-2 py-1 bg-white/3 border border-gray-800/30 hover:border-warp-500/20 transition-all"
+                  className="text-label opacity-40 hover:opacity-80 cursor-pointer px-2 py-1 bg-white/3 border border-gray-800/30 hover:border-current/10 transition-all"
                 >
                   {q}
                 </button>
@@ -524,25 +524,25 @@ function FaqSection({ section }: { section: typeof FAQ_SECTIONS[number] }) {
 
   return (
     <div className="glass-panel overflow-hidden">
-      <div className="p-3 border-b border-white/5 flex items-center gap-2">
-        <span className="text-lg text-warp-400">{section.icon}</span>
-        <h3 className="text-sm font-bold text-gray-200">{section.title}</h3>
+      <div className="p-3 border-b border-current/10 flex items-center gap-2">
+        <span className="text-title-sm opacity-80">{section.icon}</span>
+        <h3 className="text-base font-bold opacity-90">{section.title}</h3>
       </div>
       <div>
         {section.items.map((item, i) => (
           <div key={i} className="border-b border-white/3 last:border-0">
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full text-left p-3 flex items-center justify-between text-xs hover:bg-white/3 transition-all cursor-pointer"
+              className="w-full text-left p-3 flex items-center justify-between text-body-sm hover:bg-white/3 transition-all cursor-pointer"
             >
-              <span className="text-gray-300 font-medium">{item.q}</span>
-              <span className={`text-gray-500 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>
+              <span className="opacity-70 font-medium">{item.q}</span>
+              <span className={`opacity-40 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>
                 {'\u25BC'}
               </span>
             </button>
             {openIndex === i && (
               <div className="px-3 pb-3">
-                <p className="text-[11px] text-gray-400 leading-relaxed">{item.a}</p>
+                <p className="text-[11px] opacity-50 leading-relaxed">{item.a}</p>
               </div>
             )}
           </div>

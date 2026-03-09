@@ -113,7 +113,6 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
   const { theme, toggleTheme } = useTheme();
   const { wallet } = useWallet();
 
-  // Close on escape
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -123,7 +122,6 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -140,20 +138,20 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
 
   return (
     <>
-      {/* Desktop mini sidebar - icons only */}
-      <div className="hidden sm:flex fixed top-[52px] left-0 bottom-0 z-40 w-[56px] flex-col items-center py-3 gap-1 glass-panel border-r border-white/5 overflow-y-auto sidebar-mini">
+      {/* Desktop mini sidebar */}
+      <div className="hidden sm:flex fixed top-[52px] left-0 bottom-0 z-40 w-[56px] flex-col items-center py-3 gap-1 glass-panel overflow-y-auto sidebar-mini">
         {menuItems.map((item) => {
           if (item.id.startsWith('divider')) {
-            return <div key={item.id} className="w-8 my-0.5 border-b border-white/5" />;
+            return <div key={item.id} className="w-8 my-0.5 border-b border-current/10" />;
           }
           return (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer ${
+              className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer hover-gradient-border ${
                 activeTab === item.id
-                  ? 'text-warp-400 bg-warp-500/10'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                  ? 'opacity-100'
+                  : 'opacity-40 hover:opacity-80'
               }`}
               title={item.label}
               aria-label={item.label}
@@ -162,10 +160,10 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
             </button>
           );
         })}
-        <div className="mt-auto pt-2 border-t border-white/5 w-8">
+        <div className="mt-auto pt-2 border-t border-current/10 w-8">
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-300 cursor-pointer transition-colors mx-auto"
+            className="w-10 h-10 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-all mx-auto"
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           >
             <span className="text-lg">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
@@ -181,27 +179,27 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
         onClick={onClose}
       />
 
-      {/* Sidebar panel (slides open) */}
+      {/* Sidebar panel */}
       <div
         ref={sidebarRef}
         className={`fixed top-0 left-0 bottom-0 z-[70] w-[280px] max-w-[80vw] glass-panel overflow-y-auto transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Header with profile */}
-        <div className="p-4 border-b border-white/5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+        {/* Header */}
+        <div className="p-5 border-b border-current/10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
               <img
                 src={import.meta.env.BASE_URL + 'logo.svg'}
                 alt="CosmoWarp"
-                className="w-7 h-7 animate-float"
+                className="w-8 h-8 animate-float"
               />
-              <span className="font-title text-sm text-gray-100">CosmoWarp</span>
+              <span className="font-title text-base">CosmoWarp</span>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 cursor-pointer transition-colors"
+              className="w-9 h-9 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-opacity"
               aria-label="Close menu"
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -212,34 +210,34 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
           {wallet && (
             <button
               onClick={() => handleSelect('profile')}
-              className="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-white/5 p-2 -mx-2 transition-colors"
+              className="flex items-center gap-3 w-full text-left cursor-pointer hover:bg-current/5 p-2 -mx-2 transition-colors"
             >
-              <HexAvatar address={wallet.address} size={40} animate />
+              <HexAvatar address={wallet.address} size={44} animate />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-gray-100 truncate">{wallet.alias || shortAddress(wallet.address)}</p>
-                <p className="text-[10px] text-gray-500 truncate">{shortAddress(wallet.address)}</p>
+                <p className="text-base font-bold truncate">{wallet.alias || shortAddress(wallet.address)}</p>
+                <p className="text-body-sm opacity-40 truncate">{shortAddress(wallet.address)}</p>
               </div>
             </button>
           )}
         </div>
 
-        {/* Menu items */}
+        {/* Menu */}
         <nav className="py-2">
           {menuItems.map((item) => {
             if (item.id.startsWith('divider')) {
-              return <div key={item.id} className="my-1 border-b border-white/5" />;
+              return <div key={item.id} className="my-1 border-b border-current/10" />;
             }
             return (
               <button
                 key={item.id}
                 onClick={() => handleSelect(item.id)}
-                className={`w-full flex items-center gap-3 px-5 py-3 text-sm font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-3 px-5 py-3 text-base font-medium transition-all cursor-pointer ${
                   activeTab === item.id
-                    ? 'text-warp-300 bg-warp-500/10'
-                    : 'text-gray-300 hover:bg-white/5 hover:text-gray-100'
+                    ? 'opacity-100 bg-current/5'
+                    : 'opacity-50 hover:opacity-80 hover:bg-current/5'
                 }`}
               >
-                <span className={activeTab === item.id ? 'text-warp-400' : 'text-gray-400'}>
+                <span className={activeTab === item.id ? 'opacity-100' : 'opacity-60'}>
                   {item.icon}
                 </span>
                 {item.label}
@@ -248,13 +246,13 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
           })}
         </nav>
 
-        {/* Theme toggle at bottom */}
-        <div className="border-t border-white/5 p-4">
+        {/* Theme toggle */}
+        <div className="border-t border-current/10 p-5">
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center gap-3 px-2 py-2 text-sm text-gray-400 hover:text-gray-200 cursor-pointer transition-colors"
+            className="w-full flex items-center gap-3 px-2 py-2 text-base opacity-50 hover:opacity-80 cursor-pointer transition-all"
           >
-            <span className="text-lg">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
+            <span className="text-xl">{theme === 'dark' ? '\u2600' : '\u263D'}</span>
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>

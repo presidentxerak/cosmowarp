@@ -27,7 +27,6 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -38,7 +37,6 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Search logic
   const doSearch = useCallback((query: string) => {
     if (!query.trim()) {
       setResults([]);
@@ -48,7 +46,6 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
     const q = query.toLowerCase();
     const matched: SearchResult[] = [];
 
-    // Search users
     try {
       const social = SocialEngine.load();
       const allProfiles = social.getAllProfiles();
@@ -70,7 +67,6 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
       }
     } catch { /* no social data yet */ }
 
-    // Search warts (NFTs)
     if (warts) {
       for (const wart of warts) {
         if (
@@ -104,7 +100,6 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
       sessionStorage.setItem('cosmowarp_view_user', result.address);
       onNavigate('user-profile');
     } else if (result.type === 'wart') {
-      // Navigate to gallery — the wart detail can be opened from marketplace
       onNavigate('gallery');
     }
     setSearchQuery('');
@@ -117,24 +112,24 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-50 glass-panel">
-      <div className="flex items-center gap-2 px-3 py-2 sm:px-[10px]">
-        {/* Profile icon - opens sidebar */}
+      <div className="flex items-center gap-3 px-3 py-2 sm:px-[10px]">
+        {/* Profile icon */}
         <button
           onClick={onProfileClick}
-          className="shrink-0 w-9 h-9 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity profile-icon-ring"
+          className="shrink-0 w-10 h-10 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity profile-icon-ring"
           aria-label="Open menu"
         >
-          <HexAvatar address={wallet?.address || 'default'} size={32} animate />
+          <HexAvatar address={wallet?.address || 'default'} size={34} animate />
         </button>
 
         {/* Search bar */}
         <div className="flex-1 relative" ref={containerRef}>
-          <div className={`flex items-center gap-2 px-3 py-1.5 transition-all duration-200 ${
+          <div className={`flex items-center gap-3 px-4 py-2 transition-all duration-200 ${
             searchFocused
-              ? 'bg-cosmic-700/80 border border-warp-500/40 shadow-[0_0_10px_rgba(168,85,247,0.15)]'
-              : 'bg-cosmic-800/60 border border-white/5 hover:border-white/10'
+              ? 'bg-white/10 dark:bg-white/10'
+              : 'bg-white/5 dark:bg-white/5'
           }`}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40 shrink-0">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
@@ -145,14 +140,15 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               placeholder="Search users, warts..."
-              className="w-full bg-transparent text-sm text-gray-200 placeholder-gray-500 outline-none"
+              className="w-full bg-transparent text-base placeholder-current/30 outline-none"
+              style={{ opacity: searchQuery ? 1 : 0.6 }}
             />
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
-                className="text-gray-500 hover:text-gray-300 cursor-pointer shrink-0"
+                className="opacity-40 hover:opacity-80 cursor-pointer shrink-0"
               >
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 5l10 10M15 5L5 15" />
                 </svg>
               </button>
@@ -161,9 +157,9 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
 
           {/* Search results dropdown */}
           {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-cosmic-800/95 border border-white/10 shadow-xl backdrop-blur-md z-[60] max-h-72 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 glass-panel z-[60] max-h-72 overflow-y-auto">
               {results.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                <div className="px-4 py-4 text-base opacity-40 text-center">
                   No results for "{searchQuery}"
                 </div>
               ) : (
@@ -171,28 +167,24 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
                   <button
                     key={`${result.type}-${result.id}`}
                     onClick={() => handleSelect(result)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-warp-500/10 transition-colors cursor-pointer text-left border-b border-white/5 last:border-0"
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer text-left border-b border-current/5 last:border-0"
                   >
                     {result.type === 'user' && result.address ? (
-                      <HexAvatar address={result.address} size={32} />
+                      <HexAvatar address={result.address} size={36} />
                     ) : result.imageData ? (
-                      <div className="w-8 h-8 bg-cosmic-900/60 overflow-hidden shrink-0">
+                      <div className="w-9 h-9 overflow-hidden shrink-0">
                         <img src={result.imageData} alt="" className="w-full h-full object-cover" />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 bg-cosmic-900/60 flex items-center justify-center shrink-0">
-                        <span className="text-gray-600 text-xs">{'\u25C8'}</span>
+                      <div className="w-9 h-9 bg-current/5 flex items-center justify-center shrink-0">
+                        <span className="opacity-30">{'\u25C8'}</span>
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-200 truncate">{result.title}</p>
-                      <p className="text-[10px] text-gray-500 truncate">{result.subtitle}</p>
+                      <p className="text-base truncate">{result.title}</p>
+                      <p className="text-body-sm opacity-40 truncate">{result.subtitle}</p>
                     </div>
-                    <span className={`text-[9px] px-1.5 py-0.5 shrink-0 ${
-                      result.type === 'user'
-                        ? 'text-warp-400 bg-warp-500/10 border border-warp-500/20'
-                        : 'text-energy-400 bg-energy-500/10 border border-energy-500/20'
-                    }`}>
+                    <span className="text-label px-2 py-0.5 shrink-0 opacity-50">
                       {result.type === 'user' ? 'User' : 'Wart'}
                     </span>
                   </button>

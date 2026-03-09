@@ -158,18 +158,18 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             )}
             <div className={`max-w-[85%] sm:max-w-[70%] ${
               msg.role === 'user'
-                ? 'bg-warp-500/20 border border-warp-500/30 px-3 py-2'
+                ? 'bg-current/5 border border-current/10 px-3 py-2'
                 : 'px-1 py-1'
             }`}>
-              <p className={`text-sm leading-relaxed ${
-                msg.role === 'user' ? 'text-gray-100' : 'text-gray-200'
+              <p className={`text-base leading-relaxed ${
+                msg.role === 'user' ? 'opacity-100' : 'opacity-90'
               }`}>
                 {msg.text}
               </p>
               {msg.suggestion && (
                 <button
                   onClick={() => onNavigate(msg.suggestion!.tab)}
-                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-warp-300 bg-warp-500/15 border border-warp-500/25 hover:bg-warp-500/25 transition-all cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-body-sm font-medium opacity-80 bg-warp-500/15 border border-warp-500/25 hover:bg-warp-500/25 transition-all cursor-pointer"
                 >
                   {msg.suggestion.label}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -177,7 +177,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                   </svg>
                 </button>
               )}
-              <p className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-gray-500 text-right' : 'text-gray-600'}`}>
+              <p className={`text-label mt-1 ${msg.role === 'user' ? 'opacity-40 text-right' : 'opacity-30'}`}>
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -231,7 +231,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                     }, 800 + Math.random() * 1200);
                   }, 50);
                 }}
-                className="px-3 py-1.5 text-xs text-warp-300 border border-warp-500/20 bg-warp-500/5 hover:bg-warp-500/15 transition-all cursor-pointer"
+                className="px-3 py-1.5 text-body-sm opacity-80 border border-current/10 bg-warp-500/5 hover:bg-warp-500/15 transition-all cursor-pointer"
               >
                 {action.label}
               </button>
@@ -241,7 +241,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 p-3 border-t border-white/5">
+      <div className="shrink-0 p-3 border-t border-current/10">
         <div className="flex items-center gap-2">
           <input
             ref={inputRef}
@@ -265,7 +265,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             </svg>
           </button>
         </div>
-        <p className="text-[10px] text-gray-600 mt-1.5 text-center">
+        <p className="text-label opacity-30 mt-1.5 text-center">
           Cosmo is your AI guide to CosmoWarp. Responses are generated locally.
         </p>
       </div>

@@ -21,8 +21,8 @@ export default function VaultView() {
 
   if (!wallet || !unlocked) {
     return (
-      <div className="glass-panel p-6 text-center">
-        <p className="text-gray-400">Unlock your wallet to access the Vault.</p>
+      <div className="glass-panel p-8 text-center">
+        <p className="text-base opacity-50">Unlock your wallet to access the Vault.</p>
       </div>
     );
   }
@@ -109,55 +109,55 @@ export default function VaultView() {
     setTimeout(() => setRestoreResult(null), 6000);
   };
 
-  const healthColor = stats?.vaultHealth === 'healthy' ? 'text-green-400' : stats?.vaultHealth === 'partial' ? 'text-amber-400' : 'text-red-400';
+  const healthLabel = stats?.vaultHealth === 'healthy' ? 'Healthy' : stats?.vaultHealth === 'partial' ? 'Partial' : 'At Risk';
   const healthIcon = stats?.vaultHealth === 'healthy' ? '\u2713' : stats?.vaultHealth === 'partial' ? '\u26A0' : '\u2717';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="glass-panel p-5 text-center">
-        <h2 className="text-xl font-bold text-gray-100 mb-1 font-title">{'\u26BF'} CosmoVault</h2>
-        <p className="text-xs text-gray-400">Encrypted artwork backup & recovery</p>
+      <div className="glass-panel p-8 text-center">
+        <h2 className="text-title-lg font-bold font-title mb-2">{'\u26BF'} CosmoVault</h2>
+        <p className="text-base opacity-50">Encrypted artwork backup & recovery</p>
       </div>
 
       {/* Vault Health */}
-      <div className="glass-panel p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-300">Vault Status</h3>
-          <span className={`text-sm font-bold ${healthColor}`}>
-            {healthIcon} {stats?.vaultHealth === 'healthy' ? 'Healthy' : stats?.vaultHealth === 'partial' ? 'Partial' : 'At Risk'}
+      <div className="glass-panel p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-title-sm font-bold">Vault Status</h3>
+          <span className="text-base font-bold">
+            {healthIcon} {healthLabel}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-          <div className="p-2 bg-cosmic-900/40 text-center">
-            <p className="text-lg font-bold text-warp-400">{stats?.totalArtworks || 0}</p>
-            <p className="text-[10px] text-gray-500">ARTWORKS</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="p-4 bg-current/5 text-center card">
+            <p className="text-title-md font-bold">{stats?.totalArtworks || 0}</p>
+            <p className="text-label opacity-40">ARTWORKS</p>
           </div>
-          <div className="p-2 bg-cosmic-900/40 text-center">
-            <p className="text-lg font-bold text-green-400">{stats?.hybridBackups || 0}</p>
-            <p className="text-[10px] text-gray-500">HYBRID</p>
+          <div className="p-4 bg-current/5 text-center card">
+            <p className="text-title-md font-bold">{stats?.hybridBackups || 0}</p>
+            <p className="text-label opacity-40">HYBRID</p>
           </div>
-          <div className="p-2 bg-cosmic-900/40 text-center">
-            <p className="text-lg font-bold text-energy-400">{stats?.localBackups || 0}</p>
-            <p className="text-[10px] text-gray-500">LOCAL</p>
+          <div className="p-4 bg-current/5 text-center card">
+            <p className="text-title-md font-bold">{stats?.localBackups || 0}</p>
+            <p className="text-label opacity-40">LOCAL</p>
           </div>
-          <div className="p-2 bg-cosmic-900/40 text-center">
-            <p className="text-lg font-bold text-nebula-400">
+          <div className="p-4 bg-current/5 text-center card">
+            <p className="text-title-md font-bold">
               {stats ? (stats.totalSizeBytes / 1024).toFixed(0) : 0} KB
             </p>
-            <p className="text-[10px] text-gray-500">TOTAL SIZE</p>
+            <p className="text-label opacity-40">TOTAL SIZE</p>
           </div>
         </div>
 
         {backupResult && (
-          <div className="text-xs p-2 bg-warp-500/10 border border-warp-500/20 text-warp-300 mb-3">
+          <div className="text-base p-3 bg-current/5 mb-4 opacity-70">
             {backupResult}
           </div>
         )}
 
         <button
-          className="warp-button w-full py-2.5 text-sm"
+          className="warp-button w-full py-3 text-base"
           onClick={handleBackupAll}
           disabled={backingUp || myCollection.length === 0}
         >
@@ -166,22 +166,22 @@ export default function VaultView() {
       </div>
 
       {/* Recovery Kit */}
-      <div className="glass-panel p-4">
-        <h3 className="text-sm font-bold text-gray-300 mb-3">{'\u2B07'} Recovery Kit</h3>
-        <p className="text-xs text-gray-400 mb-3">
+      <div className="glass-panel p-6">
+        <h3 className="text-title-sm font-bold mb-4">{'\u2B07'} Recovery Kit</h3>
+        <p className="text-base opacity-50 mb-4">
           Download an encrypted backup of all your artworks. Use it to restore on any device.
         </p>
 
-        <div className="space-y-2 mb-3">
+        <div className="space-y-3 mb-4">
           <input
-            className="warp-input text-sm"
+            className="warp-input"
             type="password"
             placeholder="Recovery password (min 6 chars)"
             value={recoveryPassword}
             onChange={e => setRecoveryPassword(e.target.value)}
           />
           <button
-            className="warp-button w-full py-2 text-sm"
+            className="warp-button w-full py-3"
             onClick={handleGenerateKit}
             disabled={generatingKit || !recoveryPassword || recoveryPassword.length < 6 || myCollection.length === 0}
           >
@@ -189,8 +189,8 @@ export default function VaultView() {
           </button>
         </div>
 
-        <div className="border-t border-white/5 pt-3 mt-3">
-          <p className="text-xs text-gray-400 mb-2">{'\u2B06'} Restore from Recovery Kit</p>
+        <div className="border-t border-current/10 pt-4 mt-4">
+          <p className="text-base opacity-50 mb-3">{'\u2B06'} Restore from Recovery Kit</p>
 
           <input
             ref={fileInputRef}
@@ -202,25 +202,25 @@ export default function VaultView() {
 
           {!importedKit ? (
             <button
-              className="warp-button w-full py-2 text-sm border-dashed"
+              className="warp-button w-full py-3"
               onClick={() => fileInputRef.current?.click()}
             >
               {'\u2B06'} Select Recovery Kit File
             </button>
           ) : (
-            <div className="space-y-2">
-              <div className="p-2 bg-green-500/10 border border-green-500/20 text-xs text-green-400">
+            <div className="space-y-3">
+              <div className="p-3 bg-current/5 text-base opacity-70">
                 {'\u2713'} Kit loaded: {importedKit.entries.length} artworks from {new Date(importedKit.createdAt).toLocaleDateString()}
               </div>
               <input
-                className="warp-input text-sm"
+                className="warp-input"
                 type="password"
                 placeholder="Recovery password"
                 value={restorePassword}
                 onChange={e => setRestorePassword(e.target.value)}
               />
               <button
-                className="warp-button w-full py-2 text-sm"
+                className="warp-button w-full py-3"
                 onClick={handleRestore}
                 disabled={restoringKit || !restorePassword}
               >
@@ -230,7 +230,7 @@ export default function VaultView() {
           )}
 
           {restoreResult && (
-            <div className="text-xs p-2 mt-2 bg-warp-500/10 border border-warp-500/20 text-warp-300 whitespace-pre-line">
+            <div className="text-base p-3 mt-3 bg-current/5 opacity-70 whitespace-pre-line">
               {restoreResult}
             </div>
           )}
@@ -238,42 +238,42 @@ export default function VaultView() {
       </div>
 
       {/* Collection with vault status */}
-      <div className="glass-panel p-4">
-        <h3 className="text-sm font-bold text-gray-300 mb-3">Your Collection ({myCollection.length})</h3>
+      <div className="glass-panel p-6">
+        <h3 className="text-title-sm font-bold mb-4">Your Collection ({myCollection.length})</h3>
 
         {myCollection.length === 0 ? (
-          <p className="text-xs text-gray-500 text-center py-4">No artworks yet. Create one in the Marketplace.</p>
+          <p className="text-base opacity-40 text-center py-6">No artworks yet. Create one in the Marketplace.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {myCollection.map(wart => (
-              <div key={wart.id} className="p-3 bg-cosmic-900/40 border border-white/5">
-                <div className="flex items-start gap-3">
+              <div key={wart.id} className="p-4 card">
+                <div className="flex items-start gap-4">
                   {wart.mediaType !== 'audio' && (
-                    <div className="w-16 h-16 rounded-none overflow-hidden shrink-0 bg-cosmic-900/60">
+                    <div className="w-20 h-20 overflow-hidden shrink-0">
                       <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-200 font-medium truncate">{wart.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <p className="text-base font-medium truncate">{wart.title}</p>
+                    <div className="flex items-center gap-2 mt-2">
                       {wart.vaultBackup ? (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 border border-green-500/30">
+                        <span className="text-label px-2 py-1 bg-current/5">
                           {'\u26BF'} Backed up
                         </span>
                       ) : (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        <span className="text-label px-2 py-1 bg-current/5 opacity-50">
                           {'\u26A0'} Not backed up
                         </span>
                       )}
                       {wart.certId && (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-warp-500/20 text-warp-300 border border-warp-500/30">
+                        <span className="text-label px-2 py-1 bg-current/5">
                           {'\u2713'} Certified
                         </span>
                       )}
                     </div>
                     {!wart.vaultBackup && (
                       <button
-                        className="text-[10px] text-warp-300 hover:text-warp-200 mt-1 cursor-pointer"
+                        className="text-body-sm opacity-60 hover:opacity-100 mt-2 cursor-pointer transition-opacity"
                         onClick={() => handleBackupOne(wart.id)}
                       >
                         {'\u26BF'} Backup now
@@ -288,27 +288,27 @@ export default function VaultView() {
       </div>
 
       {/* Security Info */}
-      <div className="glass-panel p-4">
-        <h3 className="text-sm font-bold text-gray-300 mb-2">Security</h3>
-        <div className="space-y-2 text-xs text-gray-400">
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 shrink-0">{'\u2713'}</span>
+      <div className="glass-panel p-6">
+        <h3 className="text-title-sm font-bold mb-4">Security</h3>
+        <div className="space-y-3 text-base opacity-60">
+          <div className="flex items-start gap-3">
+            <span className="shrink-0">{'\u2713'}</span>
             <span>AES-256-GCM encryption at rest</span>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 shrink-0">{'\u2713'}</span>
+          <div className="flex items-start gap-3">
+            <span className="shrink-0">{'\u2713'}</span>
             <span>Vault key derived from CosmoID (PBKDF2 600K rounds)</span>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 shrink-0">{'\u2713'}</span>
+          <div className="flex items-start gap-3">
+            <span className="shrink-0">{'\u2713'}</span>
             <span>Recovery kit double-encrypted (vault key + recovery password)</span>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 shrink-0">{'\u2713'}</span>
+          <div className="flex items-start gap-3">
+            <span className="shrink-0">{'\u2713'}</span>
             <span>SHA-256 content fingerprint integrity verification</span>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="text-green-400 shrink-0">{'\u2713'}</span>
+          <div className="flex items-start gap-3">
+            <span className="shrink-0">{'\u2713'}</span>
             <span>Ed25519 signed vault manifest</span>
           </div>
         </div>

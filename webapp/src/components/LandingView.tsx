@@ -17,19 +17,19 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             alt="CosmoWarp"
             className="w-24 sm:w-32 h-24 sm:h-32 mx-auto mb-6 animate-float"
           />
-          <h1 className="text-3xl sm:text-5xl font-bold text-gray-100 mb-3 font-title">
+          <h1 className="text-3xl sm:text-5xl font-bold opacity-100 mb-3 font-title">
             CosmoWarp
           </h1>
-          <p className="text-base sm:text-lg text-warp-400 font-bold mb-2">
+          <p className="text-base sm:text-lg opacity-80 font-bold mb-2">
             Post-Blockchain Transactional Fabric
           </p>
-          <p className="text-sm text-gray-400 max-w-lg mx-auto mb-8 leading-relaxed">
+          <p className="text-base opacity-50 max-w-lg mx-auto mb-8 leading-relaxed">
             Not a chain. Not a coin. A living mesh.
             {' '}CosmoWarp is a new paradigm for value exchange — faster, fairer, and truly decentralized.
           </p>
           <button
             onClick={() => onNavigate('wallet')}
-            className="px-8 py-3 bg-warp-500/30 border border-warp-500/50 text-warp-300 font-bold text-sm hover:bg-warp-500/50 transition-all cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+            className="px-8 py-3 bg-warp-500/30 border border-warp-500/50 text-warp-300 font-bold text-base hover:bg-warp-500/50 transition-all cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
           >
             {wallet ? '\u25C8 Open Wallet' : '\u25C8 Connect'}
           </button>
@@ -38,10 +38,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
       {/* ─── The Problem ───────────────────────────────────── */}
       <div className="glass-panel p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-gray-100 mb-2 font-title text-center">
+        <h2 className="text-xl font-bold opacity-100 mb-2 font-title text-center">
           {'\u26A0'} The Problem
         </h2>
-        <p className="text-xs text-gray-500 text-center mb-6">Why the world needs something new</p>
+        <p className="text-body-sm opacity-40 text-center mb-6">Why the world needs something new</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
@@ -65,8 +65,8 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           ].map(card => (
             <div key={card.title} className="p-4 bg-cosmic-900/40 border border-gray-700/10">
               <span className="text-2xl block mb-2">{card.icon}</span>
-              <h3 className={`text-sm font-bold ${card.color} mb-2`}>{card.title}</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">{card.desc}</p>
+              <h3 className={`text-base font-bold ${card.color} mb-2`}>{card.title}</h3>
+              <p className="text-body-sm opacity-50 leading-relaxed">{card.desc}</p>
             </div>
           ))}
         </div>
@@ -74,23 +74,23 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
       {/* ─── The Solution ──────────────────────────────────── */}
       <div className="glass-panel p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-gray-100 mb-2 font-title text-center">
+        <h2 className="text-xl font-bold opacity-100 mb-2 font-title text-center">
           {'\u2B21'} The Solution
         </h2>
-        <p className="text-xs text-gray-500 text-center mb-6">CosmoWarp changes everything</p>
+        <p className="text-body-sm opacity-40 text-center mb-6">CosmoWarp changes everything</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
             {
               icon: '\u25CE',
               title: 'CosmoMesh — DAG, Not Blockchain',
               desc: 'A Directed Acyclic Graph with 7 parallel validation layers. No blocks, no bottlenecks. Each transaction validates two others, creating a self-reinforcing mesh.',
-              color: 'text-warp-400',
+              color: 'opacity-80',
             },
             {
               icon: '\u269B',
               title: 'Resonance Decay — Not Halving',
               desc: 'Mining rewards follow a smooth golden ratio curve instead of brutal halvings. Fair, predictable, and elegant. 69M total supply.',
-              color: 'text-energy-400',
+              color: 'opacity-80',
             },
             {
               icon: '\u26BF',
@@ -107,8 +107,8 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           ].map(card => (
             <div key={card.title} className="p-4 bg-cosmic-900/40 border border-gray-700/10">
               <span className={`text-2xl block mb-2 ${card.color}`}>{card.icon}</span>
-              <h3 className={`text-sm font-bold ${card.color} mb-2`}>{card.title}</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">{card.desc}</p>
+              <h3 className={`text-base font-bold ${card.color} mb-2`}>{card.title}</h3>
+              <p className="text-body-sm opacity-50 leading-relaxed">{card.desc}</p>
             </div>
           ))}
         </div>
@@ -116,10 +116,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
       {/* ─── How It Works ──────────────────────────────────── */}
       <div className="glass-panel p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-gray-100 mb-2 font-title text-center">
+        <h2 className="text-xl font-bold opacity-100 mb-2 font-title text-center">
           {'\u2699'} How It Works
         </h2>
-        <p className="text-xs text-gray-500 text-center mb-6">4 steps to enter the CosmoWarp universe</p>
+        <p className="text-body-sm opacity-40 text-center mb-6">4 steps to enter the CosmoWarp universe</p>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {[
             { step: '01', icon: '\u25C8', title: 'Create Wallet', desc: 'Generate an Ed25519 keypair. Your address is yours forever. No email, no KYC, no intermediary.', action: 'wallet' },
@@ -133,11 +133,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               className="p-4 bg-cosmic-900/40 border border-gray-700/10 text-left hover:bg-warp-500/10 hover:border-warp-500/20 transition-all cursor-pointer group"
             >
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl text-warp-400 opacity-30 group-hover:opacity-80 transition-opacity">{s.step}</span>
+                <span className="text-2xl opacity-80 opacity-30 group-hover:opacity-80 transition-opacity">{s.step}</span>
                 <span className="text-xl">{s.icon}</span>
               </div>
-              <h3 className="text-sm font-bold text-gray-200 mb-1">{s.title}</h3>
-              <p className="text-[11px] text-gray-500 leading-relaxed">{s.desc}</p>
+              <h3 className="text-base font-bold opacity-90 mb-1">{s.title}</h3>
+              <p className="text-[11px] opacity-40 leading-relaxed">{s.desc}</p>
             </button>
           ))}
         </div>
@@ -145,16 +145,16 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
       {/* ─── Ecosystem ─────────────────────────────────────── */}
       <div className="glass-panel p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-gray-100 mb-2 font-title text-center">
+        <h2 className="text-xl font-bold opacity-100 mb-2 font-title text-center">
           {'\u2604'} The Ecosystem
         </h2>
-        <p className="text-xs text-gray-500 text-center mb-6">Everything you need, in one place</p>
+        <p className="text-body-sm opacity-40 text-center mb-6">Everything you need, in one place</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { icon: '\u25C8', label: 'Wallet', desc: 'Send, receive, mine', tab: 'wallet', color: 'text-warp-400' },
+            { icon: '\u25C8', label: 'Wallet', desc: 'Send, receive, mine', tab: 'wallet', color: 'opacity-80' },
             { icon: '\u2B22', label: 'Wart Market', desc: 'Digital art marketplace', tab: 'warts', color: 'text-amber-400' },
             { icon: '\u25CE', label: 'CosmoChat', desc: 'Social network', tab: 'cosmochat', color: 'text-cyan-400' },
-            { icon: '\u25C9', label: 'Feed', desc: 'Transaction history', tab: 'feed', color: 'text-energy-400' },
+            { icon: '\u25C9', label: 'Feed', desc: 'Transaction history', tab: 'feed', color: 'opacity-80' },
             { icon: '\u2B21', label: 'White Paper', desc: 'Full documentation', tab: 'whitepaper', color: 'text-purple-400' },
             { icon: '\u2753', label: 'Help & Cosmo', desc: 'AI guide + FAQ', tab: 'help', color: 'text-green-400' },
           ].map(item => (
@@ -164,8 +164,8 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               className="p-3 bg-cosmic-900/40 border border-gray-700/10 text-center hover:bg-warp-500/10 transition-all cursor-pointer"
             >
               <span className={`text-xl block mb-1 ${item.color}`}>{item.icon}</span>
-              <p className="text-xs font-bold text-gray-200">{item.label}</p>
-              <p className="text-[10px] text-gray-500">{item.desc}</p>
+              <p className="text-body-sm font-bold opacity-90">{item.label}</p>
+              <p className="text-[10px] opacity-40">{item.desc}</p>
             </button>
           ))}
         </div>
@@ -174,14 +174,14 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       {/* ─── Stats ─────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { value: '69M', label: 'Total Supply', color: 'text-warp-400' },
-          { value: '\u03C6', label: 'Golden Ratio Mining', color: 'text-energy-400' },
+          { value: '69M', label: 'Total Supply', color: 'opacity-80' },
+          { value: '\u03C6', label: 'Golden Ratio Mining', color: 'opacity-80' },
           { value: '7', label: 'Mesh Layers', color: 'text-star-400' },
           { value: '\u221E', label: 'Offline + Online', color: 'text-cyan-400' },
         ].map(s => (
           <div key={s.label} className="glass-panel p-4 text-center">
             <p className={`text-2xl sm:text-3xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-[10px] text-gray-500 mt-1">{s.label}</p>
+            <p className="text-[10px] opacity-40 mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -192,22 +192,22 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           background: 'radial-gradient(circle at 50% 50%, #a855f7 0%, transparent 60%)',
         }} />
         <div className="relative">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-100 mb-3 font-title">
+          <h2 className="text-xl sm:text-2xl font-bold opacity-100 mb-3 font-title">
             Ready to enter the Cosmos?
           </h2>
-          <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+          <p className="text-base opacity-50 mb-6 max-w-md mx-auto">
             Create your wallet in seconds. No email required. No third-party. Just you and the mesh.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => onNavigate('wallet')}
-              className="px-8 py-3 bg-warp-500/30 border border-warp-500/50 text-warp-300 font-bold text-sm hover:bg-warp-500/50 transition-all cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+              className="px-8 py-3 bg-warp-500/30 border border-warp-500/50 text-warp-300 font-bold text-base hover:bg-warp-500/50 transition-all cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.3)]"
             >
               {wallet ? '\u25C8 Open Wallet' : '\u2B21 Create Wallet'}
             </button>
             <button
               onClick={() => onNavigate('whitepaper')}
-              className="px-8 py-3 bg-white/5 border border-gray-700/30 text-gray-300 text-sm hover:bg-white/10 transition-all cursor-pointer"
+              className="px-8 py-3 bg-white/5 border border-gray-700/30 opacity-70 text-base hover:bg-white/10 transition-all cursor-pointer"
             >
               {'\u2B21'} Read White Paper
             </button>

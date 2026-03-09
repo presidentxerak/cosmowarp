@@ -17,9 +17,9 @@ export default function FeedView() {
   const typeColor = (type: string) => {
     switch (type) {
       case 'mine': return 'text-star-400';
-      case 'send': return 'text-nebula-400';
-      case 'genesis': return 'text-warp-400';
-      default: return 'text-energy-400';
+      case 'send': return 'opacity-80';
+      case 'genesis': return 'opacity-80';
+      default: return 'opacity-80';
     }
   };
 
@@ -42,20 +42,20 @@ export default function FeedView() {
     <div className="space-y-4">
       <div className="glass-panel p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-100 font-title">{'\u25CE'} CosmoMesh Feed</h2>
-          <button className="warp-button text-xs" onClick={handleRefresh}>Refresh</button>
+          <h2 className="text-title-sm font-bold opacity-100 font-title">{'\u25CE'} CosmoMesh Feed</h2>
+          <button className="warp-button text-body-sm" onClick={handleRefresh}>Refresh</button>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-body-sm opacity-40">
           {globalTxs.length} transactions on the CosmoMesh DAG
         </p>
 
         {/* Mesh Stats Summary */}
         {meshStats && (
-          <div className="flex gap-4 mt-2 text-[10px] text-gray-500 flex-wrap">
-            <span>DAG: <span className="text-warp-400">{meshStats.totalTransactions}</span> nodes</span>
-            <span>Tips: <span className="text-energy-400">{meshStats.totalTips}</span></span>
+          <div className="flex gap-4 mt-2 text-label opacity-40 flex-wrap">
+            <span>DAG: <span className="opacity-80">{meshStats.totalTransactions}</span> nodes</span>
+            <span>Tips: <span className="opacity-80">{meshStats.totalTips}</span></span>
             <span>Resonance: <span className="text-star-400">{(meshStats.avgResonance * 100).toFixed(0)}%</span></span>
-            <span>Depth: <span className="text-nebula-400">{meshStats.maxDepth}</span></span>
+            <span>Depth: <span className="opacity-80">{meshStats.maxDepth}</span></span>
           </div>
         )}
       </div>
@@ -63,46 +63,46 @@ export default function FeedView() {
       {globalTxs.length === 0 ? (
         <div className="glass-panel p-8 text-center">
           <img src={import.meta.env.BASE_URL + 'logo.svg'} alt="CosmoWarp" className="w-12 h-12 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">No transactions yet. Be the first to mine or send!</p>
+          <p className="opacity-50 text-base">No transactions yet. Be the first to mine or send!</p>
         </div>
       ) : (
         <div className="space-y-2">
           {globalTxs.map(tx => (
             <div key={tx.id} className="glass-panel p-3">
               <div className="flex items-start gap-3">
-                <span className={`text-xl ${typeColor(tx.type)}`}>{typeIcon(tx.type)}</span>
+                <span className={`text-title-md ${typeColor(tx.type)}`}>{typeIcon(tx.type)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold text-gray-200">
+                    <span className="text-body-sm font-bold opacity-90">
                       {tx.type === 'mine' ? 'Mining Reward' :
                        tx.type === 'genesis' ? 'Genesis' :
                        tx.type === 'send' ? 'Transfer' : tx.type}
                     </span>
-                    <span className="text-[10px] text-gray-600">{timeAgo(tx.timestamp)}</span>
+                    <span className="text-label opacity-30">{timeAgo(tx.timestamp)}</span>
                     {tx.layer !== undefined && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-none bg-warp-500/10 text-warp-400/70">
+                      <span className="text-label px-1.5 py-0.5 rounded-none bg-current/5 opacity-80/70">
                         {LAYER_NAMES[tx.layer]}
                       </span>
                     )}
                   </div>
 
-                  <div className="text-[11px] text-gray-400 mt-1">
+                  <div className="text-[11px] opacity-50 mt-1">
                     {tx.type === 'send' ? (
                       <>
-                        <span className={isMe(tx.from) ? 'text-warp-400' : ''}>
+                        <span className={isMe(tx.from) ? 'opacity-80' : ''}>
                           {isMe(tx.from) ? 'You' : shortAddress(tx.from)}
                         </span>
                         {' \u2192 '}
-                        <span className={isMe(tx.to) ? 'text-warp-400' : ''}>
+                        <span className={isMe(tx.to) ? 'opacity-80' : ''}>
                           {isMe(tx.to) ? 'You' : shortAddress(tx.to)}
                         </span>
                       </>
                     ) : tx.type === 'mine' ? (
-                      <span className={isMe(tx.to) ? 'text-warp-400' : ''}>
+                      <span className={isMe(tx.to) ? 'opacity-80' : ''}>
                         {isMe(tx.to) ? 'You' : shortAddress(tx.to)}
                       </span>
                     ) : (
-                      <span className={isMe(tx.to) ? 'text-warp-400' : ''}>
+                      <span className={isMe(tx.to) ? 'opacity-80' : ''}>
                         {isMe(tx.to) ? 'You' : shortAddress(tx.to)}
                       </span>
                     )}
@@ -110,19 +110,19 @@ export default function FeedView() {
 
                   {/* Resonance & Confirmations */}
                   {(tx.resonanceScore !== undefined || tx.confirmations !== undefined) && (
-                    <div className="flex gap-3 mt-1 text-[10px]">
+                    <div className="flex gap-3 mt-1 text-label">
                       {tx.resonanceScore !== undefined && (
-                        <span className="text-energy-400/60">
+                        <span className="opacity-80/60">
                           {(tx.resonanceScore * 100).toFixed(0)}% resonance
                         </span>
                       )}
                       {tx.confirmations !== undefined && tx.confirmations > 0 && (
-                        <span className="text-green-400/60">
+                        <span className="opacity-80/60">
                           {tx.confirmations} conf
                         </span>
                       )}
                       {tx.meshDepth !== undefined && (
-                        <span className="text-gray-600">
+                        <span className="opacity-30">
                           depth {tx.meshDepth}
                         </span>
                       )}
@@ -130,13 +130,13 @@ export default function FeedView() {
                   )}
 
                   {tx.memo && (
-                    <p className="text-[10px] text-gray-500 mt-1 truncate">{tx.memo}</p>
+                    <p className="text-label opacity-40 mt-1 truncate">{tx.memo}</p>
                   )}
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className={`text-sm font-bold ${
-                    tx.type === 'send' && isMe(tx.from) ? 'text-nebula-400' : 'text-energy-400'
+                  <span className={`text-base font-bold ${
+                    tx.type === 'send' && isMe(tx.from) ? 'opacity-80' : 'opacity-80'
                   }`}>
                     {tx.type === 'send' && isMe(tx.from) ? '-' : '+'}{tx.amount} {'\u03A9'}
                   </span>

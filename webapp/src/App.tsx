@@ -21,7 +21,7 @@ class BackgroundErrorBoundary extends Component<
           className="fixed inset-0 -z-10"
           style={{
             pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at center, #131650 0%, #0a0a1a 70%)',
+            background: '#000000',
           }}
         />
       );
@@ -44,15 +44,15 @@ class AppErrorBoundary extends Component<
       return (
         <div
           className="min-h-screen flex items-center justify-center p-6"
-          style={{ background: '#0a0a1a' }}
+          style={{ background: '#000000', color: '#ffffff' }}
         >
           <div className="text-center max-w-md">
-            <p className="text-2xl mb-4">{'\u2B21'}</p>
-            <h1 className="text-lg font-bold text-purple-300 mb-2">CosmoWarp encountered an error</h1>
-            <p className="text-sm text-gray-400 mb-4">{this.state.error || 'Something went wrong.'}</p>
+            <p className="text-4xl mb-6">{'\u2B21'}</p>
+            <h1 className="text-title-md font-bold mb-3">CosmoWarp encountered an error</h1>
+            <p className="text-base opacity-50 mb-6">{this.state.error || 'Something went wrong.'}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-purple-600/30 border border-purple-500/40 text-purple-300 text-sm cursor-pointer hover:bg-purple-600/50 transition-colors"
+              className="warp-button px-6 py-3 text-base cursor-pointer"
             >
               Reload App
             </button>

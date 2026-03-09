@@ -188,7 +188,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   if (!targetAddress) {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
-        <p className="text-gray-500 text-sm">No user selected</p>
+        <p className="opacity-40 text-base">No user selected</p>
       </div>
     );
   }
@@ -207,7 +207,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       <div className="px-3 py-2">
         <button
           onClick={() => onNavigate('wall')}
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-200 cursor-pointer"
+          className="flex items-center gap-1.5 text-body-sm opacity-50 hover:opacity-90 cursor-pointer"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -220,26 +220,26 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       <div className="glass-panel p-5 sm:p-6">
         <div className="flex flex-col items-center text-center">
           <HexAvatar address={targetAddress} size={80} animate className="mb-3" />
-          <h2 className="text-xl font-bold text-gray-100 font-title">{alias}</h2>
-          <p className="text-[11px] text-gray-500 font-mono mt-0.5">{targetAddress}</p>
+          <h2 className="text-title-md font-bold opacity-100 font-title">{alias}</h2>
+          <p className="text-[11px] opacity-40 font-mono mt-0.5">{targetAddress}</p>
 
           {/* Social links */}
           {(website || instagram || twitter) && (
             <div className="mt-2 flex flex-wrap gap-3 justify-center">
               {website && (
-                <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-energy-400 hover:text-energy-300 flex items-center gap-1">
+                <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-energy-300 flex items-center gap-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                   {website.replace(/^https?:\/\//, '').slice(0, 30)}
                 </a>
               )}
               {instagram && (
-                <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-nebula-400 hover:text-nebula-500 flex items-center gap-1">
+                <a href={`https://instagram.com/${instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:text-nebula-500 flex items-center gap-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
                   @{instagram.replace('@', '')}
                 </a>
               )}
               {twitter && (
-                <a href={`https://x.com/${twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-warp-300 hover:text-warp-400 flex items-center gap-1">
+                <a href={`https://x.com/${twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[11px] opacity-80 hover:opacity-80 flex items-center gap-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                   @{twitter.replace('@', '')}
                 </a>
@@ -248,20 +248,20 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           )}
 
           {/* Bio */}
-          {bio && <p className="text-xs text-gray-400 mt-3 max-w-sm">{bio}</p>}
+          {bio && <p className="text-body-sm opacity-50 mt-3 max-w-sm">{bio}</p>}
 
           {/* Action buttons */}
           {!isMe && wallet && (
             <div className="flex gap-2 mt-4 items-center">
               {isBlocked ? (
-                <button onClick={handleUnblock} className="text-xs px-4 py-2 border border-red-500/30 text-red-400 cursor-pointer hover:bg-red-500/10 transition-colors">
+                <button onClick={handleUnblock} className="text-body-sm px-4 py-2 border border-red-500/30 opacity-70 cursor-pointer hover:bg-current/5 transition-colors">
                   Unblock
                 </button>
               ) : isFollowing ? (
                 <div className="relative" ref={menuRef}>
                   <button
                     onClick={() => setShowFollowMenu(!showFollowMenu)}
-                    className="text-xs px-4 py-2 border border-warp-500/30 text-warp-300 cursor-pointer hover:bg-warp-500/10 transition-colors flex items-center gap-1"
+                    className="text-body-sm px-4 py-2 border border-current/10 opacity-80 cursor-pointer hover:bg-current/5 transition-colors flex items-center gap-1"
                   >
                     Following
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -270,40 +270,40 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   </button>
                   {/* Instagram-style dropdown */}
                   {showFollowMenu && (
-                    <div className="absolute top-full left-0 mt-1 w-52 glass-panel border border-white/10 z-50 follow-dropdown">
+                    <div className="absolute top-full left-0 mt-1 w-52 glass-panel border border-current/15 z-50 follow-dropdown">
                       <button
                         onClick={toggleCloseFriend}
-                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                        className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between"
                       >
-                        <span className="text-gray-300">Close friends</span>
-                        {isCloseFriend && <span className="text-energy-400">{'\u2713'}</span>}
+                        <span className="opacity-70">Close friends</span>
+                        {isCloseFriend && <span className="opacity-80">{'\u2713'}</span>}
                       </button>
                       <button
                         onClick={toggleFavorite}
-                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                        className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between"
                       >
-                        <span className="text-gray-300">Favorites</span>
+                        <span className="opacity-70">Favorites</span>
                         {isFavorite && <span className="text-star-400">{'\u2605'}</span>}
                       </button>
-                      <div className="border-t border-white/5" />
+                      <div className="border-t border-current/10" />
                       <button
                         onClick={toggleMute}
-                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                        className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between"
                       >
-                        <span className="text-gray-300">Mute</span>
-                        {isMuted && <span className="text-gray-500">{'\u2713'}</span>}
+                        <span className="opacity-70">Mute</span>
+                        {isMuted && <span className="opacity-40">{'\u2713'}</span>}
                       </button>
                       <button
                         onClick={toggleRestrict}
-                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-white/5 cursor-pointer transition-colors flex items-center justify-between"
+                        className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between"
                       >
-                        <span className="text-gray-300">Restrict</span>
-                        {isRestricted && <span className="text-gray-500">{'\u2713'}</span>}
+                        <span className="opacity-70">Restrict</span>
+                        {isRestricted && <span className="opacity-40">{'\u2713'}</span>}
                       </button>
-                      <div className="border-t border-white/5" />
+                      <div className="border-t border-current/10" />
                       <button
                         onClick={handleUnfollow}
-                        className="w-full text-left px-4 py-2.5 text-xs hover:bg-red-500/10 cursor-pointer transition-colors text-red-400"
+                        className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors opacity-70"
                       >
                         Unfollow
                       </button>
@@ -311,15 +311,15 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   )}
                 </div>
               ) : (
-                <button onClick={handleFollow} className="warp-button text-xs px-5 py-2">
+                <button onClick={handleFollow} className="warp-button text-body-sm px-5 py-2">
                   Follow
                 </button>
               )}
-              <button onClick={handleMessage} className="text-xs px-4 py-2 border border-white/10 text-gray-300 cursor-pointer hover:bg-white/5 transition-colors">
+              <button onClick={handleMessage} className="text-body-sm px-4 py-2 border border-current/15 opacity-70 cursor-pointer hover:bg-current/5 transition-colors">
                 Message
               </button>
               {!isBlocked && (
-                <button onClick={handleBlock} className="text-xs px-2 py-2 text-gray-600 cursor-pointer hover:text-red-400 transition-colors" title="Block">
+                <button onClick={handleBlock} className="text-body-sm px-2 py-2 opacity-30 cursor-pointer hover:opacity-70 transition-colors" title="Block">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
                   </svg>
@@ -329,24 +329,24 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           )}
 
           {/* Stats */}
-          <div className="flex gap-6 mt-4 text-xs">
+          <div className="flex gap-6 mt-4 text-body-sm">
             <div className="text-center">
-              <span className="block font-bold text-gray-200 text-base">{followersCount}</span>
-              <span className="text-gray-500">Followers</span>
+              <span className="block font-bold opacity-90 text-base">{followersCount}</span>
+              <span className="opacity-40">Followers</span>
             </div>
             <div className="text-center">
-              <span className="block font-bold text-gray-200 text-base">{followingCount}</span>
-              <span className="text-gray-500">Following</span>
+              <span className="block font-bold opacity-90 text-base">{followingCount}</span>
+              <span className="opacity-40">Following</span>
             </div>
             <div className="text-center">
-              <span className="block font-bold text-gray-200 text-base">{posts.length}</span>
-              <span className="text-gray-500">Posts</span>
+              <span className="block font-bold opacity-90 text-base">{posts.length}</span>
+              <span className="opacity-40">Posts</span>
             </div>
           </div>
 
           {/* Mutual followers */}
           {mutualFollowers.length > 0 && (
-            <p className="text-[10px] text-gray-500 mt-2">
+            <p className="text-label opacity-40 mt-2">
               Followed by {mutualFollowers.length} {mutualFollowers.length === 1 ? 'person' : 'people'} you follow
             </p>
           )}
@@ -354,18 +354,18 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/5 overflow-x-auto">
+      <div className="flex border-b border-current/10 overflow-x-auto">
         {tabList.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+            className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
-                ? 'border-warp-400 text-warp-300'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
+                ? 'border-warp-400 opacity-80'
+                : 'border-transparent opacity-40 hover:opacity-70'
             }`}
           >
-            {t.label} <span className="text-[10px] text-gray-600 ml-1">{t.count}</span>
+            {t.label} <span className="text-label opacity-30 ml-1">{t.count}</span>
           </button>
         ))}
       </div>
@@ -375,7 +375,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'posts' && (
           posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">No posts yet</p>
+              <p className="opacity-40 text-base">No posts yet</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -383,13 +383,13 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                 <div key={post.id} className="glass-panel p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <HexAvatar address={post.author} size={24} onClick={() => handleViewUser(post.author)} />
-                    <span className="text-xs font-medium text-gray-200 cursor-pointer hover:text-warp-300" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</span>
+                    <span className="text-body-sm font-medium opacity-90 cursor-pointer hover:opacity-80" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</span>
                   </div>
-                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{post.content}</p>
+                  <p className="text-base opacity-70 whitespace-pre-wrap">{post.content}</p>
                   {post.mediaData && post.mediaType === 'image' && (
                     <img src={post.mediaData} alt="" className="mt-2 w-full max-h-64 object-cover" />
                   )}
-                  <div className="flex gap-4 mt-2 text-[10px] text-gray-500">
+                  <div className="flex gap-4 mt-2 text-label opacity-40">
                     <span>{post.tipCount} tips</span>
                     <span>{post.rewarpCount} rewarps</span>
                     <span>{post.comments.length} comments</span>
@@ -403,7 +403,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">No Warts created</p>
+              <p className="opacity-40 text-base">No Warts created</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -415,8 +415,8 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   {wart.mediaType === 'audio' && wart.audioCover && (
                     <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
                   )}
-                  <p className="text-xs font-medium text-gray-200 mt-1 truncate">{wart.title}</p>
-                  <p className="text-[10px] text-gray-500">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
+                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
+                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
                 </div>
               ))}
             </div>
@@ -426,7 +426,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'collection' && (
           collection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">Empty collection</p>
+              <p className="opacity-40 text-base">Empty collection</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -435,8 +435,8 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   {wart.mediaType !== 'audio' && wart.imageData && (
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
                   )}
-                  <p className="text-xs font-medium text-gray-200 mt-1 truncate">{wart.title}</p>
-                  <p className="text-[10px] text-gray-500">by {shortAddress(wart.creator)}</p>
+                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
+                  <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
                 </div>
               ))}
             </div>
