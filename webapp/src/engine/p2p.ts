@@ -20,6 +20,9 @@
 import { randomHex } from './crypto';
 import type { MeshTransaction } from './cosmomesh';
 import type { ConsensusVote } from './consensus';
+import type { ShardBlock, BeaconBlock } from './cosmochain';
+import { blockDB, beaconDB } from './chaindb';
+import { SignalingManager } from './signaling';
 
 // ─── Peer State ──────────────────────────────────────────
 
@@ -49,6 +52,15 @@ export const MessageType = {
   PONG:              'pong',
   SYNC_REQUEST:      'sync_request',
   SYNC_RESPONSE:     'sync_response',
+  // CosmoChain block propagation
+  SHARD_BLOCK:       'shard_block',
+  BEACON_BLOCK:      'beacon_block',
+  COSMOCODE_SVG:     'cosmocode_svg',
+  // Block/state sync
+  BLOCK_SYNC_REQUEST:  'block_sync_request',
+  BLOCK_SYNC_RESPONSE: 'block_sync_response',
+  STATE_SYNC_REQUEST:  'state_sync_request',
+  STATE_SYNC_RESPONSE: 'state_sync_response',
 } as const;
 
 export type MessageType = (typeof MessageType)[keyof typeof MessageType];
@@ -69,6 +81,10 @@ export interface P2PEventHandlers {
   onTransactionReceived?: (tx: MeshTransaction) => void;
   onVoteReceived?: (vote: ConsensusVote) => void;
   onSyncRequest?: (peerId: string) => void;
+  onShardBlockReceived?: (block: ShardBlock) => void;
+  onBeaconBlockReceived?: (beacon: BeaconBlock) => void;
+  onBlockSyncRequest?: (peerId: string, shard: number, fromHeight: number) => void;
+  onStateSyncRequest?: (peerId: string, shard: number) => void;
   onMessage?: (msg: P2PMessage, peerId: string) => void;
 }
 
@@ -90,10 +106,21 @@ export class CosmoP2P {
   private handlers: P2PEventHandlers = {};
   private seenMessages: Set<string> = new Set(); // Dedup gossip
   private isRunning: boolean = false;
+  private signalingManager: SignalingManager | null = null;
 
   constructor(address: string) {
     this.localId = randomHex(16);
     this.localAddress = address;
+  }
+
+  // ─── Accessors (used by SignalingManager) ─────────────
+
+  getLocalId(): string {
+    return this.localId;
+  }
+
+  getLocalAddress(): string {
+    return this.localAddress;
   }
 
   // ─── Lifecycle ───────────────────────────────────────
@@ -108,10 +135,31 @@ export class CosmoP2P {
 
   stop(): void {
     this.isRunning = false;
+    this.signalingManager?.stop();
+    this.signalingManager = null;
     for (const peer of this.peers.values()) {
       peer.close();
     }
     this.peers.clear();
+  }
+
+  // ─── Signaling ──────────────────────────────────────────
+
+  /**
+   * Connect via signaling for automatic peer discovery.
+   * Always enables BroadcastChannel for cross-tab P2P.
+   * Optionally connects to a remote WebSocket signaling server.
+   */
+  connectViaSignaling(signalingServerUrl?: string): void {
+    // Stop existing signaling if any
+    this.signalingManager?.stop();
+    this.signalingManager = new SignalingManager(this, signalingServerUrl);
+    this.signalingManager.start();
+  }
+
+  /** Get the current signaling status */
+  getSignalingStatus() {
+    return this.signalingManager?.getStatus() ?? null;
   }
 
   // ─── Connection Management ───────────────────────────
@@ -237,6 +285,67 @@ export class CosmoP2P {
     });
   }
 
+  /** Broadcast a shard block to all peers */
+  broadcastBlock(block: ShardBlock): void {
+    this.broadcast({
+      type: MessageType.SHARD_BLOCK,
+      senderId: this.localId,
+      timestamp: Date.now(),
+      payload: block,
+      nonce: randomHex(8),
+    });
+  }
+
+  /** Broadcast a beacon block to all peers */
+  broadcastBeacon(beacon: BeaconBlock): void {
+    this.broadcast({
+      type: MessageType.BEACON_BLOCK,
+      senderId: this.localId,
+      timestamp: Date.now(),
+      payload: beacon,
+      nonce: randomHex(8),
+    });
+  }
+
+  /** Request block sync from peers for a specific shard starting at a height */
+  requestBlockSync(shard: number, fromHeight: number): void {
+    this.broadcast({
+      type: MessageType.BLOCK_SYNC_REQUEST,
+      senderId: this.localId,
+      timestamp: Date.now(),
+      payload: { shard, fromHeight },
+      nonce: randomHex(8),
+    });
+  }
+
+  /** Send a block sync response to a specific peer */
+  sendBlockSyncResponse(peerId: string, blocks: ShardBlock[]): void {
+    const peer = this.peers.get(peerId);
+    if (peer && peer.state === 'connected') {
+      peer.send(JSON.stringify({
+        type: MessageType.BLOCK_SYNC_RESPONSE,
+        senderId: this.localId,
+        timestamp: Date.now(),
+        payload: { blocks },
+        nonce: randomHex(8),
+      }));
+    }
+  }
+
+  /** Send a state sync response to a specific peer */
+  sendStateSyncResponse(peerId: string, shard: number, state: unknown): void {
+    const peer = this.peers.get(peerId);
+    if (peer && peer.state === 'connected') {
+      peer.send(JSON.stringify({
+        type: MessageType.STATE_SYNC_RESPONSE,
+        senderId: this.localId,
+        timestamp: Date.now(),
+        payload: { shard, state },
+        nonce: randomHex(8),
+      }));
+    }
+  }
+
   // ─── Internal ────────────────────────────────────────
 
   private broadcast(msg: P2PMessage): void {
@@ -311,6 +420,110 @@ export class CosmoP2P {
       case MessageType.SYNC_REQUEST:
         this.handlers.onSyncRequest?.(peerId);
         break;
+
+      case MessageType.SHARD_BLOCK: {
+        const block = msg.payload as ShardBlock;
+        // Validate basic structure before storing
+        if (block && typeof block.number === 'number' && typeof block.shard === 'number' && block.hash) {
+          // Store in IndexedDB
+          blockDB.put({
+            key: `${block.shard}:${block.number}`,
+            shard: block.shard,
+            number: block.number,
+            parentHash: block.parentHash,
+            stateRoot: block.stateRoot,
+            transactionsRoot: block.transactionsRoot,
+            timestamp: block.timestamp,
+            validator: block.validator,
+            hash: block.hash,
+            txCount: block.txCount,
+            processingTimeMs: block.processingTimeMs,
+            cosmoCodeSVG: block.cosmoCodeSVG,
+            rawSize: JSON.stringify(block).length,
+            compressedSize: block.cosmoCodeSVG?.length ?? JSON.stringify(block).length,
+          }).catch(err => console.error('[P2P] Failed to store shard block:', err));
+
+          this.handlers.onShardBlockReceived?.(block);
+          // Gossip forward
+          this.gossipForward(data, peerId);
+        }
+        break;
+      }
+
+      case MessageType.BEACON_BLOCK: {
+        const beacon = msg.payload as BeaconBlock;
+        // Validate basic structure before storing
+        if (beacon && typeof beacon.number === 'number' && beacon.hash) {
+          // Store in IndexedDB
+          beaconDB.put({
+            number: beacon.number,
+            shardRoots: beacon.shardRoots,
+            shardHeads: beacon.shardHeads,
+            globalStateRoot: beacon.globalStateRoot,
+            timestamp: beacon.timestamp,
+            validator: beacon.validator,
+            hash: beacon.hash,
+          }).catch(err => console.error('[P2P] Failed to store beacon block:', err));
+
+          this.handlers.onBeaconBlockReceived?.(beacon);
+          // Gossip forward
+          this.gossipForward(data, peerId);
+        }
+        break;
+      }
+
+      case MessageType.BLOCK_SYNC_REQUEST: {
+        const req = msg.payload as { shard: number; fromHeight: number };
+        if (req && typeof req.shard === 'number' && typeof req.fromHeight === 'number') {
+          this.handlers.onBlockSyncRequest?.(peerId, req.shard, req.fromHeight);
+        }
+        break;
+      }
+
+      case MessageType.BLOCK_SYNC_RESPONSE: {
+        const resp = msg.payload as { blocks: ShardBlock[] };
+        if (resp?.blocks?.length) {
+          // Store all received blocks in IndexedDB
+          for (const block of resp.blocks) {
+            if (block && typeof block.number === 'number' && block.hash) {
+              blockDB.put({
+                key: `${block.shard}:${block.number}`,
+                shard: block.shard,
+                number: block.number,
+                parentHash: block.parentHash,
+                stateRoot: block.stateRoot,
+                transactionsRoot: block.transactionsRoot,
+                timestamp: block.timestamp,
+                validator: block.validator,
+                hash: block.hash,
+                txCount: block.txCount,
+                processingTimeMs: block.processingTimeMs,
+                cosmoCodeSVG: block.cosmoCodeSVG,
+                rawSize: JSON.stringify(block).length,
+                compressedSize: block.cosmoCodeSVG?.length ?? JSON.stringify(block).length,
+              }).catch(err => console.error('[P2P] Failed to store synced block:', err));
+
+              this.handlers.onShardBlockReceived?.(block);
+            }
+          }
+        }
+        break;
+      }
+
+      case MessageType.STATE_SYNC_REQUEST: {
+        const stateReq = msg.payload as { shard: number };
+        if (stateReq && typeof stateReq.shard === 'number') {
+          this.handlers.onStateSyncRequest?.(peerId, stateReq.shard);
+        }
+        break;
+      }
+
+      case MessageType.STATE_SYNC_RESPONSE: {
+        // State sync responses are forwarded to the generic handler
+        // since shard state structure is managed by CosmoChain
+        this.handlers.onMessage?.(msg, peerId);
+        break;
+      }
 
       default:
         this.handlers.onMessage?.(msg, peerId);

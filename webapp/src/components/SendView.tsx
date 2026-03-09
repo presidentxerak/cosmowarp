@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWallet } from '../context/WalletContext';
 
 export default function SendView() {
-  const { wallet, send } = useWallet();
+  const { wallet, unlocked, send } = useWallet();
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -12,7 +12,15 @@ export default function SendView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="text-gray-400">Create a wallet first to send Warps.</p>
+        <p className="opacity-50">Create a wallet first to send Warps.</p>
+      </div>
+    );
+  }
+
+  if (!unlocked) {
+    return (
+      <div className="glass-panel p-6 text-center">
+        <p className="opacity-50">Unlock your wallet to send Warps.</p>
       </div>
     );
   }
@@ -45,15 +53,15 @@ export default function SendView() {
   return (
     <div className="space-y-4">
       <div className="glass-panel p-5">
-        <h2 className="text-lg font-bold text-warp-300 mb-1">{'\u2197'} Send Warps</h2>
-        <p className="text-xs text-gray-500 mb-4">
-          Balance: <span className="text-energy-400">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
-          <span className="text-gray-600 ml-2">Ed25519 signed + DAG validated</span>
+        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2197'} Send Warps</h2>
+        <p className="text-body-sm opacity-40 mb-4">
+          Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
+          <span className="opacity-30 ml-2">Ed25519 signed + DAG validated</span>
         </p>
 
         <div className="space-y-3">
           <div>
-            <label className="text-[10px] text-gray-400 block mb-1">RECIPIENT ADDRESS</label>
+            <label className="text-label opacity-50 block mb-1">RECIPIENT ADDRESS</label>
             <input
               className="warp-input"
               placeholder="CW..."
@@ -63,7 +71,7 @@ export default function SendView() {
           </div>
 
           <div>
-            <label className="text-[10px] text-gray-400 block mb-1">AMOUNT ({'\u03A9'})</label>
+            <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u03A9'})</label>
             <div className="flex gap-2">
               <input
                 className="warp-input"
@@ -75,7 +83,7 @@ export default function SendView() {
                 onChange={e => setAmount(e.target.value)}
               />
               <button
-                className="warp-button text-xs shrink-0"
+                className="warp-button text-body-sm shrink-0"
                 onClick={() => setAmount(wallet.balance.toString())}
               >
                 MAX
@@ -84,7 +92,7 @@ export default function SendView() {
           </div>
 
           <div>
-            <label className="text-[10px] text-gray-400 block mb-1">MEMO (optional)</label>
+            <label className="text-label opacity-50 block mb-1">MEMO (optional)</label>
             <input
               className="warp-input"
               placeholder="What's this for?"
@@ -94,10 +102,10 @@ export default function SendView() {
           </div>
 
           {result && (
-            <div className={`text-sm p-3 rounded-lg ${
+            <div className={`text-base p-3 rounded-none ${
               result.success
-                ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-                : 'bg-red-500/10 border border-red-500/30 text-red-400'
+                ? 'bg-current/5 border border-current/10 opacity-80'
+                : 'bg-current/5 border border-red-500/30 opacity-70'
             }`}>
               {result.message}
             </div>
@@ -110,7 +118,7 @@ export default function SendView() {
           >
             {sending ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-full animate-spin" />
+                <span className="inline-block w-4 h-4 border-2 border-warp-300/30 border-t-warp-300 rounded-none animate-spin" />
                 Signing & Validating...
               </span>
             ) : (
@@ -122,12 +130,12 @@ export default function SendView() {
 
       {/* Quick amounts */}
       <div className="glass-panel p-4">
-        <p className="text-[10px] text-gray-500 mb-2">QUICK AMOUNTS</p>
+        <p className="text-label opacity-40 mb-2">QUICK AMOUNTS</p>
         <div className="flex gap-2 flex-wrap">
           {[10, 25, 50, 100].map(a => (
             <button
               key={a}
-              className="warp-button text-xs"
+              className="warp-button text-body-sm"
               onClick={() => setAmount(a.toString())}
               disabled={a > wallet.balance}
             >
@@ -139,8 +147,8 @@ export default function SendView() {
 
       {/* Protocol info */}
       <div className="glass-panel p-4">
-        <h3 className="text-sm font-bold text-gray-300 mb-2">Transaction Flow</h3>
-        <div className="text-[11px] text-gray-500 space-y-1">
+        <h3 className="text-base font-bold opacity-70 mb-2">Transaction Flow</h3>
+        <div className="text-[11px] opacity-40 space-y-1">
           <p>1. Ed25519 signature generation</p>
           <p>2. SHA-256 deterministic TX ID</p>
           <p>3. DAG parent selection (2 tips)</p>

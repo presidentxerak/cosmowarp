@@ -1,3 +1,5 @@
+import { storage } from './storage';
+
 /**
  * CosmoWarp Account Hierarchy — Levels, Titles & Rewards
  *
@@ -86,7 +88,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     id: 5,
     name: 'Cosmos',
     title: 'Cosmic Sovereign',
-    symbol: '\u2726',       // ✦
+    symbol: '\u2B21',       // ⬡
     minTransactions: 2000,
     minDaysActive: 180,
     rewardMultiplier: 3.5,
@@ -265,11 +267,11 @@ export class HierarchyEngine {
   }
 
   save(): void {
-    localStorage.setItem('cosmowarp_hierarchy', this.serialize());
+    storage.setItem('cosmowarp_hierarchy', this.serialize());
   }
 
   static load(): HierarchyEngine | null {
-    const raw = localStorage.getItem('cosmowarp_hierarchy');
+    const raw = storage.getItem('cosmowarp_hierarchy');
     if (!raw) return null;
     try {
       return HierarchyEngine.deserialize(raw);

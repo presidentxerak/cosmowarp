@@ -233,3 +233,100 @@ export function randomHex(length: number): string {
   const bytes = randomBytes(length);
   return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
+// ─── Wallet Key Encryption ─────────────────────────────
+
+export async function encryptPrivateKey(
+  privateKeyHex: string,
+  password: string
+): Promise<EncryptedPayload> {
+  return encryptData(privateKeyHex, 'COSMOWARP_WALLET_KEY:' + password);
+}
+
+export async function decryptPrivateKey(
+  payload: EncryptedPayload,
+  password: string
+): Promise<string> {
+  return decryptData(payload, 'COSMOWARP_WALLET_KEY:' + password);
+}
+
+// ─── CosmoID: Deterministic Key Derivation ─────────────
+
+/**
+ * Derive a 32-byte Ed25519 seed from username + password.
+ * Uses PBKDF2 with 600,000 iterations for brute-force resistance.
+ * Same credentials always produce the same seed → same wallet.
+ */
+export async function deriveWalletSeed(
+  username: string,
+  password: string
+): Promise<Uint8Array> {
+  const normalizedUser = username.toLowerCase().trim();
+  const salt = `CosmoWarp-CosmoID-v1:${normalizedUser}`;
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    strToBuf(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: strToBuf(salt),
+      iterations: 600000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    256
+  );
+  return new Uint8Array(bits);
+}
+
+function base64urlDecode(str: string): Uint8Array {
+  let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4) b64 += '=';
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+/**
+ * Generate an Ed25519 key pair from a 32-byte seed (deterministic).
+ * Builds PKCS8 from seed, imports via Web Crypto, extracts public key from JWK.
+ */
+export async function generateKeyPairFromSeed(
+  seed: Uint8Array
+): Promise<CosmoKeyPair> {
+  // Ed25519 PKCS8 = 16-byte ASN.1 DER header + 32-byte seed
+  const pkcs8Header = new Uint8Array([
+    0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06,
+    0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20,
+  ]);
+  const pkcs8 = new Uint8Array(48);
+  pkcs8.set(pkcs8Header);
+  pkcs8.set(seed, 16);
+
+  const privateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    pkcs8.buffer,
+    { name: 'Ed25519' },
+    true,
+    ['sign']
+  );
+
+  // Export as JWK to get public key (x) alongside private key (d)
+  const jwk = await crypto.subtle.exportKey('jwk', privateKey);
+  const pubBytes = base64urlDecode(jwk.x!);
+  const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
+
+  // Re-export full PKCS8 for storage
+  const pkcs8Export = await crypto.subtle.exportKey('pkcs8', privateKey);
+  const privHex = bufToHex(pkcs8Export);
+
+  const addressHash = await sha256(pubHex);
+  const address = 'CW' + addressHash.slice(0, 40);
+
+  return { publicKey: pubHex, privateKey: privHex, address };
+}

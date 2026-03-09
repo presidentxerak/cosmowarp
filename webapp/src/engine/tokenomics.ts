@@ -1,3 +1,5 @@
+import { storage } from './storage';
+
 /**
  * CosmoWarp Tokenomics — Supply Management & Resonance Decay
  *
@@ -348,11 +350,11 @@ export class TokenomicsEngine {
   }
 
   save(): void {
-    localStorage.setItem(TOKENOMICS_STORAGE_KEY, this.serialize());
+    storage.setItem(TOKENOMICS_STORAGE_KEY, this.serialize());
   }
 
   static load(): TokenomicsEngine | null {
-    const raw = localStorage.getItem(TOKENOMICS_STORAGE_KEY);
+    const raw = storage.getItem(TOKENOMICS_STORAGE_KEY);
     if (!raw) return null;
     try {
       return TokenomicsEngine.deserialize(raw);

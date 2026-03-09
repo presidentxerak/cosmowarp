@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { runMiningProgram } from '../engine/miner';
+import { sha256 } from '../engine/crypto';
+import { loadDifficultyState, hashMeetsDifficulty, countLeadingZeroBits, difficultyToTarget } from '../engine/miner';
 
 interface ConsoleLine {
   text: string;
@@ -7,8 +8,8 @@ interface ConsoleLine {
 }
 
 const WELCOME = [
-  { text: '\u2726 CosmoWarp Console v2.0', type: 'info' as const },
-  { text: 'Type CosmoASM instructions or use /help for commands.', type: 'info' as const },
+  { text: '\u2B21 CosmoWarp Console v2.0', type: 'info' as const },
+  { text: 'SHA-256 crypto console. Type text to hash or /help for commands.', type: 'info' as const },
   { text: '', type: 'info' as const },
 ];
 
@@ -48,25 +49,20 @@ export default function ConsoleView() {
       return;
     }
 
-    // Single instruction or end of buffer
+    // Hash any text input with SHA-256
     const allLines = [...buffer, trimmed];
     setBuffer([]);
 
     if (allLines.join('').trim().length === 0) return;
 
-    const program = allLines.join('\n');
-    try {
-      const result = runMiningProgram(program);
-      addLine(`\u2699 Cycles: ${result.cycles} | Energy: ${result.energy.toFixed(1)} | Hash: ${result.hash.toFixed(6)}`, 'output');
-      if (result.output.length > 0) {
-        addLine(`\u25B6 Output: [${result.output.map(v => typeof v === 'number' ? v.toFixed(4) : v).join(', ')}]`, 'output');
-      }
-      if (!result.success) {
-        addLine('\u26A0 Warning: hit cycle limit', 'error');
-      }
-    } catch (err) {
+    const text = allLines.join('\n');
+    sha256(text).then(hash => {
+      const zeroBits = countLeadingZeroBits(hash);
+      addLine(`SHA-256: ${hash}`, 'output');
+      addLine(`Leading zero bits: ${zeroBits}`, 'output');
+    }).catch(err => {
       addLine(`\u2717 Error: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
-    }
+    });
   };
 
   const handleCommand = (cmd: string) => {
@@ -76,11 +72,12 @@ export default function ConsoleView() {
         addLine('  /help       - Show this help', 'info');
         addLine('  /clear      - Clear console', 'info');
         addLine('  /run        - Execute buffered lines', 'info');
-        addLine('  /example    - Load example program', 'info');
-        addLine('  /registers  - List all registers', 'info');
-        addLine('  /opcodes    - List all opcodes', 'info');
+        addLine('  /difficulty - Show current mining difficulty', 'info');
+        addLine('  /target     - Show current difficulty target', 'info');
+        addLine('  /check <hash> - Check if hash meets difficulty', 'info');
         addLine('', 'info');
-        addLine('Write CosmoASM directly. End with \\ for multi-line.', 'info');
+        addLine('Type any text to compute its SHA-256 hash.', 'info');
+        addLine('End with \\ for multi-line input.', 'info');
         break;
       case '/clear':
         setLines([]);
@@ -91,40 +88,47 @@ export default function ConsoleView() {
           addLine('Nothing in buffer.', 'info');
           return;
         }
-        const program = buffer.join('\n');
+        const text = buffer.join('\n');
         setBuffer([]);
-        try {
-          const result = runMiningProgram(program);
-          addLine(`\u2699 Cycles: ${result.cycles} | Energy: ${result.energy.toFixed(1)}`, 'output');
-          if (result.output.length > 0) {
-            addLine(`\u25B6 Output: [${result.output.map(v => typeof v === 'number' ? v.toFixed(4) : v).join(', ')}]`, 'output');
-          }
-        } catch (err) {
-          addLine(`\u2717 Error: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
-        }
+        sha256(text).then(hash => {
+          const zeroBits = countLeadingZeroBits(hash);
+          addLine(`SHA-256: ${hash}`, 'output');
+          addLine(`Leading zero bits: ${zeroBits}`, 'output');
+        });
         break;
       }
-      case '/example':
-        addLine('Loading example...', 'info');
-        const example = `WARP_INIT GRID.R\u03A9, R\u03A9\\
-ENERGY_LOAD GRID.R\u03A9, #42\\
-HASH_STAR GRID.R\u03A9\\
-SIGNAL_BURST GRID.R\u03A9`;
-        setInput(example.split('\\')[0]);
-        addLine('Paste or type: WARP_INIT GRID.R\u03A9, R\u03A9', 'info');
+      case '/difficulty': {
+        const state = loadDifficultyState();
+        addLine(`Current difficulty: ${state.currentDifficulty} bits`, 'output');
+        addLine(`Blocks mined: ${state.blocksMined}`, 'output');
+        addLine(`Last block hash: ${state.lastBlockHash.slice(0, 32)}...`, 'output');
+        addLine(`Target block time: 15s`, 'info');
         break;
-      case '/registers':
-        addLine('Registers: R\u03A9(acc) R\u03C6(phi) R\u03C8(psi) R\u221E(loop) R\u03B4(diff) R\u03BB(code)', 'info');
-        addLine('           R\u03BC(mem) R\u03C0(rot) R\u03C3(sum) R\u03B8(dir) R\u03B5(prec) R\u03BE(rand)', 'info');
+      }
+      case '/target': {
+        const st = loadDifficultyState();
+        const target = difficultyToTarget(st.currentDifficulty);
+        addLine(`Difficulty: ${st.currentDifficulty} bits`, 'output');
+        addLine(`Target: ${target.slice(0, 32)}...`, 'output');
+        addLine(`Hash must be <= target to be valid`, 'info');
         break;
-      case '/opcodes':
-        addLine('FLUX: WARP_INIT ENERGY_LOAD FLUX_GATE QUANTUM_JUMP FOLD_SPACE VOID_BRIDGE SYNC_PULSE DRIFT_ALIGN', 'info');
-        addLine('MIND: MIND_LINK DREAM_WEAVE SOUL_SYNC ECHO_THOUGHT PSI_BURST NEURAL_MAP KARMA_CHECK COSMO_SENSE', 'info');
-        addLine('CRYPTO: HASH_STAR SIGN_NEBULA ENCRYPT_VOID DECRYPT_LIGHT KEY_FORGE PROOF_COSMIC VERIFY_GLYPH SEAL_QUANTUM', 'info');
-        addLine('NET: NODE_CONNECT MESH_WEAVE SIGNAL_BURST RELAY_CHAIN ORBIT_SYNC PEER_DISCOVER CHANNEL_OPEN BROADCAST_WAVE', 'info');
-        break;
+      }
       default:
-        addLine(`Unknown command: ${cmd}`, 'error');
+        if (cmd.toLowerCase().startsWith('/check ')) {
+          const hash = cmd.slice(7).trim();
+          if (hash.length !== 64 || !/^[0-9a-f]+$/.test(hash)) {
+            addLine('Usage: /check <64-char hex hash>', 'error');
+          } else {
+            const st = loadDifficultyState();
+            const meets = hashMeetsDifficulty(hash, st.currentDifficulty);
+            const zeroBits = countLeadingZeroBits(hash);
+            addLine(`Hash: ${hash}`, 'output');
+            addLine(`Leading zero bits: ${zeroBits} / ${st.currentDifficulty} required`, 'output');
+            addLine(meets ? '\u2713 Valid! Hash meets difficulty target.' : '\u2717 Invalid. Hash does not meet difficulty.', meets ? 'output' : 'error');
+          }
+        } else {
+          addLine(`Unknown command: ${cmd}`, 'error');
+        }
     }
   };
 
@@ -153,25 +157,25 @@ SIGNAL_BURST GRID.R\u03A9`;
   };
 
   return (
-    <div className="glass-panel p-4 flex flex-col" style={{ height: 'calc(100vh - 120px)', minHeight: '400px' }}>
+    <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100dvh - 140px)', minHeight: '250px', maxHeight: '85dvh' }}>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-bold text-warp-300">{'\u25B7'} CosmoCode Console</h2>
-        <button className="warp-button text-[10px] px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>
+        <h2 className="text-base font-bold opacity-80">{'\u25B7'} CosmoCode Console</h2>
+        <button className="warp-button text-label px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>
           Clear
         </button>
       </div>
 
       <div
         ref={scrollRef}
-        className="flex-1 bg-cosmic-900/80 rounded-lg p-3 overflow-y-auto text-xs font-mono mb-2 cursor-text"
+        className="flex-1 bg-cosmic-900/80 rounded-none p-3 overflow-y-auto text-body-sm font-mono mb-2 cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {lines.map((line, i) => (
           <div key={i} className={
-            line.type === 'input' ? 'text-warp-300' :
-            line.type === 'output' ? 'text-energy-400' :
-            line.type === 'error' ? 'text-red-400' :
-            'text-gray-500'
+            line.type === 'input' ? 'opacity-80' :
+            line.type === 'output' ? 'opacity-80' :
+            line.type === 'error' ? 'opacity-70' :
+            'opacity-40'
           }>
             {line.text || '\u00A0'}
           </div>
@@ -182,11 +186,11 @@ SIGNAL_BURST GRID.R\u03A9`;
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-warp-400 text-sm">{'\u276F'}</span>
+        <span className="opacity-80 text-base">{'\u276F'}</span>
         <input
           ref={inputRef}
-          className="flex-1 bg-transparent border-none outline-none text-sm text-gray-100 placeholder:text-gray-600"
-          placeholder="Enter CosmoASM or /help"
+          className="flex-1 bg-transparent border-none outline-none text-base opacity-100 placeholder:opacity-30"
+          placeholder="Text to hash, or /help"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

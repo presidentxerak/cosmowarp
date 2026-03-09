@@ -18,10 +18,18 @@
  * - Ed25519 signatures = unforgeable
  * - Merkle-DAG = fully auditable
  * - CosmoASM programmable = smart contracts via VM
+ *
+ * ─── CosmoChain Integration ───────────────────────────────
+ * CosmoMesh now serves as the DAG layer for the CosmoChain protocol.
+ * Transactions are simultaneously recorded in the DAG (for instant settlement)
+ * and submitted to CosmoChain (for on-chain SVG storage and finality).
+ * The DAG provides sub-second optimistic confirmation while CosmoChain
+ * provides full on-chain SVG-encoded persistence via CosmoCode.
  */
 
 import { signTransaction, verifySignature, computeTxId, isValidAddress } from './crypto';
 import { MerkleDAG } from './merkle';
+import type { CosmoChain } from './cosmochain';
 
 // ─── Fractal Layers ──────────────────────────────────────
 
@@ -100,12 +108,25 @@ export class CosmoMesh {
   // Layer-specific throughput counters
   private layerTps: Map<MeshLayer, number[]> = new Map();
 
+  // CosmoChain bridge — enables on-chain SVG persistence
+  private cosmoChain: CosmoChain | null = null;
+
   constructor() {
     // Initialize layer tip sets
     for (let i = 0; i <= MeshLayer.LUMINA; i++) {
       this.tipsByLayer.set(i as MeshLayer, new Set());
       this.layerTps.set(i as MeshLayer, []);
     }
+  }
+
+  /** Connect to a CosmoChain instance for on-chain SVG persistence */
+  connectCosmoChain(chain: CosmoChain): void {
+    this.cosmoChain = chain;
+  }
+
+  /** Get the connected CosmoChain instance */
+  getCosmoChain(): CosmoChain | null {
+    return this.cosmoChain;
   }
 
   get size(): number { return this.transactions.size; }

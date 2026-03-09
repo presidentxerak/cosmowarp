@@ -4,12 +4,20 @@
  * Manages wallet state, transactions via the CosmoMesh DAG,
  * consensus validation, tokenomics (Resonance Decay), hierarchy levels,
  * admin registry, and security hardening.
+ *
+ * v2.1 — Password-encrypted private key + Wart marketplace operations
  */
 
 import {
   generateKeyPair,
+  generateKeyPairFromSeed,
+  deriveWalletSeed,
   isValidAddress,
+  encryptPrivateKey,
+  decryptPrivateKey,
+  type EncryptedPayload,
 } from './crypto';
+import { storage } from './storage';
 import {
   CosmoMesh,
   type MeshTransaction,
@@ -20,6 +28,7 @@ import { TokenomicsEngine, AIRDROP_AMOUNT, type SupplyBreakdown } from './tokeno
 import { HierarchyEngine, HIERARCHY_LEVELS, type HierarchyLevel, type LevelUpResult } from './hierarchy';
 import { AdminRegistry, type RegistryDashboard } from './registry';
 import { SecurityManager } from './security';
+import { CosmoChain, type ChainStats } from './cosmochain';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -30,7 +39,7 @@ export interface Transaction {
   amount: number;
   timestamp: number;
   signature: string;
-  type: 'send' | 'receive' | 'mine' | 'genesis' | 'airdrop' | 'level_up' | 'streak_reward';
+  type: 'send' | 'receive' | 'mine' | 'genesis' | 'airdrop' | 'level_up' | 'streak_reward' | 'wart_mint' | 'wart_buy' | 'wart_transfer';
   memo?: string;
   resonanceScore?: number;
   confirmations?: number;
@@ -40,8 +49,9 @@ export interface Transaction {
 
 export interface WarpWallet {
   address: string;
-  privateKey: string;
+  privateKey: string;                        // In-memory only — empty when locked
   publicKey: string;
+  encryptedPrivateKey: EncryptedPayload;     // Persisted (AES-GCM encrypted)
   balance: number;
   transactions: Transaction[];
   createdAt: number;
@@ -54,6 +64,15 @@ export interface WarpWallet {
   streakDays: number;
   xp: number;
   isAdmin: boolean;
+}
+
+export interface WalletExport {
+  version: 2;
+  address: string;
+  publicKey: string;
+  encryptedPrivateKey: EncryptedPayload;
+  alias?: string;
+  createdAt: number;
 }
 
 // ─── Storage Keys ────────────────────────────────────────
@@ -73,10 +92,11 @@ let tokenomicsInstance: TokenomicsEngine | null = null;
 let hierarchyInstance: HierarchyEngine | null = null;
 let registryInstance: AdminRegistry | null = null;
 let securityInstance: SecurityManager | null = null;
+let cosmoChainInstance: CosmoChain | null = null;
 
 export function getMesh(): CosmoMesh {
   if (!meshInstance) {
-    const saved = localStorage.getItem(MESH_STORAGE_KEY);
+    const saved = storage.getItem(MESH_STORAGE_KEY);
     if (saved) {
       try {
         meshInstance = CosmoMesh.deserialize(saved);
@@ -92,7 +112,7 @@ export function getMesh(): CosmoMesh {
 
 export function getConsensus(): ResonanceConsensus {
   if (!consensusInstance) {
-    const saved = localStorage.getItem(CONSENSUS_STORAGE_KEY);
+    const saved = storage.getItem(CONSENSUS_STORAGE_KEY);
     if (saved) {
       try {
         consensusInstance = ResonanceConsensus.deserialize(saved);
@@ -134,15 +154,30 @@ export function getSecurity(): SecurityManager {
   return securityInstance;
 }
 
+/** Get or create the CosmoChain instance (new blockchain with parallel shards) */
+export function getCosmoChain(): CosmoChain {
+  if (!cosmoChainInstance) {
+    cosmoChainInstance = CosmoChain.load() || new CosmoChain();
+    // Bridge CosmoMesh → CosmoChain for dual-layer persistence
+    getMesh().connectCosmoChain(cosmoChainInstance);
+  }
+  return cosmoChainInstance;
+}
+
+/** Get CosmoChain statistics */
+export function getChainStats(): ChainStats {
+  return getCosmoChain().getStats();
+}
+
 function saveMesh(): void {
   if (meshInstance) {
-    localStorage.setItem(MESH_STORAGE_KEY, meshInstance.serialize());
+    storage.setItem(MESH_STORAGE_KEY, meshInstance.serialize());
   }
 }
 
 function saveConsensus(): void {
   if (consensusInstance) {
-    localStorage.setItem(CONSENSUS_STORAGE_KEY, consensusInstance.serialize());
+    storage.setItem(CONSENSUS_STORAGE_KEY, consensusInstance.serialize());
   }
 }
 
@@ -151,6 +186,7 @@ function saveEngines(): void {
   saveConsensus();
   getTokenomics().save();
   getHierarchy().save();
+  if (cosmoChainInstance) cosmoChainInstance.save();
 }
 
 // ─── ID Generation ───────────────────────────────────────
@@ -162,7 +198,7 @@ function genId(): string {
 // ─── Daily Total Tracking ────────────────────────────────
 
 function getDailyTotal(address: string): number {
-  const raw = localStorage.getItem(DAILY_TOTAL_KEY);
+  const raw = storage.getItem(DAILY_TOTAL_KEY);
   if (!raw) return 0;
   try {
     const data = JSON.parse(raw);
@@ -178,14 +214,14 @@ function addDailyTotal(address: string, amount: number): void {
   const today = new Date().toISOString().split('T')[0];
   let data: { date: string; totals: Record<string, number> };
   try {
-    const raw = localStorage.getItem(DAILY_TOTAL_KEY);
+    const raw = storage.getItem(DAILY_TOTAL_KEY);
     data = raw ? JSON.parse(raw) : { date: today, totals: {} };
     if (data.date !== today) data = { date: today, totals: {} };
   } catch {
     data = { date: today, totals: {} };
   }
   data.totals[address] = (data.totals[address] || 0) + amount;
-  localStorage.setItem(DAILY_TOTAL_KEY, JSON.stringify(data));
+  storage.setItem(DAILY_TOTAL_KEY, JSON.stringify(data));
 }
 
 // ─── Convert MeshTransaction to UI Transaction ──────────
@@ -232,11 +268,38 @@ function enrichWalletWithHierarchy(wallet: WarpWallet): void {
 
 // ─── Wallet CRUD ─────────────────────────────────────────
 
+/**
+ * Load wallet from storage in LOCKED state (privateKey = '').
+ * Handles migration from legacy unencrypted wallets.
+ */
 export function loadWallet(): WarpWallet | null {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
-    const wallet: WarpWallet = JSON.parse(raw);
+    const stored = JSON.parse(raw);
+
+    // Migration: legacy wallet with plaintext privateKey and no encryptedPrivateKey
+    // This can happen if the user had a wallet before the encryption update.
+    // We can't auto-encrypt without a password, so we keep it as-is but flag it.
+    const wallet: WarpWallet = {
+      address: stored.address,
+      privateKey: '',  // Always locked on load
+      publicKey: stored.publicKey,
+      encryptedPrivateKey: stored.encryptedPrivateKey || { ciphertext: '', iv: '', tag: '' },
+      balance: stored.balance,
+      transactions: stored.transactions || [],
+      createdAt: stored.createdAt,
+      alias: stored.alias,
+      level: stored.level || 0,
+      levelName: stored.levelName || 'Particle',
+      levelTitle: stored.levelTitle || 'Quantum Seed',
+      levelSymbol: stored.levelSymbol || '\u2022',
+      rewardMultiplier: stored.rewardMultiplier || 1,
+      streakDays: stored.streakDays || 0,
+      xp: stored.xp || 0,
+      isAdmin: stored.isAdmin || false,
+    };
+
     enrichWalletWithHierarchy(wallet);
     return wallet;
   } catch {
@@ -244,17 +307,69 @@ export function loadWallet(): WarpWallet | null {
   }
 }
 
+/**
+ * Check if an existing wallet needs migration (has legacy plaintext key).
+ */
+export function walletNeedsMigration(): boolean {
+  const raw = storage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const stored = JSON.parse(raw);
+    return !!stored.privateKey && stored.privateKey.length > 0 && !stored.encryptedPrivateKey;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Migrate a legacy wallet by encrypting its plaintext privateKey.
+ */
+export async function migrateWallet(password: string): Promise<boolean> {
+  const raw = storage.getItem(STORAGE_KEY);
+  if (!raw) return false;
+  try {
+    const stored = JSON.parse(raw);
+    if (!stored.privateKey || stored.encryptedPrivateKey) return false;
+    const encrypted = await encryptPrivateKey(stored.privateKey, password);
+    stored.encryptedPrivateKey = encrypted;
+    delete stored.privateKey;
+    storage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function saveWallet(wallet: WarpWallet): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+  // Never persist the decrypted private key
+  const toSave = { ...wallet, privateKey: undefined };
+  storage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+
+/**
+ * Decrypt the wallet's private key with user password.
+ * Returns the hex private key or throws on wrong password.
+ */
+export async function unlockWalletKey(wallet: WarpWallet, password: string): Promise<string> {
+  if (!wallet.encryptedPrivateKey || !wallet.encryptedPrivateKey.ciphertext) {
+    throw new Error('No encrypted key found — wallet may need migration');
+  }
+  return decryptPrivateKey(wallet.encryptedPrivateKey, password);
 }
 
 export function isAdminAddress(address: string): boolean {
-  const adminAddr = localStorage.getItem(ADMIN_ADDRESS_KEY);
+  const adminAddr = storage.getItem(ADMIN_ADDRESS_KEY);
   return !!adminAddr && adminAddr === address;
 }
 
-export async function createWallet(alias?: string): Promise<WarpWallet> {
+/**
+ * Create a new wallet with password-encrypted private key.
+ */
+export async function createWallet(password: string, alias?: string): Promise<WarpWallet> {
   const keyPair = await generateKeyPair();
+
+  // Encrypt private key with user password
+  const encrypted = await encryptPrivateKey(keyPair.privateKey, password);
 
   // Initialize mesh with genesis
   const mesh = getMesh();
@@ -264,10 +379,10 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   const registry = getRegistry();
 
   // First wallet created becomes admin
-  const existingAdmin = localStorage.getItem(ADMIN_ADDRESS_KEY);
+  const existingAdmin = storage.getItem(ADMIN_ADDRESS_KEY);
   const isFirstWallet = !existingAdmin;
   if (isFirstWallet) {
-    localStorage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
+    storage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
     tokenomics.constructor.prototype; // ensure creator address set
     await registry.initAdmin(keyPair.address);
   }
@@ -275,14 +390,18 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   // Process airdrop (1000 CW)
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
 
+  // Admin bonus: 999,000 CW
+  const adminBonus = isFirstWallet ? 999000 : 0;
+  const totalInitialBalance = airdropAmount + adminBonus;
+
   // Genesis in mesh
-  await mesh.createGenesis(keyPair.address, airdropAmount);
+  await mesh.createGenesis(keyPair.address, totalInitialBalance);
 
   // Register as validator
   consensus.registerValidator({
     id: keyPair.address,
     publicKey: keyPair.publicKey,
-    stake: airdropAmount,
+    stake: totalInitialBalance,
     isLocal: true,
   });
 
@@ -296,7 +415,7 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
     alias,
     createdAt: Date.now(),
     level: 0,
-    balance: airdropAmount,
+    balance: totalInitialBalance,
     totalTransactions: 0,
     lastActive: Date.now(),
     status: 'active',
@@ -304,25 +423,45 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   });
 
   const levelDef = HIERARCHY_LEVELS[0];
-  const wallet: WarpWallet = {
-    address: keyPair.address,
-    privateKey: keyPair.privateKey,
-    publicKey: keyPair.publicKey,
-    balance: mesh.getBalance(keyPair.address),
-    transactions: [{
+  const transactions: Transaction[] = [{
+    id: genId(),
+    from: 'COSMO_GENESIS',
+    to: keyPair.address,
+    amount: airdropAmount,
+    timestamp: Date.now(),
+    signature: 'genesis',
+    type: 'airdrop',
+    memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+    resonanceScore: 1.0,
+    confirmations: 0,
+    layer: 6,
+    meshDepth: 0,
+  }];
+
+  if (adminBonus > 0) {
+    transactions.unshift({
       id: genId(),
-      from: 'COSMO_GENESIS',
+      from: 'COSMO_ADMIN_GRANT',
       to: keyPair.address,
-      amount: airdropAmount,
+      amount: adminBonus,
       timestamp: Date.now(),
-      signature: 'genesis',
-      type: 'airdrop',
-      memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+      signature: 'admin_grant',
+      type: 'genesis',
+      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
       resonanceScore: 1.0,
       confirmations: 0,
       layer: 6,
       meshDepth: 0,
-    }],
+    });
+  }
+
+  const wallet: WarpWallet = {
+    address: keyPair.address,
+    privateKey: keyPair.privateKey,  // Available in memory right after creation
+    publicKey: keyPair.publicKey,
+    encryptedPrivateKey: encrypted,
+    balance: totalInitialBalance,
+    transactions,
     createdAt: Date.now(),
     alias,
     level: 0,
@@ -341,6 +480,215 @@ export async function createWallet(alias?: string): Promise<WarpWallet> {
   return wallet;
 }
 
+// ─── Export / Import ────────────────────────────────────
+
+export function exportWallet(wallet: WarpWallet): WalletExport {
+  return {
+    version: 2,
+    address: wallet.address,
+    publicKey: wallet.publicKey,
+    encryptedPrivateKey: wallet.encryptedPrivateKey,
+    alias: wallet.alias,
+    createdAt: wallet.createdAt,
+  };
+}
+
+export async function importWallet(data: WalletExport, password: string): Promise<WarpWallet> {
+  // Verify password can decrypt the key
+  const privateKey = await decryptPrivateKey(data.encryptedPrivateKey, password);
+  if (!privateKey) throw new Error('Invalid password');
+
+  // Check if wallet already exists on this device
+  const existing = loadWallet();
+  if (existing && existing.address !== data.address) {
+    throw new Error('A different wallet already exists on this device. Clear it first.');
+  }
+
+  const mesh = getMesh();
+  const balance = mesh.getBalance(data.address) || 0;
+
+  const levelDef = HIERARCHY_LEVELS[0];
+  const wallet: WarpWallet = {
+    address: data.address,
+    privateKey,
+    publicKey: data.publicKey,
+    encryptedPrivateKey: data.encryptedPrivateKey,
+    balance,
+    transactions: [],
+    createdAt: data.createdAt,
+    alias: data.alias,
+    level: 0,
+    levelName: levelDef.name,
+    levelTitle: levelDef.title,
+    levelSymbol: levelDef.symbol,
+    rewardMultiplier: levelDef.rewardMultiplier,
+    streakDays: 0,
+    xp: 0,
+    isAdmin: isAdminAddress(data.address),
+  };
+
+  enrichWalletWithHierarchy(wallet);
+  saveWallet(wallet);
+
+  return wallet;
+}
+
+// ─── CosmoID: Deterministic Wallet (username + password) ─
+
+/**
+ * Create or recover a wallet deterministically from username + password.
+ * Same credentials on any device → same wallet address & keys.
+ *
+ * - If a wallet with the same address exists locally → unlock it
+ * - If no wallet exists → create a new one (with airdrop)
+ * - If a DIFFERENT wallet exists → throw (user must clear first)
+ */
+export async function loginCosmoID(
+  username: string,
+  password: string
+): Promise<WarpWallet> {
+  if (!username.trim()) throw new Error('Username is required');
+  if (password.length < 6) throw new Error('Password must be at least 6 characters');
+
+  // Derive deterministic key pair
+  const seed = await deriveWalletSeed(username, password);
+  const keyPair = await generateKeyPairFromSeed(seed);
+
+  // Check if this wallet already exists locally
+  const existing = loadWallet();
+  if (existing) {
+    if (existing.address === keyPair.address) {
+      // Same wallet — just unlock it
+      existing.privateKey = keyPair.privateKey;
+      enrichWalletWithHierarchy(existing);
+      return existing;
+    }
+    // Different wallet exists
+    throw new Error('A different wallet exists on this device. Go to Settings to sign out first.');
+  }
+
+  // No wallet exists — create new deterministic wallet
+  const encrypted = await encryptPrivateKey(keyPair.privateKey, password);
+  const alias = username.trim();
+
+  const mesh = getMesh();
+  const consensus = getConsensus();
+  const tokenomics = getTokenomics();
+  const hierarchy = getHierarchy();
+  const registry = getRegistry();
+
+  // First wallet = admin
+  const existingAdmin = storage.getItem(ADMIN_ADDRESS_KEY);
+  const isFirstWallet = !existingAdmin;
+  if (isFirstWallet) {
+    storage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
+    await registry.initAdmin(keyPair.address);
+  }
+
+  const airdropAmount = tokenomics.processAirdrop(keyPair.address);
+  const adminBonus = isFirstWallet ? 999000 : 0;
+  const totalInitialBalance = airdropAmount + adminBonus;
+
+  await mesh.createGenesis(keyPair.address, totalInitialBalance);
+
+  consensus.registerValidator({
+    id: keyPair.address,
+    publicKey: keyPair.publicKey,
+    stake: totalInitialBalance,
+    isLocal: true,
+  });
+
+  hierarchy.getProfile(keyPair.address);
+
+  registry.registerAccount({
+    address: keyPair.address,
+    publicKey: keyPair.publicKey,
+    alias,
+    createdAt: Date.now(),
+    level: 0,
+    balance: totalInitialBalance,
+    totalTransactions: 0,
+    lastActive: Date.now(),
+    status: 'active',
+    flags: isFirstWallet ? ['admin', 'creator'] : [],
+  });
+
+  const levelDef = HIERARCHY_LEVELS[0];
+  const transactions: Transaction[] = [{
+    id: genId(),
+    from: 'COSMO_GENESIS',
+    to: keyPair.address,
+    amount: airdropAmount,
+    timestamp: Date.now(),
+    signature: 'genesis',
+    type: 'airdrop',
+    memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+    resonanceScore: 1.0,
+    confirmations: 0,
+    layer: 6,
+    meshDepth: 0,
+  }];
+
+  if (adminBonus > 0) {
+    transactions.unshift({
+      id: genId(),
+      from: 'COSMO_ADMIN_GRANT',
+      to: keyPair.address,
+      amount: adminBonus,
+      timestamp: Date.now(),
+      signature: 'admin_grant',
+      type: 'genesis',
+      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
+      resonanceScore: 1.0,
+      confirmations: 0,
+      layer: 6,
+      meshDepth: 0,
+    });
+  }
+
+  const wallet: WarpWallet = {
+    address: keyPair.address,
+    privateKey: keyPair.privateKey,
+    publicKey: keyPair.publicKey,
+    encryptedPrivateKey: encrypted,
+    balance: totalInitialBalance,
+    transactions,
+    createdAt: Date.now(),
+    alias,
+    level: 0,
+    levelName: levelDef.name,
+    levelTitle: levelDef.title,
+    levelSymbol: levelDef.symbol,
+    rewardMultiplier: levelDef.rewardMultiplier,
+    streakDays: 0,
+    xp: 0,
+    isAdmin: isFirstWallet,
+  };
+
+  saveWallet(wallet);
+  saveEngines();
+
+  return wallet;
+}
+
+/**
+ * Clear the local wallet data (sign out).
+ * Returns true if a wallet was cleared.
+ */
+export function clearWallet(): boolean {
+  const existing = storage.getItem(STORAGE_KEY);
+  if (!existing) return false;
+  storage.removeItem(STORAGE_KEY);
+  // Reset singletons so next login starts fresh
+  meshInstance = null;
+  consensusInstance = null;
+  tokenomicsInstance = null;
+  hierarchyInstance = null;
+  registryInstance = null;
+  securityInstance = null;
+  return true;
+}
+
 // ─── Send Warps ──────────────────────────────────────────
 
 export async function sendWarps(
@@ -349,6 +697,7 @@ export async function sendWarps(
   amount: number,
   memo?: string
 ): Promise<{ success: boolean; error?: string; tx?: Transaction; levelUp?: LevelUpResult }> {
+  if (!wallet.privateKey) return { success: false, error: 'Wallet is locked' };
   if (amount <= 0) return { success: false, error: 'Amount must be positive' };
   if (amount > wallet.balance) return { success: false, error: 'Insufficient Warps' };
   if (toAddress === wallet.address) return { success: false, error: 'Cannot send to yourself' };
@@ -365,7 +714,6 @@ export async function sendWarps(
   });
 
   if (!securityResult.allowed) {
-    // Log security event in registry
     getRegistry().addSecurityEvent({
       type: 'suspicious_pattern',
       address: wallet.address,
@@ -471,34 +819,49 @@ export async function sendWarps(
   }
 }
 
-// ─── Mine Warps ──────────────────────────────────────────
+// ─── Mine Warps (Real Proof-of-Work) ─────────────────────
+
+import { type MiningProof, verifyProof } from './miner';
 
 export async function mineWarps(
   wallet: WarpWallet,
-  energyUsed: number,
-  cycles: number
+  proof: MiningProof
 ): Promise<{ tx: Transaction; levelUp?: LevelUpResult }> {
+  if (!wallet.privateKey) throw new Error('Wallet is locked');
+
+  // 1. Verify the proof-of-work is legitimate
+  const verification = await verifyProof(proof);
+  if (!verification.valid) {
+    throw new Error(`Invalid proof-of-work: ${verification.reason}`);
+  }
+
+  // 2. Verify the proof is for this miner
+  if (proof.minerAddress !== wallet.address) {
+    throw new Error('Proof-of-work was mined by a different address');
+  }
+
   const mesh = getMesh();
   const consensus = getConsensus();
   const tokenomics = getTokenomics();
   const hierarchy = getHierarchy();
   const registry = getRegistry();
 
-  // Calculate reward with Resonance Decay + hierarchy multiplier
-  const baseReward = tokenomics.processMiningReward(energyUsed);
+  // 3. Calculate reward: Resonance Decay base * difficulty bonus * hierarchy multiplier
+  const baseReward = tokenomics.processMiningReward(proof.difficulty);
+  const difficultyBonus = Math.min(2.0, Math.max(0.5, proof.difficulty / 16));
   const multiplier = hierarchy.getRewardMultiplier(wallet.address);
-  const finalReward = Math.round(baseReward * multiplier * 100) / 100;
+  const finalReward = Math.round(baseReward * difficultyBonus * multiplier * 100) / 100;
 
   const { tx: meshTx } = await mesh.createMiningReward({
     to: wallet.address,
-    energyUsed,
-    cycles,
+    energyUsed: proof.hashesComputed,
+    cycles: proof.nonce,
     publicKey: wallet.publicKey,
     privateKey: wallet.privateKey,
   });
 
-  // Override amount with tokenomics-calculated reward
   meshTx.amount = finalReward;
+  meshTx.memo = `PoW Block: ${proof.hash.slice(0, 16)}... | Difficulty: ${proof.difficulty} bits | Nonce: ${proof.nonce} | ${proof.hashesComputed.toLocaleString()} hashes`;
 
   // Run consensus on mining reward
   await consensus.startRound(meshTx);
@@ -608,7 +971,7 @@ export async function unlockCreatorTokens(wallet: WarpWallet, amount: number): P
 // ─── Global Transaction Feed ─────────────────────────────
 
 export function getGlobalTransactions(): Transaction[] {
-  const raw = localStorage.getItem(TX_STORAGE_KEY);
+  const raw = storage.getItem(TX_STORAGE_KEY);
   if (!raw) return [];
   try {
     return JSON.parse(raw);
@@ -620,7 +983,7 @@ export function getGlobalTransactions(): Transaction[] {
 function addGlobalTx(tx: Transaction): void {
   const txs = getGlobalTransactions();
   txs.unshift(tx);
-  localStorage.setItem(TX_STORAGE_KEY, JSON.stringify(txs.slice(0, 200)));
+  storage.setItem(TX_STORAGE_KEY, JSON.stringify(txs.slice(0, 200)));
 }
 
 // ─── Mesh Stats (exported for UI) ───────────────────────
