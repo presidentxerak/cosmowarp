@@ -73,10 +73,7 @@ import NotificationsView from './components/NotificationsView';
 import ProfileView from './components/ProfileView';
 import SignetsView from './components/SignetsView';
 import WhitepaperView from './components/WhitepaperView';
-import FondationView from './components/FondationView';
 import AdminView from './components/AdminView';
-import SDKView from './components/SDKView';
-import ConsoleView from './components/ConsoleView';
 import HelpView from './components/HelpView';
 import SettingsView from './components/SettingsView';
 import LegalsView from './components/LegalsView';
@@ -87,7 +84,6 @@ import UserProfileView from './components/UserProfileView';
 import DiscoverView from './components/DiscoverView';
 import VaultView from './components/VaultView';
 import FiatGatewayView from './components/FiatGatewayView';
-import PFPCollectionView from './components/PFPCollectionView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('landing');
@@ -152,11 +148,8 @@ function App() {
             {activeTab === 'wallet' && <WalletView />}
             {activeTab === 'signets' && <SignetsView />}
             {activeTab === 'whitepaper' && <WhitepaperView />}
-            {activeTab === 'fondation' && <FondationView />}
             {activeTab === 'vault' && <VaultView />}
             {activeTab === 'admin' && <AdminView />}
-            {activeTab === 'sdk' && <SDKView />}
-            {activeTab === 'console' && <ConsoleView />}
             {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
             {activeTab === 'settings' && <SettingsView />}
             {activeTab === 'legals' && <LegalsView />}
@@ -166,9 +159,8 @@ function App() {
             {activeTab === 'user-profile' && <UserProfileView onNavigate={setActiveTab} />}
             {activeTab === 'discover' && <DiscoverView onNavigate={setActiveTab} />}
 
-            {/* Fiat Gateway & PFP */}
+            {/* Fiat Gateway */}
             {activeTab === 'fiat-gateway' && <FiatGatewayView />}
-            {activeTab === 'pfp-collection' && <PFPCollectionView />}
 
             {/* Notifications (from top bar bell) */}
             {activeTab === 'notifications' && <NotificationsView />}

@@ -5,10 +5,11 @@ import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 import MineView from './MineView';
+import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
 import HexAvatar from './HexAvatar';
 
-type WalletTab = 'overview' | 'send' | 'mine';
+type WalletTab = 'overview' | 'send' | 'mine' | 'payment';
 type AuthTab = 'signup' | 'signin';
 type SignInMethod = 'cosmoid' | 'cosmolink' | 'file';
 
@@ -497,11 +498,13 @@ export default function WalletView() {
     overview: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
     send: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>,
     mine: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
+    payment: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
   };
   const subTabs: { id: WalletTab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'send', label: 'Send' },
     { id: 'mine', label: 'Mine' },
+    { id: 'payment', label: 'Paiement' },
   ];
 
   return (
@@ -747,6 +750,9 @@ export default function WalletView() {
 
       {/* ─── Mine Tab ────────────────────────────────────── */}
       {walletTab === 'mine' && <MineView />}
+
+      {/* ─── Payment Tab ─────────────────────────────────── */}
+      {walletTab === 'payment' && <FiatGatewayView />}
     </div>
   );
 }

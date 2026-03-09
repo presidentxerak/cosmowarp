@@ -320,6 +320,50 @@ export default function SettingsView() {
         </div>
       </div>
 
+      {/* ─── Quick Access ──────────────────────────────────── */}
+      <div className="glass-panel p-4">
+        <h3 className="text-base font-bold opacity-70 mb-3 flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
+            <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+          </svg>
+          Accès rapide
+        </h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-body-sm opacity-90">CosmoVault</p>
+              <p className="text-label opacity-40">Coffre-fort sécurisé pour vos objets rares</p>
+            </div>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'vault' }))}
+              className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M12 9V3M12 21v-6M9 12H3M21 12h-6" /></svg>
+                Ouvrir
+              </span>
+            </button>
+          </div>
+          {wallet?.isAdmin && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-body-sm opacity-90">Admin Registry</p>
+                <p className="text-label opacity-40">Panneau d'administration du protocole</p>
+              </div>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'admin' }))}
+                className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
+              >
+                <span className="flex items-center gap-1.5">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                  Ouvrir
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ─── About ────────────────────────────────────────── */}
       <div className="glass-panel p-4">
         <h3 className="text-base font-bold opacity-70 mb-3 flex items-center gap-2">

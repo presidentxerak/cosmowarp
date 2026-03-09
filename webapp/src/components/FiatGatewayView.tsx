@@ -129,7 +129,7 @@ export default function FiatGatewayView() {
   ];
 
   return (
-    <div className="space-y-4 max-w-lg mx-auto pb-8">
+    <div className="space-y-4 pb-8">
       {/* Header */}
       <div className="glass-panel p-5 text-center">
         <h2 className="text-title-sm font-bold font-title">{'€'} Paiement</h2>

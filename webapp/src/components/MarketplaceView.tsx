@@ -7,9 +7,7 @@ import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 
 import PFPCollectionView from './PFPCollectionView';
-import GenerativeArtView from './GenerativeArtView';
-
-type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'generative' | 'rwa-phygital';
+type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'rwa-phygital';
 
 export default function MarketplaceView() {
   const {
@@ -1050,7 +1048,6 @@ export default function MarketplaceView() {
     { id: 'collection', label: '\u25C8 My Collection' },
     { id: 'create', label: '+ Create' },
     { id: 'pfp', label: '\u2B21 PFP' },
-    { id: 'generative', label: '\u2726 Generative' },
     { id: 'rwa-phygital', label: '\u2B22 RWA Phygital' },
   ];
 
@@ -1401,9 +1398,6 @@ export default function MarketplaceView() {
 
       {/* ─── PFP Collections Tab ──────────────────────────── */}
       {tab === 'pfp' && <PFPCollectionView />}
-
-      {/* ─── Generative Art Tab ──────────────────────────── */}
-      {tab === 'generative' && <GenerativeArtView />}
 
       {/* ─── RWA Phygital Tab ────────────────────────────── */}
       {tab === 'rwa-phygital' && (
