@@ -64,8 +64,8 @@ export interface Wart {
   id: string;                    // Internal wart ID (FNV hash-based)
   title: string;
   description: string;
-  imageData: string;             // data URL (base64 image/gif/video/audio)
-  mediaType?: 'image' | 'audio' | 'video';  // media type
+  imageData: string;             // data URL (base64 image/gif/video/audio/svg)
+  mediaType?: 'image' | 'audio' | 'video' | 'svg';  // media type
   audioCover?: string;           // cover image for audio Warts
   creator: string;               // CW address of original creator (immutable)
   owner: string;                 // CW address of current owner
@@ -263,7 +263,7 @@ export class WartEngine {
     editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
     maxEditions: number | null = null,
     durationHours: number | null = null,
-    mediaType: 'image' | 'audio' | 'video' = 'image',
+    mediaType: 'image' | 'audio' | 'video' | 'svg' = 'image',
     audioCover?: string,
     privateKey?: string,
   ): Promise<Wart> {

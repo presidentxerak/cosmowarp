@@ -50,7 +50,7 @@ interface WalletContextType {
   marketplace: Wart[];
   myCollection: Wart[];
   myCreated: Wart[];
-  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null, mediaType?: 'image' | 'audio' | 'video', audioCover?: string) => Promise<Wart>;
+  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null, mediaType?: 'image' | 'audio' | 'video' | 'svg', audioCover?: string) => Promise<Wart>;
   buyWart: (wartId: string) => Promise<{ success: boolean; error?: string }>;
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
@@ -355,7 +355,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
     maxEditions: number | null = null,
     durationHours: number | null = null,
-    mediaType: 'image' | 'audio' | 'video' = 'image',
+    mediaType: 'image' | 'audio' | 'video' | 'svg' = 'image',
     audioCover?: string,
   ): Promise<Wart> => {
     if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');

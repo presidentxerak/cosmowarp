@@ -7,8 +7,9 @@ import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, type PhygitalCertificate } from '../engine/phygital';
 
 import PFPCollectionView from './PFPCollectionView';
+import GenerativeArtView from './GenerativeArtView';
 
-type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp';
+type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'generative';
 
 export default function MarketplaceView() {
   const {
@@ -25,7 +26,7 @@ export default function MarketplaceView() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageData, setImageData] = useState('');
-  const [mediaType, setMediaType] = useState<'image' | 'audio' | 'video'>('image');
+  const [mediaType, setMediaType] = useState<'image' | 'audio' | 'video' | 'svg'>('image');
   const [audioCover, setAudioCover] = useState('');
   const [price, setPrice] = useState('');
   const [royalty, setRoyalty] = useState('5');
@@ -92,14 +93,15 @@ export default function MarketplaceView() {
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setCreateError('File must be under 5MB');
+    if (file.size > 50 * 1024 * 1024) {
+      setCreateError('File must be under 50MB');
       return;
     }
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    let mType: 'image' | 'audio' | 'video' = 'image';
+    let mType: 'image' | 'audio' | 'video' | 'svg' = 'image';
     if (['mp3'].includes(ext)) mType = 'audio';
     else if (['mp4', 'mov'].includes(ext)) mType = 'video';
+    else if (['svg'].includes(ext)) mType = 'svg';
     else if (['gif', 'jpeg', 'jpg', 'png'].includes(ext)) mType = 'image';
 
     const reader = new FileReader();
@@ -982,6 +984,7 @@ export default function MarketplaceView() {
     { id: 'collection', label: '\u25C8 My Collection' },
     { id: 'create', label: '+ Create' },
     { id: 'pfp', label: '\u2B21 PFP' },
+    { id: 'generative', label: '\u2726 Generative' },
   ];
 
   return (
@@ -1100,14 +1103,14 @@ export default function MarketplaceView() {
               <input
                 ref={fileRef}
                 type="file"
-                accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov"
+                accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov,.svg"
                 className="hidden"
                 onChange={handleMediaUpload}
               />
               <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
               {imageData ? (
                 <div className="flex flex-col items-center">
-                  {mediaType === 'image' && (
+                  {(mediaType === 'image' || mediaType === 'svg') && (
                     <div className="aspect-square max-w-[200px] overflow-hidden rounded-none bg-current/5 mb-2">
                       <img src={imageData} alt="Preview" className="w-full h-full object-cover" />
                     </div>
@@ -1324,6 +1327,9 @@ export default function MarketplaceView() {
 
       {/* ─── PFP Collections Tab ──────────────────────────── */}
       {tab === 'pfp' && <PFPCollectionView />}
+
+      {/* ─── Generative Art Tab ──────────────────────────── */}
+      {tab === 'generative' && <GenerativeArtView />}
     </div>
   );
 }
