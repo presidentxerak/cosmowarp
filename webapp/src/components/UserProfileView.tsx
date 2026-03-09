@@ -6,6 +6,7 @@ import { CosmoChatEngine } from '../engine/cosmochat';
 import { WartEngine } from '../engine/warts';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
+import * as sync from '../lib/supabase-sync';
 import HexAvatar from './HexAvatar';
 
 type Tab = 'posts' | 'created' | 'collection';
@@ -101,6 +102,11 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     social.follow(wallet.address, targetAddress);
     setIsFollowing(true);
     setFollowersCount(prev => prev + 1);
+    sync.syncFollow(wallet.address, targetAddress);
+    const myProfile = social.getProfile(wallet.address);
+    if (myProfile) sync.syncSocialProfile(myProfile);
+    const targetProfile = social.getProfile(targetAddress);
+    if (targetProfile) sync.syncSocialProfile(targetProfile);
   };
 
   const handleUnfollow = () => {
@@ -112,6 +118,9 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     setIsFavorite(false);
     setFollowersCount(prev => Math.max(0, prev - 1));
     setShowFollowMenu(false);
+    sync.syncUnfollow(wallet.address, targetAddress);
+    const myProfile = social.getProfile(wallet.address);
+    if (myProfile) sync.syncSocialProfile(myProfile);
   };
 
   const handleBlock = () => {

@@ -652,15 +652,13 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           </video>
         </div>
 
-        {/* Gradient overlays */}
+        {/* Gradient overlays (reduced opacity) */}
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.16) 40%, rgba(0,0,0,0.56) 100%)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.13) 40%, rgba(0,0,0,0.45) 100%)',
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse at 50% 40%, rgba(168,85,247,0.08) 0%, transparent 60%), radial-gradient(ellipse at 30% 70%, rgba(6,182,212,0.06) 0%, transparent 50%)',
+          background: 'radial-gradient(ellipse at 50% 40%, rgba(168,85,247,0.06) 0%, transparent 60%), radial-gradient(ellipse at 30% 70%, rgba(6,182,212,0.05) 0%, transparent 50%)',
         }} />
-
-        <HexGrid />
 
         <div
           className="relative text-center px-4 sm:px-8 max-w-3xl mx-auto"
@@ -973,7 +971,6 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
       {/* ─── CTA ────────────────────────────────────────── */}
       <section className="relative py-24 sm:py-36 px-4 sm:px-8 overflow-hidden">
-        <HexGrid />
         <div className="absolute inset-0 pointer-events-none" style={{
           background: 'radial-gradient(ellipse at 50% 50%, rgba(168,85,247,0.1) 0%, transparent 60%)',
         }} />

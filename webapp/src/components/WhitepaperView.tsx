@@ -3,14 +3,14 @@ import Logo from './Logo';
 
 type Section = 'overview' | 'how' | 'certificates' | 'tokenomics' | 'hierarchy' | 'security' | 'roadmap';
 
-const NAV: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: "Vue d\u2019ensemble", icon: '⬡' },
-  { id: 'how', label: 'Comment ça marche', icon: '◎' },
-  { id: 'certificates', label: 'Certificats', icon: '⚿' },
-  { id: 'tokenomics', label: 'Cosmorare (Ω)', icon: '⚛' },
-  { id: 'hierarchy', label: 'Niveaux', icon: '★' },
-  { id: 'security', label: 'Sécurité', icon: '⚡' },
-  { id: 'roadmap', label: 'Feuille de route', icon: '☄' },
+const NAV: { id: Section; label: string; icon: React.ReactNode }[] = [
+  { id: 'overview', label: "Vue d\u2019ensemble", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg> },
+  { id: 'how', label: 'Comment ça marche', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg> },
+  { id: 'certificates', label: 'Certificats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg> },
+  { id: 'tokenomics', label: 'Cosmorare (Ω)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg> },
+  { id: 'hierarchy', label: 'Niveaux', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> },
+  { id: 'security', label: 'Sécurité', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg> },
+  { id: 'roadmap', label: 'Feuille de route', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> },
 ];
 
 export default function WhitepaperView() {
@@ -72,11 +72,11 @@ export default function WhitepaperView() {
 
 // ─── Composants utilitaires ─────────────────────────────
 
-function SectionTitle({ icon, title, subtitle }: { icon: string; title: string; subtitle: string }) {
+function SectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-title-lg">{icon}</span>
+        <span className="text-title-lg opacity-60">{icon}</span>
         <h2 className="text-title-md font-bold opacity-100 font-title">{title}</h2>
       </div>
       <p className="text-body-sm opacity-40">{subtitle}</p>
@@ -106,7 +106,7 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
 function OverviewSection() {
   return (
     <div>
-      <SectionTitle icon={'⬡'} title={"Vue d\u2019ensemble"} subtitle="Cosmorare en quelques mots" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg>} title={"Vue d\u2019ensemble"} subtitle="Cosmorare en quelques mots" />
       <P>
         <span className="opacity-80 font-bold">Cosmorare</span> est une <span className="opacity-80 font-bold">plateforme de certification pour objets rares</span>.
         Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat
@@ -158,7 +158,7 @@ function OverviewSection() {
 function HowItWorksSection() {
   return (
     <div>
-      <SectionTitle icon={'◎'} title="Comment ça marche" subtitle="Le Cosmorare Protocole expliqué simplement" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>} title="Comment ça marche" subtitle="Le Cosmorare Protocole expliqué simplement" />
       <P>
         Cosmorare repose sur un ensemble de technologies qui travaillent ensemble pour rendre
         la certification d'objets rares <span className="opacity-80">rapide, gratuite et sécurisée</span>.
@@ -231,7 +231,7 @@ function HowItWorksSection() {
 function CertificatesSection() {
   return (
     <div>
-      <SectionTitle icon={'⚿'} title="Certificats CRCERT" subtitle="Comment vos objets rares sont protégés" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg>} title="Certificats CRCERT" subtitle="Comment vos objets rares sont protégés" />
       <P>
         Chaque objet certifié sur Cosmorare reçoit un <span className="opacity-80 font-bold">CRCERT</span> (Certificat Cosmorare).
         C'est une preuve mathématique que cet objet est authentique et qu'il vous appartient.
@@ -251,16 +251,16 @@ function CertificatesSection() {
       <H3>En termes simples</H3>
       <div className="space-y-3 mb-4">
         {[
-          ['\u{1F4F8}', 'Empreinte numérique', "On prend une \"empreinte digitale\" de votre objet (SHA-256). Si quelqu\u2019un modifie un seul pixel, l\u2019empreinte change compl\u00e8tement. Impossible de tricher."],
-          ['\u270D', 'Signature du créateur', "Vous signez le certificat avec votre cl\u00e9 priv\u00e9e (Ed25519). C\u2019est comme une signature manuscrite, mais math\u00e9matiquement infalsifiable."],
-          ['\u{1F512}', 'Permanent et vérifiable', "Le certificat est stock\u00e9 d\u00e9finitivement sur le r\u00e9seau. N\u2019importe qui peut le v\u00e9rifier instantan\u00e9ment, sans autorit\u00e9 centrale."],
+          [<svg key="fp" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/><path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12z"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg>, 'Empreinte numérique', "On prend une \"empreinte digitale\" de votre objet (SHA-256). Si quelqu\u2019un modifie un seul pixel, l\u2019empreinte change compl\u00e8tement. Impossible de tricher."],
+          [<svg key="sig" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>, 'Signature du créateur', "Vous signez le certificat avec votre cl\u00e9 priv\u00e9e (Ed25519). C\u2019est comme une signature manuscrite, mais math\u00e9matiquement infalsifiable."],
+          [<svg key="lock" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, 'Permanent et vérifiable', "Le certificat est stock\u00e9 d\u00e9finitivement sur le r\u00e9seau. N\u2019importe qui peut le v\u00e9rifier instantan\u00e9ment, sans autorit\u00e9 centrale."],
         ].map(([icon, title, desc]) => (
-          <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
+          <div key={title as string} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-title-sm">{icon}</span>
-              <span className="text-base font-bold opacity-80">{title}</span>
+              <span className="opacity-60 shrink-0">{icon}</span>
+              <span className="text-base font-bold opacity-80">{title as string}</span>
             </div>
-            <p className="text-body-sm opacity-50 leading-relaxed">{desc}</p>
+            <p className="text-body-sm opacity-50 leading-relaxed">{desc as string}</p>
           </div>
         ))}
       </div>
@@ -306,7 +306,7 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={'⚛'} title="Le Cosmorare (Ω)" subtitle="La monnaie de l'écosystème Cosmorare" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Cosmorare (Ω)" subtitle="La monnaie de l'écosystème Cosmorare" />
       <P>
         Le <span className="opacity-80 font-bold">Cosmorare (Ω)</span> est la monnaie native de Cosmorare.
         Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
@@ -323,16 +323,16 @@ function TokenomicsSection() {
       <H3>Comment obtenir des Cosmorares ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['\u26CF', 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Cosmorares. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
-          ['\u{1F4B3}', 'Acheter', "Achetez des Cosmorares directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
-          ['\u{1F4B8}', 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Cosmorares.'],
-          ['\u{1F381}', 'Airdrops', 'Des Cosmorares sont distribués gratuitement à la communauté active.'],
+          [<svg key="mine" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Cosmorares. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
+          [<svg key="buy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Acheter', "Achetez des Cosmorares directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
+          [<svg key="sell" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Cosmorares.'],
+          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrops', 'Des Cosmorares sont distribués gratuitement à la communauté active.'],
         ].map(([icon, title, desc]) => (
-          <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
-            <span className="text-title-sm shrink-0">{icon}</span>
+          <div key={title as string} className="flex gap-3 p-3 rounded-none bg-current/5">
+            <span className="opacity-60 shrink-0 mt-0.5">{icon}</span>
             <div>
-              <p className="text-body-sm font-bold opacity-80">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-body-sm font-bold opacity-80">{title as string}</p>
+              <p className="text-label opacity-40">{desc as string}</p>
             </div>
           </div>
         ))}
@@ -360,7 +360,7 @@ function TokenomicsSection() {
 function HierarchySection() {
   return (
     <div>
-      <SectionTitle icon={'★'} title="Niveaux" subtitle="Plus vous utilisez Cosmorare, plus vous êtes récompensé" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>} title="Niveaux" subtitle="Plus vous utilisez Cosmorare, plus vous êtes récompensé" />
       <P>
         Cosmorare récompense l'engagement avec un système de <span className="opacity-80 font-bold">7 niveaux</span>.
         Plus vous certifiez, échangez et minez, plus vous montez et plus vos récompenses augmentent.
@@ -406,7 +406,7 @@ function HierarchySection() {
 function SecuritySection() {
   return (
     <div>
-      <SectionTitle icon={'⚡'} title="Sécurité" subtitle="Vos données et certificats sont protégés" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>} title="Sécurité" subtitle="Vos données et certificats sont protégés" />
       <P>
         Certifier des objets rares exige un haut niveau de confiance.
         Voici comment Cosmorare protège vos données.
@@ -414,17 +414,17 @@ function SecuritySection() {
 
       <div className="space-y-3 mb-4">
         {[
-          ['\u{1F510}', 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Cosmorare ne peut pas lire vos messages.'],
-          ['✔', 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
-          ['\u{1F4F1}', 'Mode hors ligne (PWA)', "L\u2019app fonctionne sans internet. Consultez vos certificats et pr\u00e9parez des transactions hors ligne. Tout se synchronise automatiquement \u00e0 la reconnexion."],
-          ['\u{1F4B3}', 'Paiement intégré', 'Achetez des Cosmorares par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
+          [<svg key="enc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>, 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Cosmorare ne peut pas lire vos messages.'],
+          [<svg key="cert" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4"/><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>, 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
+          [<svg key="pwa" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>, 'Mode hors ligne (PWA)', "L\u2019app fonctionne sans internet. Consultez vos certificats et pr\u00e9parez des transactions hors ligne. Tout se synchronise automatiquement \u00e0 la reconnexion."],
+          [<svg key="pay" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Paiement intégré', 'Achetez des Cosmorares par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
         ].map(([icon, title, desc]) => (
-          <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
+          <div key={title as string} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-title-sm">{icon}</span>
-              <span className="text-base font-bold opacity-80">{title}</span>
+              <span className="opacity-60 shrink-0">{icon}</span>
+              <span className="text-base font-bold opacity-80">{title as string}</span>
             </div>
-            <p className="text-body-sm opacity-50 leading-relaxed">{desc}</p>
+            <p className="text-body-sm opacity-50 leading-relaxed">{desc as string}</p>
           </div>
         ))}
       </div>
@@ -453,7 +453,7 @@ function SecuritySection() {
 function RoadmapSection() {
   return (
     <div>
-      <SectionTitle icon={'☄'} title="Feuille de route" subtitle="Évolution prévue du Cosmorare Protocole" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} title="Feuille de route" subtitle="Évolution prévue du Cosmorare Protocole" />
       <P>
         Cosmorare est un projet vivant qui évolue continuellement.
       </P>

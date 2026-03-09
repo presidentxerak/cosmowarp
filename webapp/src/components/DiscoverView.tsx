@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine, type UserProfile } from '../engine/social';
+import * as sync from '../lib/supabase-sync';
 import HexAvatar from './HexAvatar';
 
 export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string) => void }) {
@@ -36,12 +37,18 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
     const social = SocialEngine.load();
     social.follow(wallet.address, address);
     setFollowedMap(prev => ({ ...prev, [address]: true }));
+    sync.syncFollow(wallet.address, address);
+    const profile = social.getProfile(wallet.address);
+    if (profile) sync.syncSocialProfile(profile);
   };
 
   const handleUnfollow = (address: string) => {
     const social = SocialEngine.load();
     social.unfollow(wallet.address, address);
     setFollowedMap(prev => { const next = { ...prev }; delete next[address]; return next; });
+    sync.syncUnfollow(wallet.address, address);
+    const profile = social.getProfile(wallet.address);
+    if (profile) sync.syncSocialProfile(profile);
   };
 
   const handleViewUser = (address: string) => {

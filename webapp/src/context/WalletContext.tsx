@@ -22,7 +22,7 @@ import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
 import { isBackendAvailable } from '../lib/supabase';
 
-const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+// No session timeout — user stays logged in until manual logout
 
 interface WalletContextType {
   wallet: WarpWallet | null;
@@ -98,7 +98,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [myCollection, setMyCollection] = useState<Wart[]>([]);
   const [myCreated, setMyCreated] = useState<Wart[]>([]);
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wartEngineRef = useRef<WartEngine | null>(null);
 
   function getWartEngine(): WartEngine {
@@ -107,28 +106,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
     return wartEngineRef.current;
   }
-
-  // ─── Session timeout (auto-lock after inactivity) ──────
-  const resetTimer = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      if (wallet) {
-        wallet.privateKey = '';
-        setUnlocked(false);
-      }
-    }, SESSION_TIMEOUT_MS);
-  }, [wallet]);
-
-  useEffect(() => {
-    if (!unlocked) return;
-    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-    events.forEach(e => window.addEventListener(e, resetTimer));
-    resetTimer();
-    return () => {
-      events.forEach(e => window.removeEventListener(e, resetTimer));
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [unlocked, resetTimer]);
 
   // ─── Load wallet on mount + Supabase sync ──────────────
   useEffect(() => {
@@ -241,7 +218,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           break;
         case 'follow_new':
         case 'follow_delete':
-          // Social graph updated — no local state to refresh currently
+          // Social graph updated — re-sync to keep local data fresh
+          if (addr) {
+            sync.fullSync(addr);
+          }
           break;
       }
     });
