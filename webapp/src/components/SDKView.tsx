@@ -21,12 +21,12 @@ export default function SDKView() {
         <div className="flex items-center gap-3 mb-2">
           <span className="text-title-lg">{'\u2B21'}</span>
           <div>
-            <h2 className="text-title-md font-bold opacity-100 font-title">CosmoWarp SDK</h2>
+            <h2 className="text-title-md font-bold opacity-100 font-title">Cosmorare SDK</h2>
             <p className="text-body-sm opacity-40">Developer API & Extension Guide</p>
           </div>
         </div>
         <p className="text-base opacity-50">
-          Build apps, extensions, and integrations on the CosmoWarp ecosystem.
+          Build apps, extensions, and integrations on the Cosmorare ecosystem.
           The SDK provides wallet creation, cryptographic utilities, mining calculators,
           and an event system.
         </p>
@@ -101,13 +101,13 @@ function OverviewTab() {
     <div>
       <h3 className="text-title-sm font-bold opacity-80 mb-3">Getting Started</h3>
       <p className="text-base opacity-50 mb-4">
-        The CosmoWarp SDK is a JavaScript/TypeScript library for building applications
-        on the CosmoWarp ecosystem.
+        The Cosmorare SDK is a JavaScript/TypeScript library for building applications
+        on the Cosmorare ecosystem.
       </p>
 
-      <CodeBlock title="Installation" code={`import { CosmoWarpSDK } from 'cosmowarp-sdk';
+      <CodeBlock title="Installation" code={`import { CosmorareSDK } from 'cosmorare-sdk';
 
-const cosmo = new CosmoWarpSDK();`} />
+const cosmo = new CosmorareSDK();`} />
 
       <CodeBlock title="Quick Start" code={`// Create a wallet
 const wallet = await cosmo.createWallet('MyApp User');
@@ -163,7 +163,7 @@ function WalletTab() {
       />
       <ApiMethod
         name="cosmo.validateAddress(address)"
-        desc="Check if an address has valid CosmoWarp format (CW + 40 hex chars)."
+        desc="Check if an address has valid Cosmorare format (CW + 40 hex chars)."
         params={['address: string']}
         returns="boolean"
       />
@@ -299,7 +299,7 @@ function ExtensionTab() {
     <div>
       <h3 className="text-title-sm font-bold opacity-80 mb-3">Chrome Extension</h3>
       <p className="text-base opacity-50 mb-4">
-        The CosmoWarp Chrome Extension provides a popup wallet interface directly in your browser.
+        The Cosmorare Chrome Extension provides a popup wallet interface directly in your browser.
         It uses Manifest V3 and the Web Crypto API for Ed25519 operations.
       </p>
 
@@ -316,7 +316,7 @@ function ExtensionTab() {
         <p>1. Open Chrome and navigate to <code className="opacity-80">chrome://extensions</code></p>
         <p>2. Enable "Developer mode" (top right toggle)</p>
         <p>3. Click "Load unpacked" and select the <code className="opacity-80">extension/</code> folder</p>
-        <p>4. The CosmoWarp icon appears in your toolbar</p>
+        <p>4. The Cosmorare icon appears in your toolbar</p>
       </div>
 
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Features</h3>
@@ -330,7 +330,7 @@ function ExtensionTab() {
       </ul>
 
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Building Your Own Extension</h3>
-      <CodeBlock title="Communicate with CosmoWarp" code={`// From your extension's content script:
+      <CodeBlock title="Communicate with Cosmorare" code={`// From your extension's content script:
 chrome.runtime.sendMessage(
   { type: 'GET_WALLET' },
   (response) => {

@@ -1,5 +1,5 @@
 /**
- * CosmoWarp P2P — WebRTC Mesh Network
+ * Cosmorare P2P — WebRTC Mesh Network
  *
  * Browser-native peer-to-peer networking using WebRTC DataChannels.
  * No server required for data transfer (only signaling).
@@ -28,7 +28,7 @@ import { SignalingManager } from './signaling';
 
 export interface PeerInfo {
   id: string;
-  address: string;          // CosmoWarp address
+  address: string;          // Cosmorare address
   connectedAt: number;
   lastSeen: number;
   latencyMs: number;

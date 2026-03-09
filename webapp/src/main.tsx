@@ -24,7 +24,7 @@ if ('serviceWorker' in navigator) {
                 'background:#111111;border:1px solid rgba(255,255,255,0.15);padding:12px 20px;' +
                 'color:#cccccc;font-size:13px;font-family:Inter,sans-serif;display:flex;gap:12px;align-items:center;'
               );
-              banner.innerHTML = '<span>\u2B21 CosmoWarp update available</span>' +
+              banner.innerHTML = '<span>\u2B21 Cosmorare update available</span>' +
                 '<button style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);' +
                 'color:#ffffff;padding:4px 12px;cursor:pointer;font-size:12px" ' +
                 'onclick="window.location.reload()">Reload</button>' +

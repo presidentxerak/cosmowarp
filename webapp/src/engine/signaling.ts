@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Signaling — WebRTC Peer Discovery
+ * Cosmorare Signaling — WebRTC Peer Discovery
  *
  * Two complementary signaling channels for WebRTC peer discovery:
  *
@@ -48,7 +48,7 @@ interface SignalingMessage {
 
 // ─── LocalSignaling (BroadcastChannel) ───────────────────
 
-const LOCAL_CHANNEL_NAME = 'cosmowarp-signaling';
+const LOCAL_CHANNEL_NAME = 'cosmorare-signaling';
 
 export class LocalSignaling {
   private channel: BroadcastChannel | null = null;

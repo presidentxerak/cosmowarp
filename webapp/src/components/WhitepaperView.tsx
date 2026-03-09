@@ -4,17 +4,17 @@ import Logo from './Logo';
 type Section = 'overview' | 'foundation' | 'cosmomesh' | 'cosmochain' | 'cosmocode' | 'cosmohash' | 'cosmolingua' | 'tokenomics' | 'hierarchy' | 'security' | 'roadmap';
 
 const NAV: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: 'Overview', icon: '\u2B21' },
-  { id: 'foundation', label: 'Foundation', icon: '\u2600' },
+  { id: 'overview', label: 'Vue d\u2019ensemble', icon: '\u2B21' },
+  { id: 'foundation', label: 'Fondation', icon: '\u2600' },
   { id: 'cosmomesh', label: 'CosmoMesh', icon: '\u25CE' },
   { id: 'cosmochain', label: 'CosmoChain', icon: '\u26D3' },
   { id: 'cosmocode', label: 'CosmoCode', icon: '\u25B7' },
   { id: 'cosmohash', label: 'CosmoHash', icon: '\u26BF' },
   { id: 'cosmolingua', label: 'CosmoLingua', icon: '\u223F' },
   { id: 'tokenomics', label: 'Tokenomics', icon: '\u269B' },
-  { id: 'hierarchy', label: 'Hierarchy', icon: '\u2605' },
-  { id: 'security', label: 'Security', icon: '\u26A1' },
-  { id: 'roadmap', label: 'Roadmap', icon: '\u2604' },
+  { id: 'hierarchy', label: 'Hi\u00e9rarchie', icon: '\u2605' },
+  { id: 'security', label: 'S\u00e9curit\u00e9', icon: '\u26A1' },
+  { id: 'roadmap', label: 'Feuille de route', icon: '\u2604' },
 ];
 
 export default function WhitepaperView() {
@@ -31,16 +31,16 @@ export default function WhitepaperView() {
           <div className="flex justify-center mb-4">
             <Logo className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
-          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">CosmoWarp</h1>
-          <p className="text-base sm:text-base opacity-50 mb-1">White Paper v2.0</p>
+          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">{'\u30B3\u30B9\u30E2\u30E9\u30EC'}</h1>
+          <p className="text-base sm:text-base opacity-50 mb-1">White Paper v3.0</p>
           <p className="text-body-sm opacity-40 max-w-md mx-auto">
-            A post-blockchain transactional fabric with full on-chain SVG storage, 7 parallel shards,
-            zero gas fees, and real SVG compression. Not a chain. Not a coin. A living mesh.
+            Protocole de certification pour objets rares. Certificats cryptographiques infalsifiables (CRCERT),
+            7 shards parall\u00e8les, z\u00e9ro frais, compression SVG fractale. Ni blockchain. Ni token classique. Un maillage vivant.
           </p>
         </div>
       </div>
 
-      {/* Section Nav — wrapping grid on mobile, inline on desktop */}
+      {/* Section Nav */}
       <div className="glass-panel p-2">
         <div className="grid grid-cols-5 gap-1 sm:flex sm:gap-1 sm:overflow-x-auto">
           {NAV.map(n => (
@@ -78,7 +78,7 @@ export default function WhitepaperView() {
   );
 }
 
-// ─── Section Components ─────────────────────────────────
+// ─── Composants utilitaires ─────────────────────────────
 
 function SectionTitle({ icon, title, subtitle }: { icon: string; title: string; subtitle: string }) {
   return (
@@ -100,6 +100,10 @@ function H3({ children }: { children: React.ReactNode }) {
   return <h3 className="text-base font-bold opacity-80 mb-2 mt-5">{children}</h3>;
 }
 
+function Code({ children }: { children: React.ReactNode }) {
+  return <code className="text-body-sm opacity-60 bg-current/5 px-1 py-0.5 rounded-none font-mono">{children}</code>;
+}
+
 function Stat({ label, value, color = 'opacity-80' }: { label: string; value: string; color?: string }) {
   return (
     <div className="glass-panel p-3 text-center bg-current/5">
@@ -109,38 +113,39 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
   );
 }
 
-// ─── Overview ───────────────────────────────────────────
+// ─── Vue d'ensemble ─────────────────────────────────────
 
 function OverviewSection() {
   return (
     <div>
-      <SectionTitle icon={'\u2B21'} title="Overview" subtitle="What is CosmoWarp and why does it exist?" />
+      <SectionTitle icon={'\u2B21'} title="Vue d\u2019ensemble" subtitle="Qu\u2019est-ce que Cosmorare et pourquoi existe-t-il ?" />
       <P>
-        CosmoWarp is a <span className="opacity-80 font-bold">post-blockchain transactional fabric</span> that
-        transcends both traditional fiat systems and cryptocurrency. It is not a blockchain, not a coin,
-        and not a token on someone else's chain. CosmoWarp is an entirely new paradigm.
+        <span className="opacity-80 font-bold">Cosmorare</span> est un <span className="opacity-80 font-bold">protocole de certification pour objets rares</span>.
+        Cartes Pok\u00e9mon, sneakers, vinyles, montres, art num\u00e9rique : chaque objet rare m\u00e9rite un certificat
+        d'authenticit\u00e9 infalsifiable. C'est exactement ce que Cosmorare propose, gr\u00e2ce \u00e0 des certificats
+        cryptographiques appel\u00e9s <span className="opacity-80 font-bold">CRCERT</span>.
       </P>
       <P>
-        Where blockchains sequence transactions into blocks chained linearly, CosmoWarp uses a
-        <span className="opacity-80"> Directed Acyclic Graph (DAG)</span> with 7 parallel validation layers,
-        enabling massive throughput without the bottleneck of sequential block confirmation.
+        Contrairement aux blockchains classiques qui cha\u00eenent des blocs de mani\u00e8re lin\u00e9aire, Cosmorare
+        utilise un <span className="opacity-80">graphe acyclique orient\u00e9 (DAG)</span> avec 7 couches de validation
+        parall\u00e8les, permettant un d\u00e9bit massif sans le goulot d'\u00e9tranglement de la confirmation s\u00e9quentielle.
       </P>
       <P>
-        Where fiat depends on centralized intermediaries (banks, payment processors), CosmoWarp operates
-        as a <span className="opacity-80">peer-to-peer mesh</span> where every transaction validates
-        two previous ones, creating a self-reinforcing network of trust.
+        L\u00e0 o\u00f9 les syst\u00e8mes fiat d\u00e9pendent d'interm\u00e9diaires centralis\u00e9s (banques, processeurs de paiement),
+        Cosmorare fonctionne comme un <span className="opacity-80">maillage pair-\u00e0-pair</span> o\u00f9 chaque
+        transaction valide deux transactions pr\u00e9c\u00e9dentes, cr\u00e9ant un r\u00e9seau de confiance auto-renfor\u00e7ant.
       </P>
 
-      <H3>Core Innovations</H3>
+      <H3>Innovations cl\u00e9s</H3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         {[
-          ['\u25CE', 'CosmoMesh', 'DAG transactional fabric with 7 fractal layers'],
-          ['\u26D3', 'CosmoChain', '7 parallel shards, 0 gas, 10x speed, full on-chain SVG'],
-          ['\u25B7', 'CosmoCode', 'SVG compression engine with real measured ratios (5-30x structured data)'],
-          ['\u26BF', 'CosmoHash', 'Ed25519 + SHA-256 + AES-GCM cryptographic stack'],
-          ['\u223F', 'CosmoLingua', 'Cosmic symbolic language for the protocol'],
-          ['\u269B', 'Resonance Decay', 'Golden ratio mining curve (replaces halving)'],
-          ['\u2605', 'Hierarchy', '7-level account system with reward multipliers'],
+          ['\u25CE', 'CosmoMesh', 'R\u00e9seau DAG \u00e0 7 couches de validation parall\u00e8les'],
+          ['\u26D3', 'CosmoChain', '7 shards parall\u00e8les, 0 frais, stockage SVG on-chain'],
+          ['\u25B7', 'CosmoCode', 'Moteur de compression SVG \u00e0 7 couches fractales'],
+          ['\u26BF', 'CosmoHash', 'Stack cryptographique Ed25519 + SHA-256 + AES-GCM'],
+          ['\u223F', 'CosmoLingua', 'Langage CosmoASM avec instructions ex\u00e9cutables'],
+          ['\u269B', 'D\u00e9croissance R\u00e9sonante', 'Courbe de minage au ratio d\u2019or (remplace le halving)'],
+          ['\u2605', 'Hi\u00e9rarchie', 'Syst\u00e8me \u00e0 7 niveaux avec multiplicateurs de r\u00e9compenses'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="text-title-md opacity-80 shrink-0">{icon}</span>
@@ -152,28 +157,28 @@ function OverviewSection() {
         ))}
       </div>
 
-      <H3>Why CosmoWarp?</H3>
+      <H3>Pourquoi Cosmorare ?</H3>
       <div className="overflow-x-auto">
         <table className="w-full text-body-sm">
           <thead>
             <tr className="border-b border-current/10">
-              <th className="py-2 text-left opacity-40">Feature</th>
+              <th className="py-2 text-left opacity-40">Fonctionnalit\u00e9</th>
               <th className="py-2 text-center opacity-40">Fiat</th>
               <th className="py-2 text-center opacity-40">Blockchain</th>
-              <th className="py-2 text-center opacity-80">CosmoWarp</th>
+              <th className="py-2 text-center opacity-80">Cosmorare</th>
             </tr>
           </thead>
           <tbody className="opacity-50">
             {[
-              ['Speed', '\u2713', '\u2717', '\u2B21'],
-              ['Decentralized', '\u2717', '\u2713', '\u2B21'],
-              ['Parallel Validation', '\u2717', '\u2717', '\u2B21'],
-              ['No Mining Waste', '\u2717', '\u2717', '\u2B21'],
-              ['Zero Gas Fees', '\u2713', '\u2717', '\u2B21'],
-              ['Full On-Chain Storage', '\u2717', '\u2717', '\u2B21'],
-              ['Programmable', '\u2717', '\u2713', '\u2B21'],
-              ['P2P Native', '\u2717', '\u2713', '\u2B21'],
-              ['Fair Distribution', '\u2717', '\u2717', '\u2B21'],
+              ['Rapidit\u00e9', '\u2713', '\u2717', '\u2B21'],
+              ['D\u00e9centralis\u00e9', '\u2717', '\u2713', '\u2B21'],
+              ['Validation parall\u00e8le', '\u2717', '\u2717', '\u2B21'],
+              ['Pas de gaspillage \u00e9nerg\u00e9tique', '\u2717', '\u2717', '\u2B21'],
+              ['Z\u00e9ro frais', '\u2713', '\u2717', '\u2B21'],
+              ['Stockage on-chain complet', '\u2717', '\u2717', '\u2B21'],
+              ['Certification d\u2019objets rares', '\u2717', '\u2717', '\u2B21'],
+              ['Pair-\u00e0-pair natif', '\u2717', '\u2713', '\u2B21'],
+              ['Distribution \u00e9quitable', '\u2717', '\u2717', '\u2B21'],
             ].map(([feat, fiat, block, cosmo]) => (
               <tr key={feat} className="border-b border-gray-800/30">
                 <td className="py-1.5 opacity-70">{feat}</td>
@@ -189,34 +194,35 @@ function OverviewSection() {
   );
 }
 
-// ─── Foundation ─────────────────────────────────────────
+// ─── Fondation ──────────────────────────────────────────
 
 function FoundationSection() {
   return (
     <div>
-      <SectionTitle icon={'\u2600'} title="CosmoWarp Foundation" subtitle="The organization behind the protocol" />
+      <SectionTitle icon={'\u2600'} title="Fondation Cosmorare" subtitle="L\u2019organisation derri\u00e8re le protocole" />
       <P>
-        The <span className="opacity-60 font-bold">CosmoWarp Foundation</span> is the custodian of the
-        CosmoWarp protocol, ecosystem, and community. Its mission is to build a transactional system
-        that serves humanity beyond the limitations of both fiat and cryptocurrency.
+        La <span className="opacity-60 font-bold">Fondation Cosmorare</span> est la gardienne du protocole,
+        de l'\u00e9cosyst\u00e8me et de la communaut\u00e9. Sa mission est de construire un syst\u00e8me de certification
+        qui sert l'humanit\u00e9 au-del\u00e0 des limitations des syst\u00e8mes fiat et des cryptomonnaies classiques.
       </P>
 
       <H3>Mission</H3>
       <P>
-        To create a universal value exchange system that is fair, transparent, programmable, and
-        accessible to everyone. CosmoWarp enables exchange of digital art, physical goods, services,
-        spiritual acts, acts of friendship, and any form of value between humans.
+        Cr\u00e9er un syst\u00e8me universel de certification d'objets rares qui soit \u00e9quitable, transparent,
+        programmable et accessible \u00e0 tous. Cosmorare permet la certification et l'\u00e9change d'art num\u00e9rique,
+        de biens physiques (cartes Pok\u00e9mon, sneakers, vinyles, montres), de services et de toute forme de
+        valeur entre les \u00eatres humains.
       </P>
 
-      <H3>The Ecosystem</H3>
+      <H3>L'\u00c9cosyst\u00e8me</H3>
       <div className="space-y-3 mb-4">
         {[
-          ['\u25CE', 'CosmoMesh', 'The transactional fabric. A DAG with 7 fractal validation layers that processes transactions in parallel, achieving near-instant settlement.', 'opacity-80'],
-          ['\u25B7', 'CosmoCode', 'The programming language. CosmoASM is a custom instruction set for the CosmoVM virtual machine, enabling smart contracts and proof-of-computation mining.', 'opacity-80'],
-          ['\u26BF', 'CosmoHash', 'The cryptographic foundation. Ed25519 digital signatures, SHA-256 hashing, and AES-GCM authenticated encryption form the security backbone.', 'opacity-80'],
-          ['\u223F', 'CosmoLingua', 'The symbolic language. Greek letters (\u03A9, \u03C6, \u03C8), cosmic symbols, and fractal naming create a unique cultural identity for the protocol.', 'opacity-80'],
-          ['\u269B', 'CosmoVault', 'The tokenomics engine. Manages the 69M supply, Resonance Decay curve, airdrops, streak rewards, and creator lock.', 'opacity-80'],
-          ['\u2B21', 'CosmoSDK', 'The developer toolkit. Open-source API for building apps, extensions, and integrations on the CosmoWarp ecosystem.', 'opacity-80'],
+          ['\u25CE', 'CosmoMesh', 'Le tissu transactionnel. Un DAG \u00e0 7 couches de validation fractales qui traite les transactions en parall\u00e8le, avec un r\u00e8glement quasi instantan\u00e9.', 'opacity-80'],
+          ['\u25B7', 'CosmoCode', 'Le moteur de compression. 7 couches fractales (Delta, Dictionary, Run-Length, Fractal Nesting, Frequency, Quantize, Filters) pour un stockage SVG ultra-compact.', 'opacity-80'],
+          ['\u26BF', 'CosmoHash', 'La fondation cryptographique. Signatures Ed25519, hachage SHA-256 et chiffrement AES-GCM forment l\u2019\u00e9pine dorsale de la s\u00e9curit\u00e9.', 'opacity-80'],
+          ['\u223F', 'CosmoLingua', 'Le langage symbolique. Lettres grecques (\u03A9, \u03c6, \u03c8), symboles cosmiques et nommage fractal cr\u00e9ent une identit\u00e9 culturelle unique.', 'opacity-80'],
+          ['\u269B', 'CosmoVault', 'Le moteur tokenomique. G\u00e8re l\u2019offre fixe de 69M de Warps (\u03A9), la courbe de D\u00e9croissance R\u00e9sonante, les airdrops et les r\u00e9compenses.', 'opacity-80'],
+          ['\u2B21', 'CRCERT', 'Le certificat d\u2019authenticit\u00e9. Empreinte SHA-256 + signature Ed25519 = preuve irr\u00e9futable de l\u2019authenticit\u00e9 d\u2019un objet rare.', 'opacity-80'],
         ].map(([icon, title, desc, color]) => (
           <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
@@ -228,9 +234,9 @@ function FoundationSection() {
         ))}
       </div>
 
-      <H3>Values</H3>
+      <H3>Valeurs</H3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {['Transparency', 'Fairness', 'Innovation', 'Community', 'Security', 'Freedom'].map(v => (
+        {['Transparence', '\u00c9quit\u00e9', 'Innovation', 'Communaut\u00e9', 'S\u00e9curit\u00e9', 'Libert\u00e9'].map(v => (
           <div key={v} className="text-center p-2 rounded-none bg-current/5">
             <p className="text-body-sm opacity-80 font-bold">{v}</p>
           </div>
@@ -245,51 +251,46 @@ function FoundationSection() {
 function CosmoMeshSection() {
   return (
     <div>
-      <SectionTitle icon={'\u25CE'} title="CosmoMesh" subtitle="DAG-Based Transactional Fabric" />
+      <SectionTitle icon={'\u25CE'} title="CosmoMesh" subtitle="R\u00e9seau DAG \u00e0 7 couches de validation parall\u00e8les" />
       <P>
-        CosmoMesh is the core transaction layer. Unlike blockchains which pack transactions into
-        sequential blocks, CosmoMesh is a <span className="opacity-80">Directed Acyclic Graph</span> where
-        each transaction references and validates 2+ parent transactions.
+        Imaginez un filet de p\u00eache g\u00e9ant o\u00f9 chaque n\u0153ud est connect\u00e9 \u00e0 plusieurs autres.
+        C'est le principe du <span className="opacity-80 font-bold">CosmoMesh</span> : un graphe acyclique
+        orient\u00e9 (DAG) o\u00f9 chaque transaction valide deux transactions pr\u00e9c\u00e9dentes, cr\u00e9ant un maillage
+        auto-renfor\u00e7ant.
+      </P>
+      <P>
+        Contrairement \u00e0 une blockchain o\u00f9 les blocs s'empilent un par un, le CosmoMesh permet la
+        validation <span className="opacity-80">en parall\u00e8le</span> sur 7 couches fractales simultan\u00e9es.
+        R\u00e9sultat : un d\u00e9bit massif et un r\u00e8glement quasi instantan\u00e9.
       </P>
 
-      <H3>7 Fractal Layers</H3>
+      <H3>Les 7 couches fractales</H3>
       <P>
-        Transactions are sorted into 7 parallel validation lanes based on their type and amount.
-        This enables massive throughput as each layer processes independently.
+        Chaque transaction traverse 7 niveaux de validation, chacun ajoutant une couche de confiance.
+        Pensez \u00e0 7 filets superpos\u00e9s : m\u00eame si un n\u0153ud est d\u00e9faillant, les 6 autres couches garantissent
+        l'int\u00e9grit\u00e9 du r\u00e9seau.
       </P>
-      <div className="space-y-1 mb-4">
-        {[
-          ['GRID', 'Micro-transactions (< 10 \u03A9)', 'opacity-50'],
-          ['HELIX', 'Standard transfers (10-100 \u03A9)', 'opacity-80'],
-          ['GLYPH', 'Large transfers (100-1000 \u03A9)', 'opacity-80'],
-          ['COSMO', 'System operations (governance)', 'opacity-80'],
-          ['CHRONOS', 'Time-locked transactions', 'opacity-80'],
-          ['NEXUS', 'Cross-layer bridges', 'opacity-80'],
-          ['LUMINA', 'Genesis & epoch transitions', 'opacity-80'],
-        ].map(([name, desc, color]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
-            <span className={`text-body-sm font-bold w-20 ${color}`}>{name}</span>
-            <span className="text-[11px] opacity-50">{desc}</span>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+        <Stat label="Couches" value="7" />
+        <Stat label="Latence" value="~15s" />
+        <Stat label="Frais" value="0 \u03A9" />
+        <Stat label="Beacon Block" value="~15s" />
       </div>
 
-      <H3>Resonance Consensus</H3>
+      <H3>Beacon Block</H3>
       <P>
-        Instead of Proof-of-Work, Proof-of-Stake, or PBFT, CosmoWarp uses
-        <span className="opacity-80"> Resonance Consensus</span>. Validators specialize in
-        specific layers and build reputation through honest validation. Byzantine fault tolerance
-        is achieved with f &lt; n/3 threshold. Settlement is near-instant.
+        Toutes les ~15 secondes, un <span className="opacity-80 font-bold">Beacon Block</span> ancre
+        l'\u00e9tat global du r\u00e9seau. C'est comme une photo instantan\u00e9e de l'ensemble du maillage,
+        permettant \u00e0 chaque n\u0153ud de v\u00e9rifier la coh\u00e9rence de l'\u00e9tat global sans avoir besoin
+        de tout recalculer.
       </P>
 
-      <H3>Key Advantages</H3>
-      <ul className="text-body-sm opacity-50 space-y-1 list-disc list-inside">
-        <li>7x throughput via parallel layer processing</li>
-        <li>Each TX validates 2 parents = natural spam prevention</li>
-        <li>No blocks, no orphans, no forks</li>
-        <li>Probabilistic finality in under 1 second</li>
-        <li>Merkle-DAG provides full auditability</li>
-      </ul>
+      <H3>Validation par r\u00e9f\u00e9rence crois\u00e9e</H3>
+      <P>
+        Chaque nouvelle transaction doit r\u00e9f\u00e9rencer au moins 2 transactions pr\u00e9c\u00e9dentes (appel\u00e9es
+        "parents"). Ce m\u00e9canisme cr\u00e9e un tissu de confiance o\u00f9 chaque \u00e9l\u00e9ment renforce les autres.
+        Plus le maillage grandit, plus il devient r\u00e9silient.
+      </P>
     </div>
   );
 }
@@ -299,343 +300,49 @@ function CosmoMeshSection() {
 function CosmoChainSection() {
   return (
     <div>
-      <SectionTitle icon={'\u26D3'} title="CosmoChain" subtitle="Parallel Shard Processing with Real Infrastructure" />
+      <SectionTitle icon={'\u26D3'} title="CosmoChain" subtitle="7 shards parall\u00e8les dans des Web Workers" />
       <P>
-        CosmoChain is the transaction layer of the CosmoWarp protocol. It uses
-        <span className="opacity-80 font-bold"> 7 real Web Worker threads</span> (OS-level parallelism),
-        <span className="opacity-80 font-bold"> zero gas fees</span>,
-        <span className="opacity-80 font-bold"> IndexedDB persistence</span> (GB-scale vs 5MB localStorage), and
-        <span className="opacity-80 font-bold"> CosmoCode SVG compression</span> with measured ratios.
-      </P>
-      <div className="p-3 rounded-none bg-current/5 border border-current/15 mb-4">
-        <p className="text-label opacity-60 font-bold mb-1">{'\u26A0'} HONEST STATUS</p>
-        <p className="text-label opacity-60/70 leading-relaxed">
-          In single-user mode, consensus is local validation — not Byzantine fault tolerant.
-          Real distributed consensus activates when peers connect via WebRTC P2P.
-          Compression ratios are benchmarked (run benchmark.ts), not estimated.
-          Storage is IndexedDB (local, GB-scale) synced to peers when connected.
-        </p>
-      </div>
-
-      <H3>How It Works For You (User Flow)</H3>
-      <P>
-        Here's exactly what happens when you use CosmoWarp, from your perspective:
+        Le <span className="opacity-80 font-bold">CosmoChain</span> est le moteur d'ex\u00e9cution de Cosmorare.
+        Imaginez 7 autoroutes parall\u00e8les au lieu d'une seule route : chaque shard traite des transactions
+        ind\u00e9pendamment, multipliant le d\u00e9bit par 7.
       </P>
 
-      {/* ─── MAIN USER FLOW DIAGRAM ─── */}
-      <div className="p-4 rounded-none bg-current/5 border border-gray-700/20 mb-6 overflow-x-auto">
-        <p className="text-label opacity-40 mb-3 text-center">USER EXPERIENCE FLOW</p>
-        <div className="space-y-3 min-w-[300px]">
-          {/* Step 1 */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">1</div>
-            <div className="flex-1">
-              <p className="text-body-sm font-bold opacity-90">You send a transaction, mint a Wart, or mine</p>
-              <p className="text-label opacity-40">Click Send, Mint, or Mine — exactly like today. Nothing changes in your experience.</p>
-            </div>
-          </div>
-          <div className="ml-4 border-l-2 border-current/10 h-4" />
-          {/* Step 2 */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">2</div>
-            <div className="flex-1">
-              <p className="text-body-sm font-bold opacity-90">CosmoChain routes to the right shard</p>
-              <p className="text-label opacity-40">Your TX is automatically assigned to 1 of 7 parallel shards based on its type and amount. No action needed from you.</p>
-            </div>
-          </div>
-          <div className="ml-4 border-l-2 border-current/10 h-4" />
-          {/* Step 3 */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">3</div>
-            <div className="flex-1">
-              <p className="text-body-sm font-bold opacity-90">All 7 shards process in parallel</p>
-              <p className="text-label opacity-40">While your TX processes on its shard, 6 other shards handle other users' TXs simultaneously = 10x faster than single-chain.</p>
-            </div>
-          </div>
-          <div className="ml-4 border-l-2 border-star-500/20 h-4" />
-          {/* Step 4 */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-nebula-500/20 border border-nebula-500/30 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">4</div>
-            <div className="flex-1">
-              <p className="text-body-sm font-bold opacity-90">CosmoCode compresses everything into SVG</p>
-              <p className="text-label opacity-40">Your TX data (or NFT artwork) is compressed through 7 layers and encoded as an SVG container. Structured data achieves 5-30x compression; images ~1-2x.</p>
-            </div>
-          </div>
-          <div className="ml-4 border-l-2 border-nebula-500/20 h-4" />
-          {/* Step 5 */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">5</div>
-            <div className="flex-1">
-              <p className="text-body-sm font-bold opacity-90">Stored fully on-chain in the shard block</p>
-              <p className="text-label opacity-40">The compressed SVG is stored directly in the blockchain. No IPFS, no external server. Your data lives on-chain forever, for free.</p>
-            </div>
-          </div>
-          <div className="ml-4 border-l-2 border-current/10 h-4" />
-          {/* Step 6 */}
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-current/5 border border-current/10 flex items-center justify-center shrink-0 text-base opacity-80 font-bold">{'\u2713'}</div>
-            <div className="flex-1">
-              <p className="text-body-sm font-bold opacity-90">Confirmed in ~1.5 seconds. Cost: 0 {'\u03A9'}</p>
-              <p className="text-label opacity-40">The shard produces a block every 1.5s. Your TX is confirmed, finalized, and anchored by the next Beacon Block. Gas cost is always zero.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── ARCHITECTURE DIAGRAM ─── */}
-      <H3>Architecture Diagram</H3>
-      <div className="p-4 rounded-none bg-current/5 border border-gray-700/20 mb-6 overflow-x-auto">
-        <pre className="text-label sm:text-[11px] opacity-50 font-mono whitespace-pre leading-relaxed">{`
-  YOU (Browser / Mobile)
-   |
-   |  1. Send TX / Mint Wart / Mine
-   v
-\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-\u2502        COSMOCHAIN ENGINE            \u2502
-\u2502                                     \u2502
-\u2502  2. Route to shard by type/amount   \u2502
-\u2502                                     \u2502
-\u2502  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510  \u2502
-\u2502  \u2502 GRID \u2502\u2502HELIX \u2502\u2502GLYPH \u2502\u2502COSMO \u2502  \u2502
-\u2502  \u2502 <10\u03A9 \u2502\u250210-100\u2502\u2502100-1K\u2502\u2502System\u2502  \u2502
-\u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518  \u2502
-\u2502  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2510         \u2502
-\u2502  \u2502CHRONO\u2502\u2502NEXUS \u2502\u2502LUMIN \u2502 \u2190 x7   \u2502
-\u2502  \u2502 Time \u2502\u2502Bridge\u2502\u2502Epoch \u2502 shards \u2502
-\u2502  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2518         \u2502
-\u2502       |  parallel  |              \u2502
-\u2502       v            v              \u2502
-\u2502  3. \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510    \u2502
-\u2502     \u2502  COSMOCODE SVG ENGINE  \u2502    \u2502
-\u2502     \u2502                      \u2502    \u2502
-\u2502     \u2502  7 Compression Layers \u2502    \u2502
-\u2502     \u2502  \u2192 Delta Encoding    \u2502    \u2502
-\u2502     \u2502  \u2192 Dictionary        \u2502    \u2502
-\u2502     \u2502  \u2192 Run-Length SVG    \u2502    \u2502
-\u2502     \u2502  \u2192 Fractal Nesting   \u2502    \u2502
-\u2502     \u2502  \u2192 Frequency Encode  \u2502    \u2502
-\u2502     \u2502  \u2192 Color Quantize    \u2502    \u2502
-\u2502     \u2502  \u2192 Filter Chains     \u2502    \u2502
-\u2502     \u2502                      \u2502    \u2502
-\u2502     \u2502  Result: 5-30x\u2502    \u2502
-\u2502     \u2502  (structured data)\u2502    \u2502
-\u2502     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518    \u2502
-\u2502            |                       \u2502
-\u2502            v                       \u2502
-\u2502  4. \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510    \u2502
-\u2502     \u2502  SHARD BLOCK          \u2502    \u2502
-\u2502     \u2502  Every 1.5 seconds    \u2502    \u2502
-\u2502     \u2502  Up to 1000 TX/block  \u2502    \u2502
-\u2502     \u2502  Gas: 0 \u03A9 (FREE)     \u2502    \u2502
-\u2502     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518    \u2502
-\u2502            |                       \u2502
-\u2502            v                       \u2502
-\u2502  5. \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510    \u2502
-\u2502     \u2502  BEACON BLOCK         \u2502    \u2502
-\u2502     \u2502  Anchors all 7 shards \u2502    \u2502
-\u2502     \u2502  every 10 blocks      \u2502    \u2502
-\u2502     \u2502  = Global State Root  \u2502    \u2502
-\u2502     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518    \u2502
-\u2502                                     \u2502
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
-            |
-            v
-  \u2713 Confirmed + On-Chain Forever
-    Cost: 0 \u03A9 | Time: ~1.5s
-`}</pre>
-      </div>
-
-      {/* ─── WART ON-CHAIN FLOW ─── */}
-      <H3>Full On-Chain NFT (Wart) Storage</H3>
+      <H3>Les 7 shards</H3>
       <P>
-        Unlike Ethereum where NFT images are stored off-chain (IPFS/Arweave) and only a link is on-chain,
-        CosmoChain stores <span className="opacity-80 font-bold">the entire artwork directly in the blockchain</span>.
-        CosmoCode SVG compression makes this possible at zero cost.
-      </P>
-      <div className="p-4 rounded-none bg-current/5 border border-gray-700/20 mb-6 overflow-x-auto">
-        <p className="text-label opacity-40 mb-3 text-center">NFT (WART) ON-CHAIN STORAGE FLOW</p>
-        <pre className="text-label sm:text-[11px] opacity-50 font-mono whitespace-pre leading-relaxed">{`
-  YOUR ARTWORK (PNG/JPEG/GIF/SVG/MP3/MP4)
-            |
-            v
-  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-  \u2502  COSMOCODE SVG ENCODER       \u2502
-  \u2502                             \u2502
-  \u2502  Native SVG \u2192 store direct  \u2502
-  \u2502  Raster    \u2192 base64 in SVG \u2502
-  \u2502  + SHA-256 fingerprint      \u2502
-  \u2502  + Ed25519 creator sign     \u2502
-  \u2502  + 7-layer compression      \u2502
-  \u2502                             \u2502
-  \u2502  5MB image \u2192 ~5KB on-chain  \u2502
-  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
-            |
-            v
-  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-  \u2502  <svg xmlns="...">          \u2502
-  \u2502    <cc:meta type="wart"/>   \u2502
-  \u2502    <cc:wart                 \u2502
-  \u2502      title="My Art"         \u2502
-  \u2502      creator="CW1a2b..."    \u2502
-  \u2502      cert="CWCERT_..."      \u2502
-  \u2502    />                       \u2502
-  \u2502    <defs>                   \u2502
-  \u2502      <g id="r0">...</g>     \u2502
-  \u2502    </defs>                  \u2502
-  \u2502    <cc:data>                \u2502
-  \u2502      [compressed content]   \u2502
-  \u2502    </cc:data>               \u2502
-  \u2502  </svg>                     \u2502
-  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
-            |
-            v
-  STORED IN GLYPH SHARD BLOCK
-  \u2192 On-chain forever
-  \u2192 Recoverable from any node
-  \u2192 Gas: 0 \u03A9
-`}</pre>
-      </div>
-
-      {/* ─── 7 SHARDS ─── */}
-      <H3>7 Parallel Shards</H3>
-      <P>
-        Like Ethereum 2.0's sharding, but live and working. Each shard processes transactions
-        independently and in parallel. The right shard is selected automatically based on the
-        transaction type and amount.
-      </P>
-      <div className="space-y-1 mb-4">
-        {[
-          ['GRID', '0', '< 10 \u03A9', 'Micro-payments, tips, small transfers', 'opacity-50'],
-          ['HELIX', '1', '10-100 \u03A9', 'Standard peer-to-peer transfers', 'opacity-80'],
-          ['GLYPH', '2', '100-1K \u03A9', 'Large transfers + NFT operations (mint/buy)', 'opacity-80'],
-          ['COSMO', '3', 'System', 'Governance, staking, unstaking', 'opacity-80'],
-          ['CHRONOS', '4', 'Time', 'Time-locked transactions (vesting, escrow)', 'opacity-80'],
-          ['NEXUS', '5', 'Bridge', 'Cross-shard atomic transfers', 'opacity-80'],
-          ['LUMINA', '6', 'Chain', 'Genesis, epoch transitions, beacon anchors', 'opacity-80'],
-        ].map(([name, _id, range, desc, color]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
-            <span className={`text-body-sm font-bold w-16 ${color}`}>{name}</span>
-            <span className="text-label opacity-40 w-16">{range}</span>
-            <span className="text-label opacity-50 flex-1">{desc}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* ─── KEY METRICS ─── */}
-      <H3>Performance Comparison</H3>
-      <div className="overflow-x-auto mb-6">
-        <table className="w-full text-body-sm">
-          <thead>
-            <tr className="border-b border-current/10">
-              <th className="py-2 text-left opacity-40">Metric</th>
-              <th className="py-2 text-center opacity-40">Bitcoin</th>
-              <th className="py-2 text-center opacity-40">Ethereum</th>
-              <th className="py-2 text-center opacity-80">CosmoChain</th>
-            </tr>
-          </thead>
-          <tbody className="opacity-50">
-            {[
-              ['Block Time', '10 min', '12 sec', '1.5 sec (per shard)'],
-              ['TPS (measured)', '~7', '~30', 'Varies (benchmark it)'],
-              ['Gas Fee', '$1-50', '$0.5-100', '0 \u03A9 (free)'],
-              ['NFT Storage', 'Off-chain', 'Off-chain (IPFS)', 'IndexedDB + SVG compression'],
-              ['Storage Engine', 'LevelDB', 'LevelDB', 'IndexedDB (GB-scale)'],
-              ['Shards', '1', '1 (planned 64)', '7 Web Workers'],
-              ['Finality', '60 min', '~15 min', 'Local: instant / P2P: ~15s'],
-              ['Compression', 'None', 'None', '5-30x measured (CosmoCode)'],
-              ['Validators', '900,000+', '900,000+', '1 (single-node) to N (P2P)'],
-              ['Network', 'Global', 'Global', 'Local + WebRTC P2P'],
-            ].map(([metric, btc, eth, cw]) => (
-              <tr key={metric} className="border-b border-gray-800/30">
-                <td className="py-1.5 opacity-70">{metric}</td>
-                <td className="py-1.5 text-center">{btc}</td>
-                <td className="py-1.5 text-center">{eth}</td>
-                <td className="py-1.5 text-center opacity-80 font-bold">{cw}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ─── ZERO GAS EXPLANATION ─── */}
-      <H3>Zero Gas: How Is It Free?</H3>
-      <P>
-        Ethereum charges gas because miners/validators need compensation for processing and storage.
-        CosmoChain eliminates gas through three mechanisms:
+        Chaque shard a un r\u00f4le sp\u00e9cifique et fonctionne dans son propre Web Worker, garantissant
+        une ex\u00e9cution parall\u00e8le sans bloquer l'interface utilisateur.
       </P>
       <div className="space-y-2 mb-4">
         {[
-          ['\u269B', 'Staking Rewards', 'Validators earn from staking, not from user fees. Users stake Warps, validators earn a cut of mining rewards proportional to their stake.'],
-          ['\u26A1', 'Rate Limiting', 'Anti-spam is enforced through rate limits (100 TX/min per address) instead of pricing out attackers with fees.'],
-          ['\u25B7', 'CosmoCode Compression', 'Storage costs are reduced through real SVG compression (5-30x for structured data). Combined with IndexedDB for GB-scale local storage, this eliminates the need for gas-based storage pricing.'],
-        ].map(([icon, title, desc]) => (
-          <div key={title} className="p-3 rounded-none bg-current/5">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-title-sm opacity-80">{icon}</span>
-              <span className="text-body-sm font-bold opacity-90">{title}</span>
-            </div>
-            <p className="text-label opacity-40 leading-relaxed">{desc}</p>
+          ['GRID', 'Stockage et indexation des donn\u00e9es structur\u00e9es'],
+          ['HELIX', 'Traitement des transactions et des transferts de Warps'],
+          ['GLYPH', 'Stockage et compression SVG on-chain (via CosmoCode)'],
+          ['COSMO', 'Gestion des identit\u00e9s, des comptes et des hi\u00e9rarchies'],
+          ['CHRONOS', 'Horodatage et ordonnancement temporel des \u00e9v\u00e9nements'],
+          ['NEXUS', 'Communication inter-shards et routage des messages'],
+          ['LUMINA', 'Validation finale et ancrage dans le Beacon Block'],
+        ].map(([name, desc]) => (
+          <div key={name} className="flex gap-3 p-3 rounded-none bg-current/5">
+            <Code>{name}</Code>
+            <p className="text-body-sm opacity-50">{desc}</p>
           </div>
         ))}
       </div>
 
-      {/* ─── BEACON BLOCKS ─── */}
-      <H3>Beacon Blocks (Cross-Shard Finality)</H3>
+      <H3>Z\u00e9ro frais, toujours</H3>
       <P>
-        Every 10 shard blocks (~15 seconds), a <span className="opacity-80">Beacon Block</span> is
-        produced. It anchors the state of all 7 shards into a single Global State Root — a Merkle root
-        that commits to the entire chain state across all shards. This provides absolute cross-shard
-        finality and enables verification of any transaction from any shard.
+        Cosmorare ne facture <span className="opacity-80 font-bold">aucun frais de transaction</span>.
+        Pas de "gas", pas de frais cach\u00e9s. Envoyer un Warp (\u03A9) ou certifier un objet rare co\u00fbte
+        toujours <span className="opacity-80 font-bold">0 \u03A9</span>. La validation est assur\u00e9e par le
+        m\u00e9canisme de r\u00e9f\u00e9rence crois\u00e9e du CosmoMesh.
       </P>
 
-      <div className="p-4 rounded-none bg-current/5 border border-gray-700/20 mb-4 overflow-x-auto">
-        <pre className="text-label sm:text-[11px] opacity-50 font-mono whitespace-pre leading-relaxed">{`
-  BEACON BLOCK #N
-  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-  \u2502  Global State Root              \u2502
-  \u2502  = Merkle(shard_roots[0..6])    \u2502
-  \u2502                                 \u2502
-  \u2502  Shard 0 (GRID)    \u2192 root_0    \u2502
-  \u2502  Shard 1 (HELIX)   \u2192 root_1    \u2502
-  \u2502  Shard 2 (GLYPH)   \u2192 root_2    \u2502
-  \u2502  Shard 3 (COSMO)   \u2192 root_3    \u2502
-  \u2502  Shard 4 (CHRONOS) \u2192 root_4    \u2502
-  \u2502  Shard 5 (NEXUS)   \u2192 root_5    \u2502
-  \u2502  Shard 6 (LUMINA)  \u2192 root_6    \u2502
-  \u2502                                 \u2502
-  \u2502  Timestamp | Validator | Hash   \u2502
-  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
-`}</pre>
-      </div>
-
-      {/* ─── DUAL LAYER ─── */}
-      <H3>Dual-Layer Architecture</H3>
+      <H3>Web Workers : la parall\u00e9lisation dans le navigateur</H3>
       <P>
-        CosmoChain works alongside CosmoMesh. The DAG provides <span className="opacity-80">instant
-        optimistic confirmation</span> ({'<'}1s), while CosmoChain provides <span className="opacity-80">permanent
-        on-chain SVG storage</span> and shard-level finality. You get the best of both worlds:
-        instant UX + permanent decentralized storage.
+        Les 7 shards s'ex\u00e9cutent dans des Web Workers, des processus parall\u00e8les du navigateur.
+        Cela signifie que m\u00eame sur un smartphone, Cosmorare peut traiter des transactions en arri\u00e8re-plan
+        sans ralentir l'interface. C'est comme avoir 7 processeurs d\u00e9di\u00e9s dans votre navigateur.
       </P>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="p-3 rounded-none bg-current/5 border border-current/10">
-          <p className="text-body-sm font-bold opacity-80 mb-1">{'\u25CE'} CosmoMesh (Layer 1)</p>
-          <ul className="text-label opacity-40 space-y-1">
-            <li>{'\u2192'} DAG instant settlement</li>
-            <li>{'\u2192'} Sub-second confirmation</li>
-            <li>{'\u2192'} Optimistic finality</li>
-            <li>{'\u2192'} P2P gossip propagation</li>
-          </ul>
-        </div>
-        <div className="p-3 rounded-none bg-current/5 border border-current/10">
-          <p className="text-body-sm font-bold opacity-80 mb-1">{'\u26D3'} CosmoChain (Layer 2)</p>
-          <ul className="text-label opacity-40 space-y-1">
-            <li>{'\u2192'} Full on-chain SVG storage</li>
-            <li>{'\u2192'} 7 parallel shards</li>
-            <li>{'\u2192'} Absolute finality via Beacon</li>
-            <li>{'\u2192'} Recoverable from any node</li>
-          </ul>
-        </div>
-      </div>
     </div>
   );
 }
@@ -645,100 +352,47 @@ function CosmoChainSection() {
 function CosmoCodeSection() {
   return (
     <div>
-      <SectionTitle icon={'\u25B7'} title="CosmoCode" subtitle="SVG Compression Engine (Real Measured Ratios)" />
+      <SectionTitle icon={'\u25B7'} title="CosmoCode" subtitle="Moteur de compression SVG \u00e0 7 couches fractales" />
       <P>
-        CosmoCode is the compression engine that makes full on-chain storage possible.
-        It encodes ALL blockchain data — transactions, NFT artwork, metadata — into optimized
-        <span className="opacity-80 font-bold"> SVG containers</span> using a 7-layer fractal
-        compression pipeline. Real measured ratios: <span className="opacity-80 font-bold">5-30x</span> for structured data (transactions, metadata), <span className="opacity-80 font-bold">~1-2x</span> for binary data (images). Run the built-in benchmark to verify.
+        <span className="opacity-80 font-bold">CosmoCode</span> est le moteur de compression qui permet
+        de stocker des images SVG directement sur la cha\u00eene. Pourquoi le SVG ? Parce que c'est le format
+        id\u00e9al pour les certificats visuels : vectoriel, scalable et compressible.
       </P>
 
-      <H3>Why SVG?</H3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-        {[
-          ['Text-Based', 'XML format = natively compressible, unlike binary formats'],
-          ['Self-Describing', 'SVG metadata is human-readable and machine-parseable'],
-          ['Native References', '<defs>/<use> system enables fractal deduplication'],
-          ['Universally Renderable', 'Every browser and viewer can display SVG natively'],
-          ['Embeddable', 'Can embed base64 images, paths, and arbitrary data'],
-          ['Extensible', 'Custom namespaces (cc:) for CosmoCode-specific data'],
-        ].map(([title, desc]) => (
-          <div key={title} className="p-2 rounded-none bg-current/5">
-            <p className="text-body-sm font-bold opacity-80">{title}</p>
-            <p className="text-label opacity-40">{desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <H3>7 Compression Layers</H3>
+      <H3>Les 7 couches de compression</H3>
       <P>
-        Each piece of data passes through up to 7 compression layers, each targeting a different
-        type of redundancy. The layers stack multiplicatively.
+        Chaque SVG passe par 7 \u00e9tapes de compression, chacune r\u00e9duisant la taille. Le r\u00e9sultat :
+        des ratios de compression de 5x \u00e0 30x pour les donn\u00e9es structur\u00e9es.
       </P>
       <div className="space-y-2 mb-4">
         {[
-          ['Layer 1', 'Delta Encoding', 'Only stores differences from previous data. Sequential transactions share common structure, so we only store what changed. Most effective on batches of similar data.', '~1.5-3x', 'opacity-80'],
-          ['Layer 2', 'Dictionary Compression', 'Replaces common strings ("transaction", "signature", "publicKey") with short symbols (\u00A7t, \u00A7s, \u00A7p). Effective on JSON-like structured data.', '~1.5-3x', 'opacity-80'],
-          ['Layer 3', 'Run-Length SVG Paths', 'Encodes repetitive sequences (like hex strings with repeated chars) as compact notation. "AAABBB" becomes "3A3B".', '~1.2-2x', 'opacity-80'],
-          ['Layer 4', 'Fractal Nesting', 'Uses SVG <defs>/<use> to define repeated patterns once and reference them everywhere. Most effective on highly repetitive structured data.', '~1.5-5x', 'opacity-80'],
-          ['Layer 5', 'Frequency Encoding', 'Maps the most common byte pairs to single Unicode characters. Huffman-inspired variable-length encoding.', '~1.2-2x', 'opacity-80'],
-          ['Layer 6', 'Color Quantization', 'For images: reduces the color palette to essential colors. Minimal effect on already-compressed binary data.', '~1-1.5x', 'opacity-80'],
-          ['Layer 7', 'Filter Chains', 'Reusable SVG filter pipelines that encode common transforms without repeating them.', '~1-1.3x', 'opacity-80'],
-        ].map(([layer, title, desc, ratio, color]) => (
-          <div key={title} className="p-3 rounded-none bg-current/5">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-body-sm font-bold ${color}`}>{layer}</span>
-              <span className="text-body-sm font-bold opacity-90">{title}</span>
-              <span className="text-label opacity-80 ml-auto">{ratio}</span>
+          ['1. Delta', 'Encode les diff\u00e9rences entre valeurs cons\u00e9cutives au lieu des valeurs absolues'],
+          ['2. Dictionary', 'Remplace les cha\u00eenes r\u00e9p\u00e9t\u00e9es par des r\u00e9f\u00e9rences courtes vers un dictionnaire'],
+          ['3. Run-Length', 'Compresse les s\u00e9quences de valeurs identiques (ex: "aaaa" \u2192 "4a")'],
+          ['4. Fractal Nesting', 'D\u00e9tecte les motifs r\u00e9cursifs et les encode comme des fractales'],
+          ['5. Frequency', 'Attribue des codes courts aux symboles fr\u00e9quents (comme le code Huffman)'],
+          ['6. Quantize', 'R\u00e9duit la pr\u00e9cision des nombres flottants au minimum n\u00e9cessaire'],
+          ['7. Filters', 'Applique des filtres pr\u00e9dictifs pour maximiser la compressibilit\u00e9'],
+        ].map(([name, desc]) => (
+          <div key={name} className="flex gap-3 p-3 rounded-none bg-current/5">
+            <div>
+              <p className="text-body-sm font-bold opacity-80">{name}</p>
+              <p className="text-label opacity-40">{desc}</p>
             </div>
-            <p className="text-label opacity-40 leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
 
-      <H3>Compression Pipeline Diagram</H3>
-      <div className="p-4 rounded-none bg-current/5 border border-gray-700/20 mb-4 overflow-x-auto">
-        <pre className="text-label sm:text-[11px] opacity-50 font-mono whitespace-pre leading-relaxed">{`
-  STRUCTURED DATA (100 KB, e.g. TX batch)
-   |
-   |\u2500\u2500 Layer 1: Delta Encode \u2500\u2500\u2500\u2500\u2500\u2500\u2192 50 KB   (2x)
-   |\u2500\u2500 Layer 2: Dictionary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192  25 KB  (2x)
-   |\u2500\u2500 Layer 3: Run-Length \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192  15 KB  (1.7x)
-   |\u2500\u2500 Layer 4: Fractal Nesting \u2500\u2500\u2500\u2192   8 KB  (1.9x)
-   |\u2500\u2500 Layer 5: Frequency Encode \u2500\u2500\u2192   5 KB  (1.6x)
-   |\u2500\u2500 Layer 6: Quantize \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2192   4 KB  (1.2x)
-   |\u2500\u2500 Layer 7: Filter Chains \u2500\u2500\u2500\u2500\u2192 3.5 KB  (1.1x)
-   v
-  SVG CONTAINER (~3.5 KB) = ~30x compression (structured data)
-  Note: Binary data (images) achieves ~1-2x only. Run benchmark to verify.
-`}</pre>
-      </div>
-
-      <H3>CosmoCode SVG Container Format</H3>
-      <div className="p-3 rounded-none bg-current/5 border border-gray-700/20 mb-4">
-        <p className="text-label opacity-40 mb-2">SVG CONTAINER STRUCTURE</p>
-        <pre className="text-[11px] opacity-80 whitespace-pre-wrap">{`<svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:cc="https://cosmowarp.io/cosmocode/v1">
-  <cc:meta type="wart" version="1"
-           layers="delta,dictionary,fractal"
-           ts="1709990400000"/>
-  <defs>
-    <g id="r0"><desc>[reusable pattern]</desc></g>
-    <g id="r1"><desc>[reusable pattern]</desc></g>
-  </defs>
-  <cc:freq>e000=th;e001=in;...</cc:freq>
-  <cc:data><![CDATA[
-    [compressed data referencing r0, r1...]
-  ]]></cc:data>
-</svg>`}</pre>
-      </div>
-
-      <H3>Real-World Compression Ratios</H3>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="TX BATCH (100)" value="~5-30x" color="opacity-80" />
-        <Stat label="STATE SNAPSHOT" value="~3-10x" color="opacity-80" />
-        <Stat label="SVG ARTWORK" value="~1-2x" color="opacity-80" />
-        <Stat label="BASE64 IMAGES" value="~1x" color="opacity-80" />
+      <H3>Pourquoi c'est important pour les objets rares ?</H3>
+      <P>
+        Chaque certificat CRCERT contient une repr\u00e9sentation visuelle de l'objet certifi\u00e9.
+        Gr\u00e2ce \u00e0 CosmoCode, cette image est stock\u00e9e directement on-chain, pas sur un serveur externe
+        qui pourrait dispara\u00eetre. Votre certificat est permanent et autosuffisant.
+      </P>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+        <Stat label="Couches" value="7" />
+        <Stat label="Ratio min" value="5x" />
+        <Stat label="Ratio max" value="30x" />
       </div>
     </div>
   );
@@ -749,38 +403,48 @@ function CosmoCodeSection() {
 function CosmoHashSection() {
   return (
     <div>
-      <SectionTitle icon={'\u26BF'} title="CosmoHash" subtitle="Cryptographic Foundation" />
+      <SectionTitle icon={'\u26BF'} title="CosmoHash" subtitle="Stack cryptographique de confiance" />
       <P>
-        CosmoHash is the cryptographic stack that secures every aspect of CosmoWarp.
-        It uses industry-standard, battle-tested primitives through the Web Crypto API.
+        La s\u00e9curit\u00e9 de Cosmorare repose sur trois piliers cryptographiques reconnus mondialement.
+        Ensemble, ils forment le <span className="opacity-80 font-bold">CosmoHash</span>, la colonne
+        vert\u00e9brale de la confiance dans le protocole.
       </P>
 
-      <H3>Ed25519 Digital Signatures</H3>
-      <P>
-        Every wallet generates an Ed25519 keypair (256-bit elliptic curve). Transactions are
-        signed with the private key and verified with the public key. Ed25519 provides
-        128-bit security, is immune to timing attacks, and produces compact 64-byte signatures.
-      </P>
-
-      <H3>SHA-256 Hashing</H3>
-      <P>
-        Transaction IDs are computed deterministically using SHA-256. The Merkle-DAG uses
-        double-SHA-256 for content addressing. State integrity checksums also use SHA-256
-        to detect tampering.
-      </P>
-
-      <H3>AES-GCM Authenticated Encryption</H3>
-      <P>
-        Sensitive data (admin registry, wallet exports) is encrypted with AES-256-GCM
-        (Galois/Counter Mode), which provides both confidentiality and authenticity.
-        Key derivation uses PBKDF2 with 100,000 iterations.
-      </P>
-
-      <div className="grid grid-cols-1 gap-3 mt-4 sm:grid-cols-3">
-        <Stat label="SIGNATURES" value="Ed25519" color="opacity-80" />
-        <Stat label="HASHING" value="SHA-256" color="opacity-80" />
-        <Stat label="ENCRYPTION" value="AES-GCM" color="opacity-80" />
+      <H3>Les 3 piliers</H3>
+      <div className="space-y-3 mb-4">
+        {[
+          ['\u270D', 'Ed25519 \u2014 Signatures num\u00e9riques', 'Chaque utilisateur poss\u00e8de une paire de cl\u00e9s (publique + priv\u00e9e). Signer un certificat revient \u00e0 apposer une signature num\u00e9rique infalsifiable. Ed25519 est utilis\u00e9 par Signal, SSH, et des milliers de protocoles s\u00e9curis\u00e9s.'],
+          ['#\uFE0F\u20E3', 'SHA-256 \u2014 Empreinte num\u00e9rique', 'Chaque objet certifi\u00e9 re\u00e7oit une empreinte unique de 256 bits. Modifier un seul pixel de l\u2019image change compl\u00e8tement l\u2019empreinte. C\u2019est comme une empreinte digitale pour les donn\u00e9es num\u00e9riques.'],
+          ['\u{1F510}', 'AES-GCM \u2014 Chiffrement authentifi\u00e9', 'Les messages priv\u00e9s sur le Mur (r\u00e9seau social) sont chiffr\u00e9s de bout en bout. M\u00eame Cosmorare ne peut pas lire vos messages. AES-GCM garantit \u00e0 la fois la confidentialit\u00e9 et l\u2019int\u00e9grit\u00e9.'],
+        ].map(([icon, title, desc]) => (
+          <div key={title} className="p-4 rounded-none bg-current/5 border border-current/5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-title-sm">{icon}</span>
+              <span className="text-base font-bold opacity-80">{title}</span>
+            </div>
+            <p className="text-body-sm opacity-50 leading-relaxed">{desc}</p>
+          </div>
+        ))}
       </div>
+
+      <H3>Le certificat CRCERT</H3>
+      <P>
+        Un <span className="opacity-80 font-bold">CRCERT</span> (Certificat Cosmorare) combine ces trois technologies :
+      </P>
+      <div className="p-4 rounded-none bg-current/5 mb-4 font-mono text-body-sm opacity-60 space-y-1">
+        <p>CRCERT = {'{'}</p>
+        <p>&nbsp;&nbsp;empreinte: SHA-256(donn\u00e9es_objet),</p>
+        <p>&nbsp;&nbsp;signature: Ed25519.sign(empreinte, cl\u00e9_priv\u00e9e),</p>
+        <p>&nbsp;&nbsp;horodatage: timestamp_beacon_block,</p>
+        <p>&nbsp;&nbsp;propri\u00e9taire: cl\u00e9_publique_Ed25519,</p>
+        <p>&nbsp;&nbsp;visuel: CosmoCode.compress(svg_objet)</p>
+        <p>{'}'}</p>
+      </div>
+      <P>
+        En termes simples : on prend une photo num\u00e9rique de votre objet rare, on calcule son empreinte
+        unique, on la signe avec votre cl\u00e9 priv\u00e9e, et on stocke le tout de mani\u00e8re permanente sur le r\u00e9seau.
+        Personne ne peut falsifier ce certificat.
+      </P>
     </div>
   );
 }
@@ -790,133 +454,49 @@ function CosmoHashSection() {
 function CosmoLinguaSection() {
   return (
     <div>
-      <SectionTitle icon={'\u223F'} title="CosmoLingua" subtitle="The Symbolic Language of CosmoWarp" />
+      <SectionTitle icon={'\u223F'} title="CosmoLingua" subtitle="Langage CosmoASM avec instructions ex\u00e9cutables" />
       <P>
-        CosmoLingua is the cultural and symbolic language that permeates the entire CosmoWarp
-        ecosystem. It draws from mathematics, physics, and cosmic symbolism to create a unique
-        identity that distinguishes CosmoWarp from all other systems.
+        <span className="opacity-80 font-bold">CosmoLingua</span> est le langage natif de Cosmorare.
+        Il s'inspire de l'assembleur mais avec une esth\u00e9tique cosmique : lettres grecques, symboles
+        fractals et instructions minimalistes.
       </P>
 
-      <H3>Core Symbols</H3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+      <H3>CosmoASM : le jeu d'instructions</H3>
+      <P>
+        CosmoASM est un langage d'assemblage con\u00e7u pour la machine virtuelle CosmoVM.
+        Il est volontairement minimaliste : peu d'instructions, mais chacune est puissante et composable.
+      </P>
+      <div className="space-y-2 mb-4">
         {[
-          ['\u03A9', 'Omega', 'Unit of value (Warps)', 'opacity-80'],
-          ['\u03C6', 'Phi', 'Golden ratio (Resonance Decay)', 'opacity-80'],
-          ['\u03C8', 'Psi', 'Wave function (consensus)', 'opacity-80'],
-          ['\u2B21', 'Hexagon', 'CosmoWarp identity symbol', 'opacity-80'],
-          ['\u223F', 'Wave', 'Resonance and harmony', 'opacity-80'],
-          ['\u269B', 'Atom', 'Fundamental transaction unit', 'opacity-80'],
-          ['\u2604', 'Comet', 'High-energy operations', 'opacity-80'],
-          ['\u2600', 'Sun', 'Lumina \u2014 highest level', 'opacity-80'],
-        ].map(([sym, name, desc, color]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
-            <span className={`text-title-lg w-8 text-center ${color}`}>{sym}</span>
-            <div>
-              <p className="text-body-sm font-bold opacity-90">{name}</p>
-              <p className="text-label opacity-40">{desc}</p>
-            </div>
+          ['PUSH \u03A9', 'Empile une valeur sur la pile d\u2019ex\u00e9cution'],
+          ['TRANSFER', 'Transf\u00e8re des Warps d\u2019un compte \u00e0 un autre'],
+          ['CERTIFY', 'Cr\u00e9e un certificat CRCERT pour un objet rare'],
+          ['VERIFY', 'V\u00e9rifie la validit\u00e9 d\u2019un certificat CRCERT'],
+          ['HASH', 'Calcule l\u2019empreinte SHA-256 d\u2019une donn\u00e9e'],
+          ['SIGN', 'Signe une donn\u00e9e avec la cl\u00e9 priv\u00e9e Ed25519'],
+          ['COMPRESS', 'Compresse un SVG via les 7 couches CosmoCode'],
+          ['BEACON', 'Ancre une transaction dans le prochain Beacon Block'],
+        ].map(([inst, desc]) => (
+          <div key={inst} className="flex gap-3 p-2 rounded-none bg-current/5">
+            <Code>{inst}</Code>
+            <p className="text-body-sm opacity-50">{desc}</p>
           </div>
         ))}
       </div>
 
-      <H3>Hierarchy Glyphs</H3>
+      <H3>Preuve de calcul (Proof of Computation)</H3>
       <P>
-        Each account level is represented by a cosmic glyph that reflects its place in the
-        progression from quantum particle to transcendent light.
-      </P>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-        {[
-          ['\u2022', 'Particle', 'Quantum seed \u2014 the origin point', 'opacity-50'],
-          ['\u223F', 'Wave', 'Harmonic traveler through the mesh', 'opacity-80'],
-          ['\u2605', 'Star', 'Stellar navigator \u2014 a guiding light', 'opacity-80'],
-          ['\u2604', 'Nebula', 'Architect shaping the cosmic fabric', 'opacity-80'],
-          ['\u269B', 'Galaxy', 'Galactic guardian of the network', 'opacity-80'],
-          ['\u2B21', 'Cosmos', 'Sovereign of the cosmic order', 'opacity-80'],
-          ['\u2600', 'Lumina', 'Transcendent \u2014 you ARE the light', 'opacity-80'],
-        ].map(([sym, name, desc, color]) => (
-          <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5">
-            <span className={`text-title-lg w-8 text-center ${color}`}>{sym}</span>
-            <div>
-              <p className="text-body-sm font-bold opacity-90">{name}</p>
-              <p className="text-label opacity-40">{desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <H3>VM Register Alphabet</H3>
-      <P>
-        The CosmoVM uses 12 Greek-letter registers, each carrying semantic meaning aligned
-        with its mathematical or physical origin.
-      </P>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-        {[
-          ['\u03A9', 'Omega', 'Accumulator'],
-          ['\u03C6', 'Phi', 'Golden ratio'],
-          ['\u03C8', 'Psi', 'Wave function'],
-          ['\u221E', 'Infinity', 'Loop counter'],
-          ['\u03B4', 'Delta', 'Difference'],
-          ['\u03BB', 'Lambda', 'Code pointer'],
-          ['\u03BC', 'Mu', 'Memory pointer'],
-          ['\u03C0', 'Pi', 'Rotation'],
-          ['\u03C3', 'Sigma', 'Summation'],
-          ['\u03B8', 'Theta', 'Direction'],
-          ['\u03B5', 'Epsilon', 'Precision'],
-          ['\u03BE', 'Xi', 'Randomness'],
-        ].map(([sym, name, desc]) => (
-          <div key={name} className="flex items-center gap-2 p-2 rounded-none bg-current/5">
-            <code className="opacity-80 text-base font-bold w-6 text-center">R{sym}</code>
-            <div>
-              <p className="text-[11px] font-bold opacity-90">{name}</p>
-              <p className="text-label opacity-40">{desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <H3>Protocol Glyphs</H3>
-      <P>
-        Every action in CosmoWarp is marked by a distinctive glyph, creating a visual language
-        that is instantly recognizable across the interface.
-      </P>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-        {[
-          ['\u25CE', 'CosmoMesh', 'DAG network'],
-          ['\u25B7', 'CosmoCode', 'VM execution'],
-          ['\u26BF', 'CosmoHash', 'Cryptography'],
-          ['\u26CF', 'Mining', 'Proof-of-computation'],
-          ['\u2197', 'Send', 'Outgoing transfer'],
-          ['\u2199', 'Receive', 'Incoming transfer'],
-          ['\u2B22', 'Warts', 'Digital artworks'],
-          ['\u2742', 'Mint', 'Art creation'],
-          ['\u21C4', 'Transfer', 'Ownership exchange'],
-          ['\u26A1', 'Energy', 'Security & power'],
-          ['\u2713', 'Confirm', 'Validated action'],
-          ['\u25C8', 'Wallet', 'Account & balance'],
-        ].map(([sym, name, desc]) => (
-          <div key={name} className="flex items-center gap-2 p-2 rounded-none bg-current/5">
-            <span className="text-title-sm opacity-80 w-6 text-center">{sym}</span>
-            <div>
-              <p className="text-[11px] font-bold opacity-90">{name}</p>
-              <p className="text-label opacity-40">{desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <H3>Naming Philosophy</H3>
-      <P>
-        Every component of CosmoWarp follows a cosmic naming convention:
-        Mesh layers are named after cosmic phenomena (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA).
-        Account levels follow a cosmic progression (Particle {'\u2192'} Wave {'\u2192'} Star {'\u2192'} Nebula {'\u2192'} Galaxy {'\u2192'} Cosmos {'\u2192'} Lumina).
-        VM registers use Greek letters ({'\u03A9'}, {'\u03C6'}, {'\u03C8'}, {'\u03B4'}, {'\u03BB'}, {'\u03BC'}, {'\u03C0'}, {'\u03C3'}, {'\u03B8'}, {'\u03B5'}, {'\u03BE'}).
+        Le minage sur Cosmorare fonctionne par <span className="opacity-80">preuve de calcul</span> :
+        au lieu de gaspiller de l'\u00e9nergie \u00e0 r\u00e9soudre des puzzles arbitraires (comme le Bitcoin),
+        les mineurs ex\u00e9cutent du code CosmoASM utile. Chaque calcul valid\u00e9 contribue au fonctionnement
+        du r\u00e9seau et r\u00e9compense le mineur en Warps (\u03A9).
       </P>
 
-      <H3>Value Exchange Philosophy</H3>
+      <H3>Identit\u00e9 symbolique</H3>
       <P>
-        CosmoWarp transcends mere financial transactions. The {'\u03A9'} (Omega) can represent and be
-        exchanged for: digital and physical art, services, spiritual acts, acts of friendship and
-        kindness, professional services, and goods of all kinds. Value is universal.
+        CosmoLingua donne \u00e0 Cosmorare une identit\u00e9 culturelle unique. Les symboles grecs (\u03A9 pour Warp,
+        \u03c6 pour le ratio d'or, \u03c8 pour la fonction d'onde) ne sont pas d\u00e9coratifs : ils ont une
+        signification math\u00e9matique pr\u00e9cise dans le protocole.
       </P>
     </div>
   );
@@ -927,146 +507,165 @@ function CosmoLinguaSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={'\u269B'} title="Tokenomics" subtitle="Supply, Distribution & Resonance Decay" />
-
-      <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
-        <Stat label="TOTAL SUPPLY" value="69M" color="opacity-80" />
-        <Stat label="CREATOR LOCK" value="1M" color="opacity-60" />
-        <Stat label="AIRDROP POOL" value="10M" color="opacity-80" />
-        <Stat label="MINING POOL" value="58M" color="opacity-80" />
-      </div>
+      <SectionTitle icon={'\u269B'} title="Tokenomics" subtitle="Le Warp (\u03A9) : token natif \u00e0 offre fixe" />
+      <P>
+        Le <span className="opacity-80 font-bold">Warp (\u03A9)</span> est le token natif de Cosmorare.
+        Son offre est fix\u00e9e \u00e0 <span className="opacity-80 font-bold">69 millions</span> d'unit\u00e9s,
+        pour toujours. Aucun Warp suppl\u00e9mentaire ne sera jamais cr\u00e9\u00e9.
+      </P>
 
       <H3>Distribution</H3>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+        <Stat label="Offre totale" value="69M \u03A9" />
+        <Stat label="Minage" value="60%" />
+        <Stat label="Fondation" value="20%" />
+        <Stat label="Communaut\u00e9" value="20%" />
+      </div>
+
+      <H3>D\u00e9croissance R\u00e9sonante</H3>
+      <P>
+        Au lieu du "halving" brutal du Bitcoin (r\u00e9compense divis\u00e9e par 2 tous les 4 ans), Cosmorare
+        utilise une <span className="opacity-80 font-bold">D\u00e9croissance R\u00e9sonante</span> bas\u00e9e sur le
+        nombre d'or (\u03c6 = 1.618). La r\u00e9compense diminue de mani\u00e8re douce et harmonieuse, suivant
+        une courbe naturelle inspir\u00e9e des spirales de la nature (coquillages, tournesols, galaxies).
+      </P>
+      <P>
+        Concr\u00e8tement, cela signifie que les premiers mineurs sont r\u00e9compens\u00e9s g\u00e9n\u00e9reusement, mais que
+        la r\u00e9compense ne s'effondre jamais brutalement. La transition est fluide et pr\u00e9visible.
+      </P>
+
+      <H3>Z\u00e9ro frais \u2014 Toujours</H3>
+      <P>
+        Envoyer des Warps, certifier un objet, v\u00e9rifier un certificat : tout est gratuit, toujours.
+        Les frais de transaction sont de <span className="opacity-80 font-bold">0 \u03A9</span>.
+        Le r\u00e9seau se finance par la r\u00e9compense de minage, pas par les frais des utilisateurs.
+      </P>
+
+      <H3>Cas d'usage du Warp (\u03A9)</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['Mining Pool', '58,000,000 CW (84%)', 'Distributed via Resonance Decay to miners', 'bg-current/5'],
-          ['Airdrop Pool', '10,000,000 CW (14.5%)', '1,000 CW per new wallet', 'bg-current/5'],
-          ['Creator Lock', '1,000,000 CW (1.5%)', 'Locked, unlockable by admin at any time', 'bg-current/5'],
-        ].map(([title, amount, desc, bg]) => (
-          <div key={title} className={`p-3 rounded-none ${bg}`}>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-body-sm font-bold opacity-90">{title}</span>
-              <span className="text-body-sm opacity-80">{amount}</span>
+          ['\u2B21', 'Certification', 'Payer pour ancrer un CRCERT dans le r\u00e9seau (co\u00fbt : 0 \u03A9)'],
+          ['\u{1F4B8}', 'Transactions', 'Envoyer et recevoir des Warps entre utilisateurs'],
+          ['\u{1F3AA}', 'Marketplace (Warts)', 'Acheter et vendre des objets rares certifi\u00e9s'],
+          ['\u{1F5E3}', 'Mur', 'Acc\u00e9der au r\u00e9seau social d\u00e9centralis\u00e9 chiffr\u00e9'],
+          ['\u2605', 'Hi\u00e9rarchie', 'Monter dans les niveaux pour d\u00e9bloquer des multiplicateurs'],
+        ].map(([icon, title, desc]) => (
+          <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
+            <span className="text-title-sm shrink-0">{icon}</span>
+            <div>
+              <p className="text-body-sm font-bold opacity-80">{title}</p>
+              <p className="text-label opacity-40">{desc}</p>
             </div>
-            <p className="text-label opacity-40">{desc}</p>
           </div>
         ))}
       </div>
-
-      <H3>Resonance Decay (Replaces Bitcoin Halving)</H3>
-      <P>
-        Instead of Bitcoin's abrupt 50% reward cuts every ~4 years, CosmoWarp uses
-        <span className="opacity-80"> Resonance Decay</span>: a continuous, smooth curve
-        based on the golden ratio ({'\u03C6'} = 1.618...).
-      </P>
-      <div className="p-3 rounded-none bg-current/5 border border-gray-700/20 mb-4">
-        <p className="text-label opacity-40 mb-1">FORMULA</p>
-        <p className="text-base opacity-80 font-bold">reward = 50 {'\u00D7'} {'\u03C6'}^(-totalMined / 5,000,000)</p>
-      </div>
-      <div className="grid grid-cols-2 gap-2 mb-4 text-center text-body-sm sm:grid-cols-4">
-        {[
-          ['0 mined', '50.00 CW'],
-          ['5M mined', '~30.9 CW'],
-          ['20M mined', '~7.3 CW'],
-          ['50M mined', '~0.3 CW'],
-        ].map(([stage, reward]) => (
-          <div key={stage} className="p-2 rounded-none bg-current/5">
-            <p className="opacity-40">{stage}</p>
-            <p className="opacity-80 font-bold">{reward}</p>
-          </div>
-        ))}
-      </div>
-
-      <H3>Advantages over Halving</H3>
-      <ul className="text-body-sm opacity-50 space-y-1 list-disc list-inside mb-4">
-        <li>No "halving shock" creating speculation bubbles</li>
-        <li>Mathematically smooth and predictable</li>
-        <li>Never reaches absolute zero (floor: 0.1 CW)</li>
-        <li>Aligned with the golden ratio ({'\u03C6'}) philosophy</li>
-        <li>Self-adjusting based on actual mining activity</li>
-      </ul>
-
-      <H3>Streak Rewards</H3>
-      <P>
-        On December 31, accounts that have made at least 1 transaction per day for 365 consecutive
-        days receive <span className="opacity-80 font-bold">10,000 CW</span> as a loyalty reward.
-        This incentivizes consistent, long-term participation over speculation.
-      </P>
     </div>
   );
 }
 
-// ─── Hierarchy ──────────────────────────────────────────
+// ─── Hi\u00e9rarchie ──────────────────────────────────────────
 
 function HierarchySection() {
   return (
     <div>
-      <SectionTitle icon={'\u2605'} title="Account Hierarchy" subtitle="7 Levels of Cosmic Progression" />
+      <SectionTitle icon={'\u2605'} title="Hi\u00e9rarchie" subtitle="7 niveaux avec multiplicateurs de r\u00e9compenses" />
       <P>
-        Every CosmoWarp account progresses through 7 levels based on transaction activity
-        and consistency. Higher levels unlock greater mining reward multipliers and level-up bonuses.
+        Cosmorare r\u00e9compense l'engagement avec un syst\u00e8me de <span className="opacity-80 font-bold">7 niveaux</span>.
+        Plus vous utilisez la plateforme (certifications, \u00e9changes, participation au minage), plus vous
+        montez dans la hi\u00e9rarchie, et plus vos r\u00e9compenses sont amplifi\u00e9es.
       </P>
 
-      <div className="space-y-2">
+      <H3>Les 7 niveaux</H3>
+      <div className="space-y-2 mb-4">
         {[
-          { sym: '\u2022', name: 'Particle', title: 'Quantum Seed', mult: '1.0x', min: '0 TX', bonus: '0 CW', color: 'opacity-50', desc: 'Every journey begins with a single particle.' },
-          { sym: '\u223F', name: 'Wave', title: 'Harmonic Traveler', mult: '1.2x', min: '10 TX', bonus: '100 CW', color: 'opacity-80', desc: 'Your transactions ripple through the mesh.' },
-          { sym: '\u2605', name: 'Star', title: 'Stellar Navigator', mult: '1.5x', min: '50 TX', bonus: '250 CW', color: 'opacity-80', desc: 'A guiding light in the CosmoMesh.' },
-          { sym: '\u2604', name: 'Nebula', title: 'Nebula Architect', mult: '2.0x', min: '200 TX', bonus: '500 CW', color: 'opacity-80', desc: 'You shape the fabric of the mesh.' },
-          { sym: '\u269B', name: 'Galaxy', title: 'Galactic Guardian', mult: '2.5x', min: '500 TX', bonus: '1,000 CW', color: 'opacity-80', desc: 'A gravitational center of the network.' },
-          { sym: '\u2B21', name: 'Cosmos', title: 'Cosmic Sovereign', mult: '3.5x', min: '2,000 TX', bonus: '2,500 CW', color: 'opacity-80', desc: 'Sovereign of the cosmic order.' },
-          { sym: '\u2600', name: 'Lumina', title: 'Lumina Transcendent', mult: '5.0x', min: '10,000 TX', bonus: '5,000 CW', color: 'opacity-80', desc: 'Transcended beyond the mesh. You ARE the light.' },
-        ].map(level => (
-          <div key={level.name} className="p-3 rounded-none bg-current/5 border border-current/5">
-            <div className="flex items-center gap-3">
-              <span className={`text-title-lg ${level.color}`}>{level.sym}</span>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-base font-bold ${level.color}`}>{level.name}</span>
-                  <span className="text-label opacity-40">{level.title}</span>
-                </div>
-                <p className="text-label opacity-40 mt-0.5">{level.desc}</p>
-              </div>
-              <div className="text-right shrink-0">
-                <p className="text-body-sm opacity-80 font-bold">{level.mult}</p>
-                <p className="text-label opacity-40">{level.min}</p>
-                <p className="text-label opacity-80">+{level.bonus}</p>
-              </div>
+          ['Particle', '\u00d71.0', 'Niveau de d\u00e9part. Acc\u00e8s complet \u00e0 toutes les fonctionnalit\u00e9s de base.'],
+          ['Wave', '\u00d71.2', 'Premi\u00e8res certifications. Bonus de 20% sur les r\u00e9compenses de minage.'],
+          ['Star', '\u00d71.5', 'Utilisateur actif. Acc\u00e8s aux fonctionnalit\u00e9s avanc\u00e9es du Mur.'],
+          ['Nebula', '\u00d72.0', 'Certifieur reconnu. Double r\u00e9compense sur les certifications.'],
+          ['Galaxy', '\u00d73.0', 'Expert. Droit de vote sur les \u00e9volutions du protocole.'],
+          ['Cosmos', '\u00d75.0', '\u00c9lite. Acc\u00e8s au programme b\u00eata et aux fonctionnalit\u00e9s exp\u00e9rimentales.'],
+          ['Lumina', '\u00d77.0', 'Gardien du r\u00e9seau. Multiplicateur maximal et privil\u00e8ges de gouvernance.'],
+        ].map(([name, mult, desc]) => (
+          <div key={name} className="flex gap-3 p-3 rounded-none bg-current/5">
+            <div className="shrink-0 w-16 text-center">
+              <p className="text-body-sm font-bold opacity-80">{name}</p>
+              <p className="text-label opacity-60">{mult}</p>
             </div>
+            <p className="text-body-sm opacity-50">{desc}</p>
           </div>
         ))}
       </div>
+
+      <H3>Comment monter ?</H3>
+      <P>
+        La progression est bas\u00e9e sur l'activit\u00e9 r\u00e9elle : nombre de certifications cr\u00e9\u00e9es, transactions
+        effectu\u00e9es, participation au minage, contributions \u00e0 la communaut\u00e9. Il n'est pas possible d'acheter
+        un niveau sup\u00e9rieur. Seule l'utilisation r\u00e9elle de la plateforme compte.
+      </P>
+
+      <H3>R\u00e9compenses de s\u00e9rie (Streak)</H3>
+      <P>
+        Utilisez Cosmorare plusieurs jours cons\u00e9cutifs et vos r\u00e9compenses augmentent. Apr\u00e8s 7 jours
+        cons\u00e9cutifs, vous recevez un bonus sp\u00e9cial. Ce syst\u00e8me encourage l'utilisation r\u00e9guli\u00e8re
+        sans p\u00e9naliser les absences.
+      </P>
     </div>
   );
 }
 
-// ─── Security ───────────────────────────────────────────
+// ─── S\u00e9curit\u00e9 ────────────────────────────────────────────
 
 function SecuritySection() {
   return (
     <div>
-      <SectionTitle icon={'\u26A1'} title="Security" subtitle="Multi-Layer Protocol Hardening" />
+      <SectionTitle icon={'\u26A1'} title="S\u00e9curit\u00e9" subtitle="Protection multicouche du protocole" />
       <P>
-        CosmoWarp implements 7 layers of security to protect against hacking, fraud, and abuse.
-        Every transaction passes through multiple security checks before being accepted.
+        La s\u00e9curit\u00e9 est au c\u0153ur de Cosmorare. Certifier des objets rares exige un niveau de confiance
+        \u00e9lev\u00e9. Voici comment le protocole prot\u00e8ge vos donn\u00e9es et vos certificats.
       </P>
 
-      <div className="space-y-3">
+      <H3>Chiffrement de bout en bout</H3>
+      <P>
+        Toutes les communications sur le <span className="opacity-80 font-bold">Mur</span> (r\u00e9seau social
+        d\u00e9centralis\u00e9) sont chiffr\u00e9es avec AES-GCM. Vos cl\u00e9s priv\u00e9es ne quittent jamais votre appareil.
+        M\u00eame les administrateurs de Cosmorare ne peuvent pas lire vos messages.
+      </P>
+
+      <H3>Infalsifiabilit\u00e9 des certificats</H3>
+      <P>
+        Un certificat CRCERT est math\u00e9matiquement infalsifiable gr\u00e2ce \u00e0 la combinaison de SHA-256
+        (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat.
+        V\u00e9rifier un certificat est instantan\u00e9 et ne n\u00e9cessite aucune autorit\u00e9 centrale.
+      </P>
+
+      <H3>Mode hors ligne (PWA)</H3>
+      <P>
+        Cosmorare fonctionne comme une <span className="opacity-80 font-bold">Progressive Web App (PWA)</span> avec
+        un Service Worker. Vous pouvez consulter vos certificats, v\u00e9rifier des objets et pr\u00e9parer des
+        transactions m\u00eame <span className="opacity-80">sans connexion internet</span>. Les transactions
+        sont synchronis\u00e9es automatiquement d\u00e8s que la connexion revient.
+      </P>
+
+      <H3>Paiement int\u00e9gr\u00e9</H3>
+      <P>
+        La passerelle de paiement fiat est int\u00e9gr\u00e9e directement dans l'application. Vous pouvez
+        acheter des Warps (\u03A9) par carte bancaire, PayPal, SEPA, Apple Pay ou Google Pay.
+        Aucun \u00e9change tiers n\u00e9cessaire.
+      </P>
+
+      <H3>Protection des cl\u00e9s</H3>
+      <div className="space-y-2 mb-4">
         {[
-          ['Ed25519 Signatures', 'Every transaction is cryptographically signed. Forgery is computationally infeasible (128-bit security level).'],
-          ['Rate Limiting', '10 TX/minute, 100 TX/hour, 1,000 TX/day per address. Automatic 5-minute blocks on violations. Permanent suspension after 5 violations.'],
-          ['Nonce Tracking', 'Every transaction includes a unique nonce. Replayed transactions are detected and rejected within 1-hour windows.'],
-          ['Progressive Amount Limits', 'New accounts: max 100 CW/TX. After 24h: 1,000. After 1 week: 10,000. After 30 days: 100,000.'],
-          ['Pattern Detection', 'AI-driven detection of rapid-fire attacks, round-trip wash trading, dust attacks, and sybil-suspect behavior.'],
-          ['State Integrity', 'SHA-256 checksums on all critical state data. Any tampering is immediately detected.'],
-          ['Encrypted Admin Registry', 'AES-GCM encrypted audit trail. Only accessible by admin with proper authentication.'],
-        ].map(([title, desc], i) => (
-          <div key={title} className="p-3 rounded-none bg-current/5">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-body-sm opacity-80 font-bold">Layer {i + 1}</span>
-              <span className="text-body-sm font-bold opacity-90">{title}</span>
+          ['Cl\u00e9 priv\u00e9e', 'Jamais transmise. Stock\u00e9e localement, chiffr\u00e9e avec votre mot de passe.'],
+          ['Cl\u00e9 publique', 'Votre identit\u00e9 sur le r\u00e9seau. Partageable librement.'],
+          ['Seed phrase', '12 mots pour r\u00e9cup\u00e9rer votre compte. \u00c0 conserver hors ligne.'],
+          ['Biom\u00e9trie', 'D\u00e9verrouillage par empreinte digitale ou reconnaissance faciale (optionnel).'],
+        ].map(([title, desc]) => (
+          <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
+            <div>
+              <p className="text-body-sm font-bold opacity-80">{title}</p>
+              <p className="text-label opacity-40">{desc}</p>
             </div>
-            <p className="text-label opacity-40 leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
@@ -1074,38 +673,71 @@ function SecuritySection() {
   );
 }
 
-// ─── Roadmap ────────────────────────────────────────────
+// ─── Feuille de route ───────────────────────────────────
 
 function RoadmapSection() {
   return (
     <div>
-      <SectionTitle icon={'\u2604'} title="Roadmap" subtitle="The path ahead" />
+      <SectionTitle icon={'\u2604'} title="Feuille de route" subtitle="\u00c9volution pr\u00e9vue du protocole Cosmorare" />
+      <P>
+        Cosmorare est un projet vivant qui \u00e9volue continuellement. Voici les grandes \u00e9tapes de
+        d\u00e9veloppement pr\u00e9vues.
+      </P>
 
-      <div className="space-y-4">
+      <div className="space-y-4 mb-4">
         {[
-          { phase: 'Phase 1', title: 'Genesis', status: 'Completed', color: 'opacity-80', items: ['CosmoVM + CosmoASM instruction set', 'Ed25519, SHA-256, AES-GCM cryptography', 'CosmoMesh DAG with 7 fractal layers', 'Resonance Consensus protocol', 'WebRTC P2P mesh networking', 'Web application (React + Vite)'] },
-          { phase: 'Phase 2', title: 'Expansion', status: 'Completed', color: 'opacity-80', items: ['69M supply with Resonance Decay', 'Account hierarchy (7 levels)', 'Admin registry (AES-GCM encrypted)', 'Security hardening (7 layers)', 'Chrome Extension', 'Public SDK for developers'] },
-          { phase: 'Phase 3', title: 'CosmoChain', status: 'Completed', color: 'opacity-80', items: ['CosmoChain blockchain with 7 parallel shards', 'CosmoCode SVG compression engine (real measured ratios)', 'Zero gas fee model with rate limiting', 'Full on-chain SVG storage for NFTs', 'Beacon Block cross-shard finality', 'Dual-layer architecture (Mesh + Chain)'] },
-          { phase: 'Phase 4', title: 'Ecosystem', status: 'In Progress', color: 'opacity-60', items: ['White Paper v2 & landing page', 'API documentation', 'SDK marketplace', 'Community governance', 'Mobile-first responsive design', 'Extension ecosystem'] },
-          { phase: 'Phase 5', title: 'Horizon', status: 'Planned', color: 'opacity-40', items: ['Mobile apps (iOS + Android)', 'Hardware wallet support', 'Cross-chain bridges (Ethereum, Solana)', 'Governance DAO', 'Art & services marketplace', 'Global P2P relay network'] },
-        ].map(phase => (
-          <div key={phase.phase} className="p-4 rounded-none bg-current/5 border border-current/5">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-body-sm font-bold opacity-80">{phase.phase}</span>
-              <span className="text-base font-bold opacity-90">{phase.title}</span>
-              <span className={`text-label ml-auto ${phase.color}`}>{phase.status}</span>
+          ['Phase 1 \u2014 Gen\u00e8se', 'T1 2026', [
+            'Lancement du r\u00e9seau CosmoMesh avec les 7 shards',
+            'Premiers certificats CRCERT pour cartes Pok\u00e9mon et sneakers',
+            'Application PWA avec mode hors ligne',
+            'Passerelle de paiement fiat (carte, PayPal)',
+          ]],
+          ['Phase 2 \u2014 Expansion', 'T2 2026', [
+            'Ouverture de la marketplace Warts (objets rares certifi\u00e9s)',
+            'Lancement du Mur (r\u00e9seau social d\u00e9centralis\u00e9 chiffr\u00e9)',
+            'Support des vinyles, montres et art num\u00e9rique',
+            'Int\u00e9gration SEPA, Apple Pay et Google Pay',
+          ]],
+          ['Phase 3 \u2014 Maturit\u00e9', 'T3-T4 2026', [
+            'SDK d\u00e9veloppeur ouvert (CosmoSDK)',
+            'Gouvernance d\u00e9centralis\u00e9e (votes par les niveaux Galaxy+)',
+            'Partenariats avec des maisons de vente aux ench\u00e8res',
+            'Application mobile native (iOS et Android)',
+          ]],
+          ['Phase 4 \u2014 Cosmos', '2027+', [
+            'Interop\u00e9rabilit\u00e9 avec d\u2019autres protocoles de certification',
+            'Certification d\u2019objets physiques via NFC et QR codes',
+            'Intelligence artificielle pour la d\u00e9tection de contrefa\u00e7ons',
+            '\u00c9cosyst\u00e8me d\u2019applications tierces sur CosmoASM',
+          ]],
+        ].map(([phase, date, items]) => (
+          <div key={phase as string} className="p-4 rounded-none bg-current/5 border border-current/5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-base font-bold opacity-80">{phase as string}</span>
+              <span className="text-label opacity-40">{date as string}</span>
             </div>
-            <ul className="text-[11px] opacity-50 space-y-1">
-              {phase.items.map(item => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className={phase.status === 'Completed' ? 'opacity-80' : 'opacity-30'}>{phase.status === 'Completed' ? '\u2713' : '\u25CB'}</span>
-                  {item}
+            <ul className="space-y-1">
+              {(items as string[]).map(item => (
+                <li key={item} className="text-body-sm opacity-50 flex gap-2">
+                  <span className="opacity-40 shrink-0">{'\u2192'}</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
+
+      <H3>Rejoignez l'aventure</H3>
+      <P>
+        Cosmorare est plus qu'un protocole : c'est une communaut\u00e9 de passionn\u00e9s d'objets rares qui
+        croient en la transparence et l'authenticit\u00e9. Que vous soyez collectionneur de cartes Pok\u00e9mon,
+        amateur de sneakers, passionn\u00e9 de vinyles ou fan d'art num\u00e9rique, Cosmorare est fait pour vous.
+      </P>
+      <P>
+        Chaque objet rare m\u00e9rite un certificat infalsifiable. Chaque collectionneur m\u00e9rite la tranquillit\u00e9
+        d'esprit. C'est la promesse de Cosmorare.
+      </P>
     </div>
   );
 }

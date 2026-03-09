@@ -41,9 +41,9 @@ export default function FiatGatewayView() {
       <div className="flex items-center justify-center h-[calc(100dvh-200px)]">
         <div className="text-center px-6">
           <p className="text-5xl mb-4">{'\u20AC'}</p>
-          <h2 className="text-title-sm font-bold mb-1 font-title">Fiat Gateway</h2>
-          <p className="opacity-50 text-base">Unlock your wallet to access the fiat gateway</p>
-          <p className="opacity-30 text-body-sm mt-1">Buy and sell Warps with EUR, USD, GBP</p>
+          <h2 className="text-title-sm font-bold mb-1 font-title">Paiement</h2>
+          <p className="opacity-50 text-base">D\u00e9verrouillez votre wallet pour acc\u00e9der au paiement</p>
+          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Warps en EUR, USD, GBP</p>
         </div>
       </div>
     );
@@ -132,9 +132,9 @@ export default function FiatGatewayView() {
     <div className="space-y-4 max-w-lg mx-auto pb-8">
       {/* Header */}
       <div className="glass-panel p-5 text-center">
-        <h2 className="text-title-sm font-bold font-title">{'\u20AC'} Fiat Gateway</h2>
-        <p className="text-body-sm opacity-40 mt-1">Buy and sell Warps with fiat currency</p>
-        <p className="text-label opacity-30 mt-1">MOCK — Interface only, no real payment processing</p>
+        <h2 className="text-title-sm font-bold font-title">{'\u20AC'} Paiement</h2>
+        <p className="text-body-sm opacity-40 mt-1">Achetez et vendez des Warps en monnaie fiat (EUR, USD, GBP...)</p>
+        <p className="text-label opacity-30 mt-1">SIMULATION — Interface compl\u00e8te, paiement r\u00e9el via Stripe/PayPal en production</p>
         <div className="flex justify-center gap-3 mt-3">
           <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u03A9'}</span>
           <span className="text-base opacity-40">|</span>

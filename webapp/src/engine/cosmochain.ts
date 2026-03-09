@@ -1,7 +1,7 @@
 /**
  * CosmoChain — Blockchain with Parallel Shard Processing
  *
- * Built on CosmoWarp's CosmoCode protocol with REAL infrastructure:
+ * Built on Cosmorare's CosmoCode protocol with REAL infrastructure:
  *
  * ─── What Is REAL ──────────────────────────────────────────
  *
@@ -1104,11 +1104,11 @@ export class CosmoChain {
   }
 
   save(): void {
-    storage.setItem('cosmowarp_chain', this.serialize());
+    storage.setItem('cosmorare_chain', this.serialize());
   }
 
   static load(): CosmoChain | null {
-    const raw = storage.getItem('cosmowarp_chain');
+    const raw = storage.getItem('cosmorare_chain');
     if (!raw) return null;
     try {
       return CosmoChain.deserialize(raw);

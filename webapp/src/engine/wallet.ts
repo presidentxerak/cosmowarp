@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Wallet Engine — Integrated with CosmoMesh + Tokenomics + Hierarchy + Security
+ * Cosmorare Wallet Engine — Integrated with CosmoMesh + Tokenomics + Hierarchy + Security
  *
  * Manages wallet state, transactions via the CosmoMesh DAG,
  * consensus validation, tokenomics (Resonance Decay), hierarchy levels,
@@ -77,12 +77,12 @@ export interface WalletExport {
 
 // ─── Storage Keys ────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmowarp_wallet';
-const TX_STORAGE_KEY = 'cosmowarp_global_tx';
-const MESH_STORAGE_KEY = 'cosmowarp_mesh';
-const CONSENSUS_STORAGE_KEY = 'cosmowarp_consensus';
-const ADMIN_ADDRESS_KEY = 'cosmowarp_admin_address';
-const DAILY_TOTAL_KEY = 'cosmowarp_daily_totals';
+const STORAGE_KEY = 'cosmorare_wallet';
+const TX_STORAGE_KEY = 'cosmorare_global_tx';
+const MESH_STORAGE_KEY = 'cosmorare_mesh';
+const CONSENSUS_STORAGE_KEY = 'cosmorare_consensus';
+const ADMIN_ADDRESS_KEY = 'cosmorare_admin_address';
+const DAILY_TOTAL_KEY = 'cosmorare_daily_totals';
 
 // ─── Singletons ─────────────────────────────────────────
 
@@ -431,7 +431,7 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Cosmorare! Airdrop: ${airdropAmount} \u03A9`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,
@@ -622,7 +622,7 @@ export async function loginCosmoID(
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to CosmoWarp! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Cosmorare! Airdrop: ${airdropAmount} \u03A9`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,

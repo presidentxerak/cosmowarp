@@ -8,7 +8,7 @@ interface ConsoleLine {
 }
 
 const WELCOME = [
-  { text: '\u2B21 CosmoWarp Console v2.0', type: 'info' as const },
+  { text: '\u2B21 Cosmorare Console v2.0', type: 'info' as const },
   { text: 'SHA-256 crypto console. Type text to hash or /help for commands.', type: 'info' as const },
   { text: '', type: 'info' as const },
 ];

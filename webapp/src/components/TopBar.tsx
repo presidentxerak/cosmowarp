@@ -97,7 +97,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
 
   const handleSelect = (result: SearchResult) => {
     if (result.type === 'user' && result.address) {
-      sessionStorage.setItem('cosmowarp_view_user', result.address);
+      sessionStorage.setItem('cosmorare_view_user', result.address);
       onNavigate('user-profile');
     } else if (result.type === 'wart') {
       onNavigate('gallery');
@@ -139,7 +139,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
-              placeholder="Search users, warts..."
+              placeholder="Rechercher objets, utilisateurs..."
               className="w-full bg-transparent text-base placeholder-current/30 outline-none"
               style={{ opacity: searchQuery ? 1 : 0.6 }}
             />

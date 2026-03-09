@@ -118,9 +118,10 @@ export default function WalletView() {
         <div className="flex justify-center mb-4">
           <Logo className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
-        <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-title">CosmoWarp</h2>
+        <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-title">{'\u30B3\u30B9\u30E2\u30E9\u30EC'}</h2>
+        <p className="text-body-sm opacity-60 mb-1">Cosmorare</p>
         <p className="text-body-sm opacity-40 mb-5">
-          Post-blockchain transactional fabric
+          Protocole de certification pour objets rares
         </p>
 
         {/* ─── Sign Up / Sign In tabs ──────────────────── */}
@@ -352,7 +353,7 @@ export default function WalletView() {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
         <div className="text-4xl mb-4">{'\u2B21'}</div>
-        <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">Welcome to CosmoWarp!</h2>
+        <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">Bienvenue sur Cosmorare !</h2>
         <p className="text-base opacity-70 mb-2">Your wallet is ready.</p>
 
         <div className="p-4 bg-current/5 border border-current/10 mb-5 text-left space-y-3">
@@ -384,7 +385,7 @@ export default function WalletView() {
         </div>
 
         <button className="warp-button w-full py-3 text-base" onClick={() => setShowWelcome(false)}>
-          {'\u2B21'} Enter CosmoWarp
+          {'\u2B21'} Entrer dans Cosmorare
         </button>
 
         <p className="text-label opacity-30 mt-3">Ed25519 + PBKDF2 (600K) + AES-256-GCM</p>
@@ -430,7 +431,7 @@ export default function WalletView() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `cosmowarp-wallet-${shortAddress(wallet.address)}.json`; a.click();
+    a.href = url; a.download = `cosmorare-wallet-${shortAddress(wallet.address)}.json`; a.click();
     URL.revokeObjectURL(url);
   };
 

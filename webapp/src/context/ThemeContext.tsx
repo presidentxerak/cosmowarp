@@ -12,12 +12,12 @@ const ThemeContext = createContext<ThemeContextType>({ theme: 'dark', toggleThem
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    return (storage.getItem('cosmowarp_theme') as Theme) || 'dark';
+    return (storage.getItem('cosmorare_theme') as Theme) || 'dark';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    storage.setItem('cosmowarp_theme', theme);
+    storage.setItem('cosmorare_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');

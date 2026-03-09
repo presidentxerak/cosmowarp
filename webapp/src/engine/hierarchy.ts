@@ -1,7 +1,7 @@
 import { storage } from './storage';
 
 /**
- * CosmoWarp Account Hierarchy — Levels, Titles & Rewards
+ * Cosmorare Account Hierarchy — Levels, Titles & Rewards
  *
  * 7 levels aligned with the 7 fractal layers.
  * Each level has a cosmic title, reward multiplier, and privileges.
@@ -267,11 +267,11 @@ export class HierarchyEngine {
   }
 
   save(): void {
-    storage.setItem('cosmowarp_hierarchy', this.serialize());
+    storage.setItem('cosmorare_hierarchy', this.serialize());
   }
 
   static load(): HierarchyEngine | null {
-    const raw = storage.getItem('cosmowarp_hierarchy');
+    const raw = storage.getItem('cosmorare_hierarchy');
     if (!raw) return null;
     try {
       return HierarchyEngine.deserialize(raw);

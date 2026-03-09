@@ -17,7 +17,7 @@
  *
  * Comparison with Ethereum:
  * ┌────────────────────────────┬──────────────┬──────────────┐
- * │ Feature                    │ Ethereum     │ CosmoWarp    │
+ * │ Feature                    │ Ethereum     │ Cosmorare    │
  * ├────────────────────────────┼──────────────┼──────────────┤
  * │ State Proofs               │ MPT (slow)   │ MPT (fast)   │
  * │ Block Verification         │ On sync      │ Every read   │

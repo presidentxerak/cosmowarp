@@ -21,7 +21,7 @@ export default function AdminView() {
       <div className="glass-panel p-6 text-center">
         <div className="text-3xl mb-3">{'\u26D4'}</div>
         <h2 className="text-title-sm font-bold opacity-70 mb-2 font-title">Access Denied</h2>
-        <p className="text-base opacity-50">This section is restricted to the CosmoWarp administrator.</p>
+        <p className="text-base opacity-50">This section is restricted to the Cosmorare administrator.</p>
         <p className="text-body-sm opacity-40 mt-2">The admin registry is encrypted and only accessible by the creator address.</p>
       </div>
     );

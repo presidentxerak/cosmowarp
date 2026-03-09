@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Miner — Real SHA-256 Proof-of-Work
+ * Cosmorare Miner — Real SHA-256 Proof-of-Work
  *
  * Implements genuine PoW mining:
  * - SHA-256 hashing with nonce search
@@ -94,8 +94,8 @@ export function countLeadingZeroBits(hash: string): number {
 
 // ─── Difficulty Adjustment ────────────────────────────────
 
-const DIFFICULTY_STORAGE_KEY = 'cosmowarp_mining_difficulty';
-const MINING_HISTORY_KEY = 'cosmowarp_mining_history';
+const DIFFICULTY_STORAGE_KEY = 'cosmorare_mining_difficulty';
+const MINING_HISTORY_KEY = 'cosmorare_mining_history';
 const TARGET_BLOCK_TIME_MS = 15_000;  // Target: 15 seconds per block
 const ADJUSTMENT_INTERVAL = 10;       // Adjust every 10 blocks
 const MIN_DIFFICULTY = 8;             // Minimum 8 bits (2 hex zeros)

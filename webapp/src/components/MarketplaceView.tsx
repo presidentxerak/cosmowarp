@@ -1011,7 +1011,7 @@ export default function MarketplaceView() {
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2B22'} Warts Marketplace</h2>
             <p className="text-body-sm opacity-40">
-              Unique digital artworks stored on the CosmoWarp protocol. Buy, sell, and collect Warts.
+              Unique digital artworks stored on the Cosmorare protocol. Buy, sell, and collect Warts.
             </p>
           </div>
 
@@ -1089,7 +1089,7 @@ export default function MarketplaceView() {
         <div className="glass-panel p-5">
           <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title text-center">{'\u2742'} Create a Wart</h2>
           <p className="text-body-sm opacity-40 mb-4 text-center">
-            Mint a unique digital artwork on the CosmoWarp protocol.
+            Mint a unique digital artwork on the Cosmorare protocol.
             You'll earn royalties on every resale.
           </p>
 

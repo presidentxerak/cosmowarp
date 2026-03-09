@@ -375,9 +375,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_mint',
       memo: `Minted Wart: ${title}`,
     };
-    const txs = JSON.parse(storage.getItem('cosmowarp_global_tx') || '[]');
+    const txs = JSON.parse(storage.getItem('cosmorare_global_tx') || '[]');
     txs.unshift(tx);
-    storage.setItem('cosmowarp_global_tx', JSON.stringify(txs.slice(0, 200)));
+    storage.setItem('cosmorare_global_tx', JSON.stringify(txs.slice(0, 200)));
     wallet.transactions.unshift(tx);
 
     setWallet({ ...wallet });

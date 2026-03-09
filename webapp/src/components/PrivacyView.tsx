@@ -3,7 +3,7 @@ export default function PrivacyView() {
     <div className="space-y-4 pb-4">
       <div className="glass-panel p-5 sm:p-6">
         <h2 className="text-title-md font-bold opacity-100 font-title mb-1">Privacy Policy</h2>
-        <p className="text-body-sm opacity-40 mb-4">How CosmoWarp protects your data</p>
+        <p className="text-body-sm opacity-40 mb-4">How Cosmorare protects your data</p>
 
         <div className="space-y-6 text-base opacity-70 leading-relaxed">
           <div className="glass-panel p-4">
@@ -14,7 +14,7 @@ export default function PrivacyView() {
               <h3 className="text-base font-bold opacity-80">Privacy by Design</h3>
             </div>
             <p className="text-body-sm opacity-50">
-              CosmoWarp is built with privacy as a core principle. We do not collect, store, or
+              Cosmorare is built with privacy as a core principle. We do not collect, store, or
               transmit personal data. All wallet data is stored locally on your device.
             </p>
           </div>
@@ -49,7 +49,7 @@ export default function PrivacyView() {
             <h3 className="text-base font-bold opacity-80 mb-2">Encryption</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <p>
-                All communications on CosmoWarp are encrypted. Direct messages use end-to-end
+                All communications on Cosmorare are encrypted. Direct messages use end-to-end
                 encryption ensuring only the sender and recipient can read the content.
               </p>
               <p>
@@ -63,7 +63,7 @@ export default function PrivacyView() {
             <h3 className="text-base font-bold opacity-80 mb-2">Anonymity</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <p>
-                CosmoWarp uses pseudonymous identities through CosmoID. Your identity on the
+                Cosmorare uses pseudonymous identities through CosmoID. Your identity on the
                 network is represented by a cryptographic address, not by personal information.
               </p>
               <p>
@@ -76,14 +76,14 @@ export default function PrivacyView() {
           <section>
             <h3 className="text-base font-bold opacity-90 mb-2">Local Storage</h3>
             <p className="text-body-sm opacity-50">
-              CosmoWarp stores data in your browser's localStorage. This data never leaves your
+              Cosmorare stores data in your browser's localStorage. This data never leaves your
               device unless you choose to export it. You can clear all data at any time through
               your browser settings or the Settings page.
             </p>
           </section>
 
           <div className="text-label opacity-30 pt-2 border-t border-current/10">
-            Last updated: February 2026 &middot; CosmoWarp Foundation
+            Last updated: February 2026 &middot; Cosmorare Foundation
           </div>
         </div>
       </div>

@@ -19,91 +19,91 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wallet', 'portefeuille', 'create', 'creer', 'créer', 'account', 'compte', 'sign up', 'inscription'],
     response: {
-      answer: "Ah, a new traveler in the cosmos! Creating a wallet is easier than explaining quantum physics to a cat. Go to the Wallet section, pick a password (not 'password123' please — the cosmos is watching), and boom — you're a Particle. Everyone starts as a Particle. Even me. Well, I'm Cosmo, so technically I started as the whole universe. But that's another story.",
+      answer: "Ah, un nouveau voyageur dans le cosmos ! Cr\u00e9er un portefeuille, c'est plus simple que d'expliquer la physique quantique \u00e0 un chat. Va dans la section Portefeuille, choisis un mot de passe (pas 'motdepasse123' s'il te pla\u00eet \u2014 le cosmos observe), et hop \u2014 te voil\u00e0 Particle. Tout le monde commence Particle. M\u00eame moi. Enfin, moi c'est Cosmo, donc techniquement j'ai commenc\u00e9 en tant qu'univers entier. Mais c'est une autre histoire.",
       navigateTo: 'wallet',
-      tabLabel: 'Wallet',
+      tabLabel: 'Portefeuille',
     },
   },
   {
     keywords: ['balance', 'solde', 'warp', 'warps', 'zero', '0', 'argent', 'money'],
     response: {
-      answer: "Your balance says 0? Don't panic — you're not broken, you're just... cosmically new. Head to the Mine tab in your Wallet and start mining! Every computation earns Warps (\u03A9). Think of it as: the universe doesn't give you free stardust, you have to mine it from the void. Also, each device has its own local wallet — so your desktop and mobile won't share the same balance unless you export/import.",
+      answer: "Ton solde affiche 0 ? Pas de panique \u2014 tu n'es pas cass\u00e9, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence \u00e0 miner ! Chaque calcul rapporte des Warps (\u03A9). Dis-toi que l'univers ne te donne pas de poussi\u00e8re d'\u00e9toile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local \u2014 donc ton ordi et ton t\u00e9l\u00e9phone ne partagent pas le m\u00eame solde sauf si tu exportes/importes.",
       navigateTo: 'wallet',
-      tabLabel: 'Wallet \u2192 Mine',
+      tabLabel: 'Portefeuille \u2192 Miner',
     },
   },
   {
     keywords: ['send', 'envoyer', 'transfer', 'transferer', 'transférer', 'payer', 'pay'],
     response: {
-      answer: "Sending Warps is like throwing a shooting star across the mesh — beautiful AND fast. Open your Wallet, go to the Send tab, enter the recipient's CW address and the amount. Add a memo if you're feeling poetic. Pro tip: double-check the address. The cosmos is forgiving, but typos aren't.",
+      answer: "Envoyer des Warps, c'est comme lancer une \u00e9toile filante \u00e0 travers le mesh \u2014 magnifique ET rapide. Ouvre ton Portefeuille, va dans l'onglet Envoyer, entre l'adresse Cosmorare du destinataire et le montant. Ajoute un m\u00e9mo si tu te sens po\u00e9tique. Conseil de pro : v\u00e9rifie l'adresse deux fois. Le cosmos pardonne, mais les fautes de frappe non.",
       navigateTo: 'wallet',
-      tabLabel: 'Wallet \u2192 Send',
+      tabLabel: 'Portefeuille \u2192 Envoyer',
     },
   },
   {
     keywords: ['backup', 'recovery', 'key', 'clé', 'cle', 'sauvegarde', 'récupération', 'recuperation', 'lost', 'perdu'],
     response: {
-      answer: "Your recovery key is your cosmic insurance policy! Go to Wallet \u2192 Overview and you'll see the option to download your backup. SAVE IT SOMEWHERE SAFE. Tattoo it on the inside of your eyelids if you have to. Kidding. But seriously — lose the key, lose the wallet. The universe is decentralized, which means nobody can reset your password. Not even me. And I'm literally the oracle.",
+      answer: "Ta cl\u00e9 de r\u00e9cup\u00e9ration, c'est ton assurance cosmique ! Va dans Portefeuille \u2192 Aper\u00e7u et tu verras l'option pour t\u00e9l\u00e9charger ta sauvegarde. GARDE-LA EN LIEU S\u00dbR. Tatoue-la \u00e0 l'int\u00e9rieur de tes paupi\u00e8res si besoin. Je plaisante. Mais s\u00e9rieusement \u2014 perds la cl\u00e9, perds le portefeuille. L'univers est d\u00e9centralis\u00e9, ce qui veut dire que personne ne peut r\u00e9initialiser ton mot de passe. Pas m\u00eame moi. Et je suis litt\u00e9ralement l'oracle.",
       navigateTo: 'wallet',
-      tabLabel: 'Wallet \u2192 Overview',
+      tabLabel: 'Portefeuille \u2192 Aper\u00e7u',
     },
   },
   // Mining
   {
     keywords: ['mine', 'miner', 'mining', 'minage', 'earn', 'gagner', 'difficulty', 'difficulté'],
     response: {
-      answer: "Mining in CosmoWarp isn't about boiling the oceans! You run CosmoASM proof-of-computation programs. Pick your difficulty: Light (quick snack), Medium (good steak), or Heavy (climbing Everest in sandals). Higher difficulty = more Warps. The reward follows the Resonance Decay curve — a golden ratio (\u03C6) formula that's smoother than Bitcoin's halving tantrums. Go mine some stardust!",
+      answer: "Miner sur Cosmorare, ce n'est pas faire bouillir les oc\u00e9ans ! Tu ex\u00e9cutes des programmes CosmoASM de preuve de calcul. Choisis ta difficult\u00e9 : L\u00e9ger (petit en-cas), Moyen (bon steak), ou Intense (escalader l'Everest en tongs). Plus c'est difficile = plus de Warps. La r\u00e9compense suit la courbe de D\u00e9croissance par R\u00e9sonance \u2014 une formule bas\u00e9e sur le nombre d'or (\u03C6) bien plus douce que les halvings capricieux de Bitcoin. Va miner de la poussi\u00e8re d'\u00e9toile !",
       navigateTo: 'wallet',
-      tabLabel: 'Wallet \u2192 Mine',
+      tabLabel: 'Portefeuille \u2192 Miner',
     },
   },
   // Wart Market
   {
-    keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché'],
+    keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Warts are CosmoWarp's digital artworks — like NFTs, but cooler. You can mint images, GIFs, audio (MP3 with cover art), and video (MP4/MOV), all up to 5MB. Each Wart gets an unforgeable Certificate of Authenticity (CWCERT) with a SHA-256 fingerprint signed by your Ed25519 key. It's basically a cosmic birth certificate that proves YOU created it. Head to the Wart Market to mint your first masterpiece!",
+      answer: "Les Warts, ce sont les objets rares certifi\u00e9s sur Cosmorare \u2014 cartes Pok\u00e9mon, sneakers, vinyles, montres, art num\u00e9rique... Chaque Wart re\u00e7oit un Certificat d'Authenticit\u00e9 infalsifiable (CRCERT) avec une empreinte SHA-256 sign\u00e9e par ta cl\u00e9 Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifi\u00e9. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vid\u00e9o (MP4/MOV), le tout jusqu'\u00e0 5 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
-      tabLabel: 'Wart Market',
+      tabLabel: 'Marketplace',
     },
   },
   {
     keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace'],
     response: {
-      answer: "Want to buy a Wart? Browse the Wart Market, find something that speaks to your cosmic soul, and hit Buy. The creator gets paid, and if it's a resale, they still earn royalties (default 5%). Want to sell? Go to your collection, set a price, and list it. The universe handles the rest. Remember: art is subjective, but math is not — check the certificate before you buy!",
+      answer: "Tu veux acheter un Wart ? Parcours la Marketplace, trouve un objet rare qui parle \u00e0 ton \u00e2me cosmique, et clique sur Acheter. Le cr\u00e9ateur est pay\u00e9, et en cas de revente, il touche encore des royalties (5 % par d\u00e9faut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le go\u00fbt est subjectif, mais les maths non \u2014 v\u00e9rifie le certificat CRCERT avant d'acheter !",
       navigateTo: 'warts',
-      tabLabel: 'Wart Market',
+      tabLabel: 'Marketplace',
     },
   },
   {
-    keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
+    keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
     response: {
-      answer: "Every Wart minted after the Certificate update has a CWCERT — an unforgeable Certificate of Authenticity. It's a SHA-256 hash of the creator's address + content fingerprint + timestamp + title, signed with the creator's Ed25519 private key. Translation: it's mathematically impossible to fake. Click 'Verify' on any Wart to run a full integrity check. If it says '\u2714 Authentic' — you're golden. If not... well, someone's been naughty.",
+      answer: "Chaque Wart mint\u00e9 poss\u00e8de un CRCERT \u2014 un Certificat d'Authenticit\u00e9 infalsifiable. C'est un hash SHA-256 de l'adresse Cosmorare du cr\u00e9ateur + empreinte du contenu + horodatage + titre, sign\u00e9 avec la cl\u00e9 priv\u00e9e Ed25519 du cr\u00e9ateur. Traduction : c'est math\u00e9matiquement impossible \u00e0 falsifier. Clique sur \u00ab V\u00e9rifier \u00bb sur n'importe quel Wart pour lancer une v\u00e9rification d'int\u00e9grit\u00e9 compl\u00e8te. Si \u00e7a affiche \u00ab \u2714 Authentique \u00bb \u2014 tu es tranquille. Sinon... quelqu'un a fait des b\u00eatises.",
       navigateTo: 'warts',
-      tabLabel: 'Wart Market \u2192 Detail',
+      tabLabel: 'Marketplace \u2192 D\u00e9tail',
     },
   },
-  // CosmoChat
+  // Mur (ex-CosmoChat)
   {
-    keywords: ['cosmochat', 'chat', 'social', 'message', 'messages', 'dm', 'channel', 'canal', 'post', 'publier'],
+    keywords: ['mur', 'cosmochat', 'chat', 'social', 'message', 'messages', 'dm', 'channel', 'canal', 'post', 'publier'],
     response: {
-      answer: "CosmoChat is your encrypted social playground! Think Telegram meets Instagram meets Discord, but in space. Post on the timeline, create channels, send DMs, and tip posts with Warps instead of likes (because putting your money where your mouth is > a heart emoji). Share Wart links, news, cosmic thoughts... the universe is your feed. Encrypted. Anonymous. Secured.",
+      answer: "Le Mur, c'est ton r\u00e9seau social chiffr\u00e9 et d\u00e9centralis\u00e9 ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, cr\u00e9e des canaux, envoie des DM, et donne des pourboires en Warps au lieu de likes (parce que mettre ton argent l\u00e0 o\u00f9 tu parles > un emoji c\u0153ur). Partage des liens vers des Warts, des actus, des pens\u00e9es cosmiques... l'univers est ton fil. Chiffr\u00e9. Anonyme. S\u00e9curis\u00e9.",
       navigateTo: 'cosmochat',
-      tabLabel: 'CosmoChat',
+      tabLabel: 'Mur',
     },
   },
   {
     keywords: ['tip', 'tips', 'pourboire', 'like', 'aimer', 'rewarp', 'retweet', 'share', 'partager'],
     response: {
-      answer: "Forget likes — in CosmoChat, you TIP posts with 1 Warp (\u03A9). One tip per user per post, so no spam-tipping. It's like saying 'I approve of this message' but backing it with actual value. You can also ReWarp (share to your followers) or Share externally. Each post shows tips count, ReWarps, views, and bookmarks. It's like X, but with a soul.",
+      answer: "Oublie les likes \u2014 sur le Mur, tu donnes des POURBOIRES de 1 Warp (\u03A9) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire \u00ab j'approuve ce message \u00bb mais en y mettant de la vraie valeur. Tu peux aussi ReWarp (partager \u00e0 tes abonn\u00e9s) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReWarps, vues et favoris. C'est comme X, mais avec une \u00e2me.",
       navigateTo: 'cosmochat',
-      tabLabel: 'CosmoChat',
+      tabLabel: 'Mur',
     },
   },
   // Feed
   {
     keywords: ['feed', 'transaction', 'transactions', 'history', 'historique', 'activity', 'activité'],
     response: {
-      answer: "The Feed is where you watch the cosmic heartbeat of CosmoWarp. Every transaction — sends, mines, Wart mints, purchases — appears here in real-time with French timezone formatting (because Paris is the center of the universe, obviously). It's like watching the matrix, but prettier and with more Greek letters.",
+      answer: "Le Feed, c'est l\u00e0 o\u00f9 tu observes le pouls cosmique de Cosmorare. Chaque transaction \u2014 envois, minages, certifications de Warts, achats \u2014 appara\u00eet ici en temps r\u00e9el avec le fuseau horaire fran\u00e7ais (parce que Paris est le centre de l'univers, \u00e9videmment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
       navigateTo: 'feed',
       tabLabel: 'Feed',
     },
@@ -112,134 +112,143 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['settings', 'paramètres', 'parametres', 'theme', 'thème', 'dark', 'light', 'mode', 'appearance', 'apparence'],
     response: {
-      answer: "Settings is your cosmic control panel! Toggle between dark mode (for the mysterious souls) and light mode (for the brave ones who stare at suns). Manage your profile, check your security, download recovery keys, clear CosmoChat data, and more. It's like the cockpit of a spaceship — all the buttons you need, none of the ones you don't.",
+      answer: "Les Param\u00e8tres, c'est ton panneau de contr\u00f4le cosmique ! Bascule entre le mode sombre (pour les \u00e2mes myst\u00e9rieuses) et le mode clair (pour les braves qui fixent les soleils). G\u00e8re ton profil, v\u00e9rifie ta s\u00e9curit\u00e9, t\u00e9l\u00e9charge tes cl\u00e9s de r\u00e9cup\u00e9ration, efface les donn\u00e9es du Mur, et plus encore. C'est comme le cockpit d'un vaisseau spatial \u2014 tous les boutons n\u00e9cessaires, aucun de superflu.",
       navigateTo: 'settings',
-      tabLabel: 'Settings',
+      tabLabel: 'Param\u00e8tres',
     },
   },
   // Dev
   {
     keywords: ['dev', 'developer', 'développeur', 'sdk', 'api', 'console', 'admin', 'code', 'technical'],
     response: {
-      answer: "Ah, a fellow code wizard! The Dev section combines the SDK documentation, Admin panel, and Console into one powerful workbench. Build apps on CosmoWarp, interact with the protocol directly, and manage advanced features. The CosmoASM instruction set awaits. Remember: with great power comes great probability of forgetting a semicolon.",
+      answer: "Ah, un fellow magicien du code ! La section Dev combine la documentation SDK, le panneau Admin et la Console en un seul atelier puissant. Construis des apps sur Cosmorare, interagis directement avec le protocole, et g\u00e8re les fonctionnalit\u00e9s avanc\u00e9es. Le jeu d'instructions CosmoASM t'attend. Rappelle-toi : avec un grand pouvoir vient une grande probabilit\u00e9 d'oublier un point-virgule.",
       navigateTo: 'dev',
       tabLabel: 'Dev',
     },
   },
-  // CosmoChain
+  // CosmoMesh
   {
-    keywords: ['cosmochain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon'],
+    keywords: ['cosmomesh', 'mesh', 'cosmochain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon', 'dag', 'couche', 'couches', 'layer', 'layers'],
     response: {
-      answer: "CosmoChain is our blockchain with 7 PARALLEL SHARDS running simultaneously via real Web Workers. Each shard (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) processes blocks every 1.5 seconds in its own thread. TPS depends on your hardware — run the built-in benchmark to measure it. Gas fees? Zero. Data is stored in IndexedDB (GB-scale). Check the White Paper for the architecture diagram!",
+      answer: "CosmoMesh est notre r\u00e9seau DAG \u00e0 7 couches parall\u00e8les fonctionnant simultan\u00e9ment via de vrais Web Workers. Chaque couche (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) traite des blocs toutes les 1,5 secondes dans son propre thread. Le TPS d\u00e9pend de ton mat\u00e9riel \u2014 lance le benchmark int\u00e9gr\u00e9 pour le mesurer. Frais de gas ? Z\u00e9ro. Les donn\u00e9es sont stock\u00e9es dans IndexedDB (\u00e9chelle Go). Consulte le Livre Blanc pour le sch\u00e9ma d'architecture !",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper \u2192 CosmoChain',
+      tabLabel: 'Livre Blanc \u2192 CosmoMesh',
     },
   },
   // CosmoCode SVG
   {
     keywords: ['cosmocode', 'svg', 'compression', 'on-chain', 'onchain', 'storage', 'stockage', '1000x', 'fractal'],
     response: {
-      answer: "CosmoCode is the compression engine behind on-chain storage. It takes any data \u2014 transactions, images, NFTs \u2014 and compresses it through 7 fractal layers into a tiny SVG container. Layer 1: Delta Encoding (only store diffs). Layer 2: Dictionary (short symbols). Layer 3: Run-Length. Layer 4: Fractal Nesting (SVG <defs>/<use> = deduplication). Layers 5-7: Frequency, Quantize, Filters. Real measured ratios: 5-30x for structured data (transactions), ~1-2x for binary data (images). Run the benchmark to verify.",
+      answer: "CosmoCode est le moteur de compression derri\u00e8re le stockage on-chain. Il prend n'importe quelle donn\u00e9e \u2014 transactions, images, objets rares \u2014 et la compresse \u00e0 travers 7 couches fractales dans un conteneur SVG minuscule. Couche 1 : Encodage Delta (ne stocker que les diff\u00e9rences). Couche 2 : Dictionnaire (symboles courts). Couche 3 : Run-Length. Couche 4 : Imbrication Fractale (SVG <defs>/<use> = d\u00e9duplication). Couches 5-7 : Fr\u00e9quence, Quantification, Filtres. Ratios r\u00e9els mesur\u00e9s : 5-30x pour les donn\u00e9es structur\u00e9es (transactions), ~1-2x pour les donn\u00e9es binaires (images). Lance le benchmark pour v\u00e9rifier.",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper \u2192 CosmoCode',
+      tabLabel: 'Livre Blanc \u2192 CosmoCode',
     },
   },
   // Zero gas
   {
     keywords: ['gas', 'fee', 'fees', 'free', 'gratuit', 'cost', 'co\u00FBt', 'cout', 'price', 'zero', 'frais'],
     response: {
-      answer: "Gas fees? We don't do that here. CosmoChain transactions are 100% FREE. Zero. Nada. How? Three reasons: (1) Validators earn from staking rewards, not user fees. (2) Anti-spam uses rate limiting (100 TX/min) instead of pricing people out. (3) CosmoCode compresses structured data 5-30x, and IndexedDB provides GB-scale local storage at zero cost. Ethereum charges $0.50-$100 per TX. We charge 0 \u03A9. You're welcome.",
+      answer: "Frais de gas ? On ne fait pas \u00e7a ici. Les transactions CosmoMesh sont 100 % GRATUITES. Z\u00e9ro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les r\u00e9compenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de d\u00e9bit (100 TX/min) au lieu d'exclure les gens par les prix. (3) CosmoCode compresse les donn\u00e9es structur\u00e9es 5-30x, et IndexedDB fournit un stockage local \u00e0 l'\u00e9chelle du Go \u00e0 co\u00fbt z\u00e9ro. Ethereum facture 0,50 \u00e0 100 $ par TX. Nous, c'est 0 \u03A9. De rien.",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper \u2192 CosmoChain',
+      tabLabel: 'Livre Blanc \u2192 CosmoMesh',
     },
   },
   // Speed
   {
     keywords: ['speed', 'fast', 'rapide', 'vitesse', 'tps', 'throughput', 'performance', 'slow', 'lent'],
     response: {
-      answer: "CosmoChain processes blocks fast. Each of our 7 shards runs in its own Web Worker thread and produces a block every 1.5 seconds (vs Ethereum's 12s). Real TPS depends on your hardware — use the built-in benchmark to measure actual throughput. Your transaction confirms in ~1.5s with final anchoring via a Beacon Block every ~15s. No inflated claims — benchmark it yourself.",
+      answer: "CosmoMesh traite les blocs rapidement. Chacune de nos 7 couches tourne dans son propre Web Worker et produit un bloc toutes les 1,5 secondes (contre 12s pour Ethereum). Le TPS r\u00e9el d\u00e9pend de ton mat\u00e9riel \u2014 utilise le benchmark int\u00e9gr\u00e9 pour mesurer le d\u00e9bit r\u00e9el. Ta transaction est confirm\u00e9e en ~1,5s avec ancrage final via un Beacon Block toutes les ~15s. Pas de chiffres gonfl\u00e9s \u2014 benchmark-le toi-m\u00eame.",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper \u2192 CosmoChain',
+      tabLabel: 'Livre Blanc \u2192 CosmoMesh',
     },
   },
   // On-chain NFT
   {
     keywords: ['on-chain nft', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
     response: {
-      answer: "Unlike Ethereum where your NFT image lives on IPFS (which can go offline), CosmoChain stores the ENTIRE artwork directly in the blockchain. The CosmoCode SVG engine compresses your artwork (5-30x for structured data, ~1-2x for images), wraps it in an SVG container with your Ed25519 signature, and stores it in a GLYPH shard block. It lives on-chain forever. If you lose your local copy, you can recover it from any node. And it costs... wait for it... 0 \u03A9. FREE.",
+      answer: "Contrairement \u00e0 Ethereum o\u00f9 ton image NFT vit sur IPFS (qui peut tomber hors ligne), CosmoMesh stocke l'INT\u00c9GRALIT\u00c9 de l'\u0153uvre directement dans la blockchain. Le moteur CosmoCode SVG compresse tes objets (5-30x pour les donn\u00e9es structur\u00e9es, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. \u00c7a vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la r\u00e9cup\u00e9rer depuis n'importe quel n\u0153ud. Et \u00e7a co\u00fbte... roulement de tambour... 0 \u03A9. GRATUIT.",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper \u2192 CosmoChain',
+      tabLabel: 'Livre Blanc \u2192 CosmoMesh',
     },
   },
   // WhitePaper
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "The White Paper v2.0 is the sacred scroll of CosmoWarp! 11 sections covering everything: the DAG mesh, CosmoChain (7 parallel shards), CosmoCode SVG compression (real measured ratios), cryptographic stack, tokenomics (69M supply, Resonance Decay), the 7-level hierarchy, security architecture, and the roadmap. It's like reading the source code of the universe, but with better formatting and now with architecture diagrams.",
+      answer: "Le Livre Blanc v2.0, c'est le parchemin sacr\u00e9 de Cosmorare ! 11 sections couvrant absolument tout : le DAG mesh, CosmoMesh (7 couches parall\u00e8les), la compression CosmoCode SVG (ratios r\u00e9els mesur\u00e9s), la pile cryptographique, la tokenomics (69M de supply, D\u00e9croissance par R\u00e9sonance), les 7 niveaux de hi\u00e9rarchie, l'architecture de s\u00e9curit\u00e9, et la roadmap. C'est comme lire le code source de l'univers, mais avec une meilleure mise en page et des sch\u00e9mas d'architecture.",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper',
+      tabLabel: 'Livre Blanc',
     },
   },
   // Security
   {
     keywords: ['security', 'sécurité', 'securite', 'hack', 'safe', 'sûr', 'sur', 'protect', 'protéger', 'encryption', 'chiffrement', 'encrypt'],
     response: {
-      answer: "CosmoWarp takes security VERY seriously — 7 layers of it, to be exact. Ed25519 signatures (unforgeable), rate limiting (no spam), nonce tracking (no replay attacks), progressive amount limits, pattern detection, state integrity (SHA-256 checksums), and encrypted admin registry. Plus, the service worker keeps the app working offline and auto-updates to stay protected. Sleep well — the cosmos has you covered.",
+      answer: "Cosmorare prend la s\u00e9curit\u00e9 TR\u00c8S au s\u00e9rieux \u2014 7 couches, pour \u00eatre exact. Signatures Ed25519 (infalsifiables), limitation de d\u00e9bit (pas de spam), suivi des nonces (pas d'attaques par rejeu), limites progressives de montant, d\u00e9tection de patterns, int\u00e9grit\u00e9 d'\u00e9tat (checksums SHA-256), et registre admin chiffr\u00e9. En plus, le service worker permet \u00e0 l'app de fonctionner hors ligne et se met \u00e0 jour automatiquement. Dors tranquille \u2014 le cosmos veille sur toi.",
       navigateTo: 'settings',
-      tabLabel: 'Settings \u2192 Security',
+      tabLabel: 'Param\u00e8tres \u2192 S\u00e9curit\u00e9',
     },
   },
   // Offline
   {
     keywords: ['offline', 'hors ligne', 'online', 'en ligne', 'pwa', 'install', 'app'],
     response: {
-      answer: "CosmoWarp works offline AND online! Thanks to our service worker, the app caches itself on your device and keeps working even without internet. When you reconnect, it syncs automatically. You can even install it as a PWA (Progressive Web App) on your phone — just use your browser's 'Add to Home Screen' option. It's basically a native app without the App Store middleman. Take that, Apple.",
+      answer: "Cosmorare fonctionne hors ligne ET en ligne ! Gr\u00e2ce \u00e0 notre service worker, l'app se met en cache sur ton appareil et continue de fonctionner m\u00eame sans internet. Quand tu te reconnectes, elle se synchronise automatiquement. Tu peux m\u00eame l'installer en PWA (Progressive Web App) sur ton t\u00e9l\u00e9phone \u2014 utilise simplement l'option \u00ab Ajouter \u00e0 l'\u00e9cran d'accueil \u00bb de ton navigateur. C'est une app native sans l'interm\u00e9diaire de l'App Store. Prends \u00e7a, Apple.",
       navigateTo: 'settings',
-      tabLabel: 'Settings',
+      tabLabel: 'Param\u00e8tres',
     },
   },
   // Levels
   {
     keywords: ['level', 'niveau', 'rank', 'rang', 'particle', 'wave', 'star', 'nebula', 'galaxy', 'cosmos', 'lumina', 'hierarchy', 'hiérarchie'],
     response: {
-      answer: "Your cosmic journey has 7 levels: Particle \u2192 Wave \u2192 Star \u2192 Nebula \u2192 Galaxy \u2192 Cosmos \u2192 Lumina. Each level gives you higher mining multipliers (up to 5x!) and level-up bonuses. It's based on transaction count, not money — so consistency beats wealth. The final level, Lumina, means you've transcended. You literally ARE the light. No pressure.",
+      answer: "Ton voyage cosmique comporte 7 niveaux : Particle \u2192 Wave \u2192 Star \u2192 Nebula \u2192 Galaxy \u2192 Cosmos \u2192 Lumina. Chaque niveau te donne des multiplicateurs de minage plus \u00e9lev\u00e9s (jusqu'\u00e0 5x !) et des bonus de mont\u00e9e de niveau. C'est bas\u00e9 sur le nombre de transactions, pas l'argent \u2014 donc la r\u00e9gularit\u00e9 bat la richesse. Le dernier niveau, Lumina, signifie que tu as transcend\u00e9. Tu ES litt\u00e9ralement la lumi\u00e8re. Pas de pression.",
       navigateTo: 'whitepaper',
-      tabLabel: 'White Paper \u2192 Hierarchy',
+      tabLabel: 'Livre Blanc \u2192 Hi\u00e9rarchie',
     },
   },
-  // What is CosmoWarp
+  // What is Cosmorare
   {
-    keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'cosmowarp', 'about'],
+    keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'cosmorare', 'cosmowarp', 'about'],
     response: {
-      answer: "CosmoWarp is a post-blockchain transactional fabric. Imagine if Bitcoin, Telegram, and an art gallery had a baby in space. You get a DAG-based transaction mesh (7 parallel layers, not one slow chain), a social network (CosmoChat), a digital art marketplace (Wart Market), and all of it secured by real cryptography (Ed25519 + SHA-256 + AES-GCM). No middlemen. No banks. No surveillance. Just pure, cosmic value exchange.",
+      answer: "Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC) est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux ench\u00e8res avaient eu un b\u00e9b\u00e9 dans l'espace. Tu obtiens un r\u00e9seau DAG transactionnel (CosmoMesh \u2014 7 couches parall\u00e8les, pas une seule cha\u00eene lente), un r\u00e9seau social chiffr\u00e9 (le Mur), une marketplace d'objets rares certifi\u00e9s (les Warts), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout \u00e7a s\u00e9curis\u00e9 par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'interm\u00e9diaires. Pas de banques. Pas de surveillance. Juste de l'\u00e9change de valeur cosmique pur.",
       navigateTo: 'landing',
-      tabLabel: 'Landing Page',
+      tabLabel: 'Accueil',
     },
   },
   // Help
   {
     keywords: ['help', 'aide', 'assist', 'guide', 'support', 'hello', 'bonjour', 'salut', 'hi', 'hey'],
     response: {
-      answer: "Hello, cosmic traveler! I'm Cosmo, your oracle and guide in the CosmoWarp universe. I know everything about this ecosystem (modest, I know). Ask me about wallets, mining, Warts, CosmoChat, security, tokenomics, or literally anything else. I promise my answers are more helpful than a black hole and significantly less dense. What do you want to know?",
+      answer: "Bonjour, voyageur cosmique ! Je suis Cosmo, ton oracle et guide dans l'univers Cosmorare. Je sais tout sur cet \u00e9cosyst\u00e8me (modeste, je sais). Pose-moi des questions sur les portefeuilles, le minage, les Warts, le Mur, la s\u00e9curit\u00e9, la tokenomics, le paiement par carte, ou litt\u00e9ralement n'importe quoi d'autre. Je promets que mes r\u00e9ponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
       navigateTo: 'help',
-      tabLabel: 'Help',
+      tabLabel: 'Aide',
     },
   },
   // Mobile / Desktop sync
   {
     keywords: ['mobile', 'desktop', 'sync', 'synchron', 'different', 'différent', 'device', 'appareil'],
     response: {
-      answer: "Different balance on mobile and desktop? That's because CosmoWarp is local-first — each device has its own independent wallet stored locally. To sync, go to Wallet \u2192 Overview on one device, export your backup, then import it on the other. Think of it like having twin space stations — they're independent until you send a shuttle between them.",
+      answer: "Solde diff\u00e9rent sur mobile et desktop ? C'est parce que Cosmorare est local-first \u2014 chaque appareil a son propre portefeuille ind\u00e9pendant stock\u00e9 localement. Pour synchroniser, va dans Portefeuille \u2192 Aper\u00e7u sur un appareil, exporte ta sauvegarde, puis importe-la sur l'autre. C'est comme avoir des stations spatiales jumelles \u2014 elles sont ind\u00e9pendantes jusqu'\u00e0 ce que tu envoies une navette entre elles.",
       navigateTo: 'wallet',
-      tabLabel: 'Wallet \u2192 Overview',
+      tabLabel: 'Portefeuille \u2192 Aper\u00e7u',
+    },
+  },
+  // Paiement fiat
+  {
+    keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
+    response: {
+      answer: "Cosmorare int\u00e8gre une passerelle de paiement fiat compl\u00e8te ! Tu peux acheter des Warps (\u03A9) ou des Warts directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqu\u00e9. L'id\u00e9e : rendre l'acc\u00e8s \u00e0 la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est d\u00e9centralis\u00e9, mais le paiement reste simple.",
+      navigateTo: 'wallet',
+      tabLabel: 'Portefeuille \u2192 Paiement',
     },
   },
 ];
 
 const FALLBACK: CosmoResponse = {
-  answer: "Hmm, that's a question even the cosmos hasn't heard before! I'm not sure I have the exact answer, but I bet the White Paper does. It's got 10 sections covering literally everything about CosmoWarp. Go have a read, and if you still have questions, come back — I'll be here, contemplating the entropy of the universe.",
+  answer: "Hmm, voil\u00e0 une question que m\u00eame le cosmos n'a jamais entendue ! Je ne suis pas s\u00fbr d'avoir la r\u00e9ponse exacte, mais je parie que le Livre Blanc l'a. Il contient 11 sections couvrant litt\u00e9ralement tout sur Cosmorare. Va le consulter, et si tu as encore des questions, reviens \u2014 je serai l\u00e0, \u00e0 contempler l'entropie de l'univers.",
   navigateTo: 'whitepaper',
-  tabLabel: 'White Paper',
+  tabLabel: 'Livre Blanc',
 };
 
 function findBestMatch(input: string): CosmoResponse {
@@ -278,61 +287,69 @@ interface ChatMsg {
 
 const FAQ_SECTIONS = [
   {
-    title: 'Getting Started',
+    title: 'Pour commencer',
     icon: '\u25C8',
     items: [
-      { q: 'How do I create a wallet?', a: 'Go to the Wallet tab and click "Create Wallet". Choose a strong password and save your recovery key securely.' },
-      { q: 'Why is my balance 0?', a: 'New wallets start at 0. You need to mine Warps by going to Wallet \u2192 Mine. Each device has its own local wallet.' },
-      { q: 'How do I backup my wallet?', a: 'In Wallet \u2192 Overview, download your recovery key. Store it somewhere safe — there is no password reset!' },
+      { q: 'Comment cr\u00e9er un portefeuille ?', a: 'Va dans l\u2019onglet Portefeuille et clique sur \u00ab Cr\u00e9er un portefeuille \u00bb. Choisis un mot de passe solide et sauvegarde ta cl\u00e9 de r\u00e9cup\u00e9ration en lieu s\u00fbr.' },
+      { q: 'Pourquoi mon solde est \u00e0 0 ?', a: 'Les nouveaux portefeuilles d\u00e9marrent \u00e0 0. Tu dois miner des Warps en allant dans Portefeuille \u2192 Miner. Chaque appareil a son propre portefeuille local.' },
+      { q: 'Comment sauvegarder mon portefeuille ?', a: 'Dans Portefeuille \u2192 Aper\u00e7u, t\u00e9l\u00e9charge ta cl\u00e9 de r\u00e9cup\u00e9ration. Garde-la en lieu s\u00fbr \u2014 il n\u2019y a pas de r\u00e9initialisation de mot de passe !' },
     ],
   },
   {
-    title: 'Mining & Warps',
+    title: 'Minage & Warps',
     icon: '\u26CF',
     items: [
-      { q: 'How do I mine?', a: 'Go to Wallet \u2192 Mine, select difficulty, and click Mine. Higher difficulty = more Warps.' },
-      { q: 'What is Resonance Decay?', a: 'A smooth mining curve based on the golden ratio (\u03C6). Unlike Bitcoin\'s halving, rewards decrease gradually and predictably.' },
-      { q: 'What is the total supply?', a: '69 million Warps. 84% for mining, 14.5% for airdrops, 1.5% creator lock.' },
+      { q: 'Comment miner ?', a: 'Va dans Portefeuille \u2192 Miner, choisis la difficult\u00e9 et clique sur Miner. Plus la difficult\u00e9 est \u00e9lev\u00e9e = plus de Warps.' },
+      { q: 'Qu\u2019est-ce que la D\u00e9croissance par R\u00e9sonance ?', a: 'Une courbe de minage progressive bas\u00e9e sur le nombre d\u2019or (\u03C6). Contrairement au halving brutal de Bitcoin, les r\u00e9compenses diminuent graduellement et de fa\u00e7on pr\u00e9visible.' },
+      { q: 'Quel est le supply total ?', a: '69 millions de Warps. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage cr\u00e9ateur.' },
     ],
   },
   {
-    title: 'Wart Market',
+    title: 'Marketplace (Warts)',
     icon: '\u2B22',
     items: [
-      { q: 'What is a Wart?', a: 'A digital artwork (image, audio, video) with an unforgeable Certificate of Authenticity on the CosmoWarp protocol.' },
-      { q: 'What formats are supported?', a: '.gif .jpeg .png (images), .mp3 (audio with cover image), .mp4 .mov (video). All limited to 5MB.' },
-      { q: 'What is CWCERT?', a: 'Certificate of Authenticity — a SHA-256 fingerprint of the content + Ed25519 creator signature. Unforgeable and permanent.' },
-      { q: 'Are Warts stored on-chain?', a: 'Yes! With CosmoChain, artwork is compressed via CosmoCode SVG (5-30x for structured data) and stored in IndexedDB (GB-scale). No IPFS, no external server dependency.' },
+      { q: 'Qu\u2019est-ce qu\u2019un Wart ?', a: 'Un objet rare certifi\u00e9 (carte Pok\u00e9mon, sneaker, vinyle, montre, art num\u00e9rique) avec un Certificat d\u2019Authenticit\u00e9 infalsifiable (CRCERT) sur le protocole Cosmorare.' },
+      { q: 'Quels formats sont support\u00e9s ?', a: '.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vid\u00e9o). Le tout limit\u00e9 \u00e0 5 Mo.' },
+      { q: 'Qu\u2019est-ce que le CRCERT ?', a: 'Certificat d\u2019Authenticit\u00e9 \u2014 une empreinte SHA-256 du contenu + signature Ed25519 du cr\u00e9ateur. Infalsifiable et permanent.' },
+      { q: 'Les Warts sont-ils stock\u00e9s on-chain ?', a: 'Oui ! Avec CosmoMesh, les objets sont compress\u00e9s via CosmoCode SVG (5-30x pour les donn\u00e9es structur\u00e9es) et stock\u00e9s dans IndexedDB (\u00e9chelle Go). Pas d\u2019IPFS, pas de d\u00e9pendance \u00e0 un serveur externe.' },
     ],
   },
   {
-    title: 'CosmoChat',
+    title: 'Le Mur (R\u00e9seau social)',
     icon: '\u25CE',
     items: [
-      { q: 'What is CosmoChat?', a: 'An encrypted, anonymous social network within CosmoWarp. Post, create channels, send DMs, and tip with Warps.' },
-      { q: 'How do Tips work?', a: '1 Warp per user per post. It\'s like a "like" but backed by real value.' },
-      { q: 'What is ReWarp?', a: 'Like a retweet — share someone\'s post to your followers on the CosmoChat timeline.' },
+      { q: 'Qu\u2019est-ce que le Mur ?', a: 'Un r\u00e9seau social chiffr\u00e9 et anonyme au sein de Cosmorare. Publie, cr\u00e9e des canaux, envoie des DM, et donne des pourboires en Warps.' },
+      { q: 'Comment fonctionnent les pourboires ?', a: '1 Warp par utilisateur par post. C\u2019est comme un \u00ab like \u00bb mais adoss\u00e9 \u00e0 une vraie valeur.' },
+      { q: 'Qu\u2019est-ce que le ReWarp ?', a: 'Comme un retweet \u2014 partage le post de quelqu\u2019un \u00e0 tes abonn\u00e9s sur la timeline du Mur.' },
     ],
   },
   {
-    title: 'CosmoChain & CosmoCode',
+    title: 'CosmoMesh & CosmoCode',
     icon: '\u26D3',
     items: [
-      { q: 'What is CosmoChain?', a: 'A blockchain with 7 parallel shards running in real Web Worker threads. Each shard processes transactions independently every 1.5 seconds. TPS depends on hardware (run the benchmark). Gas fees: always 0 \u03A9.' },
-      { q: 'What are the 7 shards?', a: 'GRID (<10\u03A9), HELIX (10-100\u03A9), GLYPH (100-1K\u03A9 + NFTs), COSMO (governance), CHRONOS (time-locked), NEXUS (cross-shard), LUMINA (epochs). Your TX is auto-routed to the right shard.' },
-      { q: 'Why are transactions free?', a: 'Validators earn from staking rewards, not fees. Anti-spam uses rate limiting (100 TX/min) instead of gas pricing. CosmoCode compresses structured data 5-30x, and IndexedDB provides GB-scale storage locally.' },
-      { q: 'What is CosmoCode SVG?', a: 'A 7-layer compression engine that encodes all on-chain data into optimized SVG containers. Delta + Dictionary + Run-Length + Fractal Nesting + Frequency + Quantize + Filters. Real measured: 5-30x for structured data, ~1-2x for binary.' },
-      { q: 'Are NFTs really stored fully on-chain?', a: 'Yes! CosmoChain stores artwork as compressed CosmoCode SVG in IndexedDB (GB-scale local storage). No IPFS dependency. Currently single-node; P2P recovery requires peer network.' },
-      { q: 'What is a Beacon Block?', a: 'Every 10 shard blocks (~15s), a Beacon Block anchors all 7 shards into a single Global State Root. This provides absolute cross-shard finality.' },
+      { q: 'Qu\u2019est-ce que CosmoMesh ?', a: 'Un r\u00e9seau DAG \u00e0 7 couches parall\u00e8les tournant dans de vrais Web Workers. Chaque couche traite les transactions ind\u00e9pendamment toutes les 1,5 secondes. Le TPS d\u00e9pend du mat\u00e9riel (lance le benchmark). Frais de gas : toujours 0 \u03A9.' },
+      { q: 'Quelles sont les 7 couches ?', a: 'GRID (<10\u03A9), HELIX (10-100\u03A9), GLYPH (100-1K\u03A9 + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (\u00e9poques). Ta TX est automatiquement rout\u00e9e vers la bonne couche.' },
+      { q: 'Pourquoi les transactions sont-elles gratuites ?', a: 'Les validateurs gagnent via les r\u00e9compenses de staking, pas via les frais. L\u2019anti-spam utilise la limitation de d\u00e9bit (100 TX/min) au lieu de tarifer les utilisateurs. CosmoCode compresse les donn\u00e9es structur\u00e9es 5-30x, et IndexedDB fournit un stockage local \u00e0 l\u2019\u00e9chelle du Go.' },
+      { q: 'Qu\u2019est-ce que CosmoCode SVG ?', a: 'Un moteur de compression \u00e0 7 couches qui encode toutes les donn\u00e9es on-chain dans des conteneurs SVG optimis\u00e9s. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fr\u00e9quence + Quantification + Filtres. R\u00e9el mesur\u00e9 : 5-30x pour les donn\u00e9es structur\u00e9es, ~1-2x pour le binaire.' },
+      { q: 'Les objets rares sont-ils vraiment stock\u00e9s on-chain ?', a: 'Oui ! CosmoMesh stocke les objets en tant que CosmoCode SVG compress\u00e9 dans IndexedDB (stockage local \u00e0 l\u2019\u00e9chelle du Go). Pas de d\u00e9pendance IPFS. Actuellement mono-n\u0153ud ; la r\u00e9cup\u00e9ration P2P n\u00e9cessite un r\u00e9seau de pairs.' },
+      { q: 'Qu\u2019est-ce qu\u2019un Beacon Block ?', a: 'Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d\u2019\u00c9tat Global. Cela fournit une finalit\u00e9 inter-couches absolue.' },
     ],
   },
   {
-    title: 'Security',
+    title: 'Paiement',
+    icon: '\u20AC',
+    items: [
+      { q: 'Puis-je payer par carte bancaire ?', a: 'Oui ! Cosmorare int\u00e8gre une passerelle fiat compl\u00e8te : carte bancaire, PayPal et virement SEPA.' },
+      { q: 'Faut-il passer par un exchange crypto ?', a: 'Non. Tu peux acheter des Warps et des Warts directement en euros, sans passer par une plateforme d\u2019\u00e9change.' },
+    ],
+  },
+  {
+    title: 'S\u00e9curit\u00e9',
     icon: '\u26A1',
     items: [
-      { q: 'Is CosmoWarp secure?', a: '7 layers of security: Ed25519 signatures, rate limiting, nonce tracking, amount limits, pattern detection, state integrity, encrypted admin registry.' },
-      { q: 'Does it work offline?', a: 'Yes! The service worker caches the app for offline use. It also auto-updates when a new version is available.' },
-      { q: 'Where is my data stored?', a: 'Locally on your device in IndexedDB (GB-scale, replacing localStorage). CosmoCode SVG compression reduces structured data size by 5-30x. Currently single-node; multi-node backup requires P2P peers.' },
+      { q: 'Cosmorare est-il s\u00e9curis\u00e9 ?', a: '7 couches de s\u00e9curit\u00e9 : signatures Ed25519, limitation de d\u00e9bit, suivi des nonces, limites de montant, d\u00e9tection de patterns, int\u00e9grit\u00e9 d\u2019\u00e9tat, registre admin chiffr\u00e9.' },
+      { q: 'Est-ce que \u00e7a fonctionne hors ligne ?', a: 'Oui ! Le service worker met l\u2019app en cache pour une utilisation hors ligne. Elle se met aussi \u00e0 jour automatiquement quand une nouvelle version est disponible.' },
+      { q: 'O\u00f9 sont stock\u00e9es mes donn\u00e9es ?', a: 'Localement sur ton appareil dans IndexedDB (\u00e9chelle Go, rempla\u00e7ant le localStorage). La compression CosmoCode SVG r\u00e9duit la taille des donn\u00e9es structur\u00e9es de 5-30x. Actuellement mono-n\u0153ud ; la sauvegarde multi-n\u0153uds n\u00e9cessite des pairs P2P.' },
     ],
   },
 ];
@@ -346,7 +363,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
     {
       id: 'welcome',
       role: 'cosmo',
-      text: `Hey! I'm Cosmo ${'\u2B21'}, your oracle and guide in the CosmoWarp universe. Ask me anything — wallets, mining, Warts, CosmoChat, security... I know it all. (And yes, I'm funnier than a regular FAQ.)`,
+      text: `Salut ! Je suis Cosmo ${'\u2B21'}, ton oracle et guide dans l'univers Cosmorare (\u30B3\u30B9\u30E2\u30E9\u30EC). Pose-moi n'importe quelle question \u2014 portefeuilles, minage, Warts, Mur, s\u00e9curit\u00e9, paiement... je sais tout. (Et oui, je suis plus dr\u00f4le qu'une FAQ classique.)`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -393,10 +410,10 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
         }} />
         <div className="relative">
           <h1 className="text-title-md font-bold opacity-100 font-title mb-1">
-            {'\u2753'} Help Center
+            {'\u2753'} Centre d'aide
           </h1>
           <p className="text-body-sm opacity-40">
-            FAQ & Cosmo — Your AI guide to the CosmoWarp universe
+            FAQ & Cosmo — Votre guide IA dans l'univers Cosmorare
           </p>
         </div>
       </div>
@@ -435,7 +452,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
             </div>
             <div>
               <p className="text-base font-bold opacity-90">Cosmo</p>
-              <p className="text-label opacity-80">Online — Oracle of CosmoWarp</p>
+              <p className="text-label opacity-80">En ligne — Oracle de Cosmorare</p>
             </div>
             {wallet && (
               <span className="text-label opacity-30 ml-auto">
@@ -462,7 +479,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                       onClick={() => onNavigate(msg.navigateTo!)}
                       className="mt-2 text-label opacity-80 hover:opacity-80 cursor-pointer flex items-center gap-1"
                     >
-                      {'\u2192'} Go to {msg.tabLabel}
+                      {'\u2192'} Aller \u00e0 {msg.tabLabel}
                     </button>
                   )}
                 </div>
@@ -479,7 +496,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Cosmo anything..."
+                placeholder="Posez votre question \u00e0 Cosmo..."
                 className="flex-1 bg-current/5 border border-current/10 px-3 py-2 text-body-sm opacity-90 placeholder-current/30 outline-none focus:border-current/15"
               />
               <button
@@ -491,7 +508,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               </button>
             </div>
             <div className="flex gap-2 mt-2 flex-wrap">
-              {['How do I mine?', 'What is CosmoChain?', 'Why is it free?', 'What is CosmoCode SVG?', 'Are NFTs on-chain?'].map(q => (
+              {['Comment miner ?', "C'est quoi CosmoMesh ?", "Pourquoi c'est gratuit ?", 'Comment certifier un objet ?', 'Paiement par carte ?'].map(q => (
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}

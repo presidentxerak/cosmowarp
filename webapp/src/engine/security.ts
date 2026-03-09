@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Security — Protocol Hardening
+ * Cosmorare Security — Protocol Hardening
  *
  * Multi-layer security against hacking:
  * 1. Rate Limiting — per-address TX rate limits

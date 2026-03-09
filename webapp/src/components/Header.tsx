@@ -67,7 +67,7 @@ export default function Header({ activeTab, setActiveTab }: {
               className="text-base font-bold opacity-90 leading-tight cursor-pointer font-title"
               onClick={() => selectTab('landing')}
             >
-              CosmoWarp
+              コスモラレ
             </h1>
             <p className="text-[10px] opacity-40">Terminal v2.0</p>
           </div>

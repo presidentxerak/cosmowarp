@@ -1,5 +1,5 @@
 /**
- * CosmoWarp Admin Registry — Private Protocol Ledger
+ * Cosmorare Admin Registry — Private Protocol Ledger
  *
  * Encrypted, admin-only registry that tracks:
  * - All accounts created (addresses, dates, levels)
@@ -77,8 +77,8 @@ export interface ProtocolSnapshot {
 
 // ─── Admin Registry ──────────────────────────────────────
 
-const REGISTRY_STORAGE_KEY = 'cosmowarp_registry_enc';
-const ADMIN_HASH_KEY = 'cosmowarp_admin_hash';
+const REGISTRY_STORAGE_KEY = 'cosmorare_registry_enc';
+const ADMIN_HASH_KEY = 'cosmorare_admin_hash';
 
 export class AdminRegistry {
   private accounts: Map<string, AccountEntry> = new Map();

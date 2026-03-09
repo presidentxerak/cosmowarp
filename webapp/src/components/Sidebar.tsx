@@ -207,7 +207,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Logo className="w-8 h-8 animate-float" />
-              <span className="font-title text-base">CosmoWarp</span>
+              <span className="font-title text-base">コスモラレ</span>
             </div>
             <button
               onClick={onClose}

@@ -22,7 +22,7 @@ export default function SettingsView() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cosmowarp-wallet-${wallet ? shortAddress(wallet.address) : 'backup'}.json`;
+    a.download = `cosmorare-wallet-${wallet ? shortAddress(wallet.address) : 'backup'}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -76,7 +76,7 @@ export default function SettingsView() {
     <div className="space-y-4 max-w-lg mx-auto">
       <div className="glass-panel p-5 text-center">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2699'} Settings</h2>
-        <p className="text-body-sm opacity-40">Manage your CosmoWarp experience</p>
+        <p className="text-body-sm opacity-40">Manage your Cosmorare experience</p>
       </div>
 
       {/* ─── Profile ──────────────────────────────────────── */}
@@ -261,7 +261,7 @@ export default function SettingsView() {
         <div className="space-y-2 text-body-sm">
           <div className="flex justify-between">
             <span className="opacity-40">Version</span>
-            <span className="opacity-70">CosmoWarp Terminal v2.0</span>
+            <span className="opacity-70">Cosmorare Terminal v2.0</span>
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Engine</span>

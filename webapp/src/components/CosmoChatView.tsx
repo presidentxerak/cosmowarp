@@ -94,10 +94,10 @@ export default function CosmoChatView() {
   }, [wallet.address, alias]);
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmowarp_view_user', address);
+    sessionStorage.setItem('cosmorare_view_user', address);
     // Navigate to user-profile - we need a way to do this
     // Use a custom event that App.tsx listens to
-    window.dispatchEvent(new CustomEvent('cosmowarp-navigate', { detail: 'user-profile' }));
+    window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'user-profile' }));
   };
 
   // ─── Media upload ──────────────────────────────────────

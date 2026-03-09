@@ -1,9 +1,9 @@
 import { storage } from './storage';
 
 /**
- * CosmoWarp Tokenomics — Supply Management & Resonance Decay
+ * Cosmorare Tokenomics — Supply Management & Resonance Decay
  *
- * Total Supply: 69,000,000 CW (CosmoWarps)
+ * Total Supply: 69,000,000 CW (Cosmorares)
  * Creator Lock: 1,000,000 CW (unlockable by admin)
  * Airdrop: 1,000 CW per new account
  * Mining: Resonance Decay (better than halving)
@@ -18,7 +18,7 @@ import { storage } from './storage';
  * - No "halving shock" creating speculation bubbles
  * - Mathematically smooth and predictable
  * - Never reaches absolute zero — always an incentive
- * - Aligned with CosmoWarp's fractal/harmonic philosophy
+ * - Aligned with Cosmorare's fractal/harmonic philosophy
  * - Self-adjusting based on actual mining activity
  */
 
@@ -168,7 +168,7 @@ export function isRewardDay(): boolean {
 
 // ─── Tokenomics Engine ──────────────────────────────────
 
-const TOKENOMICS_STORAGE_KEY = 'cosmowarp_tokenomics';
+const TOKENOMICS_STORAGE_KEY = 'cosmorare_tokenomics';
 
 export class TokenomicsEngine {
   private state: SupplyState;

@@ -37,7 +37,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const addr = sessionStorage.getItem('cosmowarp_view_user');
+    const addr = sessionStorage.getItem('cosmorare_view_user');
     if (!addr) return;
     setTargetAddress(addr);
     refresh(addr);
@@ -130,12 +130,12 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   };
 
   const handleMessage = () => {
-    sessionStorage.setItem('cosmowarp_dm_to', targetAddress);
+    sessionStorage.setItem('cosmorare_dm_to', targetAddress);
     onNavigate('message');
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmowarp_view_user', address);
+    sessionStorage.setItem('cosmorare_view_user', address);
     setTargetAddress(address);
     setTab('posts');
     refresh(address);

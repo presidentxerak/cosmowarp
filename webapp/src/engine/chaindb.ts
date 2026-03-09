@@ -19,7 +19,7 @@
  *   meta        — Chain metadata (balances, nonces, config)
  */
 
-const DB_NAME = 'cosmowarp_chain';
+const DB_NAME = 'cosmorare_chain';
 const DB_VERSION = 1;
 
 const STORES = {
@@ -574,7 +574,7 @@ export async function downloadChainBackup(): Promise<void> {
 
   const a = document.createElement('a');
   a.href = url;
-  a.download = `cosmowarp-chain-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `cosmorare-chain-backup-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

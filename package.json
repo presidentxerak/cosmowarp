@@ -1,7 +1,7 @@
 {
-  "name": "cosmowarp",
-  "version": "2.0.0",
-  "description": "CosmoCode Protocol - Machine cosmique fractale avec CosmoASM",
+  "name": "cosmorare",
+  "version": "3.0.0",
+  "description": "Cosmorare Protocol - Certification d'objets rares avec CosmoASM",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
     "test": "jest",
     "cosmoasm": "ts-node src/asm/cli.ts"
   },
-  "keywords": ["cosmocode", "cosmoasm", "cosmowarp", "fractal", "quantum"],
+  "keywords": ["cosmorare", "cosmoasm", "certification", "rare", "protocol"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.3.0",
