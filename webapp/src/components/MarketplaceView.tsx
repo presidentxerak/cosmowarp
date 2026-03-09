@@ -1099,7 +1099,7 @@ export default function MarketplaceView() {
           <div className="space-y-4 max-w-md mx-auto">
             {/* Media Upload */}
             <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">MEDIA FILE (max 5MB) — .gif .jpeg .png .mp3 .mp4 .mov</label>
+              <label className="text-[10px] opacity-50 text-current block mb-1">MEDIA FILE (max 50MB) — .gif .jpeg .png .svg .mp3 .mp4 .mov</label>
               <input
                 ref={fileRef}
                 type="file"
