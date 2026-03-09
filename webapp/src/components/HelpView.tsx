@@ -61,7 +61,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Les Cosmorares, ce sont les objets rares certifiés sur Cosmorare — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Cosmorare reçoit un Certificat d'Authenticité infalsifiable (CRCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 5 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
+      answer: "Les Cosmorares, ce sont les objets rares certifiés sur Cosmorare — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Cosmorare reçoit un Certificat d'Authenticité infalsifiable (CRCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -309,7 +309,7 @@ const FAQ_SECTIONS = [
     icon: '⬢',
     items: [
       { q: 'Qu’est-ce qu’une Cosmorare ?', a: 'Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d’Authenticité infalsifiable (CRCERT) sur le protocole Cosmorare.' },
-      { q: 'Quels formats sont supportés ?', a: '.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 5 Mo.' },
+      { q: 'Quels formats sont supportés ?', a: '.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 50 Mo.' },
       { q: 'Qu’est-ce que le CRCERT ?', a: 'Certificat d’Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.' },
       { q: 'Les Cosmorares sont-elles stockées on-chain ?', a: 'Oui ! Avec CosmoMesh, les objets sont compressés via CosmoCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d’IPFS, pas de dépendance à un serveur externe.' },
     ],

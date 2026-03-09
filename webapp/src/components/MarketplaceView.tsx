@@ -157,15 +157,26 @@ export default function MarketplaceView() {
   const handleBuy = async (wart: Wart) => {
     setBuying(true);
     setBuyResult(null);
-    const result = await buyWart(wart.id);
-    setBuyResult({
-      success: result.success,
-      message: result.success ? `Bought "${wart.title}"!` : result.error || 'Failed',
-    });
-    setBuying(false);
-    if (result.success) {
-      setSelectedWart(null);
-      setTimeout(() => setBuyResult(null), 3000);
+    const timeout = setTimeout(() => {
+      setBuying(false);
+      setBuyResult({ success: false, message: 'Request timed out — please try again' });
+    }, 30000);
+    try {
+      const result = await buyWart(wart.id);
+      clearTimeout(timeout);
+      setBuyResult({
+        success: result.success,
+        message: result.success ? `Bought "${wart.title}"!` : result.error || 'Failed',
+      });
+      setBuying(false);
+      if (result.success) {
+        setSelectedWart(null);
+        setTimeout(() => setBuyResult(null), 3000);
+      }
+    } catch {
+      clearTimeout(timeout);
+      setBuying(false);
+      setBuyResult({ success: false, message: 'Purchase failed — please try again' });
     }
   };
 
@@ -187,31 +198,55 @@ export default function MarketplaceView() {
   };
 
   const handleList = (wart: Wart) => {
+    let ok = false;
     if (pricingMode === 'fiat') {
       const fp = parseFloat(fiatPriceInput);
       if (isNaN(fp) || fp <= 0) return;
-      listWartFiat(wart.id, fp, fiatCurrency);
+      ok = listWartFiat(wart.id, fp, fiatCurrency);
       setFiatPriceInput('');
     } else {
       const p = parseFloat(listPrice);
       if (isNaN(p) || p <= 0) return;
-      listWart(wart.id, p);
+      ok = listWart(wart.id, p);
       setListPrice('');
+    }
+    if (ok) {
+      setListSuccess('Listed successfully!');
+      setTimeout(() => setListSuccess(''), 3000);
     }
     setSelectedWart(null);
   };
 
   const handleDelist = (wart: Wart) => {
-    delistWart(wart.id);
+    const ok = delistWart(wart.id);
+    if (ok) {
+      setListSuccess('Removed from sale');
+      setTimeout(() => setListSuccess(''), 3000);
+    }
     setSelectedWart(null);
   };
 
+  const [transferError, setTransferError] = useState('');
+  const [listSuccess, setListSuccess] = useState('');
+
   const handleTransfer = async (wart: Wart) => {
-    if (!transferTo.trim()) return;
-    const result = await transferWart(wart.id, transferTo.trim());
+    const addr = transferTo.trim();
+    if (!addr) return;
+    if (!addr.startsWith('CW') || addr.length < 10) {
+      setTransferError('Invalid address — must start with CW');
+      return;
+    }
+    if (addr === wallet.address) {
+      setTransferError('Cannot transfer to yourself');
+      return;
+    }
+    setTransferError('');
+    const result = await transferWart(wart.id, addr);
     if (result.success) {
       setTransferTo('');
       setSelectedWart(null);
+    } else {
+      setTransferError(result.error || 'Transfer failed');
     }
   };
 
@@ -664,7 +699,7 @@ export default function MarketplaceView() {
                               wart.maxEditions,
                             );
                             setPhygitalCert(cert);
-                          } catch { /* ignore */ }
+                          } catch { setCreateError('Failed to generate phygital certificate'); }
                           setGeneratingPhygital(false);
                         }}
                         disabled={generatingPhygital}
@@ -870,7 +905,7 @@ export default function MarketplaceView() {
                         className="warp-input flex-1 text-base"
                         placeholder="CW... (recipient address)"
                         value={transferTo}
-                        onChange={e => setTransferTo(e.target.value)}
+                        onChange={e => { setTransferTo(e.target.value); setTransferError(''); }}
                       />
                       <button
                         className="warp-button text-base px-4"
@@ -880,6 +915,9 @@ export default function MarketplaceView() {
                         Gift
                       </button>
                     </div>
+                    {transferError && (
+                      <p className="text-body-sm p-2 bg-current/5 border border-current/15 opacity-70">{transferError}</p>
+                    )}
                   </div>
                 )}
               </>
@@ -1008,6 +1046,13 @@ export default function MarketplaceView() {
         </div>
       </div>
 
+      {/* List/delist success toast */}
+      {listSuccess && (
+        <div className="text-base p-3 bg-current/5 border border-current/15 opacity-80 text-center">
+          {listSuccess}
+        </div>
+      )}
+
       {/* ─── Marketplace Tab ───────────────────────────────── */}
       {tab === 'marketplace' && (
         <>
@@ -1074,7 +1119,7 @@ export default function MarketplaceView() {
                 className="warp-button text-body-sm mt-3 px-4 py-2"
                 onClick={() => setTab('marketplace')}
               >
-                Browse Marketplace
+                Parcourir la Marketplace
               </button>
             </div>
           ) : (
@@ -1186,7 +1231,7 @@ export default function MarketplaceView() {
                         ? 'bg-current/10 border-current/20 opacity-80'
                         : 'bg-transparent border-white/10 opacity-50 text-current hover:border-white/20'
                     }`}
-                    onClick={() => setEditionType(et)}
+                    onClick={() => { setEditionType(et); if (et !== 'limited') setMaxEditions(''); }}
                   >
                     {et === 'unique' ? '\u2726 Unique (1/1)' :
                      et === 'limited' ? '\u2605 Limited' :
