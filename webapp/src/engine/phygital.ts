@@ -138,6 +138,221 @@ export function generatePrintableSVG(cert: PhygitalCertificate): string {
 </svg>`;
 }
 
+// ─── Signature PDF (Business Card Landscape) ─────────
+
+export interface SignatureData {
+  artworkName: string;
+  artistName: string;
+  transactionId: string;
+}
+
+/**
+ * Generates a printable PDF (business card landscape 85×55mm)
+ * with the Cosmowarp logo, artwork name, artist name, and transaction ID.
+ * Uses canvas rendering → PDF blob via print or download.
+ */
+export function generateSignaturePDF(data: SignatureData): void {
+  // Business card landscape: 85mm × 55mm at 300dpi = 1004 × 650 px
+  const W = 1004;
+  const H = 650;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Border
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(16, 16, W - 32, H - 32);
+
+  // Inner border
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(24, 24, W - 48, H - 48);
+
+  // Load and draw the logo
+  const logoImg = new Image();
+  logoImg.onload = () => {
+    // Logo centered at top, 80×80px
+    const logoSize = 80;
+    const logoX = (W - logoSize) / 2;
+    const logoY = 44;
+    ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+
+    // "COSMOWARP" text under logo
+    ctx.fillStyle = '#000000';
+    ctx.font = '600 18px Inter, Helvetica, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('COSMOWARP', W / 2, logoY + logoSize + 24);
+
+    // Separator line
+    ctx.beginPath();
+    ctx.moveTo(120, 180);
+    ctx.lineTo(W - 120, 180);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // "TRANSACTION SIGNATURE" header
+    ctx.font = '600 14px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#333333';
+    ctx.fillText('TRANSACTION SIGNATURE', W / 2, 204);
+
+    // Artwork name
+    ctx.font = '700 28px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#000000';
+    const truncatedTitle = data.artworkName.length > 30
+      ? data.artworkName.slice(0, 30) + '...'
+      : data.artworkName;
+    ctx.fillText(truncatedTitle, W / 2, 260);
+
+    // Artist label + name
+    ctx.font = '400 13px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('Artist', W / 2, 300);
+    ctx.font = '600 20px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#000000';
+    const truncatedArtist = data.artistName.length > 36
+      ? data.artistName.slice(0, 36) + '...'
+      : data.artistName;
+    ctx.fillText(truncatedArtist, W / 2, 326);
+
+    // Separator line
+    ctx.beginPath();
+    ctx.moveTo(120, 356);
+    ctx.lineTo(W - 120, 356);
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Transaction ID label
+    ctx.font = '400 11px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('Transaction ID', W / 2, 384);
+
+    // Transaction ID box
+    ctx.fillStyle = '#f5f5f5';
+    const boxW = 600;
+    const boxH = 40;
+    const boxX = (W - boxW) / 2;
+    const boxY = 394;
+    ctx.fillRect(boxX, boxY, boxW, boxH);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+    ctx.font = '700 16px monospace';
+    ctx.fillStyle = '#000000';
+    const truncatedTxId = data.transactionId.length > 48
+      ? data.transactionId.slice(0, 48) + '...'
+      : data.transactionId;
+    ctx.fillText(truncatedTxId, W / 2, boxY + 26);
+
+    // Date at bottom
+    ctx.font = '400 10px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#999999';
+    ctx.fillText(new Date().toLocaleDateString('fr-FR'), W / 2, 480);
+
+    // Footer
+    ctx.font = '400 9px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#bbbbbb';
+    ctx.fillText('Certified on Cosmowarp Protocol', W / 2, H - 40);
+
+    // Open print dialog with the canvas as business card
+    const dataUrl = canvas.toDataURL('image/png');
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (printWindow) {
+      printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Print Signature - ${escapeXml(data.artworkName)}</title>
+<style>
+  @page { size: 85mm 55mm landscape; margin: 0; }
+  * { margin: 0; padding: 0; }
+  body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+  img { width: 85mm; height: 55mm; object-fit: contain; }
+  @media print {
+    body { background: white; height: auto; }
+    img { width: 85mm; height: 55mm; }
+  }
+</style></head>
+<body><img src="${dataUrl}" /><script>setTimeout(()=>window.print(),300);<\/script></body></html>`);
+      printWindow.document.close();
+    }
+  };
+
+  logoImg.onerror = () => {
+    // Fallback: draw without logo
+    ctx.fillStyle = '#000000';
+    ctx.font = '700 24px Inter, Helvetica, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('COSMOWARP', W / 2, 80);
+
+    ctx.font = '600 14px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#333333';
+    ctx.fillText('TRANSACTION SIGNATURE', W / 2, 140);
+
+    ctx.beginPath();
+    ctx.moveTo(120, 160);
+    ctx.lineTo(W - 120, 160);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    ctx.font = '700 28px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(data.artworkName.slice(0, 30), W / 2, 220);
+
+    ctx.font = '400 13px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('Artist', W / 2, 270);
+    ctx.font = '600 20px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(data.artistName.slice(0, 36), W / 2, 296);
+
+    ctx.font = '400 11px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('Transaction ID', W / 2, 340);
+
+    ctx.fillStyle = '#f5f5f5';
+    const boxW2 = 600, boxH2 = 40, boxX2 = (W - 600) / 2, boxY2 = 354;
+    ctx.fillRect(boxX2, boxY2, boxW2, boxH2);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(boxX2, boxY2, boxW2, boxH2);
+    ctx.font = '700 16px monospace';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(data.transactionId.slice(0, 48), W / 2, boxY2 + 26);
+
+    ctx.font = '400 9px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillStyle = '#bbbbbb';
+    ctx.fillText('Certified on Cosmowarp Protocol', W / 2, H - 40);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (printWindow) {
+      printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Print Signature - ${escapeXml(data.artworkName)}</title>
+<style>
+  @page { size: 85mm 55mm landscape; margin: 0; }
+  * { margin: 0; padding: 0; }
+  body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+  img { width: 85mm; height: 55mm; object-fit: contain; }
+  @media print {
+    body { background: white; height: auto; }
+    img { width: 85mm; height: 55mm; }
+  }
+</style></head>
+<body><img src="${dataUrl}" /><script>setTimeout(()=>window.print(),300);<\/script></body></html>`);
+      printWindow.document.close();
+    }
+  };
+
+  logoImg.src = '/cosmowarp-logo-black.svg';
+}
+
 function escapeXml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

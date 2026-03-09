@@ -4,12 +4,12 @@ import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
-import { generatePhygitalCert, verifyCert, generatePrintableSVG, type PhygitalCertificate } from '../engine/phygital';
+import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 
 import PFPCollectionView from './PFPCollectionView';
 import GenerativeArtView from './GenerativeArtView';
 
-type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'generative';
+type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'generative' | 'rwa-phygital';
 
 export default function MarketplaceView() {
   const {
@@ -711,6 +711,33 @@ export default function MarketplaceView() {
                   </div>
                 )}
 
+                {/* Print Signature for 1/1 artworks with physical counterpart */}
+                {(wart.editionType === 'unique' || wart.maxEditions === 1) && wart.certId && (isMine || isCreator) && (
+                  <div className="glass-panel p-3 mb-3 space-y-2">
+                    <h4 className="text-body-sm font-bold opacity-70">{'\u2399'} Physical Artwork Signature</h4>
+                    <p className="text-[10px] opacity-40">
+                      Print a business card with the transaction signature to authenticate the physical artwork associated with this 1/1 piece.
+                    </p>
+                    <button
+                      className="warp-button w-full py-2.5 text-body-sm font-bold flex items-center justify-center gap-2"
+                      onClick={() => {
+                        const lastTx = wart.history.length > 0 ? wart.history[wart.history.length - 1] : null;
+                        const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
+                        const artistName = isCreator
+                          ? (wallet.alias || shortAddress(wallet.address))
+                          : shortAddress(wart.creator);
+                        generateSignaturePDF({
+                          artworkName: wart.title,
+                          artistName,
+                          transactionId: txId,
+                        });
+                      }}
+                    >
+                      {'\u2399'} Print Signature
+                    </button>
+                  </div>
+                )}
+
                 {/* Phygital Verification (anyone) */}
                 <div className="glass-panel p-3 mb-3 space-y-2">
                   <h4 className="text-body-sm font-bold opacity-70">{'\u2714'} Verify Phygital</h4>
@@ -1024,6 +1051,7 @@ export default function MarketplaceView() {
     { id: 'create', label: '+ Create' },
     { id: 'pfp', label: '\u2B21 PFP' },
     { id: 'generative', label: '\u2726 Generative' },
+    { id: 'rwa-phygital', label: '\u2B22 RWA Phygital' },
   ];
 
   return (
@@ -1376,6 +1404,106 @@ export default function MarketplaceView() {
 
       {/* ─── Generative Art Tab ──────────────────────────── */}
       {tab === 'generative' && <GenerativeArtView />}
+
+      {/* ─── RWA Phygital Tab ────────────────────────────── */}
+      {tab === 'rwa-phygital' && (
+        <>
+          <div className="glass-panel p-4 text-center">
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2B22'} RWA Phygital</h2>
+            <p className="text-body-sm opacity-40">
+              Oeuvres physiques authentifiées sur le protocole Cosmowarp. Imprimez la signature de transaction pour certifier l'oeuvre physique.
+            </p>
+          </div>
+
+          {(() => {
+            // Filter artworks that have phygital certificates or are 1/1 unique editions
+            const phygitalWarts = [...myCollection, ...myCreated]
+              .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i)
+              .filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
+
+            if (phygitalWarts.length === 0) {
+              return (
+                <div className="glass-panel p-8 text-center">
+                  <p className="text-2xl mb-2">{'\u2B22'}</p>
+                  <p className="opacity-50 text-current text-base">Aucune oeuvre phygital RWA.</p>
+                  <p className="text-body-sm opacity-40 mt-1">
+                    Créez une Cosmorare 1/1 avec un certificat pour l'associer à une oeuvre physique.
+                  </p>
+                  <button
+                    className="warp-button text-body-sm mt-3 px-4 py-2"
+                    onClick={() => setTab('create')}
+                  >
+                    Créer une Cosmorare
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {phygitalWarts.map(wart => {
+                  const lastTx = wart.history.length > 0
+                    ? wart.history[wart.history.length - 1]
+                    : null;
+                  const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
+                  const artistName = wart.creator === wallet.address
+                    ? (wallet.alias || shortAddress(wallet.address))
+                    : shortAddress(wart.creator);
+
+                  return (
+                    <div key={wart.id} className="glass-panel p-4 space-y-3">
+                      <div className="flex gap-3">
+                        <div className="w-20 h-20 bg-current/5 overflow-hidden shrink-0">
+                          <WartMedia wart={wart} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
+                          <p className="text-[10px] opacity-40 truncate">
+                            by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] opacity-80">1/1</span>
+                            <RarityBadge wart={wart} />
+                          </div>
+                          {wart.certId && (
+                            <p className="text-[9px] opacity-50 mt-1 font-mono truncate">{wart.certId}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-2 bg-current/5 border border-current/10 text-[10px] opacity-40 space-y-0.5">
+                        <p><span className="opacity-60">TX ID:</span> <span className="font-mono">{txId.slice(0, 32)}...</span></p>
+                        <p><span className="opacity-60">Artist:</span> {artistName}</p>
+                        <p><span className="opacity-60">Created:</span> {formatDateFR(wart.createdAt)}</p>
+                      </div>
+
+                      <button
+                        className="warp-button w-full py-2.5 text-body-sm font-bold flex items-center justify-center gap-2"
+                        onClick={() => {
+                          generateSignaturePDF({
+                            artworkName: wart.title,
+                            artistName,
+                            transactionId: txId,
+                          });
+                        }}
+                      >
+                        {'\u2399'} Print Signature
+                      </button>
+
+                      <button
+                        className="w-full py-1.5 text-[11px] opacity-50 border border-current/10 hover:opacity-70 transition-all cursor-pointer"
+                        onClick={() => openDetail(wart)}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </>
+      )}
     </div>
   );
 }
