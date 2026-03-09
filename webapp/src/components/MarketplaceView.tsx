@@ -7,7 +7,8 @@ import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 
 import PFPCollectionView from './PFPCollectionView';
-type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'rwa-phygital';
+import MusicView from './MusicView';
+type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'rwa-phygital' | 'music';
 
 export default function MarketplaceView() {
   const {
@@ -97,7 +98,7 @@ export default function MarketplaceView() {
     }
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     let mType: 'image' | 'audio' | 'video' | 'svg' = 'image';
-    if (['mp3'].includes(ext)) mType = 'audio';
+    if (['mp3', 'wav'].includes(ext)) mType = 'audio';
     else if (['mp4', 'mov'].includes(ext)) mType = 'video';
     else if (['svg'].includes(ext)) mType = 'svg';
     else if (['gif', 'jpeg', 'jpg', 'png'].includes(ext)) mType = 'image';
@@ -1047,6 +1048,7 @@ export default function MarketplaceView() {
     { id: 'marketplace', label: '\u2B22 Marketplace' },
     { id: 'collection', label: '\u25C8 My Collection' },
     { id: 'create', label: '+ Create' },
+    { id: 'music', label: '\u266B Musique' },
     { id: 'pfp', label: '\u2B21 PFP' },
     { id: 'rwa-phygital', label: '\u2B22 RWA Phygital' },
   ];
@@ -1174,7 +1176,7 @@ export default function MarketplaceView() {
               <input
                 ref={fileRef}
                 type="file"
-                accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov,.svg"
+                accept=".gif,.jpeg,.jpg,.png,.mp3,.wav,.mp4,.mov,.svg"
                 className="hidden"
                 onChange={handleMediaUpload}
               />
@@ -1395,6 +1397,9 @@ export default function MarketplaceView() {
           </div>
         </div>
       )}
+
+      {/* ─── Music Tab ─────────────────────────────────────── */}
+      {tab === 'music' && <MusicView />}
 
       {/* ─── PFP Collections Tab ──────────────────────────── */}
       {tab === 'pfp' && <PFPCollectionView />}
