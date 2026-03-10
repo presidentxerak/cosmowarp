@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
@@ -8,7 +8,9 @@ import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignatu
 
 import PFPCollectionView from './PFPCollectionView';
 import MusicView from './MusicView';
-type Tab = 'marketplace' | 'collection' | 'create' | 'detail' | 'pfp' | 'rwa-phygital' | 'music';
+type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'create' | 'detail';
+type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
+type SalesMarketFilter = '1st' | '2nd';
 
 export default function MarketplaceView() {
   const {
@@ -18,8 +20,12 @@ export default function MarketplaceView() {
     listWartFiat, buyWartFiat, getWartFiatPrice,
   } = useWallet();
 
-  const [tab, setTab] = useState<Tab>('marketplace');
+  const [tab, setTab] = useState<GalleryTab>('all');
   const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
+  const [editionFilter, setEditionFilter] = useState<EditionFilter>('all');
+  const [salesMarketFilter, setSalesMarketFilter] = useState<SalesMarketFilter>('1st');
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferWartId, setTransferWartId] = useState<string | null>(null);
 
   // Create form
   const [title, setTitle] = useState('');
@@ -254,7 +260,7 @@ export default function MarketplaceView() {
     deleteWart(wart.id);
     setSelectedWart(null);
     setConfirmDelete(false);
-    setTab('collection');
+    setTab('all');
   };
 
   const startEditing = (wart: Wart) => {
@@ -443,6 +449,14 @@ export default function MarketplaceView() {
             )}
           </div>
         )}
+        {wart.owner === wallet.address && (
+          <button
+            className="w-full mt-2 py-1.5 text-[11px] opacity-40 border border-current/10 hover:opacity-70 hover:bg-current/5 transition-all cursor-pointer"
+            onClick={e => { e.stopPropagation(); setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}
+          >
+            Transfer
+          </button>
+        )}
       </div>
     );
   };
@@ -460,9 +474,9 @@ export default function MarketplaceView() {
       <div className="space-y-4 max-w-lg mx-auto">
         <button
           className="text-body-sm opacity-50 text-current hover:opacity-90 cursor-pointer"
-          onClick={() => { setTab('marketplace'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
+          onClick={() => { setTab('all'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
         >
-          {'\u2190'} Back to Marketplace
+          {'\u2190'} Back to Gallery
         </button>
 
         <div className="glass-panel p-4">
@@ -927,24 +941,12 @@ export default function MarketplaceView() {
                       </div>
                     )}
 
-                    <div className="flex gap-2">
-                      <input
-                        className="warp-input flex-1 text-base"
-                        placeholder="CW... (recipient address)"
-                        value={transferTo}
-                        onChange={e => { setTransferTo(e.target.value); setTransferError(''); }}
-                      />
-                      <button
-                        className="warp-button text-base px-4"
-                        onClick={() => handleTransfer(wart)}
-                        disabled={!transferTo}
-                      >
-                        Gift
-                      </button>
-                    </div>
-                    {transferError && (
-                      <p className="text-body-sm p-2 bg-current/5 border border-current/15 opacity-70">{transferError}</p>
-                    )}
+                    <button
+                      className="warp-button w-full py-2 text-base"
+                      onClick={() => { setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}
+                    >
+                      Transfer to Another Wallet
+                    </button>
                   </div>
                 )}
               </>
@@ -1017,55 +1019,213 @@ export default function MarketplaceView() {
     );
   }
 
-  // ─── Category filter ──────────────────────────────────────
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  // ─── Edition filter logic ──────────────────────────────────
+  const applyEditionFilter = (warts: Wart[]) => {
+    if (editionFilter === 'all') return warts;
+    if (editionFilter === 'unique') return warts.filter(w => w.editionType === 'unique' && w.maxEditions === 1);
+    if (editionFilter === 'collection') {
+      // Collection of several Unique Pieces = same creator, multiple unique pieces grouped
+      const creatorCounts: Record<string, number> = {};
+      warts.forEach(w => {
+        if (w.editionType === 'unique') {
+          creatorCounts[w.creator] = (creatorCounts[w.creator] || 0) + 1;
+        }
+      });
+      return warts.filter(w => w.editionType === 'unique' && (creatorCounts[w.creator] || 0) > 1);
+    }
+    if (editionFilter === 'limited') return warts.filter(w => w.editionType === 'limited');
+    return warts;
+  };
 
-  const categories = [
-    { id: 'all', label: 'All' },
-    { id: 'image', label: 'Art' },
-    { id: 'audio', label: 'Music' },
-    { id: 'video', label: 'Video' },
-    { id: 'unique', label: '1/1' },
-    { id: 'limited', label: 'Limited' },
-    { id: 'cheap', label: 'Under 10\u03A9' },
-  ];
+  // ─── All warts (marketplace + collections) ──────────────
+  const allWarts = useMemo(() => {
+    const combined = [...marketplace, ...myCollection, ...myCreated];
+    const unique = combined.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
+    return unique.filter(w => !isExpired(w));
+  }, [marketplace, myCollection, myCreated]);
 
-  // ─── Filter expired from marketplace ──────────────────────
-  const activeMarketplace = marketplace.filter(w => {
-    if (isExpired(w)) return false;
-    if (categoryFilter === 'all') return true;
-    if (categoryFilter === 'image') return w.mediaType === 'image';
-    if (categoryFilter === 'audio') return w.mediaType === 'audio';
-    if (categoryFilter === 'video') return w.mediaType === 'video';
-    if (categoryFilter === 'unique') return w.editionType === 'unique';
-    if (categoryFilter === 'limited') return w.editionType === 'limited';
-    if (categoryFilter === 'cheap') return w.price !== null && w.price < 10;
-    return true;
-  });
+  // ─── Filter by media type ──────────────────────────────
+  const filterByMedia = (warts: Wart[], type: string) => {
+    if (type === 'art') return warts.filter(w => w.mediaType === 'image' || w.mediaType === 'svg');
+    if (type === 'video') return warts.filter(w => w.mediaType === 'video');
+    if (type === 'music') return warts.filter(w => w.mediaType === 'audio');
+    return warts;
+  };
+
+  // ─── RWA filter ───────────────────────────────────────
+  const rwaWarts = useMemo(() => {
+    return allWarts.filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
+  }, [allWarts]);
+
+  // ─── Phygital filter ──────────────────────────────────
+  const phygitalWarts = useMemo(() => {
+    return [...myCollection, ...myCreated]
+      .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i)
+      .filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
+  }, [myCollection, myCreated]);
+
+  // ─── Top Creators ─────────────────────────────────────
+  const topCreators = useMemo(() => {
+    const creatorMap: Record<string, { address: string; count: number; totalVolume: number; warts: Wart[] }> = {};
+    allWarts.forEach(w => {
+      if (!creatorMap[w.creator]) creatorMap[w.creator] = { address: w.creator, count: 0, totalVolume: 0, warts: [] };
+      creatorMap[w.creator].count++;
+      creatorMap[w.creator].warts.push(w);
+      w.history.forEach(h => { creatorMap[w.creator].totalVolume += h.price; });
+    });
+    return Object.values(creatorMap).sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
+  }, [allWarts]);
+
+  // ─── Top Collectors ───────────────────────────────────
+  const topCollectors = useMemo(() => {
+    const collectorMap: Record<string, { address: string; count: number; totalSpent: number }> = {};
+    allWarts.forEach(w => {
+      if (!collectorMap[w.owner]) collectorMap[w.owner] = { address: w.owner, count: 0, totalSpent: 0 };
+      collectorMap[w.owner].count++;
+      w.history.forEach(h => {
+        if (h.to === w.owner && h.price > 0) collectorMap[w.owner].totalSpent += h.price;
+      });
+    });
+    return Object.values(collectorMap).sort((a, b) => b.totalSpent - a.totalSpent || b.count - a.count);
+  }, [allWarts]);
+
+  // ─── Top Sales ────────────────────────────────────────
+  const topSales = useMemo(() => {
+    const sales: { wart: Wart; transfer: Wart['history'][0]; isFirstSale: boolean }[] = [];
+    allWarts.forEach(w => {
+      w.history.forEach((h, idx) => {
+        if (h.price > 0) {
+          sales.push({ wart: w, transfer: h, isFirstSale: idx === 0 });
+        }
+      });
+    });
+    const filtered = salesMarketFilter === '1st'
+      ? sales.filter(s => s.isFirstSale)
+      : sales.filter(s => !s.isFirstSale);
+    return filtered.sort((a, b) => b.transfer.price - a.transfer.price);
+  }, [allWarts, salesMarketFilter]);
+
+  // ─── Get current filtered warts for tab ─────────────────
+  const getTabWarts = (): Wart[] => {
+    let base: Wart[] = [];
+    if (tab === 'all') base = allWarts;
+    else if (tab === 'art') base = filterByMedia(allWarts, 'art');
+    else if (tab === 'video') base = filterByMedia(allWarts, 'video');
+    else if (tab === 'music') base = filterByMedia(allWarts, 'music');
+    else if (tab === 'rwa') base = rwaWarts;
+    else if (tab === 'phygital') base = phygitalWarts;
+    else return [];
+    return applyEditionFilter(base);
+  };
+
+  const showEditionFilters = ['all', 'art', 'video', 'music', 'rwa', 'phygital'].includes(tab);
 
   // ─── Tab Navigation ────────────────────────────────────
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'marketplace', label: '\u2B22 Marketplace' },
-    { id: 'collection', label: '\u25C8 My Collection' },
+  const galleryTabs: { id: GalleryTab; label: string }[] = [
+    { id: 'all', label: 'All' },
+    { id: 'art', label: 'Art' },
+    { id: 'video', label: 'Video' },
+    { id: 'music', label: 'Music' },
+    { id: 'rwa', label: 'RWA' },
+    { id: 'phygital', label: 'Phygital' },
+    { id: 'pfp', label: 'Collections PFP' },
+    { id: 'top-creators', label: 'Top Creators' },
+    { id: 'top-collectors', label: 'Top Collectors' },
+    { id: 'top-sales', label: 'Top Sales' },
     { id: 'create', label: '+ Create' },
-    { id: 'music', label: '\u266B Musique' },
-    { id: 'pfp', label: '\u2B21 PFP' },
-    { id: 'rwa-phygital', label: '\u2B22 RWA Phygital' },
   ];
 
+  const editionFilters: { id: EditionFilter; label: string }[] = [
+    { id: 'all', label: 'All' },
+    { id: 'unique', label: 'Unique Piece' },
+    { id: 'collection', label: 'Collection of Unique Pieces' },
+    { id: 'limited', label: 'Limited Editions' },
+  ];
+
+  // ─── Transfer Modal ─────────────────────────────────────
+  const TransferModal = () => {
+    if (!showTransferModal || !transferWartId) return null;
+    const wart = [...myCollection, ...myCreated].find(w => w.id === transferWartId);
+    if (!wart) return null;
+
+    return (
+      <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60" onClick={() => { setShowTransferModal(false); setTransferWartId(null); setTransferTo(''); setTransferError(''); }} />
+        <div className="glass-panel p-6 w-full max-w-md relative z-10 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-title-sm font-bold opacity-90 font-title">Transfer Artwork</h3>
+            <button
+              className="w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer"
+              onClick={() => { setShowTransferModal(false); setTransferWartId(null); setTransferTo(''); setTransferError(''); }}
+            >
+              {'\u2716'}
+            </button>
+          </div>
+
+          <div className="flex gap-3 p-3 bg-current/5 border border-current/10">
+            <div className="w-16 h-16 bg-current/5 overflow-hidden shrink-0">
+              <WartMedia wart={wart} className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
+              <p className="text-[10px] opacity-40">by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}</p>
+              <EditionInfo wart={wart} compact />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] opacity-50 block mb-1.5">RECIPIENT WALLET ADDRESS</label>
+            <input
+              className="warp-input w-full text-base"
+              placeholder="CW..."
+              value={transferTo}
+              onChange={e => { setTransferTo(e.target.value); setTransferError(''); }}
+            />
+          </div>
+
+          {transferError && (
+            <div className="text-body-sm p-2.5 bg-current/5 border border-current/15 opacity-70">{transferError}</div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              className="warp-button flex-1 py-2.5 text-base font-bold"
+              onClick={() => handleTransfer(wart)}
+              disabled={!transferTo.trim()}
+            >
+              Transfer
+            </button>
+            <button
+              className="flex-1 py-2.5 text-base opacity-50 border border-current/10 hover:opacity-70 transition-all cursor-pointer"
+              onClick={() => { setShowTransferModal(false); setTransferWartId(null); setTransferTo(''); setTransferError(''); }}
+            >
+              Cancel
+            </button>
+          </div>
+
+          <p className="text-[10px] opacity-30 text-center">
+            This action is irreversible. The artwork will be transferred to the recipient wallet.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-4">
-      {/* Sub-tabs */}
-      <div className="glass-panel p-2">
-        <div className="flex gap-1">
-          {tabs.map(t => (
+    <div className="space-y-3">
+      <TransferModal />
+
+      {/* ─── Gallery Tabs (scrollable) ──────────────────────── */}
+      <div className="glass-panel p-1.5">
+        <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+          {galleryTabs.map(t => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex-1 px-3 py-2 rounded-none text-body-sm font-medium transition-all cursor-pointer ${
+              onClick={() => { setTab(t.id); setEditionFilter('all'); }}
+              className={`px-3 py-2 text-[11px] font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                 tab === t.id
-                  ? 'bg-current/10 opacity-80'
-                  : 'opacity-50 text-current hover:opacity-90 hover:bg-white/5'
+                  ? 'bg-current/10 opacity-90'
+                  : 'opacity-40 hover:opacity-70 hover:bg-current/5'
               }`}
             >
               {t.label}
@@ -1074,86 +1234,216 @@ export default function MarketplaceView() {
         </div>
       </div>
 
-      {/* List/delist success toast */}
+      {/* ─── Edition Filters ────────────────────────────────── */}
+      {showEditionFilters && (
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 px-0.5">
+          {editionFilters.map(f => (
+            <button
+              key={f.id}
+              onClick={() => setEditionFilter(f.id)}
+              className={`px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                editionFilter === f.id
+                  ? 'bg-current/10 border border-current/20 opacity-80'
+                  : 'bg-transparent border border-current/10 opacity-40 hover:border-current/20 hover:opacity-60'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ─── Top Sales Market Filter ────────────────────────── */}
+      {tab === 'top-sales' && (
+        <div className="flex gap-1.5 px-0.5">
+          {([{ id: '1st' as const, label: '1st Market' }, { id: '2nd' as const, label: '2nd Market' }]).map(f => (
+            <button
+              key={f.id}
+              onClick={() => setSalesMarketFilter(f.id)}
+              className={`px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition-all cursor-pointer ${
+                salesMarketFilter === f.id
+                  ? 'bg-current/10 border border-current/20 opacity-80'
+                  : 'bg-transparent border border-current/10 opacity-40 hover:border-current/20 hover:opacity-60'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Toast */}
       {listSuccess && (
         <div className="text-base p-3 bg-current/5 border border-current/15 opacity-80 text-center">
           {listSuccess}
         </div>
       )}
 
-      {/* ─── Marketplace Tab ───────────────────────────────── */}
-      {tab === 'marketplace' && (
+      {/* ─── All / Art / Video / Music / RWA / Phygital ─────── */}
+      {showEditionFilters && (
+        (() => {
+          const warts = getTabWarts();
+          const tabLabels: Record<string, string> = {
+            all: 'Gallery Cosmorares',
+            art: 'Art',
+            video: 'Video',
+            music: 'Music',
+            rwa: 'RWA',
+            phygital: 'Phygital',
+          };
+          return (
+            <>
+              <div className="glass-panel p-4 text-center">
+                <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{tabLabels[tab] || 'Gallery'}</h2>
+                <p className="text-body-sm opacity-40">
+                  {tab === 'all' && 'Objets rares certifiés sur le protocole Cosmorare.'}
+                  {tab === 'art' && 'Art visuel — images, illustrations et oeuvres graphiques.'}
+                  {tab === 'video' && 'Oeuvres vidéo certifiées.'}
+                  {tab === 'music' && 'Oeuvres musicales certifiées.'}
+                  {tab === 'rwa' && 'Real World Assets — actifs du monde réel tokénisés.'}
+                  {tab === 'phygital' && 'Oeuvres physiques authentifiées avec certificat digital.'}
+                </p>
+              </div>
+
+              {warts.length === 0 ? (
+                <div className="glass-panel p-8 text-center">
+                  <p className="text-2xl mb-2">{'\u2742'}</p>
+                  <p className="opacity-50 text-base">Aucune Cosmorare dans cette catégorie.</p>
+                  <button
+                    className="warp-button text-body-sm mt-3 px-4 py-2"
+                    onClick={() => setTab('create')}
+                  >
+                    Créer une Cosmorare
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {warts.map(wart => (
+                    <WartCard key={wart.id} wart={wart} showBuy />
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()
+      )}
+
+      {/* ─── Collections PFP Tab ──────────────────────────── */}
+      {tab === 'pfp' && <PFPCollectionView />}
+
+      {/* ─── Top Creators Tab ─────────────────────────────── */}
+      {tab === 'top-creators' && (
         <>
           <div className="glass-panel p-4 text-center">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2B22'} Marketplace Cosmorares</h2>
-            <p className="text-body-sm opacity-40">
-              Objets rares certifiés sur le protocole Cosmorare. Achetez, vendez et collectionnez.
-            </p>
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Creators</h2>
+            <p className="text-body-sm opacity-40">Les créateurs les plus actifs et performants.</p>
           </div>
-
-          {/* Category filters */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 px-1">
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setCategoryFilter(cat.id)}
-                className={`px-3 py-1.5 text-body-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  categoryFilter === cat.id
-                    ? 'bg-current/10 border border-current/20 opacity-80'
-                    : 'bg-transparent border border-white/10 opacity-50 text-current hover:border-white/20 hover:opacity-70'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {activeMarketplace.length === 0 ? (
+          {topCreators.length === 0 ? (
             <div className="glass-panel p-8 text-center">
-              <p className="text-2xl mb-2">{'\u2742'}</p>
-              <p className="opacity-50 text-current text-base">Aucune Cosmorare en vente.</p>
-              <p className="text-body-sm opacity-40 mt-1">Soyez le premier à créer et certifier une Cosmorare !</p>
-              <button
-                className="warp-button text-body-sm mt-3 px-4 py-2"
-                onClick={() => setTab('create')}
-              >
-                Créer une Cosmorare
-              </button>
+              <p className="opacity-50 text-base">Aucun créateur pour le moment.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {activeMarketplace.map(wart => (
-                <WartCard key={wart.id} wart={wart} showBuy />
+            <div className="space-y-2">
+              {topCreators.slice(0, 50).map((creator, idx) => (
+                <div key={creator.address} className="glass-panel p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
+                    #{idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold opacity-80 truncate">
+                      {creator.address === wallet.address ? (wallet.alias || 'You') : shortAddress(creator.address)}
+                    </p>
+                    <p className="text-[10px] opacity-40">
+                      {creator.count} artwork{creator.count > 1 ? 's' : ''} created
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u03A9'}</p>
+                    <p className="text-[10px] opacity-40">total volume</p>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </>
       )}
 
-      {/* ─── Collection Tab ────────────────────────────────── */}
-      {tab === 'collection' && (
+      {/* ─── Top Collectors Tab ───────────────────────────── */}
+      {tab === 'top-collectors' && (
         <>
           <div className="glass-panel p-4 text-center">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u25C8'} My Collection</h2>
-            <p className="text-body-sm opacity-40">
-              Cosmorares que vous possédez ({myCollection.length}) et créées ({myCreated.length})
-            </p>
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Collectors</h2>
+            <p className="text-body-sm opacity-40">Les plus grands collectionneurs de Cosmorares.</p>
           </div>
-
-          {myCollection.length === 0 ? (
+          {topCollectors.length === 0 ? (
             <div className="glass-panel p-8 text-center">
-              <p className="opacity-50 text-current text-base">Vous ne possédez aucune Cosmorare.</p>
-              <button
-                className="warp-button text-body-sm mt-3 px-4 py-2"
-                onClick={() => setTab('marketplace')}
-              >
-                Parcourir la Marketplace
-              </button>
+              <p className="opacity-50 text-base">Aucun collectionneur pour le moment.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {myCollection.map(wart => (
-                <WartCard key={wart.id} wart={wart} />
+            <div className="space-y-2">
+              {topCollectors.slice(0, 50).map((collector, idx) => (
+                <div key={collector.address} className="glass-panel p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
+                    #{idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold opacity-80 truncate">
+                      {collector.address === wallet.address ? (wallet.alias || 'You') : shortAddress(collector.address)}
+                    </p>
+                    <p className="text-[10px] opacity-40">
+                      {collector.count} artwork{collector.count > 1 ? 's' : ''} owned
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u03A9'}</p>
+                    <p className="text-[10px] opacity-40">total spent</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ─── Top Sales Tab ────────────────────────────────── */}
+      {tab === 'top-sales' && (
+        <>
+          <div className="glass-panel p-4 text-center">
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Sales</h2>
+            <p className="text-body-sm opacity-40">
+              {salesMarketFilter === '1st' ? 'Les meilleures ventes du marché primaire (première vente).' : 'Les meilleures reventes sur le marché secondaire.'}
+            </p>
+          </div>
+          {topSales.length === 0 ? (
+            <div className="glass-panel p-8 text-center">
+              <p className="opacity-50 text-base">Aucune vente pour le moment.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {topSales.slice(0, 50).map((sale, idx) => (
+                <div
+                  key={`${sale.wart.id}-${sale.transfer.timestamp}`}
+                  className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-all"
+                  onClick={() => openDetail(sale.wart)}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
+                    #{idx + 1}
+                  </div>
+                  <div className="w-12 h-12 bg-current/5 overflow-hidden shrink-0">
+                    <WartMedia wart={sale.wart} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold opacity-80 truncate">{sale.wart.title}</p>
+                    <p className="text-[10px] opacity-40">
+                      {shortAddress(sale.transfer.from)} {'\u2192'} {shortAddress(sale.transfer.to)}
+                    </p>
+                    <p className="text-[10px] opacity-30">{formatDateFR(sale.transfer.timestamp)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u03A9'}</p>
+                    <p className="text-[10px] opacity-40">{sale.isFirstSale ? '1st market' : '2nd market'}</p>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -1162,17 +1452,45 @@ export default function MarketplaceView() {
 
       {/* ─── Create Tab ────────────────────────────────────── */}
       {tab === 'create' && (
-        <div className="glass-panel p-5">
-          <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title text-center">{'\u2742'} Créer une Cosmorare</h2>
-          <p className="text-body-sm opacity-40 mb-4 text-center">
-            Certifiez un objet rare unique sur le protocole Cosmorare.
-            Vous toucherez des royalties à chaque revente.
-          </p>
+        <div className="glass-panel p-0 overflow-hidden">
+          {/* Create header */}
+          <div className="p-5 pb-3 border-b border-current/10">
+            <h2 className="text-title-sm font-bold opacity-100 font-title">Create a Cosmorare</h2>
+            <p className="text-body-sm opacity-40 mt-1">
+              Certify a rare digital object on the Cosmorare protocol. Earn royalties on every resale.
+            </p>
+          </div>
 
-          <div className="space-y-4 max-w-md mx-auto">
-            {/* Media Upload */}
+          <div className="p-5 space-y-5">
+            {/* ─── Category Selection ──────────────────────── */}
             <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">MEDIA FILE (max 50MB) — .gif .jpeg .png .svg .mp3 .mp4 .mov</label>
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Category</label>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                {[
+                  { id: 'image', label: 'Art', icon: '\u25C8' },
+                  { id: 'video', label: 'Video', icon: '\u25B6' },
+                  { id: 'audio', label: 'Music', icon: '\u266B' },
+                  { id: 'svg', label: 'RWA', icon: '\u2B22' },
+                ].map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setMediaType(cat.id as 'image' | 'audio' | 'video' | 'svg')}
+                    className={`py-2.5 px-2 text-[11px] font-medium transition-all cursor-pointer text-center ${
+                      mediaType === cat.id
+                        ? 'bg-current/10 border border-current/20 opacity-90'
+                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                    }`}
+                  >
+                    <div className="text-base mb-0.5">{cat.icon}</div>
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── Media Upload ─────────────────────────── */}
+            <div>
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Media File</label>
               <input
                 ref={fileRef}
                 type="file"
@@ -1182,99 +1500,107 @@ export default function MarketplaceView() {
               />
               <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
               {imageData ? (
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-3">
                   {(mediaType === 'image' || mediaType === 'svg') && (
-                    <div className="aspect-square max-w-[200px] overflow-hidden rounded-none bg-current/5 mb-2">
+                    <div className="w-full max-w-[280px] aspect-square overflow-hidden bg-current/5 border border-current/10">
                       <img src={imageData} alt="Preview" className="w-full h-full object-cover" />
                     </div>
                   )}
                   {mediaType === 'video' && (
-                    <video src={imageData} controls className="max-w-[200px] max-h-[200px] mb-2 bg-black" />
+                    <video src={imageData} controls className="w-full max-w-[280px] bg-black border border-current/10" />
                   )}
                   {mediaType === 'audio' && (
-                    <div className="mb-2 space-y-2 w-full">
-                      <audio src={imageData} controls className="w-full h-8" />
+                    <div className="w-full space-y-2">
+                      <audio src={imageData} controls className="w-full h-10" />
                       {audioCover ? (
-                        <div className="flex items-center gap-2">
-                          <img src={audioCover} alt="Cover" className="w-12 h-12 object-cover" />
-                          <button className="text-[10px] opacity-40 hover:opacity-70 cursor-pointer" onClick={() => setAudioCover('')}>Remove cover</button>
+                        <div className="flex items-center gap-3 p-2 bg-current/5 border border-current/10">
+                          <img src={audioCover} alt="Cover" className="w-14 h-14 object-cover" />
+                          <div className="flex-1">
+                            <p className="text-[10px] opacity-50">Cover image</p>
+                          </div>
+                          <button className="text-[10px] opacity-40 hover:opacity-70 cursor-pointer" onClick={() => setAudioCover('')}>Remove</button>
                         </div>
                       ) : (
-                        <button className="text-[10px] opacity-40 hover:opacity-70 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
-                          + Add cover image for audio
+                        <button className="w-full py-2 text-[11px] opacity-40 border border-dashed border-current/15 hover:opacity-60 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
+                          + Add cover image
                         </button>
                       )}
                     </div>
                   )}
                   <button
-                    className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer"
-                    onClick={() => { setImageData(''); setMediaType('image'); setAudioCover(''); }}
+                    className="text-[11px] opacity-40 hover:opacity-70 cursor-pointer"
+                    onClick={() => { setImageData(''); setAudioCover(''); }}
                   >
-                    Remove
+                    Remove file
                   </button>
                 </div>
               ) : (
                 <button
-                  className="warp-button w-full py-4 text-base border-dashed"
+                  className="w-full py-8 border border-dashed border-current/20 hover:border-current/30 hover:bg-current/5 transition-all cursor-pointer opacity-50 hover:opacity-70"
                   onClick={() => fileRef.current?.click()}
                 >
-                  {'\u2B06'} Upload Media
+                  <div className="text-2xl mb-1">{'\u2B06'}</div>
+                  <div className="text-[11px]">Click to upload (max 50MB)</div>
+                  <div className="text-[10px] opacity-60 mt-1">.gif .jpeg .png .svg .mp3 .mp4 .mov</div>
                 </button>
               )}
             </div>
 
-            {/* Title */}
-            <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">TITLE</label>
-              <input
-                className="warp-input"
-                placeholder="Name your artwork"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                maxLength={100}
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">DESCRIPTION (optional)</label>
-              <textarea
-                className="warp-input min-h-[80px] resize-y"
-                placeholder="Tell the story behind your art..."
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                maxLength={500}
-              />
+            {/* ─── Title & Description ─────────────────── */}
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Title</label>
+                <input
+                  className="warp-input w-full"
+                  placeholder="Name your artwork"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Description <span className="opacity-60">(optional)</span></label>
+                <textarea
+                  className="warp-input w-full min-h-[80px] resize-y"
+                  placeholder="Tell the story behind your art..."
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  maxLength={500}
+                />
+              </div>
             </div>
 
             {/* ─── Edition Type ─────────────────────────── */}
             <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">EDITION TYPE</label>
-              <div className="flex gap-2">
-                {(['unique', 'limited', 'unlimited'] as const).map(et => (
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Edition Type</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { id: 'unique' as const, label: 'Unique Piece', sub: '1/1', icon: '\u2726' },
+                  { id: 'limited' as const, label: 'Limited Edition', sub: 'Fixed supply', icon: '\u2605' },
+                  { id: 'unlimited' as const, label: 'Open Edition', sub: 'Unlimited', icon: '\u25CE' },
+                ]).map(et => (
                   <button
-                    key={et}
-                    className={`flex-1 py-2 text-body-sm font-medium border transition-all cursor-pointer ${
-                      editionType === et
-                        ? 'bg-current/10 border-current/20 opacity-80'
-                        : 'bg-transparent border-white/10 opacity-50 text-current hover:border-white/20'
+                    key={et.id}
+                    className={`p-3 text-center transition-all cursor-pointer ${
+                      editionType === et.id
+                        ? 'bg-current/10 border border-current/20 opacity-90'
+                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
                     }`}
-                    onClick={() => { setEditionType(et); if (et !== 'limited') setMaxEditions(''); }}
+                    onClick={() => { setEditionType(et.id); if (et.id !== 'limited') setMaxEditions(''); }}
                   >
-                    {et === 'unique' ? '\u2726 Unique (1/1)' :
-                     et === 'limited' ? '\u2605 Limited' :
-                     '\u25CE Unlimited'}
+                    <div className="text-base mb-1">{et.icon}</div>
+                    <div className="text-[11px] font-medium">{et.label}</div>
+                    <div className="text-[9px] opacity-60 mt-0.5">{et.sub}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Max Editions (only for limited) */}
             {editionType === 'limited' && (
               <div>
-                <label className="text-[10px] opacity-50 text-current block mb-1">MAX EDITIONS</label>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Max Editions</label>
                 <input
-                  className="warp-input"
+                  className="warp-input w-full"
                   type="number"
                   placeholder="e.g. 10"
                   min="1"
@@ -1282,93 +1608,86 @@ export default function MarketplaceView() {
                   value={maxEditions}
                   onChange={e => setMaxEditions(e.target.value)}
                 />
-                <p className="text-[10px] opacity-40 mt-1">
-                  How many copies can be minted.
-                </p>
               </div>
             )}
 
+            {/* ─── Price & Royalty (side by side) ───────── */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Price in {'\u03A9'}</label>
+                <input
+                  className="warp-input w-full"
+                  type="number"
+                  placeholder="Not for sale"
+                  min="0"
+                  step="1"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Royalty (%)</label>
+                <input
+                  className="warp-input w-full"
+                  type="number"
+                  placeholder="5"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value={royalty}
+                  onChange={e => setRoyalty(e.target.value)}
+                />
+              </div>
+            </div>
+
             {/* ─── Time Limit ──────────────────────────── */}
             <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">TIME LIMIT (optional, in hours)</label>
+              <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Time Limit <span className="opacity-60">(optional, in hours)</span></label>
               <input
-                className="warp-input"
+                className="warp-input w-full"
                 type="number"
-                placeholder="e.g. 24 (leave empty = forever)"
+                placeholder="Leave empty = forever"
                 min="0"
                 step="1"
                 value={durationHours}
                 onChange={e => setDurationHours(e.target.value)}
               />
-              <p className="text-[10px] opacity-40 mt-1">
-                {durationHours
-                  ? `Expires ${formatDateFR(Date.now() + parseFloat(durationHours) * 3600000)} (Paris). Rarity increases as deadline approaches.`
-                  : 'Laisser vide pour aucune limite. Les Cosmorares à durée limitée gagnent en rareté à l\'approche de la deadline.'}
-              </p>
+              {durationHours && (
+                <p className="text-[10px] opacity-40 mt-1">
+                  Expires {formatDateFR(Date.now() + parseFloat(durationHours) * 3600000)} (Paris)
+                </p>
+              )}
             </div>
 
-            {/* Price */}
-            <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">PRICE IN {'\u03A9'} (leave empty = not for sale)</label>
-              <input
-                className="warp-input"
-                type="number"
-                placeholder="0"
-                min="0"
-                step="1"
-                value={price}
-                onChange={e => setPrice(e.target.value)}
-              />
+            {/* ─── Rarity Preview ──────────────────────── */}
+            <div className="p-3 border border-current/10 bg-current/5 flex items-center justify-between">
+              <span className="text-body-sm opacity-40">Estimated rarity</span>
+              <span className="text-body-sm">
+                {(() => {
+                  const previewRarity = editionType === 'unique' ? 'legendary'
+                    : editionType === 'limited' && maxEditions
+                      ? parseInt(maxEditions) <= 10 ? 'epic'
+                      : parseInt(maxEditions) <= 50 ? 'rare'
+                      : parseInt(maxEditions) <= 200 ? 'uncommon'
+                      : 'common'
+                    : 'common';
+                  const cfg = RARITY_CONFIG[previewRarity];
+                  return <span className={`font-bold ${cfg.color}`}>{cfg.badge} {cfg.label}</span>;
+                })()}
+              </span>
             </div>
 
-            {/* Royalty */}
-            <div>
-              <label className="text-[10px] opacity-50 text-current block mb-1">CREATOR ROYALTY ON RESALE (%)</label>
-              <input
-                className="warp-input"
-                type="number"
-                placeholder="5"
-                min="0"
-                max="50"
-                step="1"
-                value={royalty}
-                onChange={e => setRoyalty(e.target.value)}
-              />
-              <p className="text-[10px] opacity-40 mt-1">
-                You'll receive {royalty || 5}% of every future resale.
-              </p>
-            </div>
-
-            {/* Rarity Preview */}
-            <div className="text-body-sm p-3 border border-current/10 bg-current/5">
-              <span className="opacity-40">Estimated rarity: </span>
-              {(() => {
-                const previewRarity = editionType === 'unique' ? 'legendary'
-                  : editionType === 'limited' && maxEditions
-                    ? parseInt(maxEditions) <= 10 ? 'epic'
-                    : parseInt(maxEditions) <= 50 ? 'rare'
-                    : parseInt(maxEditions) <= 200 ? 'uncommon'
-                    : 'common'
-                  : 'common';
-                const cfg = RARITY_CONFIG[previewRarity];
-                return <span className={`font-bold ${cfg.color}`}>{cfg.badge} {cfg.label}</span>;
-              })()}
-              {durationHours && <span className="opacity-80 ml-2">(+time bonus near deadline)</span>}
-            </div>
-
+            {/* ─── Errors/Success ──────────────────────── */}
             {createError && (
-              <div className="text-base p-3 rounded-none bg-current/5 border border-current/15 opacity-70">
-                {createError}
-              </div>
+              <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-70">{createError}</div>
             )}
             {createSuccess && (
-              <div className="text-base p-3 rounded-none bg-current/5 border border-current/15 opacity-80">
-                {createSuccess}
-              </div>
+              <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-80">{createSuccess}</div>
             )}
 
+            {/* ─── Mint Button ─────────────────────────── */}
             <button
-              className="warp-button w-full py-3 text-base"
+              className="warp-button w-full py-3.5 text-base font-bold"
               onClick={handleMint}
               disabled={creating || !title || !imageData}
             >
@@ -1378,131 +1697,15 @@ export default function MarketplaceView() {
                   Minting...
                 </span>
               ) : (
-                <>{'\u2742'} Certifier</>
+                'Certify & Mint'
               )}
             </button>
-          </div>
-
-          {/* Protocol info */}
-          <div className="mt-6 pt-4 border-t border-current/10 max-w-md mx-auto">
-            <h3 className="text-base font-bold opacity-70 mb-2 text-center">Comment ça marche</h3>
-            <div className="text-[11px] opacity-40 space-y-1">
-              <p>1. Uploadez votre objet rare et donnez-lui un titre</p>
-              <p>2. Choisissez le type d'édition : Unique (1/1), Limitée ou Illimitée</p>
-              <p>3. Ajoutez une durée limitée (optionnel) — la rareté augmente à l'approche de la deadline</p>
-              <p>4. Mettez en vente sur la marketplace au prix de votre choix</p>
-              <p>5. L'acheteur paie en Cosmorare ({'\u03A9'}) — le transfert est instantané</p>
-              <p>6. Vous touchez des royalties sur chaque revente ({royalty || 5}%)</p>
-            </div>
           </div>
         </div>
       )}
 
-      {/* ─── Music Tab ─────────────────────────────────────── */}
-      {tab === 'music' && <MusicView />}
-
-      {/* ─── PFP Collections Tab ──────────────────────────── */}
-      {tab === 'pfp' && <PFPCollectionView />}
-
-      {/* ─── RWA Phygital Tab ────────────────────────────── */}
-      {tab === 'rwa-phygital' && (
-        <>
-          <div className="glass-panel p-4 text-center">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2B22'} RWA Phygital</h2>
-            <p className="text-body-sm opacity-40">
-              Oeuvres physiques authentifiées sur le protocole Cosmowarp. Imprimez la signature de transaction pour certifier l'oeuvre physique.
-            </p>
-          </div>
-
-          {(() => {
-            // Filter artworks that have phygital certificates or are 1/1 unique editions
-            const phygitalWarts = [...myCollection, ...myCreated]
-              .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i)
-              .filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
-
-            if (phygitalWarts.length === 0) {
-              return (
-                <div className="glass-panel p-8 text-center">
-                  <p className="text-2xl mb-2">{'\u2B22'}</p>
-                  <p className="opacity-50 text-current text-base">Aucune oeuvre phygital RWA.</p>
-                  <p className="text-body-sm opacity-40 mt-1">
-                    Créez une Cosmorare 1/1 avec un certificat pour l'associer à une oeuvre physique.
-                  </p>
-                  <button
-                    className="warp-button text-body-sm mt-3 px-4 py-2"
-                    onClick={() => setTab('create')}
-                  >
-                    Créer une Cosmorare
-                  </button>
-                </div>
-              );
-            }
-
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {phygitalWarts.map(wart => {
-                  const lastTx = wart.history.length > 0
-                    ? wart.history[wart.history.length - 1]
-                    : null;
-                  const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
-                  const artistName = wart.creator === wallet.address
-                    ? (wallet.alias || shortAddress(wallet.address))
-                    : shortAddress(wart.creator);
-
-                  return (
-                    <div key={wart.id} className="glass-panel p-4 space-y-3">
-                      <div className="flex gap-3">
-                        <div className="w-20 h-20 bg-current/5 overflow-hidden shrink-0">
-                          <WartMedia wart={wart} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
-                          <p className="text-[10px] opacity-40 truncate">
-                            by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] opacity-80">1/1</span>
-                            <RarityBadge wart={wart} />
-                          </div>
-                          {wart.certId && (
-                            <p className="text-[9px] opacity-50 mt-1 font-mono truncate">{wart.certId}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="p-2 bg-current/5 border border-current/10 text-[10px] opacity-40 space-y-0.5">
-                        <p><span className="opacity-60">TX ID:</span> <span className="font-mono">{txId.slice(0, 32)}...</span></p>
-                        <p><span className="opacity-60">Artist:</span> {artistName}</p>
-                        <p><span className="opacity-60">Created:</span> {formatDateFR(wart.createdAt)}</p>
-                      </div>
-
-                      <button
-                        className="warp-button w-full py-2.5 text-body-sm font-bold flex items-center justify-center gap-2"
-                        onClick={() => {
-                          generateSignaturePDF({
-                            artworkName: wart.title,
-                            artistName,
-                            transactionId: txId,
-                          });
-                        }}
-                      >
-                        {'\u2399'} Print Signature
-                      </button>
-
-                      <button
-                        className="w-full py-1.5 text-[11px] opacity-50 border border-current/10 hover:opacity-70 transition-all cursor-pointer"
-                        onClick={() => openDetail(wart)}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </>
-      )}
+      {/* ─── Music Tab (embedded) ──────────────────────────── */}
+      {tab === 'music' && !showEditionFilters && <MusicView />}
     </div>
   );
 }
