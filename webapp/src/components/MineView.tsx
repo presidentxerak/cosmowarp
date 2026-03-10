@@ -32,7 +32,7 @@ const ENERGY_LEVELS: { id: EnergyLevel; label: string; desc: string; multiplier:
 ];
 
 export default function MineView() {
-  const { wallet, unlocked, mine, supplyInfo } = useWallet();
+  const { wallet, unlocked, mine, supplyInfo, marketplace } = useWallet();
   const [phase, setPhase] = useState<MiningPhase>('config');
   const [progress, setProgress] = useState<MiningProgress | null>(null);
   const [lastReward, setLastReward] = useState<number | null>(null);
@@ -41,12 +41,15 @@ export default function MineView() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<MiningHistoryEntry[]>([]);
   const [energyLevel, setEnergyLevel] = useState<EnergyLevel>('medium');
-  const [miningMessage, setMiningMessage] = useState('');
+  const [certPayload, setCertPayload] = useState('');
   const [showExplainer, setShowExplainer] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const diffState = loadDifficultyState();
   const selectedEnergy = ENERGY_LEVELS.find(e => e.id === energyLevel)!;
+
+  // Get recent Cosmorares for certification suggestions
+  const recentCosmorares = (marketplace || []).slice(0, 5);
 
   useEffect(() => {
     setHistory(loadMiningHistory());
@@ -84,6 +87,7 @@ export default function MineView() {
         wallet.address,
         controller.signal,
         (p) => setProgress(p),
+        certPayload || undefined,
       );
 
       if (result.success && result.proof) {
@@ -130,18 +134,18 @@ export default function MineView() {
     setLastReward(null);
     setLastHash(null);
     setError(null);
-    setMiningMessage('');
+    setCertPayload('');
   };
 
   return (
     <div className="space-y-4">
-      {/* ─── Role Explanation Banner ─────────────────────── */}
+      {/* ─── Header: φ-Chain Resonance Mining ────────────── */}
       <div className="glass-panel p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u26CF'} Cosmorare Mining</h2>
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u03C6'} Resonance Mining</h2>
             <p className="text-body-sm opacity-40">
-              Double SHA-256 Proof-of-Work — même algorithme que Bitcoin. Difficulté réelle, blocs de 10 min.
+              {'\u03C6'}-Chain Proof-of-Work — algorithme unique à Cosmorare. Difficulté grade Bitcoin, blocs de 10 min.
             </p>
           </div>
           <button
@@ -157,26 +161,64 @@ export default function MineView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u26D3'} Sécurité du réseau</p>
-                <p>Chaque bloc miné renforce la chaîne de certification des Cosmorares. Plus il y a de mineurs, plus les certificats d'authenticité sont fiables et inaltérables.</p>
+                <p>Chaque bloc miné renforce la chaîne de certification des Cosmorares. Le {'\u03C6'}-mixing rend chaque preuve unique et impossible à raccourcir.</p>
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2696'} Distribution équitable</p>
-                <p>Le mining est le seul moyen de créer de nouveaux {'\u03A9'}. La Resonance Decay (décroissance dorée) garantit une distribution progressive et prévisible des 58M tokens minables.</p>
+                <p>Le mining est le seul moyen de créer de nouveaux {'\u03A9'}. La Resonance Decay (décroissance dorée) garantit une distribution progressive des 58M tokens minables.</p>
               </div>
               <div className="bg-current/5 p-3">
-                <p className="font-bold opacity-60 mb-1">{'\u2713'} Validation des transactions</p>
-                <p>Les mineurs valident indirectement les transferts de Cosmorares entre collectionneurs. Votre puissance de calcul contribue à la fiabilité de chaque transaction.</p>
+                <p className="font-bold opacity-60 mb-1">{'\u2713'} Certification des oeuvres</p>
+                <p>Chaque bloc peut référencer des Cosmorares à certifier. Le mineur participe activement à l'authentification des oeuvres numériques de la galerie.</p>
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2B06'} Progression personnelle</p>
-                <p>Plus vous minez, plus votre niveau monte dans la hiérarchie Cosmorare. Chaque palier débloque des bonus de récompense et des privilèges exclusifs.</p>
+                <p>Plus vous minez, plus votre niveau monte dans la hiérarchie. Chaque palier débloque des bonus de récompense et des privilèges exclusifs.</p>
               </div>
             </div>
             <p className="opacity-50 text-center pt-1">
-              Le mining utilise SHA-256 Proof-of-Work réel dans votre navigateur — même algorithme que Bitcoin.
+              Contrairement à Bitcoin, le Resonance Mining utilise le ratio d'or ({'\u03C6'} = 1.618...) comme fondation cryptographique.
             </p>
           </div>
         )}
+      </div>
+
+      {/* ─── φ-Chain Pipeline Visualization ──────────────── */}
+      <div className="glass-panel p-4">
+        <p className="text-label opacity-50 mb-2">PIPELINE {'\u03C6'}-CHAIN</p>
+        <div className="flex items-center gap-1 text-[10px]">
+          <div className={`flex-1 p-2 text-center border transition-all ${
+            phase === 'mining' && progress ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
+          }`}>
+            <p className="font-bold">Phase 1</p>
+            <p className="opacity-70">SHA-256</p>
+            <p className="opacity-50 text-[9px]">Seed hash</p>
+          </div>
+          <span className="opacity-30 shrink-0">{'\u2192'}</span>
+          <div className={`flex-1 p-2 text-center border transition-all ${
+            phase === 'mining' && progress ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
+          }`}>
+            <p className="font-bold">Phase 2</p>
+            <p className="opacity-70">{'\u03C6'}-Resonance</p>
+            <p className="opacity-50 text-[9px]">Golden mixing</p>
+          </div>
+          <span className="opacity-30 shrink-0">{'\u2192'}</span>
+          <div className={`flex-1 p-2 text-center border transition-all ${
+            phase === 'mining' && progress ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
+          }`}>
+            <p className="font-bold">Phase 3</p>
+            <p className="opacity-70">SHA-256</p>
+            <p className="opacity-50 text-[9px]">Proof hash</p>
+          </div>
+          <span className="opacity-30 shrink-0">{'\u2192'}</span>
+          <div className={`flex-1 p-2 text-center border transition-all ${
+            phase === 'result' ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
+          }`}>
+            <p className="font-bold">{'\u2713'}</p>
+            <p className="opacity-70">Difficultét</p>
+            <p className="opacity-50 text-[9px]">{diffState.currentDifficulty} bits</p>
+          </div>
+        </div>
       </div>
 
       {/* ─── Stats Dashboard ─────────────────────────────── */}
@@ -222,8 +264,11 @@ export default function MineView() {
           </div>
           <div className="flex justify-between text-label opacity-30 mt-0.5">
             <span>16 bits (min)</span>
-            <span>64 bits (Bitcoin-grade)</span>
+            <span>64 bits (max)</span>
           </div>
+          <p className="text-[10px] opacity-30 mt-1 text-center">
+            ~{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} hashes en moyenne pour résoudre un bloc
+          </p>
         </div>
       </div>
 
@@ -255,18 +300,35 @@ export default function MineView() {
             <p className="text-[10px] opacity-30 mt-1.5">{selectedEnergy.desc}</p>
           </div>
 
-          {/* Mining Message (optional) */}
+          {/* Certification Payload */}
           <div>
-            <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Message du mineur (optionnel)</label>
+            <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Certification payload</label>
+            <p className="text-[10px] opacity-30 mb-2">Référencez des Cosmorares à certifier dans ce bloc. Votre preuve de travail renforce leur authenticité.</p>
             <input
               type="text"
-              placeholder="Inscrivez un message dans le bloc..."
-              value={miningMessage}
-              onChange={e => setMiningMessage(e.target.value.slice(0, 80))}
+              placeholder="ID ou titre de Cosmorare à certifier..."
+              value={certPayload}
+              onChange={e => setCertPayload(e.target.value.slice(0, 120))}
               className="warp-input w-full text-body-sm py-2"
-              maxLength={80}
+              maxLength={120}
             />
-            <p className="text-[10px] opacity-30 mt-0.5">{miningMessage.length}/80 — Ce message sera inscrit de façon permanente dans le bloc.</p>
+            {recentCosmorares.length > 0 && (
+              <div className="flex gap-1 mt-1.5 flex-wrap">
+                {recentCosmorares.map(w => (
+                  <button
+                    key={w.id}
+                    onClick={() => setCertPayload(prev => {
+                      const newVal = prev ? `${prev}, ${w.title}` : w.title;
+                      return newVal.slice(0, 120);
+                    })}
+                    className="text-[9px] opacity-30 hover:opacity-60 border border-current/10 px-1.5 py-0.5 cursor-pointer transition-all truncate max-w-[120px]"
+                  >
+                    + {w.title}
+                  </button>
+                ))}
+              </div>
+            )}
+            <p className="text-[10px] opacity-30 mt-0.5">{certPayload.length}/120</p>
           </div>
 
           {/* Estimated Reward Preview */}
@@ -290,7 +352,7 @@ export default function MineView() {
             className="warp-button w-full py-3 text-base font-bold"
             onClick={startMining}
           >
-            {'\u26A1'} Lancer le minage — Énergie {selectedEnergy.label}
+            {'\u03C6'} Lancer le Resonance Mining
           </button>
 
           {error && (
@@ -303,26 +365,26 @@ export default function MineView() {
       {phase === 'mining' && (
         <div className="glass-panel p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold opacity-70">{'\u25B6'} Minage en cours...</h3>
-            <span className="text-[10px] opacity-40 bg-current/5 px-2 py-1">Énergie: {selectedEnergy.label}</span>
+            <h3 className="text-base font-bold opacity-70">{'\u03C6'} Resonance Mining en cours...</h3>
+            <span className="text-[10px] opacity-40 bg-current/5 px-2 py-1">x{selectedEnergy.multiplier}</span>
           </div>
 
           {/* Live metrics */}
           <div className="grid grid-cols-2 gap-2 text-body-sm">
             <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">HASHRATE</p>
+              <p className="opacity-40 text-label">{'\u03C6'}-HASHRATE</p>
               <p className="opacity-80 font-mono font-bold text-base">
                 {formatHashrate(progress?.hashrate || 0)}
               </p>
             </div>
             <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">HASHES CALCULÉS</p>
+              <p className="opacity-40 text-label">{'\u03C6'}-CHAINS</p>
               <p className="opacity-80 font-mono font-bold text-base">
                 {(progress?.hashesComputed || 0).toLocaleString()}
               </p>
             </div>
             <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">NONCE ACTUEL</p>
+              <p className="opacity-40 text-label">NONCE</p>
               <p className="opacity-70 font-mono">
                 {(progress?.currentNonce || 0).toLocaleString()}
               </p>
@@ -357,7 +419,7 @@ export default function MineView() {
                 />
               </div>
               <p className="text-[10px] opacity-30 mt-1 text-center">
-                Double SHA-256 — recherche d'un hash avec {diffState.currentDifficulty}+ zéros en tête (~{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} combinaisons en moyenne).
+                {'\u03C6'}-Chain : SHA-256 {'\u2192'} Golden Mixing {'\u2192'} SHA-256 {'\u2192'} test {diffState.currentDifficulty} bits
               </p>
             </div>
           )}
@@ -376,8 +438,8 @@ export default function MineView() {
       {phase === 'result' && lastReward !== null && (
         <div className="glass-panel p-5 space-y-4">
           <div className="text-center py-3">
-            <p className="text-3xl mb-2">{'\u2713'}</p>
-            <h3 className="text-title-sm font-bold opacity-100 font-title">Bloc miné avec succès !</h3>
+            <p className="text-3xl mb-2">{'\u03C6'}</p>
+            <h3 className="text-title-sm font-bold opacity-100 font-title">Resonance Bloc miné !</h3>
             <div className="text-3xl font-bold opacity-100 mt-2">
               +{lastReward} {'\u03A9'}
             </div>
@@ -395,7 +457,7 @@ export default function MineView() {
           {lastHash && (
             <div className="space-y-2">
               <div>
-                <p className="text-label opacity-40 mb-1">HASH GAGNANT</p>
+                <p className="text-label opacity-40 mb-1">{'\u03C6'}-PROOF HASH</p>
                 <div className="bg-current/5 p-2 font-mono text-label break-all">
                   <span className="opacity-80">
                     {lastHash.slice(0, Math.floor(diffState.currentDifficulty / 4))}
@@ -413,20 +475,20 @@ export default function MineView() {
                     <p className="text-body-sm font-bold opacity-70">{formatTime(progress.elapsed)}</p>
                   </div>
                   <div className="bg-current/5 p-2">
-                    <p className="text-label opacity-40">HASHRATE</p>
+                    <p className="text-label opacity-40">{'\u03C6'}-HASHRATE</p>
                     <p className="text-body-sm font-bold opacity-70">{formatHashrate(progress.hashrate)}</p>
                   </div>
                   <div className="bg-current/5 p-2">
-                    <p className="text-label opacity-40">HASHES</p>
+                    <p className="text-label opacity-40">{'\u03C6'}-CHAINS</p>
                     <p className="text-body-sm font-bold opacity-70">{progress.hashesComputed.toLocaleString()}</p>
                   </div>
                 </div>
               )}
 
-              {miningMessage && (
+              {certPayload && (
                 <div className="bg-current/5 p-2 text-center">
-                  <p className="text-label opacity-40 mb-0.5">MESSAGE DU BLOC</p>
-                  <p className="text-body-sm opacity-60 italic">"{miningMessage}"</p>
+                  <p className="text-label opacity-40 mb-0.5">COSMORARES CERTIFIÉES</p>
+                  <p className="text-body-sm opacity-60 italic">"{certPayload}"</p>
                 </div>
               )}
             </div>
@@ -434,15 +496,16 @@ export default function MineView() {
 
           {/* Contribution feedback */}
           <div className="bg-current/5 border border-current/10 p-3 text-[11px] opacity-40 text-center space-y-1">
-            <p>Ce bloc contribue à la sécurité de la chaîne Cosmorare.</p>
-            <p>Il certifie l'authenticité de toutes les Cosmorares enregistrées jusqu'au bloc #{diffState.blocksMined}.</p>
+            <p>Ce bloc Resonance renforce la chaîne de certification Cosmorare.</p>
+            <p>Preuve {'\u03C6'}-Chain : SHA-256 {'\u2192'} Golden Mixing ({'\u03C6'} = 1.618...) {'\u2192'} SHA-256</p>
+            {certPayload && <p>Les Cosmorares référencées bénéficient d'une authentification renforcée.</p>}
           </div>
 
           <button
             className="warp-button w-full py-3 text-base font-bold"
             onClick={resetToConfig}
           >
-            {'\u26A1'} Miner un nouveau bloc
+            {'\u03C6'} Miner un nouveau bloc
           </button>
         </div>
       )}
@@ -450,7 +513,7 @@ export default function MineView() {
       {/* ─── Mining History ─────────────────────────────── */}
       {history.length > 0 && (
         <div className="glass-panel p-4">
-          <h3 className="text-base font-bold opacity-70 mb-2">{'\u25B7'} Historique de minage</h3>
+          <h3 className="text-base font-bold opacity-70 mb-2">{'\u25B7'} Historique Resonance</h3>
           <div className="space-y-1 max-h-48 overflow-y-auto">
             {history.slice(0, 10).map((entry, i) => (
               <div key={i} className="flex items-center justify-between text-label py-1.5 border-b border-current/10 last:border-0">
@@ -469,32 +532,44 @@ export default function MineView() {
         </div>
       )}
 
-      {/* ─── How it works (detailed) ───────────────────── */}
+      {/* ─── How φ-Chain Resonance Mining Works ──────────── */}
       <div className="glass-panel p-4">
-        <h3 className="text-base font-bold opacity-70 mb-2">Comment fonctionne le Proof-of-Work</h3>
+        <h3 className="text-base font-bold opacity-70 mb-2">Comment fonctionne le {'\u03C6'}-Chain Resonance Mining</h3>
         <div className="text-[11px] opacity-40 space-y-2">
           <div className="bg-current/5 border border-current/10 p-2 mb-2 text-center">
-            <p className="font-bold opacity-60">Algorithme identique à Bitcoin : Double SHA-256 (SHA-256d) + ajustement dynamique de difficulté</p>
+            <p className="font-bold opacity-60">Algorithme unique à Cosmorare — difficulté comparable à Bitcoin mais fondé sur le nombre d'or ({'\u03C6'})</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">1.</span>
-            <p><span className="font-bold opacity-60">Construction du bloc :</span> Un en-tête est construit avec la version, le hash du bloc précédent, le merkle root des transactions, le timestamp, la difficulté, la hauteur du bloc et votre adresse de mineur.</p>
+            <p><span className="font-bold opacity-60">Phase SEED :</span> Un en-tête de bloc est construit (hash précédent, timestamp, difficulté, hauteur, adresse, certification payload) et passé par <span className="opacity-80 font-mono">SHA-256</span> pour produire le seed hash.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">2.</span>
-            <p><span className="font-bold opacity-60">Double SHA-256 :</span> Votre navigateur teste des millions de nonces. Chaque candidat passe par <span className="opacity-80 font-mono">SHA-256(SHA-256(bloc + nonce))</span> — exactement comme Bitcoin. À {diffState.currentDifficulty} bits de difficulté, il faut en moyenne ~{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} essais.</p>
+            <p><span className="font-bold opacity-60">Phase RESONANCE ({'\u03C6'}) :</span> Le seed hash est transformé par le {'\u03C6'}-mixing : chaque octet est XOR avec une clé dérivée de l'angle d'or ({'\u2248'}137.5°), puis les octets sont permutés selon la spirale dorée, puis chaînés pour créer un effet d'avalanche. Cette transformation est déterministe mais non raccourcissable.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">3.</span>
-            <p><span className="font-bold opacity-60">Vérification :</span> La preuve est vérifiable par n'importe qui en un seul calcul SHA-256d — impossible à falsifier.</p>
+            <p><span className="font-bold opacity-60">Phase PROOF :</span> Les données résonantes passent par un second <span className="opacity-80 font-mono">SHA-256</span> pour produire le hash final. Ce hash doit avoir {diffState.currentDifficulty}+ zéros en tête ({'\u2248'}{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} essais en moyenne).</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">4.</span>
-            <p><span className="font-bold opacity-60">Récompense :</span> Le reward suit la Resonance Decay ({'\u03C6'} = 1.618...) : une décroissance douce basée sur le ratio d'or. Contrairement au halving brutal de Bitcoin, la courbe est continue et prévisible.</p>
+            <p><span className="font-bold opacity-60">Certification :</span> Les Cosmorares référencées dans le payload sont liées cryptographiquement au bloc. La preuve de travail renforce leur authenticité — plus un objet est référencé dans des blocs, plus sa certification est solide.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">5.</span>
-            <p><span className="font-bold opacity-60">Ajustement Bitcoin-style :</span> La difficulté s'ajuste dynamiquement pour cibler ~10 minutes par bloc (comme Bitcoin). Si les blocs sont minés trop vite, la difficulté augmente. Trop lentement, elle diminue. Facteur max x4 par ajustement.</p>
+            <p><span className="font-bold opacity-60">Ajustement :</span> La difficulté cible ~10 minutes par bloc. Ajustement tous les 10 blocs, cappé à x4 max par période. Récompense via Resonance Decay ({'\u03C6'}<sup>-n</sup>) — décroissance dorée continue, pas de halving brutal.</p>
+          </div>
+
+          <div className="mt-3 pt-2 border-t border-current/10 opacity-50">
+            <p className="font-bold mb-1">Différences avec Bitcoin :</p>
+            <div className="space-y-0.5">
+              <p>• Bitcoin : SHA-256(SHA-256(x)) — double hash identique</p>
+              <p>• Cosmorare : SHA-256(x) {'\u2192'} {'\u03C6'}-Resonance Mix {'\u2192'} SHA-256(mixed) — transformation dorée intermédiaire</p>
+              <p>• Bitcoin : halving brutal tous les 210,000 blocs</p>
+              <p>• Cosmorare : Resonance Decay continue ({'\u03C6'}<sup>-totalMined/5M</sup>) — courbe lisse et prévisible</p>
+              <p>• Bitcoin : blocs sans contexte applicatif</p>
+              <p>• Cosmorare : chaque bloc peut certifier des oeuvres numériques</p>
+            </div>
           </div>
         </div>
       </div>

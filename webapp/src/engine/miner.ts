@@ -1,35 +1,59 @@
 /**
- * Cosmorare Miner — Bitcoin-Grade SHA-256d Proof-of-Work
+ * Cosmorare Resonance Miner — φ-Chain Proof-of-Work
  *
- * Implements genuine PoW mining matching Bitcoin's algorithm:
- * - Double SHA-256 (SHA-256d) — same as Bitcoin
- * - High difficulty with dynamic adjustment every 2016 blocks
- * - 10-minute target block time — same as Bitcoin
- * - Verifiable proofs: anyone can check hash(blockData + nonce) < target
- * - Runs in main thread with large chunked iterations for max throughput
+ * A unique mining algorithm built around Cosmorare's golden ratio (φ) philosophy.
+ * NOT a Bitcoin clone — this is a 3-phase hash chain specific to Cosmorare:
+ *
+ *   Phase 1 — SEED:      SHA-256(blockHeader + nonce) → seedHash
+ *   Phase 2 — RESONANCE: Golden ratio byte-mixing of seedHash → resonanceData
+ *   Phase 3 — PROOF:     SHA-256(resonanceData) → finalHash
+ *
+ * The φ-mixing in Phase 2 makes this algorithm unique:
+ * - Each byte of the seed hash is XOR'd with a φ-derived rotation key
+ * - The rotation pattern follows the golden angle (≈137.508°)
+ * - This creates a non-trivial transformation that cannot be shortcut
+ * - The final hash must meet the difficulty target (leading zero bits)
+ *
+ * Difficulty is Bitcoin-grade:
+ * - 10-minute target block time
+ * - Dynamic adjustment every 10 blocks (faster adaptation for browser mining)
+ * - Max 4x adjustment per period
+ * - Range: 16 to 64 bits (20 bits initial ≈ 1M hashes average)
+ *
+ * Each block also carries a "certification payload" — a reference to
+ * Cosmorares being validated, tying mining directly to the ecosystem.
  */
 
-import { doubleSha256 } from './crypto';
+import { sha256Raw } from './crypto';
+
+// ─── Constants ────────────────────────────────────────────
+
+const PHI = 1.618033988749895;                    // Golden ratio
+const GOLDEN_ANGLE_RAD = 2 * Math.PI / (PHI + 1); // Golden angle ≈ 2.399 rad
+const PHI_FRAC = PHI - 1;                         // 0.618... fractional part
 
 // ─── Types ────────────────────────────────────────────────
 
 export interface MiningProof {
-  blockData: string;       // The full input that was hashed
+  blockData: string;       // Phase 1 input
   nonce: number;           // The winning nonce
-  hash: string;            // SHA-256d(blockData) — the winning hash
+  hash: string;            // Final hash after φ-chain (Phase 3 output)
+  seedHash: string;        // Phase 1 output (for verification)
+  resonanceKey: string;    // φ-rotation key used (hex, for verification)
   difficulty: number;      // Difficulty (leading zero bits) at time of mining
   timestamp: number;       // When mining started
   minerAddress: string;    // Miner's wallet address
   previousHash: string;    // Hash of last mined block (chain continuity)
   hashesComputed: number;  // Total hashes tried
   timeTaken: number;       // Milliseconds to find proof
+  certPayload: string;     // Certification payload (artworks referenced)
 }
 
 export interface MiningResult {
   success: boolean;
   proof: MiningProof | null;
   aborted: boolean;
-  hashrate: number;        // Hashes per second achieved
+  hashrate: number;
   error?: string;
 }
 
@@ -38,24 +62,83 @@ export interface MiningProgress {
   currentNonce: number;
   elapsed: number;
   hashrate: number;
-  bestHash: string;        // Closest hash found so far
-  bestZeroBits: number;    // Leading zero bits in best hash
-  targetBits: number;      // Difficulty target in bits
+  bestHash: string;
+  bestZeroBits: number;
+  targetBits: number;
+  phase: 'seed' | 'resonance' | 'proof';  // Current phase indicator
 }
 
 export type MiningProgressCallback = (progress: MiningProgress) => void;
 
-// ─── Difficulty ───────────────────────────────────────────
+// ─── φ-Chain Hash Functions ──────────────────────────────
 
 /**
- * Convert difficulty (number of leading zero bits) to a hex target string.
- * A hash is valid if it is lexicographically less than the target.
- *
- * difficulty=4  → target starts with "0"   (1 hex zero)
- * difficulty=8  → target starts with "00"  (2 hex zeros)
- * difficulty=16 → target starts with "0000" (4 hex zeros)
- * difficulty=24 → target starts with "000000" (6 hex zeros)
+ * Generate the golden ratio rotation key for Phase 2.
+ * 32 bytes derived from φ, each byte = floor(256 * frac(i * φ))
+ * This creates a deterministic but non-trivial mixing pattern.
  */
+function generatePhiRotationKey(): Uint8Array {
+  const key = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    // Use golden angle to generate each byte
+    const angle = (i + 1) * GOLDEN_ANGLE_RAD;
+    const phiMix = ((i + 1) * PHI_FRAC) % 1;
+    key[i] = Math.floor(256 * ((Math.sin(angle) * 0.5 + 0.5) * phiMix + (1 - phiMix) * ((Math.cos(angle * PHI) * 0.5 + 0.5))));
+  }
+  return key;
+}
+
+/**
+ * Phase 2: Resonance mixing.
+ * XOR the seed hash bytes with the φ-rotation key, then apply
+ * golden spiral byte permutation.
+ */
+function resonanceMix(seedBytes: Uint8Array, phiKey: Uint8Array): Uint8Array {
+  const mixed = new Uint8Array(32);
+
+  // Step 1: XOR with φ-key
+  for (let i = 0; i < 32; i++) {
+    mixed[i] = seedBytes[i] ^ phiKey[i];
+  }
+
+  // Step 2: Golden spiral permutation
+  // Each byte position is mapped to a new position using φ-based indexing
+  const permuted = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    const newPos = Math.floor(((i * PHI) % 32 + mixed[i] / 256 * PHI_FRAC) % 32);
+    permuted[newPos] ^= mixed[i]; // XOR to avoid collisions
+  }
+
+  // Step 3: Chain — each byte depends on the previous (avalanche effect)
+  for (let i = 1; i < 32; i++) {
+    permuted[i] ^= ((permuted[i - 1] * 137 + 1) & 0xFF); // 137 ≈ golden angle in degrees
+  }
+
+  return permuted;
+}
+
+/**
+ * Full φ-Chain hash: seed → resonance → proof
+ * Returns the final hash string.
+ */
+async function phiChainHash(input: string, phiKey: Uint8Array): Promise<{ finalHash: string; seedHash: string }> {
+  // Phase 1: SHA-256 seed
+  const seedBuffer = await sha256Raw(new TextEncoder().encode(input).buffer);
+  const seedBytes = new Uint8Array(seedBuffer);
+  const seedHash = Array.from(seedBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Phase 2: Resonance mixing with φ-key
+  const resonanceBytes = resonanceMix(seedBytes, phiKey);
+
+  // Phase 3: SHA-256 of resonance data → final proof hash
+  const finalBuffer = await sha256Raw(new Uint8Array(resonanceBytes).buffer as ArrayBuffer);
+  const finalHash = Array.from(new Uint8Array(finalBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  return { finalHash, seedHash };
+}
+
+// ─── Difficulty ───────────────────────────────────────────
+
 export function difficultyToTarget(difficulty: number): string {
   const fullZeroChars = Math.floor(difficulty / 4);
   const remainingBits = difficulty % 4;
@@ -65,17 +148,11 @@ export function difficultyToTarget(difficulty: number): string {
   return '0'.repeat(fullZeroChars) + nextChar + 'f'.repeat(trailingChars);
 }
 
-/**
- * Check if a hash meets the difficulty target.
- */
 export function hashMeetsDifficulty(hash: string, difficulty: number): boolean {
   const target = difficultyToTarget(difficulty);
   return hash <= target;
 }
 
-/**
- * Count leading zero bits in a hex hash string.
- */
 export function countLeadingZeroBits(hash: string): number {
   let bits = 0;
   for (const char of hash) {
@@ -92,16 +169,16 @@ export function countLeadingZeroBits(hash: string): number {
   return bits;
 }
 
-// ─── Difficulty Adjustment (Bitcoin-style) ────────────────
+// ─── Difficulty Adjustment ────────────────────────────────
 
 const DIFFICULTY_STORAGE_KEY = 'cosmorare_mining_difficulty';
 const MINING_HISTORY_KEY = 'cosmorare_mining_history';
-const TARGET_BLOCK_TIME_MS = 600_000;    // Target: 10 minutes per block (same as Bitcoin)
-const ADJUSTMENT_INTERVAL = 2016;        // Adjust every 2016 blocks (same as Bitcoin)
-const MIN_DIFFICULTY = 16;               // Minimum 16 bits (4 hex zeros) — already hard
-const MAX_DIFFICULTY = 64;               // Maximum 64 bits (full SHA-256 range)
-const INITIAL_DIFFICULTY = 20;           // Start with 20 bits — ~1M hashes needed on average
-const MAX_ADJUSTMENT_FACTOR = 4;         // Max 4x change per adjustment (same as Bitcoin)
+const TARGET_BLOCK_TIME_MS = 600_000;    // 10 minutes per block
+const ADJUSTMENT_INTERVAL = 10;          // Adjust every 10 blocks (faster feedback for browser)
+const MIN_DIFFICULTY = 16;               // 16 bits minimum
+const MAX_DIFFICULTY = 64;               // 64 bits maximum (full range)
+const INITIAL_DIFFICULTY = 20;           // ~1M hashes average
+const MAX_ADJUSTMENT_FACTOR = 4;         // Max 4x change per adjustment
 
 export interface DifficultyState {
   currentDifficulty: number;
@@ -117,7 +194,6 @@ export function loadDifficultyState(): DifficultyState {
     const raw = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
     if (raw) {
       const state = JSON.parse(raw);
-      // Migrate old easy configs to new harder ones
       if (state.currentDifficulty < MIN_DIFFICULTY) {
         state.currentDifficulty = INITIAL_DIFFICULTY;
       }
@@ -138,51 +214,18 @@ export function saveDifficultyState(state: DifficultyState): void {
   localStorage.setItem(DIFFICULTY_STORAGE_KEY, JSON.stringify(state));
 }
 
-/**
- * Adjust difficulty based on recent block times — Bitcoin algorithm.
- * Uses the ratio of actual time vs expected time over the adjustment interval.
- * Capped at 4x increase or 4x decrease per adjustment (same as Bitcoin).
- */
 export function adjustDifficulty(state: DifficultyState): number {
   if (state.recentBlockTimes.length < ADJUSTMENT_INTERVAL) {
-    // Not enough blocks for a full adjustment cycle — use smaller sample
-    if (state.recentBlockTimes.length < 10) {
-      return state.currentDifficulty;
-    }
-    // Use available blocks for partial adjustment
-    const recent = state.recentBlockTimes.slice(-10);
-    const avgBlockTime = recent.reduce((a, b) => a + b, 0) / recent.length;
-    const ratio = avgBlockTime / TARGET_BLOCK_TIME_MS;
-
-    let newDifficulty = state.currentDifficulty;
-    if (ratio < 0.25) {
-      newDifficulty += 4;      // Way too fast — massive increase
-    } else if (ratio < 0.5) {
-      newDifficulty += 2;      // Too fast
-    } else if (ratio < 0.8) {
-      newDifficulty += 1;      // Slightly too fast
-    } else if (ratio > 4.0) {
-      newDifficulty -= 4;      // Way too slow
-    } else if (ratio > 2.0) {
-      newDifficulty -= 2;      // Too slow
-    } else if (ratio > 1.25) {
-      newDifficulty -= 1;      // Slightly too slow
-    }
-
-    return Math.max(MIN_DIFFICULTY, Math.min(MAX_DIFFICULTY, newDifficulty));
+    return state.currentDifficulty;
   }
 
-  // Full Bitcoin-style adjustment
   const recentTimes = state.recentBlockTimes.slice(-ADJUSTMENT_INTERVAL);
   const actualTime = recentTimes.reduce((a, b) => a + b, 0);
   const expectedTime = ADJUSTMENT_INTERVAL * TARGET_BLOCK_TIME_MS;
 
   let ratio = expectedTime / actualTime;
-
-  // Cap adjustment factor (same as Bitcoin)
   ratio = Math.max(1 / MAX_ADJUSTMENT_FACTOR, Math.min(MAX_ADJUSTMENT_FACTOR, ratio));
 
-  // Convert ratio to difficulty bits adjustment
   const bitsChange = Math.round(Math.log2(ratio));
   const newDifficulty = state.currentDifficulty + bitsChange;
 
@@ -198,52 +241,45 @@ function buildBlockData(
   difficulty: number,
   blockHeight: number,
   nonce: number,
-  merkleRoot: string,
-  version: number,
+  certPayload: string,
 ): string {
-  // Bitcoin-style block header structure
   return [
-    `CW_BLOCK_V2`,               // Version marker
-    version.toString(16),        // Block version (like Bitcoin)
-    previousHash,                // Previous block hash
-    merkleRoot,                  // Merkle root of transactions
-    timestamp.toString(16),      // Unix timestamp in hex
-    difficulty.toString(16),     // Difficulty target (compact form)
-    blockHeight.toString(16),    // Block height
-    minerAddress,                // Coinbase: miner address
-    nonce.toString(16),          // Nonce (the value being searched)
+    'CW_RESONANCE_V1',          // Cosmorare Resonance block
+    previousHash,                // Chain continuity
+    timestamp.toString(16),      // Timestamp hex
+    difficulty.toString(16),     // Difficulty hex
+    blockHeight.toString(16),    // Block height hex
+    minerAddress,                // Miner address
+    certPayload || 'GENESIS',   // Certification payload
+    nonce.toString(16),          // Nonce hex
   ].join(':');
 }
 
-/**
- * Generate a pseudo merkle root from block data.
- * In a real blockchain this would be the merkle tree of transactions.
- */
-async function generateMerkleRoot(minerAddress: string, blockHeight: number, timestamp: number): Promise<string> {
-  const data = `COINBASE:${minerAddress}:${blockHeight}:${timestamp}`;
-  return doubleSha256(data);
-}
+// ─── Mining Engine ───────────────────────────────────────
 
-// ─── Mining Engine (Bitcoin-grade) ───────────────────────
-
-const CHUNK_SIZE = 5000;    // Larger chunks for better throughput
-const BLOCK_VERSION = 2;    // Block version
+const CHUNK_SIZE = 3000;
 
 /**
- * Mine a block using Bitcoin's double SHA-256 (SHA-256d).
- * Search for a nonce such that SHA-256d(blockData:nonce) < target.
+ * Mine a block using the φ-Chain Resonance algorithm.
  *
- * At 20 bits difficulty: ~1,048,576 hashes needed on average
- * At 24 bits: ~16,777,216 hashes — several minutes in browser
- * At 28 bits: ~268,435,456 hashes — could take 30+ minutes
- * At 32 bits: ~4,294,967,296 hashes — hours of computation
+ * For each nonce candidate:
+ *   1. SHA-256(blockHeader + nonce) → seedHash
+ *   2. φ-Resonance mixing (golden ratio XOR + spiral permutation) → resonanceData
+ *   3. SHA-256(resonanceData) → finalHash
+ *   4. Check: finalHash < difficultyTarget?
  *
- * Runs in main thread, yields every CHUNK_SIZE hashes for UI responsiveness.
+ * The 3-phase chain with φ-mixing makes each hash ~2x slower than plain SHA-256
+ * (comparable to Bitcoin's double-SHA-256) while being unique to Cosmorare.
+ *
+ * At 20 bits: ~1M hashes avg → minutes
+ * At 24 bits: ~16M hashes → tens of minutes
+ * At 28 bits: ~268M hashes → hours
  */
 export async function mineBlock(
   minerAddress: string,
   abortSignal: AbortSignal,
   onProgress?: MiningProgressCallback,
+  certPayload: string = '',
 ): Promise<MiningResult> {
   const state = loadDifficultyState();
   const difficulty = state.currentDifficulty;
@@ -251,8 +287,9 @@ export async function mineBlock(
   const timestamp = Date.now();
   const blockHeight = state.blocksMined;
 
-  // Generate merkle root (Bitcoin-style)
-  const merkleRoot = await generateMerkleRoot(minerAddress, blockHeight, timestamp);
+  // Pre-compute the φ-rotation key (deterministic, same for all miners)
+  const phiKey = generatePhiRotationKey();
+  const phiKeyHex = Array.from(phiKey).map(b => b.toString(16).padStart(2, '0')).join('');
 
   let nonce = 0;
   let hashesComputed = 0;
@@ -261,46 +298,46 @@ export async function mineBlock(
   let bestHash = 'f'.repeat(64);
 
   while (!abortSignal.aborted) {
-    // Process a chunk of hashes
     for (let i = 0; i < CHUNK_SIZE; i++) {
-      const candidate = buildBlockData(minerAddress, previousHash, timestamp, difficulty, blockHeight, nonce, merkleRoot, BLOCK_VERSION);
-      // Double SHA-256 — same algorithm as Bitcoin
-      const hash = await doubleSha256(candidate);
+      const candidate = buildBlockData(minerAddress, previousHash, timestamp, difficulty, blockHeight, nonce, certPayload);
+
+      // φ-Chain: seed → resonance → proof
+      const { finalHash, seedHash } = await phiChainHash(candidate, phiKey);
       hashesComputed++;
 
-      // Track best hash found
-      const zeroBits = countLeadingZeroBits(hash);
+      const zeroBits = countLeadingZeroBits(finalHash);
       if (zeroBits > bestZeroBits) {
         bestZeroBits = zeroBits;
-        bestHash = hash;
+        bestHash = finalHash;
       }
 
-      // Check if hash meets difficulty
-      if (hashMeetsDifficulty(hash, difficulty)) {
+      if (hashMeetsDifficulty(finalHash, difficulty)) {
         const timeTaken = performance.now() - startTime;
         const proof: MiningProof = {
           blockData: candidate,
           nonce,
-          hash,
+          hash: finalHash,
+          seedHash,
+          resonanceKey: phiKeyHex,
           difficulty,
           timestamp,
           minerAddress,
           previousHash,
           hashesComputed,
           timeTaken,
+          certPayload: certPayload || 'GENESIS',
         };
 
-        // Update difficulty state
+        // Update state
         state.blocksMined++;
-        state.lastBlockHash = hash;
+        state.lastBlockHash = finalHash;
         state.lastBlockTimestamp = Date.now();
         state.recentBlockTimes.push(timeTaken);
-        if (state.recentBlockTimes.length > ADJUSTMENT_INTERVAL * 2) {
+        if (state.recentBlockTimes.length > ADJUSTMENT_INTERVAL * 3) {
           state.recentBlockTimes = state.recentBlockTimes.slice(-ADJUSTMENT_INTERVAL);
         }
 
-        // Adjust difficulty if needed (every 10 blocks for faster adaptation in browser)
-        if (state.blocksMined - state.lastAdjustmentBlock >= 10) {
+        if (state.blocksMined - state.lastAdjustmentBlock >= ADJUSTMENT_INTERVAL) {
           state.currentDifficulty = adjustDifficulty(state);
           state.lastAdjustmentBlock = state.blocksMined;
         }
@@ -331,13 +368,13 @@ export async function mineBlock(
         bestHash,
         bestZeroBits,
         targetBits: difficulty,
+        phase: 'resonance',
       });
     }
 
     await new Promise(resolve => setTimeout(resolve, 0));
   }
 
-  // Aborted
   const elapsed = performance.now() - startTime;
   return {
     success: false,
@@ -350,37 +387,48 @@ export async function mineBlock(
 // ─── Proof Verification ──────────────────────────────────
 
 /**
- * Verify a mining proof. Anyone can call this.
+ * Verify a Resonance mining proof.
  *
- * Checks:
- * 1. SHA-256d(blockData) === proof.hash (double SHA-256, same as Bitcoin)
- * 2. proof.hash meets the claimed difficulty
- * 3. Block data contains the miner address
- * 4. Valid block data format (V1 or V2)
+ * Re-executes the full φ-chain:
+ *   1. SHA-256(blockData) → must match proof.seedHash
+ *   2. φ-Resonance mix with the same key → resonanceData
+ *   3. SHA-256(resonanceData) → must match proof.hash
+ *   4. proof.hash must meet difficulty
  */
 export async function verifyProof(proof: MiningProof): Promise<{ valid: boolean; reason: string }> {
-  // 1. Recompute double SHA-256
-  const recomputedHash = await doubleSha256(proof.blockData);
-  if (recomputedHash !== proof.hash) {
-    return { valid: false, reason: 'Hash mismatch: recomputed SHA-256d does not match claimed hash' };
+  // Reconstruct φ-key
+  const phiKey = generatePhiRotationKey();
+  const phiKeyHex = Array.from(phiKey).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Verify φ-key matches
+  if (phiKeyHex !== proof.resonanceKey) {
+    return { valid: false, reason: 'Resonance key mismatch' };
   }
 
-  // 2. Check difficulty
+  // Re-execute full φ-chain
+  const { finalHash, seedHash } = await phiChainHash(proof.blockData, phiKey);
+
+  if (seedHash !== proof.seedHash) {
+    return { valid: false, reason: 'Seed hash mismatch (Phase 1 failed)' };
+  }
+
+  if (finalHash !== proof.hash) {
+    return { valid: false, reason: 'Final hash mismatch (Phase 3 failed)' };
+  }
+
   if (!hashMeetsDifficulty(proof.hash, proof.difficulty)) {
     return { valid: false, reason: `Hash does not meet difficulty ${proof.difficulty} bits` };
   }
 
-  // 3. Verify miner address is in block data
   if (!proof.blockData.includes(proof.minerAddress)) {
     return { valid: false, reason: 'Block data does not contain miner address' };
   }
 
-  // 4. Verify format (support both V1 legacy and V2)
-  if (!proof.blockData.startsWith('CW_BLOCK_V1:') && !proof.blockData.startsWith('CW_BLOCK_V2:')) {
-    return { valid: false, reason: 'Invalid block data format' };
+  if (!proof.blockData.startsWith('CW_RESONANCE_V1:') && !proof.blockData.startsWith('CW_BLOCK_V')) {
+    return { valid: false, reason: 'Invalid block format' };
   }
 
-  return { valid: true, reason: 'Valid SHA-256d proof-of-work' };
+  return { valid: true, reason: 'Valid φ-Chain Resonance proof-of-work' };
 }
 
 // ─── Mining History ──────────────────────────────────────
