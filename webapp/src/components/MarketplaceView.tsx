@@ -84,6 +84,70 @@ export default function MarketplaceView() {
   const [phygitalVerifyInput, setPhygitalVerifyInput] = useState('');
   const [phygitalVerifyResult, setPhygitalVerifyResult] = useState<PhygitalCertificate | null | undefined>(undefined);
 
+  // Transfer & list state (must be before early returns to respect hooks rules)
+  const [transferError, setTransferError] = useState('');
+  const [listSuccess, setListSuccess] = useState('');
+
+  // ─── All warts (marketplace + collections) ──────────────
+  const allWarts = useMemo(() => {
+    const combined = [...marketplace, ...myCollection, ...myCreated];
+    const unique = combined.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
+    return unique.filter(w => !isExpired(w));
+  }, [marketplace, myCollection, myCreated]);
+
+  // ─── RWA filter ───────────────────────────────────────
+  const rwaWarts = useMemo(() => {
+    return allWarts.filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
+  }, [allWarts]);
+
+  // ─── Phygital filter ──────────────────────────────────
+  const phygitalWarts = useMemo(() => {
+    return [...myCollection, ...myCreated]
+      .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i)
+      .filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
+  }, [myCollection, myCreated]);
+
+  // ─── Top Creators ─────────────────────────────────────
+  const topCreators = useMemo(() => {
+    const creatorMap: Record<string, { address: string; count: number; totalVolume: number; warts: Wart[] }> = {};
+    allWarts.forEach(w => {
+      if (!creatorMap[w.creator]) creatorMap[w.creator] = { address: w.creator, count: 0, totalVolume: 0, warts: [] };
+      creatorMap[w.creator].count++;
+      creatorMap[w.creator].warts.push(w);
+      (w.history || []).forEach(h => { creatorMap[w.creator].totalVolume += h.price; });
+    });
+    return Object.values(creatorMap).sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
+  }, [allWarts]);
+
+  // ─── Top Collectors ───────────────────────────────────
+  const topCollectors = useMemo(() => {
+    const collectorMap: Record<string, { address: string; count: number; totalSpent: number }> = {};
+    allWarts.forEach(w => {
+      if (!collectorMap[w.owner]) collectorMap[w.owner] = { address: w.owner, count: 0, totalSpent: 0 };
+      collectorMap[w.owner].count++;
+      (w.history || []).forEach(h => {
+        if (h.to === w.owner && h.price > 0) collectorMap[w.owner].totalSpent += h.price;
+      });
+    });
+    return Object.values(collectorMap).sort((a, b) => b.totalSpent - a.totalSpent || b.count - a.count);
+  }, [allWarts]);
+
+  // ─── Top Sales ────────────────────────────────────────
+  const topSales = useMemo(() => {
+    const sales: { wart: Wart; transfer: Wart['history'][0]; isFirstSale: boolean }[] = [];
+    allWarts.forEach(w => {
+      (w.history || []).forEach((h, idx) => {
+        if (h.price > 0) {
+          sales.push({ wart: w, transfer: h, isFirstSale: idx === 0 });
+        }
+      });
+    });
+    const filtered = salesMarketFilter === '1st'
+      ? sales.filter(s => s.isFirstSale)
+      : sales.filter(s => !s.isFirstSale);
+    return filtered.sort((a, b) => b.transfer.price - a.transfer.price);
+  }, [allWarts, salesMarketFilter]);
+
   if (!wallet) {
     return (
       <div className="glass-panel p-8 text-center max-w-md mx-auto">
@@ -277,9 +341,6 @@ export default function MarketplaceView() {
     }
     setSelectedWart(null);
   };
-
-  const [transferError, setTransferError] = useState('');
-  const [listSuccess, setListSuccess] = useState('');
 
   const handleTransfer = async (wart: Wart) => {
     const addr = transferTo.trim();
@@ -1077,7 +1138,6 @@ export default function MarketplaceView() {
     if (editionFilter === 'all') return warts;
     if (editionFilter === 'unique') return warts.filter(w => w.editionType === 'unique' && w.maxEditions === 1);
     if (editionFilter === 'collection') {
-      // Collection of several Unique Pieces = same creator, multiple unique pieces grouped
       const creatorCounts: Record<string, number> = {};
       warts.forEach(w => {
         if (w.editionType === 'unique') {
@@ -1090,13 +1150,6 @@ export default function MarketplaceView() {
     return warts;
   };
 
-  // ─── All warts (marketplace + collections) ──────────────
-  const allWarts = useMemo(() => {
-    const combined = [...marketplace, ...myCollection, ...myCreated];
-    const unique = combined.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
-    return unique.filter(w => !isExpired(w));
-  }, [marketplace, myCollection, myCreated]);
-
   // ─── Filter by media type ──────────────────────────────
   const filterByMedia = (warts: Wart[], type: string) => {
     if (type === 'art') return warts.filter(w => w.mediaType === 'image' || w.mediaType === 'svg');
@@ -1104,59 +1157,6 @@ export default function MarketplaceView() {
     if (type === 'music') return warts.filter(w => w.mediaType === 'audio');
     return warts;
   };
-
-  // ─── RWA filter ───────────────────────────────────────
-  const rwaWarts = useMemo(() => {
-    return allWarts.filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
-  }, [allWarts]);
-
-  // ─── Phygital filter ──────────────────────────────────
-  const phygitalWarts = useMemo(() => {
-    return [...myCollection, ...myCreated]
-      .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i)
-      .filter(w => w.certId && (w.editionType === 'unique' || w.maxEditions === 1));
-  }, [myCollection, myCreated]);
-
-  // ─── Top Creators ─────────────────────────────────────
-  const topCreators = useMemo(() => {
-    const creatorMap: Record<string, { address: string; count: number; totalVolume: number; warts: Wart[] }> = {};
-    allWarts.forEach(w => {
-      if (!creatorMap[w.creator]) creatorMap[w.creator] = { address: w.creator, count: 0, totalVolume: 0, warts: [] };
-      creatorMap[w.creator].count++;
-      creatorMap[w.creator].warts.push(w);
-      w.history.forEach(h => { creatorMap[w.creator].totalVolume += h.price; });
-    });
-    return Object.values(creatorMap).sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
-  }, [allWarts]);
-
-  // ─── Top Collectors ───────────────────────────────────
-  const topCollectors = useMemo(() => {
-    const collectorMap: Record<string, { address: string; count: number; totalSpent: number }> = {};
-    allWarts.forEach(w => {
-      if (!collectorMap[w.owner]) collectorMap[w.owner] = { address: w.owner, count: 0, totalSpent: 0 };
-      collectorMap[w.owner].count++;
-      w.history.forEach(h => {
-        if (h.to === w.owner && h.price > 0) collectorMap[w.owner].totalSpent += h.price;
-      });
-    });
-    return Object.values(collectorMap).sort((a, b) => b.totalSpent - a.totalSpent || b.count - a.count);
-  }, [allWarts]);
-
-  // ─── Top Sales ────────────────────────────────────────
-  const topSales = useMemo(() => {
-    const sales: { wart: Wart; transfer: Wart['history'][0]; isFirstSale: boolean }[] = [];
-    allWarts.forEach(w => {
-      w.history.forEach((h, idx) => {
-        if (h.price > 0) {
-          sales.push({ wart: w, transfer: h, isFirstSale: idx === 0 });
-        }
-      });
-    });
-    const filtered = salesMarketFilter === '1st'
-      ? sales.filter(s => s.isFirstSale)
-      : sales.filter(s => !s.isFirstSale);
-    return filtered.sort((a, b) => b.transfer.price - a.transfer.price);
-  }, [allWarts, salesMarketFilter]);
 
   // ─── Get current filtered warts for tab ─────────────────
   const getTabWarts = (): Wart[] => {
