@@ -16,6 +16,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           three: ['three'],
+          react: ['react', 'react-dom'],
         },
       },
     },
