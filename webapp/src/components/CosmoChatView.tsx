@@ -55,6 +55,9 @@ export default function CosmoChatView() {
   // Share modal
   const [sharePost, setSharePost] = useState<ChatPost | null>(null);
 
+  // Media upload state (must be before early return)
+  const [mediaError, setMediaError] = useState('');
+
   const refresh = () => {
     const e = CosmoChatEngine.load();
     setPosts(e.getTimeline());
@@ -68,6 +71,13 @@ export default function CosmoChatView() {
       channelScrollRef.current?.scrollTo(0, channelScrollRef.current.scrollHeight);
     }
   }, [selectedChannel?.messages.length]);
+
+  // Ensure social profile exists
+  useEffect(() => {
+    if (!wallet || !unlocked) return;
+    const social = SocialEngine.load();
+    social.ensureProfile(wallet.address, wallet.alias || shortAddress(wallet.address));
+  }, [wallet?.address, wallet?.alias, unlocked]);
 
   if (!wallet || !unlocked) {
     return (
@@ -87,12 +97,6 @@ export default function CosmoChatView() {
 
   const alias = wallet.alias || shortAddress(wallet.address);
 
-  // Ensure social profile exists
-  useEffect(() => {
-    const social = SocialEngine.load();
-    social.ensureProfile(wallet.address, alias);
-  }, [wallet.address, alias]);
-
   const handleViewUser = (address: string) => {
     sessionStorage.setItem('cosmorare_view_user', address);
     // Navigate to user-profile - we need a way to do this
@@ -101,8 +105,6 @@ export default function CosmoChatView() {
   };
 
   // ─── Media upload ──────────────────────────────────────
-  const [mediaError, setMediaError] = useState('');
-
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

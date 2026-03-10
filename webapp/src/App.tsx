@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense, Component } from 'react';
-import type { ReactNode, ErrorInfo } from 'react';
+import type { ReactNode } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
 import TopBar from './components/TopBar';
@@ -70,7 +70,7 @@ class BackgroundErrorBoundary extends Component<
 > {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(_: Error, __: ErrorInfo) { /* swallow background errors */ }
+  componentDidCatch() { /* swallow background errors */ }
   render() {
     if (this.state.hasError) {
       return (
@@ -92,7 +92,7 @@ class AppErrorBoundary extends Component<
   static getDerivedStateFromError(err: Error) {
     return { hasError: true, error: err.message };
   }
-  componentDidCatch(_: Error, __: ErrorInfo) { /* logged above */ }
+  componentDidCatch() { /* logged above */ }
   render() {
     if (this.state.hasError) {
       return (

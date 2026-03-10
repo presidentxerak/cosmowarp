@@ -57,7 +57,7 @@ async function initStripe() {
   }
   try {
     const Stripe = (await import('stripe')).default;
-    stripe = new (Stripe as any)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' }) as typeof stripe;
+    stripe = new (Stripe as unknown as new (key: string, opts: { apiVersion: string }) => typeof stripe)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
     console.log('[FiatGateway] Stripe SDK initialized');
   } catch {
     console.warn('[FiatGateway] stripe package not installed — run: npm install stripe');
@@ -314,7 +314,7 @@ const server = createServer(async (req, res) => {
       let event;
       try {
         event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
-      } catch (err) {
+      } catch {
         return json(res, 400, { error: 'Invalid webhook signature' });
       }
 

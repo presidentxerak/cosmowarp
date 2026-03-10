@@ -107,6 +107,82 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return wartEngineRef.current;
   }
 
+  function refreshWartsState(address?: string) {
+    const engine = getWartEngine();
+    setWarts(engine.getAll());
+    setMarketplace(engine.getMarketplace());
+    if (address) {
+      setMyCollection(engine.getCollection(address));
+      setMyCreated(engine.getCreated(address));
+      setVaultStats(engine.getVaultStats(address));
+    }
+  }
+
+  function mergeCloudWarts(cloudWarts: Record<string, unknown>[]) {
+    const engine = getWartEngine();
+    const localWarts = engine.getAll();
+    const localIds = new Set(localWarts.map(w => w.id));
+
+    for (const row of cloudWarts) {
+      const wartId = row.id as string;
+      if (localIds.has(wartId)) {
+        const local = engine.getWart(wartId);
+        if (local) {
+          const cloudUpdated = Number(row.updated_at || 0);
+          if (cloudUpdated > (local.createdAt || 0)) {
+            local.owner = (row.owner as string) || local.owner;
+            local.price = row.price != null ? Number(row.price) : local.price;
+            local.listed = (row.listed as boolean) ?? local.listed;
+            local.title = (row.title as string) || local.title;
+            local.description = (row.description as string) || local.description;
+          }
+        }
+      } else {
+        const wartData: Wart = {
+          id: wartId,
+          title: (row.title as string) || '',
+          description: (row.description as string) || '',
+          imageData: '',
+          mediaType: (row.media_type as Wart['mediaType']) || 'image',
+          creator: (row.creator as string) || '',
+          owner: (row.owner as string) || '',
+          price: row.price != null ? Number(row.price) : null,
+          listed: (row.listed as boolean) || false,
+          createdAt: Number(row.created_at) || Date.now(),
+          history: [],
+          royaltyPercent: Number(row.royalty_percent) || 5,
+          comments: [],
+          editionType: (row.edition_type as Wart['editionType']) || 'unique',
+          maxEditions: row.max_editions != null ? Number(row.max_editions) : null,
+          editionNumber: Number(row.edition_number) || 1,
+          availableUntil: row.available_until != null ? Number(row.available_until) : null,
+          certId: (row.cert_id as string) || undefined,
+          contentFingerprint: (row.content_fingerprint as string) || undefined,
+          creatorSignature: (row.creator_signature as string) || undefined,
+          storageMode: (row.storage_mode as Wart['storageMode']) || 'hybrid',
+          vaultBackup: false,
+        };
+        engine.addFromCloud(wartData);
+
+        if (row.media_path) {
+          sync.pullWartWithMedia(wartId).then(fullWart => {
+            if (fullWart?.imageData) {
+              const local = engine.getWart(wartId);
+              if (local) {
+                local.imageData = fullWart.imageData;
+                if (fullWart.contentFingerprint) {
+                  WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
+                }
+                engine.savePublic();
+              }
+            }
+          });
+        }
+      }
+    }
+    engine.savePublic();
+  }
+
   // ─── Load wallet on mount + Supabase sync ──────────────
   useEffect(() => {
     const w = loadWallet();
@@ -231,88 +307,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       realtime.stop();
     };
   }, []);
-
-  // Merge cloud warts into local WartEngine (for cross-device sync)
-  function mergeCloudWarts(cloudWarts: Record<string, unknown>[]) {
-    const engine = getWartEngine();
-    const localWarts = engine.getAll();
-    const localIds = new Set(localWarts.map(w => w.id));
-
-    for (const row of cloudWarts) {
-      const wartId = row.id as string;
-      if (localIds.has(wartId)) {
-        // Update existing wart with cloud data (ownership, price, listed status)
-        const local = engine.getWart(wartId);
-        if (local) {
-          const cloudUpdated = Number(row.updated_at || 0);
-          // If cloud version is newer, update local
-          if (cloudUpdated > (local.createdAt || 0)) {
-            local.owner = (row.owner as string) || local.owner;
-            local.price = row.price != null ? Number(row.price) : local.price;
-            local.listed = (row.listed as boolean) ?? local.listed;
-            local.title = (row.title as string) || local.title;
-            local.description = (row.description as string) || local.description;
-          }
-        }
-      } else {
-        // New wart from cloud — add to local engine
-        // Download media async for this wart
-        const wartData: Wart = {
-          id: wartId,
-          title: (row.title as string) || '',
-          description: (row.description as string) || '',
-          imageData: '', // Will be loaded on demand
-          mediaType: (row.media_type as Wart['mediaType']) || 'image',
-          creator: (row.creator as string) || '',
-          owner: (row.owner as string) || '',
-          price: row.price != null ? Number(row.price) : null,
-          listed: (row.listed as boolean) || false,
-          createdAt: Number(row.created_at) || Date.now(),
-          history: [],
-          royaltyPercent: Number(row.royalty_percent) || 5,
-          comments: [],
-          editionType: (row.edition_type as Wart['editionType']) || 'unique',
-          maxEditions: row.max_editions != null ? Number(row.max_editions) : null,
-          editionNumber: Number(row.edition_number) || 1,
-          availableUntil: row.available_until != null ? Number(row.available_until) : null,
-          certId: (row.cert_id as string) || undefined,
-          contentFingerprint: (row.content_fingerprint as string) || undefined,
-          creatorSignature: (row.creator_signature as string) || undefined,
-          storageMode: (row.storage_mode as Wart['storageMode']) || 'hybrid',
-          vaultBackup: false,
-        };
-        engine.addFromCloud(wartData);
-
-        // Fetch media in background
-        if (row.media_path) {
-          sync.pullWartWithMedia(wartId).then(fullWart => {
-            if (fullWart?.imageData) {
-              const local = engine.getWart(wartId);
-              if (local) {
-                local.imageData = fullWart.imageData;
-                if (fullWart.contentFingerprint) {
-                  WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
-                }
-                engine.savePublic();
-              }
-            }
-          });
-        }
-      }
-    }
-    engine.savePublic();
-  }
-
-  function refreshWartsState(address?: string) {
-    const engine = getWartEngine();
-    setWarts(engine.getAll());
-    setMarketplace(engine.getMarketplace());
-    if (address) {
-      setMyCollection(engine.getCollection(address));
-      setMyCreated(engine.getCreated(address));
-      setVaultStats(engine.getVaultStats(address));
-    }
-  }
 
   // ─── Wallet creation ──────────────────────────────────
   const initWallet = useCallback(async (password: string, alias?: string) => {
