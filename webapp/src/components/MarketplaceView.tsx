@@ -196,7 +196,7 @@ export default function MarketplaceView() {
 
   // ─── Resolve creator alias ─────────────────────────────
   const getCreatorName = (address: string): string => {
-    if (address === wallet.address) return 'you';
+    if (wallet && address === wallet.address) return 'you';
     const social = SocialEngine.load();
     const profile = social.getProfile(address);
     return profile?.alias || shortAddress(address);
