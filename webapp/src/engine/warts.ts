@@ -363,13 +363,13 @@ export class WartEngine {
 
     // ─── CosmoCode On-Chain SVG Encoding ────────────────
     // Encode the artwork as a compressed on-chain SVG container
-    // Skip for large files (>500KB base64) to avoid browser hang
+    // Limit: 50 MB (matches upload limit)
     let onChainSVG: string | undefined;
     let cosmoCodeId: string | undefined;
     let compressionRatio: number | undefined;
 
     const mediaSize = imageData.length;
-    if (mediaSize < 500_000) {
+    if (mediaSize < 50 * 1024 * 1024) {
       try {
         const container = await imageToOnChainSVG(imageData, title.trim(), creator, {
           edition: editionType,
