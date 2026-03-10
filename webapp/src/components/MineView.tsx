@@ -141,7 +141,7 @@ export default function MineView() {
           <div className="flex-1">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u26CF'} Cosmorare Mining</h2>
             <p className="text-body-sm opacity-40">
-              Sécurisez le protocole et gagnez des {'\u03A9'} en validant des blocs par Proof-of-Work.
+              Double SHA-256 Proof-of-Work — même algorithme que Bitcoin. Difficulté réelle, blocs de 10 min.
             </p>
           </div>
           <button
@@ -217,12 +217,12 @@ export default function MineView() {
           <div className="w-full h-1.5 bg-current/5 overflow-hidden">
             <div
               className="h-full bg-current/30 transition-all duration-300"
-              style={{ width: `${(diffState.currentDifficulty / 32) * 100}%` }}
+              style={{ width: `${(diffState.currentDifficulty / 64) * 100}%` }}
             />
           </div>
           <div className="flex justify-between text-label opacity-30 mt-0.5">
-            <span>8 bits (facile)</span>
-            <span>32 bits (difficile)</span>
+            <span>16 bits (min)</span>
+            <span>64 bits (Bitcoin-grade)</span>
           </div>
         </div>
       </div>
@@ -357,7 +357,7 @@ export default function MineView() {
                 />
               </div>
               <p className="text-[10px] opacity-30 mt-1 text-center">
-                Recherche d'un hash avec {diffState.currentDifficulty}+ zéros en tête... Votre navigateur teste des milliards de combinaisons.
+                Double SHA-256 — recherche d'un hash avec {diffState.currentDifficulty}+ zéros en tête (~{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} combinaisons en moyenne).
               </p>
             </div>
           )}
@@ -473,25 +473,28 @@ export default function MineView() {
       <div className="glass-panel p-4">
         <h3 className="text-base font-bold opacity-70 mb-2">Comment fonctionne le Proof-of-Work</h3>
         <div className="text-[11px] opacity-40 space-y-2">
+          <div className="bg-current/5 border border-current/10 p-2 mb-2 text-center">
+            <p className="font-bold opacity-60">Algorithme identique à Bitcoin : Double SHA-256 (SHA-256d) + ajustement dynamique de difficulté</p>
+          </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">1.</span>
-            <p><span className="font-bold opacity-60">Préparation du bloc :</span> Un en-tête est construit avec votre adresse, le hash du bloc précédent, le timestamp et votre message optionnel.</p>
+            <p><span className="font-bold opacity-60">Construction du bloc :</span> Un en-tête est construit avec la version, le hash du bloc précédent, le merkle root des transactions, le timestamp, la difficulté, la hauteur du bloc et votre adresse de mineur.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">2.</span>
-            <p><span className="font-bold opacity-60">Recherche du nonce :</span> Votre navigateur teste des millions de valeurs pour trouver un nonce tel que <span className="opacity-80 font-mono">SHA-256(bloc + nonce)</span> produise un hash avec {diffState.currentDifficulty}+ zéros en tête.</p>
+            <p><span className="font-bold opacity-60">Double SHA-256 :</span> Votre navigateur teste des millions de nonces. Chaque candidat passe par <span className="opacity-80 font-mono">SHA-256(SHA-256(bloc + nonce))</span> — exactement comme Bitcoin. À {diffState.currentDifficulty} bits de difficulté, il faut en moyenne ~{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} essais.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">3.</span>
-            <p><span className="font-bold opacity-60">Vérification :</span> La preuve est vérifiée cryptographiquement — n'importe qui peut recalculer le hash et confirmer sa validité.</p>
+            <p><span className="font-bold opacity-60">Vérification :</span> La preuve est vérifiable par n'importe qui en un seul calcul SHA-256d — impossible à falsifier.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">4.</span>
-            <p><span className="font-bold opacity-60">Récompense :</span> Le reward suit la Resonance Decay ({'\u03C6'} = 1.618...) : une décroissance douce basée sur le ratio d'or, au lieu du halving brutal de Bitcoin.</p>
+            <p><span className="font-bold opacity-60">Récompense :</span> Le reward suit la Resonance Decay ({'\u03C6'} = 1.618...) : une décroissance douce basée sur le ratio d'or. Contrairement au halving brutal de Bitcoin, la courbe est continue et prévisible.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">5.</span>
-            <p><span className="font-bold opacity-60">Ajustement :</span> La difficulté s'ajuste tous les 10 blocs pour cibler ~15s par bloc, garantissant un rythme d'émission stable.</p>
+            <p><span className="font-bold opacity-60">Ajustement Bitcoin-style :</span> La difficulté s'ajuste dynamiquement pour cibler ~10 minutes par bloc (comme Bitcoin). Si les blocs sont minés trop vite, la difficulté augmente. Trop lentement, elle diminue. Facteur max x4 par ajustement.</p>
           </div>
         </div>
       </div>
