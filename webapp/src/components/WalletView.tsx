@@ -504,7 +504,7 @@ export default function WalletView() {
     { id: 'overview', label: 'Overview' },
     { id: 'send', label: 'Send' },
     { id: 'mine', label: 'Mine' },
-    { id: 'payment', label: 'Paiement' },
+    { id: 'payment', label: 'Cosmorares Coins' },
   ];
 
   return (

@@ -47,6 +47,9 @@ export default function MarketplaceView() {
   const [commentText, setCommentText] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Search
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Buy / List state
   const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -1115,7 +1118,16 @@ export default function MarketplaceView() {
     else if (tab === 'rwa') base = rwaWarts;
     else if (tab === 'phygital') base = phygitalWarts;
     else return [];
-    return applyEditionFilter(base);
+    let filtered = applyEditionFilter(base);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(w =>
+        w.title.toLowerCase().includes(q) ||
+        w.description?.toLowerCase().includes(q) ||
+        w.creator.toLowerCase().includes(q)
+      );
+    }
+    return filtered;
   };
 
   const showEditionFilters = ['all', 'art', 'video', 'music', 'rwa', 'phygital'].includes(tab);
@@ -1132,7 +1144,6 @@ export default function MarketplaceView() {
     { id: 'top-creators', label: 'Top Creators' },
     { id: 'top-collectors', label: 'Top Collectors' },
     { id: 'top-sales', label: 'Top Sales' },
-    { id: 'create', label: '+ Create' },
   ];
 
   const editionFilters: { id: EditionFilter; label: string }[] = [
@@ -1214,6 +1225,28 @@ export default function MarketplaceView() {
   return (
     <div className="space-y-3">
       <TransferModal />
+
+      {/* ─── Search Bar + Create Button ─────────────────────── */}
+      <div className="glass-panel p-2 flex items-center gap-2">
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            placeholder="Rechercher une Cosmorare..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="warp-input w-full text-body-sm py-2 pl-8 pr-3"
+          />
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30 text-body-sm">{'\u2315'}</span>
+        </div>
+        <button
+          onClick={() => { setTab('create'); setEditionFilter('all'); }}
+          className={`warp-button px-4 py-2 text-body-sm font-bold whitespace-nowrap shrink-0 ${
+            tab === 'create' ? 'opacity-100' : ''
+          }`}
+        >
+          + Create
+        </button>
+      </div>
 
       {/* ─── Gallery Tabs (scrollable) ──────────────────────── */}
       <div className="glass-panel p-1.5">

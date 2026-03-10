@@ -41,9 +41,9 @@ export default function FiatGatewayView() {
       <div className="flex items-center justify-center h-[calc(100dvh-200px)]">
         <div className="text-center px-6">
           <p className="text-5xl mb-4">{'€'}</p>
-          <h2 className="text-title-sm font-bold mb-1 font-title">Paiement</h2>
-          <p className="opacity-50 text-base">Déverrouillez votre wallet pour accéder au paiement</p>
-          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Cosmorares en EUR, USD, GBP</p>
+          <h2 className="text-title-sm font-bold mb-1 font-title">Cosmorares Coins</h2>
+          <p className="opacity-50 text-base">Déverrouillez votre wallet pour accéder à Cosmorares Coins</p>
+          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Cosmorares en monnaie fiat (EUR, USD, GBP...)</p>
         </div>
       </div>
     );
@@ -132,9 +132,15 @@ export default function FiatGatewayView() {
     <div className="space-y-4 pb-8">
       {/* Header */}
       <div className="glass-panel p-5 text-center">
-        <h2 className="text-title-sm font-bold font-title">{'€'} Paiement</h2>
-        <p className="text-body-sm opacity-40 mt-1">Achetez et vendez des Cosmorares en monnaie fiat (EUR, USD, GBP...)</p>
-        <p className="text-label opacity-30 mt-1">SIMULATION — Interface complète, paiement réel via Stripe/PayPal en production</p>
+        <h2 className="text-title-sm font-bold font-title">{'\u03A9'} Cosmorares Coins</h2>
+        <p className="text-body-sm opacity-40 mt-1">
+          Passerelle fiat/crypto pour acheter et vendre des Cosmorares ({'\u03A9'}) en monnaie traditionnelle.
+        </p>
+        <div className="text-[11px] opacity-30 mt-2 space-y-0.5 max-w-md mx-auto text-left">
+          <p><span className="opacity-60 font-bold">Comment ça marche :</span> Cosmorares Coins est la passerelle officielle qui permet de convertir votre monnaie fiat (EUR, USD, GBP...) en tokens {'\u03A9'} et inversement.</p>
+          <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Cosmorare. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Cosmorares certifiées. Les frais de transaction (2.5%) financent le développement et la maintenance du protocole.</p>
+        </div>
+        <p className="text-label opacity-30 mt-2">SIMULATION — Paiement réel via Stripe/PayPal en production</p>
         <div className="flex justify-center gap-3 mt-3">
           <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'Ω'}</span>
           <span className="text-base opacity-40">|</span>
