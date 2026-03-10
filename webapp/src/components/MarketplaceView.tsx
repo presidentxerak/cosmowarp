@@ -41,6 +41,8 @@ export default function MarketplaceView() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
   const audioCoverRef = useRef<HTMLInputElement>(null);
 
   // Comment
@@ -102,7 +104,7 @@ export default function MarketplaceView() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 50 * 1024 * 1024) {
-      setCreateError('File must be under 50MB');
+      setCreateError('Fichier trop lourd (max 50MB)');
       return;
     }
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
@@ -112,13 +114,27 @@ export default function MarketplaceView() {
     else if (['svg'].includes(ext)) mType = 'svg';
     else if (['gif', 'jpeg', 'jpg', 'png'].includes(ext)) mType = 'image';
 
+    setUploadProgress(0);
+    setUploadStatus(`Lecture de ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)...`);
+
     const reader = new FileReader();
+    reader.onprogress = (evt) => {
+      if (evt.lengthComputable) {
+        setUploadProgress(Math.round((evt.loaded / evt.total) * 100));
+      }
+    };
     reader.onload = () => {
+      setUploadProgress(100);
+      setUploadStatus('');
       setImageData(reader.result as string);
       setMediaType(mType);
       setCreateError('');
     };
-    reader.onerror = () => setCreateError('Failed to read file');
+    reader.onerror = () => {
+      setUploadProgress(0);
+      setUploadStatus('');
+      setCreateError('Échec de lecture du fichier');
+    };
     reader.readAsDataURL(file);
   };
 
@@ -149,15 +165,42 @@ export default function MarketplaceView() {
 
     setCreating(true);
     setCreateError('');
+    setUploadProgress(0);
+
     try {
+      // Step 1: Fingerprinting
+      setUploadStatus('Calcul de l\'empreinte SHA-256...');
+      setUploadProgress(15);
+      await new Promise(r => setTimeout(r, 100)); // yield to UI
+
+      // Step 2: Certificate
+      setUploadStatus('Génération du certificat d\'authenticité...');
+      setUploadProgress(30);
+      await new Promise(r => setTimeout(r, 100));
+
+      // Step 3: Signature
+      setUploadStatus('Signature cryptographique Ed25519...');
+      setUploadProgress(50);
+      await new Promise(r => setTimeout(r, 100));
+
+      // Step 4: Mint
+      setUploadStatus('Inscription sur le protocole Cosmorare...');
+      setUploadProgress(70);
+
       const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined);
-      setCreateSuccess(`Minted "${wart.title}" (Edition #${wart.editionNumber})!`);
+
+      // Step 5: Done
+      setUploadProgress(100);
+      setUploadStatus('');
+      setCreateSuccess(`"${wart.title}" certifié avec succès (Édition #${wart.editionNumber}) !`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
       setEditionType('unique'); setMaxEditions(''); setDurationHours('');
       setMediaType('image'); setAudioCover('');
-      setTimeout(() => setCreateSuccess(''), 3000);
+      setTimeout(() => { setCreateSuccess(''); setUploadProgress(0); }, 5000);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Mint failed');
+      setCreateError(err instanceof Error ? err.message : 'Échec du minting');
+      setUploadProgress(0);
+      setUploadStatus('');
     } finally {
       setCreating(false);
     }
@@ -328,6 +371,13 @@ export default function MarketplaceView() {
 
   // ─── Media Renderer ───────────────────────────────────────
   const WartMedia = ({ wart, className = '' }: { wart: Wart; className?: string }) => {
+    if (!wart.imageData) {
+      return (
+        <div className={`bg-current/5 flex items-center justify-center ${className}`}>
+          <span className="text-2xl opacity-30">{'\u25C8'}</span>
+        </div>
+      );
+    }
     if (wart.mediaType === 'audio') {
       return (
         <div className={`bg-current/5 flex flex-col items-center justify-center p-4 ${className}`}>
@@ -1532,6 +1582,18 @@ export default function MarketplaceView() {
                 onChange={handleMediaUpload}
               />
               <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
+              {uploadStatus && !imageData && uploadProgress > 0 && uploadProgress < 100 && (
+                <div className="w-full p-4 border border-current/10 bg-current/5 space-y-2">
+                  <p className="text-[11px] opacity-50 text-center">{uploadStatus}</p>
+                  <div className="w-full h-2 bg-current/5 overflow-hidden">
+                    <div
+                      className="h-full bg-current/30 transition-all duration-200"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] opacity-30 text-center">{uploadProgress}%</p>
+                </div>
+              )}
               {imageData ? (
                 <div className="flex flex-col items-center gap-3">
                   {(mediaType === 'image' || mediaType === 'svg') && (
@@ -1710,12 +1772,28 @@ export default function MarketplaceView() {
               </span>
             </div>
 
+            {/* ─── Progress Bar ────────────────────────── */}
+            {(uploadProgress > 0 && uploadProgress < 100) && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="opacity-50">{uploadStatus || 'Traitement...'}</span>
+                  <span className="opacity-60 font-bold">{uploadProgress}%</span>
+                </div>
+                <div className="w-full h-2 bg-current/5 overflow-hidden">
+                  <div
+                    className="h-full bg-current/30 transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* ─── Errors/Success ──────────────────────── */}
             {createError && (
               <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-70">{createError}</div>
             )}
             {createSuccess && (
-              <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-80">{createSuccess}</div>
+              <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-80">{'\u2713'} {createSuccess}</div>
             )}
 
             {/* ─── Mint Button ─────────────────────────── */}
@@ -1727,10 +1805,10 @@ export default function MarketplaceView() {
               {creating ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
-                  Minting...
+                  {uploadStatus || 'Minting...'}
                 </span>
               ) : (
-                'Certify & Mint'
+                'Certifier & Mint'
               )}
             </button>
           </div>

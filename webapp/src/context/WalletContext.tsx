@@ -566,9 +566,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const wart = await engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours, mediaType, audioCover, wallet.privateKey);
 
-    // Record mint transaction
-    const result = await sendWarps(wallet, wallet.address, 0);
-    void result; // Mint is free, just record in feed
+    // Record mint transaction (no sendWarps — mint is free, just record in feed)
     const tx: Transaction = {
       id: wart.id.slice(0, 16),
       from: wallet.address,

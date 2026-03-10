@@ -226,6 +226,11 @@ export class WartEngine {
         for (const w of arr) {
           // Migration: add new fields to old warts
           if (w.vaultBackup === undefined) w.vaultBackup = false;
+          // Rehydrate media from WartMediaStore if stripped during save
+          if ((!w.imageData || w.imageData === '') && w.contentFingerprint) {
+            const media = WartMediaStore.retrieve(w.contentFingerprint);
+            if (media) w.imageData = media;
+          }
           engine.warts.set(w.id, w);
         }
       } catch { /* corrupt data, start fresh */ }
@@ -239,8 +244,35 @@ export class WartEngine {
   getFiatGateway(): FiatGateway { return this.fiatGateway; }
 
   private save(): void {
-    const arr = Array.from(this.warts.values());
-    storage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    // Strip heavy media data from serialized warts — media lives in WartMediaStore
+    const arr = Array.from(this.warts.values()).map(w => {
+      const slim: Record<string, unknown> = { ...w };
+      // Don't serialize full base64 media — it's in WartMediaStore keyed by contentFingerprint
+      if (w.contentFingerprint && w.imageData && w.imageData.length > 1000) {
+        slim.imageData = ''; // Will be rehydrated from WartMediaStore on load
+      }
+      if (w.audioCover && w.audioCover.length > 1000) {
+        slim.audioCover = '';
+      }
+      // Don't serialize the on-chain SVG either (can be very large)
+      if (w.onChainSVG && w.onChainSVG.length > 1000) {
+        slim.onChainSVG = '';
+      }
+      return slim;
+    });
+    try {
+      storage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    } catch (e) {
+      // localStorage quota exceeded — try again with even more aggressive stripping
+      const minimal = arr.map(w => {
+        const m = { ...w };
+        delete m.imageData;
+        delete m.audioCover;
+        delete m.onChainSVG;
+        return m;
+      });
+      storage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+    }
   }
 
   /** Save warts to localStorage (public access for cloud sync) */
@@ -331,21 +363,25 @@ export class WartEngine {
 
     // ─── CosmoCode On-Chain SVG Encoding ────────────────
     // Encode the artwork as a compressed on-chain SVG container
+    // Skip for large files (>500KB base64) to avoid browser hang
     let onChainSVG: string | undefined;
     let cosmoCodeId: string | undefined;
     let compressionRatio: number | undefined;
 
-    try {
-      const container = await imageToOnChainSVG(imageData, title.trim(), creator, {
-        edition: editionType,
-        royalty: royaltyPercent.toString(),
-        fingerprint: contentFingerprint,
-      });
-      onChainSVG = container.svg;
-      cosmoCodeId = container.id;
-      compressionRatio = container.compressionRatio;
-    } catch {
-      // Fallback: on-chain encoding failed, use local-only storage
+    const mediaSize = imageData.length;
+    if (mediaSize < 500_000) {
+      try {
+        const container = await imageToOnChainSVG(imageData, title.trim(), creator, {
+          edition: editionType,
+          royalty: royaltyPercent.toString(),
+          fingerprint: contentFingerprint,
+        });
+        onChainSVG = container.svg;
+        cosmoCodeId = container.id;
+        compressionRatio = container.compressionRatio;
+      } catch {
+        // Fallback: on-chain encoding failed, use local-only storage
+      }
     }
 
     const wart: Wart = {
