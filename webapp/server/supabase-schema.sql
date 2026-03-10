@@ -338,33 +338,51 @@ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 -- Row Level Security (RLS) — Enable for production
 -- ═══════════════════════════════════════════════════════════
 
--- Profiles: anyone can read, only owner can update
+-- Profiles: anyone can read, only the service role or address owner can write.
+-- Note: Cosmorare uses service_role key server-side; client writes go through
+--       server functions, so RLS restricts direct client access.
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (true);
-CREATE POLICY "Users can insert profile" ON profiles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE
+  USING (auth.uid()::text = address OR current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT
+  WITH CHECK (auth.uid()::text = address OR current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
 
--- Chain data: public read, authenticated write
+-- Chain data: public read, only service role can write (validated server-side)
 ALTER TABLE chain_blocks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Chain blocks are public" ON chain_blocks FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert blocks" ON chain_blocks FOR INSERT WITH CHECK (true);
+CREATE POLICY "Service role can insert blocks" ON chain_blocks FOR INSERT
+  WITH CHECK (current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
 
 ALTER TABLE chain_transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Chain txs are public" ON chain_transactions FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert txs" ON chain_transactions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Service role can insert txs" ON chain_transactions FOR INSERT
+  WITH CHECK (current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
 
 ALTER TABLE chain_beacons ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Beacons are public" ON chain_beacons FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert beacons" ON chain_beacons FOR INSERT WITH CHECK (true);
+CREATE POLICY "Service role can insert beacons" ON chain_beacons FOR INSERT
+  WITH CHECK (current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
 
--- Warts: public read, owner can update
+-- Warts: public read, only owner can update/delete, service role can do all
 ALTER TABLE warts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Warts are public" ON warts FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert warts" ON warts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Anyone can update warts" ON warts FOR UPDATE USING (true);
-CREATE POLICY "Anyone can delete warts" ON warts FOR DELETE USING (true);
+CREATE POLICY "Authenticated users can insert warts" ON warts FOR INSERT
+  WITH CHECK (auth.uid() IS NOT NULL OR current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
+CREATE POLICY "Owner can update own warts" ON warts FOR UPDATE
+  USING (auth.uid()::text = owner OR current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
+CREATE POLICY "Owner can delete own warts" ON warts FOR DELETE
+  USING (auth.uid()::text = owner OR current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
 
--- Transactions: public
+-- Transactions: public read, service role writes
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Transactions are public" ON transactions FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert transactions" ON transactions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Service role can insert transactions" ON transactions FOR INSERT
+  WITH CHECK (current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
+
+-- Fiat transactions: only service role
+ALTER TABLE fiat_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Fiat txs viewable by owner" ON fiat_transactions FOR SELECT
+  USING (auth.uid()::text = buyer_address OR current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');
+CREATE POLICY "Service role can insert fiat txs" ON fiat_transactions FOR INSERT
+  WITH CHECK (current_setting('request.jwt.claims', true)::json->>'role' = 'service_role');

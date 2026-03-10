@@ -31,7 +31,8 @@ function calculateFees(amount: number, method: string) {
 let txCounter = 0;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -42,6 +43,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!amount || !currency || !buyerAddress) {
     return res.status(400).json({ error: 'Missing required fields: amount, currency, buyerAddress' });
+  }
+
+  if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+    return res.status(400).json({ error: 'Amount must be a positive number' });
   }
 
   const rate = RATES[currency];

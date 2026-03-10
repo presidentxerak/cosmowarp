@@ -31,17 +31,29 @@ function calculateFees(amount: number, method: string) {
 let txCounter = 0;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Authentication: require a valid API key or signed request
+  const authHeader = req.headers.authorization;
+  const PAYOUT_SECRET = process.env.PAYOUT_SECRET_KEY;
+  if (!PAYOUT_SECRET || authHeader !== `Bearer ${PAYOUT_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized: valid authentication required for payouts' });
+  }
 
   const { warpAmount, currency, paymentMethod, sellerAddress } = req.body;
 
   if (!warpAmount || !currency || !sellerAddress) {
     return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  if (typeof warpAmount !== 'number' || warpAmount <= 0 || !Number.isFinite(warpAmount)) {
+    return res.status(400).json({ error: 'warpAmount must be a positive number' });
   }
 
   const rate = RATES[currency];

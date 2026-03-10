@@ -4,9 +4,12 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 export const config = {
   api: { bodyParser: false },
@@ -40,8 +43,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const txId = session.metadata?.cosmorare_tx_id;
-      console.log(`[Webhook] Payment completed: ${txId}`);
-      // TODO: Update Supabase transaction record
+      const buyerAddress = session.metadata?.buyer_address;
+      const warpAmount = parseFloat(session.metadata?.warp_amount || '0');
+
+      console.log(`[Webhook] Payment completed: ${txId} — ${warpAmount} Ω → ${buyerAddress}`);
+
+      // Credit buyer's balance in Supabase
+      if (SUPABASE_URL && SUPABASE_SERVICE_KEY && buyerAddress && warpAmount > 0) {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+        // Update fiat transaction status
+        await supabase.from('fiat_transactions').update({
+          status: 'completed',
+          processor_ref: session.id,
+          updated_at: Date.now(),
+        }).eq('tx_id', txId);
+
+        // Credit buyer balance (atomic increment)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('balance')
+          .eq('address', buyerAddress)
+          .single();
+
+        if (profile) {
+          await supabase.from('profiles').update({
+            balance: profile.balance + warpAmount,
+            updated_at: Date.now(),
+          }).eq('address', buyerAddress);
+        }
+
+        // Record the credit transaction
+        await supabase.from('transactions').insert({
+          id: `${txId}_credit`,
+          from_address: 'FIAT_GATEWAY',
+          to_address: buyerAddress,
+          amount: warpAmount,
+          type: 'fiat_purchase',
+          memo: `Fiat purchase: ${warpAmount} Ω (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`,
+          timestamp: Date.now(),
+          status: 'confirmed',
+        });
+      }
     }
 
     return res.json({ received: true });

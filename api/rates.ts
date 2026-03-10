@@ -6,7 +6,10 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY || 'cosmorare-admin-dev';
+const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY;
+if (!ADMIN_KEY) {
+  console.warn('[WARN] GATEWAY_ADMIN_KEY not set — rate updates will be disabled');
+}
 
 // In-memory rates (use Supabase in production for persistence)
 const rates = new Map([
@@ -18,7 +21,8 @@ const rates = new Map([
 ]);
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
 
@@ -30,7 +34,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     const adminKey = req.headers['x-admin-key'];
-    if (adminKey !== ADMIN_KEY) return res.status(403).json({ error: 'Unauthorized' });
+    if (!ADMIN_KEY || adminKey !== ADMIN_KEY) return res.status(403).json({ error: 'Unauthorized' });
 
     const { currency, warpsPerUnit, source } = req.body;
     if (currency && typeof warpsPerUnit === 'number') {
