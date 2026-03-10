@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
@@ -147,6 +147,19 @@ export default function MarketplaceView() {
       : sales.filter(s => !s.isFirstSale);
     return filtered.sort((a, b) => b.transfer.price - a.transfer.price);
   }, [allWarts, salesMarketFilter]);
+
+  // Auto-open wart detail when navigating from profile
+  useEffect(() => {
+    const wartId = sessionStorage.getItem('cosmorare_open_wart');
+    if (wartId) {
+      sessionStorage.removeItem('cosmorare_open_wart');
+      const wart = allWarts.find(w => w.id === wartId);
+      if (wart) {
+        setSelectedWart(wart);
+        setTab('detail');
+      }
+    }
+  }, [allWarts]);
 
   if (!wallet) {
     return (
@@ -435,7 +448,9 @@ export default function MarketplaceView() {
     if (!wart.imageData) {
       return (
         <div className={`bg-current/5 flex items-center justify-center ${className}`}>
-          <span className="text-2xl opacity-30">{'\u25C8'}</span>
+          <span className="text-2xl opacity-30">
+            {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}
+          </span>
         </div>
       );
     }
@@ -452,7 +467,15 @@ export default function MarketplaceView() {
       );
     }
     if (wart.mediaType === 'video') {
-      return <video controls className={`w-full bg-black ${className}`} src={wart.imageData} />;
+      return (
+        <video
+          controls
+          playsInline
+          preload="metadata"
+          className={`w-full bg-black ${className}`}
+          src={wart.imageData}
+        />
+      );
     }
     return <img src={wart.imageData} alt={wart.title} className={`w-full h-full object-cover ${className}`} />;
   };
@@ -585,7 +608,7 @@ export default function MarketplaceView() {
     const rarityCfg = RARITY_CONFIG[rarity];
 
     return (
-      <div className="space-y-4 max-w-lg mx-auto">
+      <div className="space-y-4 px-[10px] sm:px-0">
         <button
           className="text-body-sm opacity-50 text-current hover:opacity-90 cursor-pointer"
           onClick={() => { setTab('all'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
@@ -594,9 +617,9 @@ export default function MarketplaceView() {
         </button>
 
         <div className="glass-panel p-4">
-          <div className="max-w-md mx-auto">
-            <div className="aspect-square mb-4 overflow-hidden rounded-none bg-current/5 relative">
-              <WartMedia wart={wart} />
+          <div className="max-w-2xl mx-auto">
+            <div className={`${wart.mediaType === 'video' ? '' : 'aspect-square'} mb-4 overflow-hidden rounded-none bg-current/5 relative`}>
+              <WartMedia wart={wart} className="w-full h-full object-contain" />
               {expired && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                   <span className="opacity-70 text-title-sm font-bold">EXPIRED</span>

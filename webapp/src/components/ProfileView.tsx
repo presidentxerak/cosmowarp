@@ -7,11 +7,11 @@ import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import HexAvatar from './HexAvatar';
 
-type Tab = 'posts' | 'warts' | 'collected' | 'followers' | 'following';
+type Tab = 'warts' | 'collected' | 'posts' | 'followers' | 'following';
 
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, unlocked, lock, signOut, myCreated, myCollection } = useWallet();
-  const [tab, setTab] = useState<Tab>('posts');
+  const [tab, setTab] = useState<Tab>('warts');
   const [posts, setPosts] = useState<ChatPost[]>([]);
   const [bio, setBio] = useState('');
   const [editingBio, setEditingBio] = useState(false);
@@ -97,10 +97,16 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     onNavigate('user-profile');
   };
 
+  const handleViewWart = (wart: Wart) => {
+    // Store the wart id so MarketplaceView can open it in detail mode
+    sessionStorage.setItem('cosmorare_open_wart', wart.id);
+    onNavigate('gallery');
+  };
+
   const tabList: { id: Tab; label: string; count?: number }[] = [
-    { id: 'posts', label: 'Posts', count: posts.length },
     { id: 'warts', label: 'Created', count: myCreated.length },
     { id: 'collected', label: 'Collection', count: myCollection.length },
+    { id: 'posts', label: 'Posts', count: posts.length },
     { id: 'followers', label: 'Followers', count: followersCount },
     { id: 'following', label: 'Following', count: followingCount },
   ];
@@ -276,12 +282,17 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {myCreated.map((wart: Wart) => (
-                <div key={wart.id} className="glass-panel p-2">
-                  {wart.mediaType !== 'audio' && wart.imageData && (
+                <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
+                  {wart.mediaType === 'video' && wart.imageData ? (
+                    <video src={wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
+                  ) : wart.mediaType !== 'audio' && wart.imageData ? (
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  {wart.mediaType === 'audio' && wart.audioCover && (
+                  ) : wart.mediaType === 'audio' && wart.audioCover ? (
                     <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
+                  ) : (
+                    <div className="w-full aspect-square bg-current/5 flex items-center justify-center">
+                      <span className="text-2xl opacity-30">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                    </div>
                   )}
                   <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
                   <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
@@ -301,9 +312,15 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {myCollection.map((wart: Wart) => (
-                <div key={wart.id} className="glass-panel p-2">
-                  {wart.mediaType !== 'audio' && wart.imageData && (
+                <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
+                  {wart.mediaType === 'video' && wart.imageData ? (
+                    <video src={wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
+                  ) : wart.mediaType !== 'audio' && wart.imageData ? (
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
+                  ) : (
+                    <div className="w-full aspect-square bg-current/5 flex items-center justify-center">
+                      <span className="text-2xl opacity-30">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                    </div>
                   )}
                   <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
                   <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
