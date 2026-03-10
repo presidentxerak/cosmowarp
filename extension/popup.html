@@ -261,7 +261,8 @@
       <div style="font-size:28px;margin-bottom:8px;">&#10022;</div>
       <div style="font-size:13px;font-weight:700;color:#c084fc;margin-bottom:4px;">Create Your Warp Wallet</div>
       <div class="text-xs text-gray mb-2">Ed25519 keypair + 1,000 &#937; airdrop</div>
-      <input class="input mb-2" id="create-alias" placeholder="Alias (optional)" style="text-align:center;">
+      <input class="input mb-1" id="create-alias" placeholder="Alias (optional)" style="text-align:center;">
+      <input class="input mb-2" id="create-password" type="password" placeholder="Password (min 6 chars)" style="text-align:center;">
       <button class="btn btn-full" id="btn-create">&#10022; Initialize Wallet</button>
     </div>
 
@@ -279,6 +280,11 @@
         <div class="address-panel">
           <code id="w-address"></code>
           <button class="btn btn-sm" id="btn-copy">Copy</button>
+          <button class="btn btn-sm" id="btn-lock" title="Lock/Unlock"><span id="w-lock-status">&#128274;</span></button>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          <button class="btn btn-sm" id="btn-export" style="flex:1;">Export</button>
+          <button class="btn btn-sm" id="btn-import" style="flex:1;">Import</button>
         </div>
       </div>
 

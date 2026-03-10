@@ -48,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       console.log(`[Webhook] Payment completed: ${txId} — ${warpAmount} Ω → ${buyerAddress}`);
 
-      // Credit buyer's balance in Supabase
+      // Credit buyer's balance atomically via Supabase RPC
       if (SUPABASE_URL && SUPABASE_SERVICE_KEY && buyerAddress && warpAmount > 0) {
         const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
@@ -59,31 +59,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           updated_at: Date.now(),
         }).eq('tx_id', txId);
 
-        // Credit buyer balance (atomic increment)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('balance')
-          .eq('address', buyerAddress)
-          .single();
-
-        if (profile) {
-          await supabase.from('profiles').update({
-            balance: profile.balance + warpAmount,
-            updated_at: Date.now(),
-          }).eq('address', buyerAddress);
-        }
-
-        // Record the credit transaction
-        await supabase.from('transactions').insert({
-          id: `${txId}_credit`,
-          from_address: 'FIAT_GATEWAY',
-          to_address: buyerAddress,
-          amount: warpAmount,
-          type: 'fiat_purchase',
-          memo: `Fiat purchase: ${warpAmount} Ω (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`,
-          timestamp: Date.now(),
-          status: 'confirmed',
+        // Atomic credit via RPC (prevents race conditions)
+        const memo = `Fiat purchase: ${warpAmount} \u03A9 (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`;
+        const { data: credited } = await supabase.rpc('credit_warps', {
+          p_address: buyerAddress,
+          p_amount: warpAmount,
+          p_tx_id: `${txId}_credit`,
+          p_memo: memo,
         });
+
+        if (!credited) {
+          console.error(`[Webhook] Failed to credit ${warpAmount} \u03A9 to ${buyerAddress}`);
+        }
       }
     }
 

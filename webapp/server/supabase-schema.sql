@@ -324,6 +324,81 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ═══════════════════════════════════════════════════════════
+-- Atomic credit_warps RPC — Used by Stripe webhook to credit buyer balance
+-- ═══════════════════════════════════════════════════════════
+
+CREATE OR REPLACE FUNCTION credit_warps(
+  p_address TEXT,
+  p_amount NUMERIC,
+  p_tx_id TEXT DEFAULT NULL,
+  p_memo TEXT DEFAULT 'Fiat purchase'
+) RETURNS BOOLEAN AS $$
+BEGIN
+  -- Validate
+  IF p_amount <= 0 THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Atomic balance increment (creates profile if it doesn't exist)
+  UPDATE profiles
+    SET balance = balance + p_amount,
+        updated_at = EXTRACT(EPOCH FROM NOW()) * 1000
+    WHERE address = p_address;
+
+  IF NOT FOUND THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Record the credit transaction
+  IF p_tx_id IS NOT NULL THEN
+    INSERT INTO transactions (id, from_address, to_address, amount, type, memo, timestamp, status)
+      VALUES (p_tx_id, 'FIAT_GATEWAY', p_address, p_amount, 'fiat_purchase', p_memo, EXTRACT(EPOCH FROM NOW()) * 1000, 'confirmed')
+      ON CONFLICT (id) DO NOTHING;
+  END IF;
+
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ═══════════════════════════════════════════════════════════
+-- Atomic transfer_warps RPC — Server-side balance transfer
+-- ═══════════════════════════════════════════════════════════
+
+CREATE OR REPLACE FUNCTION transfer_warps(
+  p_from TEXT,
+  p_to TEXT,
+  p_amount NUMERIC
+) RETURNS BOOLEAN AS $$
+DECLARE
+  sender_balance NUMERIC;
+BEGIN
+  IF p_amount <= 0 THEN RETURN FALSE; END IF;
+
+  -- Lock sender row and check balance
+  SELECT balance INTO sender_balance FROM profiles WHERE address = p_from FOR UPDATE;
+  IF sender_balance IS NULL OR sender_balance < p_amount THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Debit sender
+  UPDATE profiles SET balance = balance - p_amount, updated_at = EXTRACT(EPOCH FROM NOW()) * 1000
+    WHERE address = p_from;
+
+  -- Credit receiver (must exist)
+  UPDATE profiles SET balance = balance + p_amount, updated_at = EXTRACT(EPOCH FROM NOW()) * 1000
+    WHERE address = p_to;
+
+  IF NOT FOUND THEN
+    -- Rollback: re-credit sender
+    UPDATE profiles SET balance = balance + p_amount WHERE address = p_from;
+    RETURN FALSE;
+  END IF;
+
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ═══════════════════════════════════════════════════════════
 -- Enable Realtime for chain tables
 -- ═══════════════════════════════════════════════════════════
 

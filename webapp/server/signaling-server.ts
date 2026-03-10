@@ -29,6 +29,8 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 const STALE_PEER_TIMEOUT_MS = 90_000;
 const MAX_PEERS = 10_000;
 const MAX_MESSAGE_SIZE = 64 * 1024; // 64KB max message
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'https://cosmorare.com').split(',').map(s => s.trim());
+const PEERS_API_KEY = process.env.PEERS_API_KEY; // Optional: protect /peers endpoint
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -70,15 +72,22 @@ const httpServer = createServer((req, res) => {
   }
 
   if (req.url === '/peers') {
+    // Protect peer list with optional API key
+    if (PEERS_API_KEY && req.headers['x-api-key'] !== PEERS_API_KEY) {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Unauthorized' }));
+      return;
+    }
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(
-      Array.from(peers.values()).map(p => ({
-        id: p.id,
-        address: p.address,
+    // Only expose peer count and anonymized IDs (not wallet addresses)
+    res.end(JSON.stringify({
+      count: peers.size,
+      peers: Array.from(peers.values()).map(p => ({
+        id: p.id.slice(0, 8) + '...',
         connectedAt: p.connectedAt,
         lastSeen: p.lastSeen,
-      }))
-    ));
+      })),
+    }));
     return;
   }
 
@@ -107,6 +116,13 @@ const wss = new WebSocketServer({
 wss.on('connection', (ws: WebSocket, req) => {
   const remoteIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   let peerId: string | null = null;
+
+  // Origin validation: reject connections from unauthorized origins
+  const origin = req.headers.origin;
+  if (origin && !ALLOWED_ORIGINS.includes('*') && !ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
+    ws.close(1008, 'Origin not allowed');
+    return;
+  }
 
   totalConnectionsServed++;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, Component } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -6,6 +6,63 @@ import TopBar from './components/TopBar';
 import Sidebar from './components/Sidebar';
 import BottomBar from './components/BottomBar';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
+
+// ─── Lazy-loaded views (code splitting) ──────────────────
+const WalletView = lazy(() => import('./components/WalletView'));
+const MarketplaceView = lazy(() => import('./components/MarketplaceView'));
+const CosmoChatView = lazy(() => import('./components/CosmoChatView'));
+const CosmoView = lazy(() => import('./components/CosmoView'));
+const MessageView = lazy(() => import('./components/MessageView'));
+const NotificationsView = lazy(() => import('./components/NotificationsView'));
+const ProfileView = lazy(() => import('./components/ProfileView'));
+const SignetsView = lazy(() => import('./components/SignetsView'));
+const WhitepaperView = lazy(() => import('./components/WhitepaperView'));
+const AdminView = lazy(() => import('./components/AdminView'));
+const HelpView = lazy(() => import('./components/HelpView'));
+const SettingsView = lazy(() => import('./components/SettingsView'));
+const LegalsView = lazy(() => import('./components/LegalsView'));
+const PrivacyView = lazy(() => import('./components/PrivacyView'));
+const LandingView = lazy(() => import('./components/LandingView'));
+const DevView = lazy(() => import('./components/DevView'));
+const UserProfileView = lazy(() => import('./components/UserProfileView'));
+const DiscoverView = lazy(() => import('./components/DiscoverView'));
+const VaultView = lazy(() => import('./components/VaultView'));
+const FiatGatewayView = lazy(() => import('./components/FiatGatewayView'));
+
+// ─── URL routing map ─────────────────────────────────────
+const ROUTE_MAP: Record<string, string> = {
+  '/': 'landing',
+  '/wall': 'wall',
+  '/gallery': 'gallery',
+  '/cosmo': 'cosmo',
+  '/messages': 'message',
+  '/profile': 'profile',
+  '/wallet': 'wallet',
+  '/signets': 'signets',
+  '/whitepaper': 'whitepaper',
+  '/vault': 'vault',
+  '/admin': 'admin',
+  '/help': 'help',
+  '/settings': 'settings',
+  '/legals': 'legals',
+  '/privacy': 'privacy',
+  '/discover': 'discover',
+  '/fiat-gateway': 'fiat-gateway',
+  '/notifications': 'notifications',
+  '/dev': 'dev',
+};
+
+const TAB_TO_PATH: Record<string, string> = {};
+for (const [path, tab] of Object.entries(ROUTE_MAP)) {
+  TAB_TO_PATH[tab] = path;
+}
+
+function getTabFromPath(): string {
+  const path = window.location.pathname;
+  return ROUTE_MAP[path] || 'landing';
+}
+
+// ─── Error Boundaries ────────────────────────────────────
 
 class BackgroundErrorBoundary extends Component<
   { children: ReactNode },
@@ -19,10 +76,7 @@ class BackgroundErrorBoundary extends Component<
       return (
         <div
           className="fixed inset-0 -z-10"
-          style={{
-            pointerEvents: 'none',
-            background: '#000000',
-          }}
+          style={{ pointerEvents: 'none', background: '#000000' }}
         />
       );
     }
@@ -64,40 +118,50 @@ class AppErrorBoundary extends Component<
   }
 }
 
-import WalletView from './components/WalletView';
-import MarketplaceView from './components/MarketplaceView';
-import CosmoChatView from './components/CosmoChatView';
-import CosmoView from './components/CosmoView';
-import MessageView from './components/MessageView';
-import NotificationsView from './components/NotificationsView';
-import ProfileView from './components/ProfileView';
-import SignetsView from './components/SignetsView';
-import WhitepaperView from './components/WhitepaperView';
-import AdminView from './components/AdminView';
-import HelpView from './components/HelpView';
-import SettingsView from './components/SettingsView';
-import LegalsView from './components/LegalsView';
-import PrivacyView from './components/PrivacyView';
-import LandingView from './components/LandingView';
-import DevView from './components/DevView';
-import UserProfileView from './components/UserProfileView';
-import DiscoverView from './components/DiscoverView';
-import VaultView from './components/VaultView';
-import FiatGatewayView from './components/FiatGatewayView';
+// ─── Loading fallback ─────────────────────────────────────
+
+function ViewLoader() {
+  return (
+    <div className="flex items-center justify-center py-20 opacity-30">
+      <div className="animate-pulse text-sm">Loading...</div>
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────
 
 function App() {
-  const [activeTab, setActiveTab] = useState('landing');
+  const [activeTab, setActiveTab] = useState(getTabFromPath);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Navigate with URL update
+  const navigate = useCallback((tab: string) => {
+    setActiveTab(tab);
+    const path = TAB_TO_PATH[tab] || '/';
+    if (window.location.pathname !== path) {
+      window.history.pushState({ tab }, '', path);
+    }
+  }, []);
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const handler = (e: PopStateEvent) => {
+      const tab = e.state?.tab || getTabFromPath();
+      setActiveTab(tab);
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, []);
 
   // Listen for navigation events from child components
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (typeof detail === 'string') setActiveTab(detail);
+      if (typeof detail === 'string') navigate(detail);
     };
     window.addEventListener('cosmorare-navigate', handler);
     return () => window.removeEventListener('cosmorare-navigate', handler);
-  }, []);
+  }, [navigate]);
 
   // Landing page renders full-screen without app chrome
   if (activeTab === 'landing') {
@@ -105,7 +169,9 @@ function App() {
       <AppErrorBoundary>
         <ThemeProvider>
         <WalletProvider>
-          <LandingView onNavigate={setActiveTab} />
+          <Suspense fallback={<ViewLoader />}>
+            <LandingView onNavigate={navigate} />
+          </Suspense>
         </WalletProvider>
         </ThemeProvider>
       </AppErrorBoundary>
@@ -123,8 +189,8 @@ function App() {
           {/* Top bar - sticky search + profile + notifications */}
           <TopBar
             onProfileClick={() => setSidebarOpen(true)}
-            onNotificationsClick={() => setActiveTab('notifications')}
-            onNavigate={setActiveTab}
+            onNotificationsClick={() => navigate('notifications')}
+            onNavigate={navigate}
           />
 
           {/* Sidebar - slides from left */}
@@ -132,45 +198,47 @@ function App() {
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={navigate}
           />
 
           {/* Main content area - offset for mini sidebar on desktop */}
           <main className="flex-1 px-0 sm:pl-[66px] sm:pr-[10px] pb-16">
-            {/* Bottom bar tabs */}
-            {activeTab === 'wall' && <CosmoChatView />}
-            {activeTab === 'gallery' && <MarketplaceView />}
-            {activeTab === 'cosmo' && <CosmoView onNavigate={setActiveTab} />}
-            {activeTab === 'message' && <MessageView />}
+            <Suspense fallback={<ViewLoader />}>
+              {/* Bottom bar tabs */}
+              {activeTab === 'wall' && <CosmoChatView />}
+              {activeTab === 'gallery' && <MarketplaceView />}
+              {activeTab === 'cosmo' && <CosmoView onNavigate={navigate} />}
+              {activeTab === 'message' && <MessageView />}
 
-            {/* Sidebar pages */}
-            {activeTab === 'profile' && <ProfileView onNavigate={setActiveTab} />}
-            {activeTab === 'wallet' && <WalletView />}
-            {activeTab === 'signets' && <SignetsView />}
-            {activeTab === 'whitepaper' && <WhitepaperView />}
-            {activeTab === 'vault' && <VaultView />}
-            {activeTab === 'admin' && <AdminView />}
-            {activeTab === 'help' && <HelpView onNavigate={setActiveTab} />}
-            {activeTab === 'settings' && <SettingsView />}
-            {activeTab === 'legals' && <LegalsView />}
-            {activeTab === 'privacy' && <PrivacyView />}
+              {/* Sidebar pages */}
+              {activeTab === 'profile' && <ProfileView onNavigate={navigate} />}
+              {activeTab === 'wallet' && <WalletView />}
+              {activeTab === 'signets' && <SignetsView />}
+              {activeTab === 'whitepaper' && <WhitepaperView />}
+              {activeTab === 'vault' && <VaultView />}
+              {activeTab === 'admin' && <AdminView />}
+              {activeTab === 'help' && <HelpView onNavigate={navigate} />}
+              {activeTab === 'settings' && <SettingsView />}
+              {activeTab === 'legals' && <LegalsView />}
+              {activeTab === 'privacy' && <PrivacyView />}
 
-            {/* Social */}
-            {activeTab === 'user-profile' && <UserProfileView onNavigate={setActiveTab} />}
-            {activeTab === 'discover' && <DiscoverView onNavigate={setActiveTab} />}
+              {/* Social */}
+              {activeTab === 'user-profile' && <UserProfileView onNavigate={navigate} />}
+              {activeTab === 'discover' && <DiscoverView onNavigate={navigate} />}
 
-            {/* Fiat Gateway */}
-            {activeTab === 'fiat-gateway' && <FiatGatewayView />}
+              {/* Fiat Gateway */}
+              {activeTab === 'fiat-gateway' && <FiatGatewayView />}
 
-            {/* Notifications (from top bar bell) */}
-            {activeTab === 'notifications' && <NotificationsView />}
+              {/* Notifications (from top bar bell) */}
+              {activeTab === 'notifications' && <NotificationsView />}
 
-            {/* Dev */}
-            {activeTab === 'dev' && <DevView />}
+              {/* Dev */}
+              {activeTab === 'dev' && <DevView />}
+            </Suspense>
           </main>
 
           {/* Bottom navigation bar */}
-          <BottomBar activeTab={activeTab} setActiveTab={setActiveTab} />
+          <BottomBar activeTab={activeTab} setActiveTab={navigate} />
         </div>
       </WalletProvider>
       </ThemeProvider>

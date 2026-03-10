@@ -5,6 +5,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { DEFAULT_RATES } from './_shared/rates';
 
 const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY;
 if (!ADMIN_KEY) {
@@ -12,13 +13,12 @@ if (!ADMIN_KEY) {
 }
 
 // In-memory rates (use Supabase in production for persistence)
-const rates = new Map([
-  ['EUR', { currency: 'EUR', warpsPerUnit: 100, lastUpdated: Date.now(), source: 'manual' }],
-  ['USD', { currency: 'USD', warpsPerUnit: 92, lastUpdated: Date.now(), source: 'manual' }],
-  ['GBP', { currency: 'GBP', warpsPerUnit: 115, lastUpdated: Date.now(), source: 'manual' }],
-  ['JPY', { currency: 'JPY', warpsPerUnit: 0.62, lastUpdated: Date.now(), source: 'manual' }],
-  ['CHF', { currency: 'CHF', warpsPerUnit: 105, lastUpdated: Date.now(), source: 'manual' }],
-]);
+const rates = new Map(
+  Object.entries(DEFAULT_RATES).map(([currency, warpsPerUnit]) => [
+    currency,
+    { currency, warpsPerUnit, lastUpdated: Date.now(), source: 'manual' },
+  ])
+);
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
