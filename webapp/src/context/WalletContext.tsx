@@ -280,6 +280,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch { /* first load */ }
     refreshWartsState(w?.address);
 
+    // Rehydrate media from IndexedDB (async — images appear after DB loads)
+    getWartEngine().rehydrateMedia().then(changed => {
+      if (changed) refreshWartsState(w?.address);
+    });
+
     // Start realtime subscriptions + wire up listener
     if (isBackendAvailable()) {
       realtime.start();

@@ -29,6 +29,7 @@ import { extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode
 import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from './cosmovault';
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
 import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
+import { storeMedia, retrieveAllMedia, deleteMedia } from './mediadb';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -224,27 +225,56 @@ export class WartEngine {
       try {
         const arr: Wart[] = JSON.parse(raw);
         for (const w of arr) {
-          // Safety: ensure all required array/object fields exist
-          if (!Array.isArray(w.history)) w.history = [];
-          if (!Array.isArray(w.comments)) w.comments = [];
-          if (!w.editionType) w.editionType = 'unique';
-          if (w.editionNumber === undefined) w.editionNumber = 1;
-          if (w.royaltyPercent === undefined) w.royaltyPercent = 5;
-          if (!w.mediaType) w.mediaType = 'image';
-          if (!w.creator) w.creator = w.owner || '';
-          if (!w.owner) w.owner = w.creator || '';
-          // Migration: add new fields to old warts
-          if (w.vaultBackup === undefined) w.vaultBackup = false;
-          // Migration: rehydrate media from WartMediaStore if previously stripped
-          if ((!w.imageData || w.imageData === '') && w.contentFingerprint) {
-            const media = WartMediaStore.retrieve(w.contentFingerprint);
-            if (media) w.imageData = media;
-          }
+          WartEngine.normalizeWart(w);
           engine.warts.set(w.id, w);
         }
       } catch { /* corrupt data, start fresh */ }
     }
     return engine;
+  }
+
+  /** Rehydrate imageData from IndexedDB for all warts missing media */
+  async rehydrateMedia(): Promise<boolean> {
+    let changed = false;
+    try {
+      const allMedia = await retrieveAllMedia();
+      for (const [id, wart] of this.warts) {
+        const media = allMedia.get(id);
+        if (media) {
+          if (!wart.imageData || wart.imageData === '') {
+            wart.imageData = media.imageData;
+            changed = true;
+          }
+          if (!wart.audioCover && media.audioCover) {
+            wart.audioCover = media.audioCover;
+            changed = true;
+          }
+        }
+        // Legacy migration: try WartMediaStore (old localStorage-based)
+        if ((!wart.imageData || wart.imageData === '') && wart.contentFingerprint) {
+          const legacy = WartMediaStore.retrieve(wart.contentFingerprint);
+          if (legacy) {
+            wart.imageData = legacy;
+            // Migrate to IndexedDB
+            storeMedia(id, legacy, wart.audioCover);
+            changed = true;
+          }
+        }
+      }
+    } catch { /* IndexedDB unavailable */ }
+    return changed;
+  }
+
+  private static normalizeWart(w: Wart): void {
+    if (!Array.isArray(w.history)) w.history = [];
+    if (!Array.isArray(w.comments)) w.comments = [];
+    if (!w.editionType) w.editionType = 'unique';
+    if (w.editionNumber === undefined) w.editionNumber = 1;
+    if (w.royaltyPercent === undefined) w.royaltyPercent = 5;
+    if (!w.mediaType) w.mediaType = 'image';
+    if (!w.creator) w.creator = w.owner || '';
+    if (!w.owner) w.owner = w.creator || '';
+    if (w.vaultBackup === undefined) w.vaultBackup = false;
   }
 
   // ─── Sub-engine accessors ──────────────────────────
@@ -254,10 +284,21 @@ export class WartEngine {
 
   private save(): void {
     const arr = Array.from(this.warts.values());
+    // Store metadata in localStorage (without imageData to stay under 5MB limit)
+    const meta = arr.map(w => {
+      const { imageData, audioCover, ...rest } = w;
+      return rest;
+    });
     try {
-      storage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      storage.setItem(STORAGE_KEY, JSON.stringify(meta));
     } catch {
-      // localStorage quota exceeded — nothing we can do, data stays in memory
+      // localStorage quota exceeded — metadata stays in memory
+    }
+    // Persist media to IndexedDB (async, large capacity)
+    for (const w of arr) {
+      if (w.imageData) {
+        storeMedia(w.id, w.imageData, w.audioCover);
+      }
     }
   }
 
@@ -269,13 +310,7 @@ export class WartEngine {
   /** Add a wart from cloud sync (doesn't trigger save — caller must call savePublic) */
   addFromCloud(wart: Wart): void {
     if (!this.warts.has(wart.id)) {
-      // Ensure all required fields exist
-      if (!Array.isArray(wart.history)) wart.history = [];
-      if (!Array.isArray(wart.comments)) wart.comments = [];
-      if (!wart.editionType) wart.editionType = 'unique';
-      if (wart.editionNumber === undefined) wart.editionNumber = 1;
-      if (wart.royaltyPercent === undefined) wart.royaltyPercent = 5;
-      if (!wart.mediaType) wart.mediaType = 'image';
+      WartEngine.normalizeWart(wart);
       this.warts.set(wart.id, wart);
     }
   }
@@ -555,6 +590,7 @@ export class WartEngine {
     const wart = this.warts.get(wartId);
     if (!wart || wart.owner !== ownerAddress) return false;
     this.warts.delete(wartId);
+    deleteMedia(wartId);
     this.save();
     return true;
   }
