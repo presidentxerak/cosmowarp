@@ -229,11 +229,11 @@ export default function CosmoChatView() {
     }
     if (post.mediaType === 'video') {
       return (
-        <video controls className="mt-2 w-full max-h-[300px] bg-black" src={post.mediaData} />
+        <video controls className="mt-2 w-full max-h-[500px] bg-black object-contain" src={post.mediaData} />
       );
     }
     return (
-      <img src={post.mediaData} alt="" className="mt-2 w-full max-h-[400px] object-cover" />
+      <img src={post.mediaData} alt="" className="mt-2 w-full max-h-[500px] object-contain" />
     );
   };
 

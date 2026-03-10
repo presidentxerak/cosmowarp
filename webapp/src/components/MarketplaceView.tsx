@@ -5,6 +5,9 @@ import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDat
 import type { Wart } from '../engine/warts';
 import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
+import { SocialEngine } from '../engine/social';
+import { CosmoChatEngine } from '../engine/cosmochat';
+import HexAvatar from './HexAvatar';
 
 import PFPCollectionView from './PFPCollectionView';
 import MusicView from './MusicView';
@@ -128,6 +131,7 @@ export default function MarketplaceView() {
 
   // Transfer & list state (must be before early returns to respect hooks rules)
   const [transferError, setTransferError] = useState('');
+  const [shareSuccess, setShareSuccess] = useState('');
   const [listSuccess, setListSuccess] = useState('');
 
   // ─── All warts (marketplace + collections) ──────────────
@@ -189,6 +193,19 @@ export default function MarketplaceView() {
       : sales.filter(s => !s.isFirstSale);
     return filtered.sort((a, b) => b.transfer.price - a.transfer.price);
   }, [allWarts, salesMarketFilter]);
+
+  // ─── Resolve creator alias ─────────────────────────────
+  const getCreatorName = (address: string): string => {
+    if (address === wallet.address) return 'you';
+    const social = SocialEngine.load();
+    const profile = social.getProfile(address);
+    return profile?.alias || shortAddress(address);
+  };
+
+  const navigateToProfile = (address: string) => {
+    sessionStorage.setItem('cosmorare_view_user', address);
+    window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'user-profile' }));
+  };
 
   // Auto-open wart detail when navigating from profile
   useEffect(() => {
@@ -584,9 +601,15 @@ export default function MarketplaceView() {
           )}
         </div>
         <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
-        <p className="text-[10px] opacity-40 truncate">
-          by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}
-        </p>
+        <div
+          className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={(e) => { e.stopPropagation(); if (wart.creator !== wallet.address) navigateToProfile(wart.creator); }}
+        >
+          <HexAvatar address={wart.creator} size={16} />
+          <p className="text-[10px] opacity-40 truncate">
+            {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
+          </p>
+        </div>
         <EditionInfo wart={wart} compact />
         <div className="flex items-center justify-between mt-2">
           {wart.listed && wart.price !== null ? (
@@ -753,11 +776,23 @@ export default function MarketplaceView() {
                 <div className="grid grid-cols-2 gap-3 text-body-sm mb-4">
                   <div>
                     <span className="opacity-40">Creator:</span>
-                    <span className="opacity-80 ml-1">{isCreator ? 'You' : shortAddress(wart.creator)}</span>
+                    <span
+                      className={`opacity-80 ml-1 inline-flex items-center gap-1 ${!isCreator ? 'cursor-pointer hover:opacity-100' : ''}`}
+                      onClick={() => { if (!isCreator) navigateToProfile(wart.creator); }}
+                    >
+                      <HexAvatar address={wart.creator} size={16} />
+                      {isCreator ? 'You' : `${getCreatorName(wart.creator)} · ${shortAddress(wart.creator)}`}
+                    </span>
                   </div>
                   <div>
                     <span className="opacity-40">Owner:</span>
-                    <span className="opacity-80 ml-1">{isMine ? 'You' : shortAddress(wart.owner)}</span>
+                    <span
+                      className={`opacity-80 ml-1 inline-flex items-center gap-1 ${!isMine ? 'cursor-pointer hover:opacity-100' : ''}`}
+                      onClick={() => { if (!isMine) navigateToProfile(wart.owner); }}
+                    >
+                      <HexAvatar address={wart.owner} size={16} />
+                      {isMine ? 'You' : `${getCreatorName(wart.owner)} · ${shortAddress(wart.owner)}`}
+                    </span>
                   </div>
                   <div>
                     <span className="opacity-40">Royalty:</span>
@@ -1135,6 +1170,34 @@ export default function MarketplaceView() {
           </div>
         </div>
 
+        {/* Share to Wall */}
+        <div className="glass-panel p-3 flex items-center gap-3">
+          <button
+            className="warp-button flex-1 py-2 text-base flex items-center justify-center gap-2"
+            onClick={() => {
+              const chatEngine = CosmoChatEngine.load();
+              const creatorName = getCreatorName(wart.creator);
+              const content = `${wart.title} by ${creatorName}`;
+              chatEngine.createPost(
+                wallet.address,
+                wallet.alias || shortAddress(wallet.address),
+                content,
+                wart.imageData,
+                wart.mediaType === 'svg' ? 'image' : wart.mediaType,
+                undefined,
+                wart.id
+              );
+              setShareSuccess('Shared to Wall!');
+              setTimeout(() => setShareSuccess(''), 3000);
+            }}
+          >
+            {'\u2197'} Share to Wall
+          </button>
+          {shareSuccess && (
+            <span className="text-body-sm opacity-70">{'\u2714'} {shareSuccess}</span>
+          )}
+        </div>
+
         {/* Comments */}
         <div className="glass-panel p-4">
           <h3 className="text-base font-bold opacity-70 mb-3">Comments ({(wart.comments || []).length})</h3>
@@ -1296,7 +1359,12 @@ export default function MarketplaceView() {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
-              <p className="text-[10px] opacity-40">by {wart.creator === wallet.address ? 'you' : shortAddress(wart.creator)}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <HexAvatar address={wart.creator} size={16} />
+                <p className="text-[10px] opacity-40 truncate">
+                  {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
+                </p>
+              </div>
               <EditionInfo wart={wart} compact />
             </div>
           </div>

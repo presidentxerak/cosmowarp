@@ -396,7 +396,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   </div>
                   <p className="text-base opacity-70 whitespace-pre-wrap">{post.content}</p>
                   {post.mediaData && post.mediaType === 'image' && (
-                    <img src={post.mediaData} alt="" className="mt-2 w-full max-h-64 object-cover" />
+                    <img src={post.mediaData} alt="" className="mt-2 w-full max-h-80 object-contain" />
+                  )}
+                  {post.mediaData && post.mediaType === 'video' && (
+                    <video controls src={post.mediaData} className="mt-2 w-full max-h-80 object-contain bg-black" />
                   )}
                   <div className="flex gap-4 mt-2 text-label opacity-40">
                     <span>{post.tipCount} tips</span>
