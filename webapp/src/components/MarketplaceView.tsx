@@ -515,7 +515,7 @@ export default function MarketplaceView() {
   };
 
   // ─── Detail View ───────────────────────────────────────
-  if (tab === 'detail' && selectedWart) {
+  if (tab === 'detail' && selectedWart && wallet) {
     const wart = selectedWart;
     const isMine = wart.owner === wallet.address;
     const isCreator = wart.creator === wallet.address;

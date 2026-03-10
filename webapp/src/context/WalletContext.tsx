@@ -22,7 +22,22 @@ import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
 import { isBackendAvailable } from '../lib/supabase';
 
-// No session timeout — user stays logged in until manual logout
+// ─── Session persistence ─────────────────────────────────
+// Store private key in sessionStorage so the user stays logged in
+// across page refreshes (cleared automatically when tab closes).
+const SESSION_PK_KEY = 'cosmorare_session_pk';
+
+function saveSessionKey(pk: string): void {
+  try { sessionStorage.setItem(SESSION_PK_KEY, pk); } catch { /* quota */ }
+}
+
+function loadSessionKey(): string | null {
+  try { return sessionStorage.getItem(SESSION_PK_KEY); } catch { return null; }
+}
+
+function clearSessionKey(): void {
+  try { sessionStorage.removeItem(SESSION_PK_KEY); } catch { /* ignore */ }
+}
 
 interface WalletContextType {
   wallet: WarpWallet | null;
@@ -187,6 +202,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const w = loadWallet();
     if (w) {
+      // Restore session: if private key is in sessionStorage, auto-unlock
+      const sessionPk = loadSessionKey();
+      if (sessionPk) {
+        w.privateKey = sessionPk;
+        setUnlocked(true);
+      }
+
       setWallet(w);
       setLevelProgress(getProgressToNextLevel(w.address));
       setNeedsMigration(walletNeedsMigration());
@@ -313,6 +335,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const w = await createWallet(password, alias);
     setWallet({ ...w });
     setUnlocked(true);
+    saveSessionKey(w.privateKey);
     setNeedsMigration(false);
     setMeshStats(getMeshStats());
     setSupplyInfo(getSupplyBreakdown());
@@ -331,6 +354,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const isNew = !existingBefore;
       setWallet({ ...w });
       setUnlocked(true);
+      saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       try {
         setMeshStats(getMeshStats());
@@ -393,6 +417,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       wallet.privateKey = privateKey;
       setWallet({ ...wallet });
       setUnlocked(true);
+      saveSessionKey(privateKey);
       return true;
     } catch {
       return false;
@@ -406,11 +431,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWallet({ ...wallet });
     }
     setUnlocked(false);
+    clearSessionKey();
   }, [wallet]);
 
   // ─── Sign out (clear local wallet) ─────────────────────
   const doSignOut = useCallback(() => {
     clearWallet();
+    clearSessionKey();
     setWallet(null);
     setUnlocked(false);
     setNeedsMigration(false);
@@ -437,6 +464,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         w.privateKey = privateKey;
         setWallet({ ...w });
         setUnlocked(true);
+        saveSessionKey(privateKey);
       }
     }
     return success;
@@ -453,6 +481,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const w = await importWallet(data, password);
       setWallet({ ...w });
       setUnlocked(true);
+      saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       refreshWartsState(w.address);
       return true;
@@ -478,6 +507,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const w = await importWallet(data, password);
       setWallet({ ...w });
       setUnlocked(true);
+      saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       refreshWartsState(w.address);
       return true;

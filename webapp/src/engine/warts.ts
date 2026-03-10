@@ -224,6 +224,15 @@ export class WartEngine {
       try {
         const arr: Wart[] = JSON.parse(raw);
         for (const w of arr) {
+          // Safety: ensure all required array/object fields exist
+          if (!Array.isArray(w.history)) w.history = [];
+          if (!Array.isArray(w.comments)) w.comments = [];
+          if (!w.editionType) w.editionType = 'unique';
+          if (w.editionNumber === undefined) w.editionNumber = 1;
+          if (w.royaltyPercent === undefined) w.royaltyPercent = 5;
+          if (!w.mediaType) w.mediaType = 'image';
+          if (!w.creator) w.creator = w.owner || '';
+          if (!w.owner) w.owner = w.creator || '';
           // Migration: add new fields to old warts
           if (w.vaultBackup === undefined) w.vaultBackup = false;
           // Migration: rehydrate media from WartMediaStore if previously stripped
@@ -260,6 +269,13 @@ export class WartEngine {
   /** Add a wart from cloud sync (doesn't trigger save — caller must call savePublic) */
   addFromCloud(wart: Wart): void {
     if (!this.warts.has(wart.id)) {
+      // Ensure all required fields exist
+      if (!Array.isArray(wart.history)) wart.history = [];
+      if (!Array.isArray(wart.comments)) wart.comments = [];
+      if (!wart.editionType) wart.editionType = 'unique';
+      if (wart.editionNumber === undefined) wart.editionNumber = 1;
+      if (wart.royaltyPercent === undefined) wart.royaltyPercent = 5;
+      if (!wart.mediaType) wart.mediaType = 'image';
       this.warts.set(wart.id, wart);
     }
   }
