@@ -648,8 +648,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => onNavigate('wallet')}
-              className="px-8 py-4 text-base font-bold cursor-pointer transition-all hover:scale-105 hover:bg-white/15 active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)' }}
+              className="px-8 py-4 text-base font-bold cta-gradient-btn"
             >
               {wallet ? t('mySpace') : t('createAccount')}
             </button>
@@ -945,8 +944,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => onNavigate('wallet')}
-                className="px-8 py-4 text-base font-bold cursor-pointer transition-all hover:scale-105 hover:bg-white/15 active:scale-95"
-                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)' }}
+                className="px-8 py-4 text-base font-bold cta-gradient-btn"
               >
                 {wallet ? t('mySpace') : t('ctaSignUp')}
               </button>

@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
@@ -8,6 +8,44 @@ import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignatu
 
 import PFPCollectionView from './PFPCollectionView';
 import MusicView from './MusicView';
+
+/**
+ * Convert a data URL to a blob URL for reliable video/audio playback.
+ * Browsers struggle with large base64 data URLs in <video> src.
+ */
+function dataUrlToBlobUrl(dataUrl: string): string {
+  try {
+    const [header, base64] = dataUrl.split(',');
+    if (!header || !base64) return dataUrl;
+    const mime = header.match(/:(.*?);/)?.[1] || 'video/mp4';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mime });
+    return URL.createObjectURL(blob);
+  } catch {
+    return dataUrl;
+  }
+}
+
+/** Hook: convert a data URL to a blob URL, cleaning up on unmount */
+function useBlobUrl(dataUrl: string | undefined): string {
+  const [blobUrl, setBlobUrl] = useState('');
+  const urlRef = useRef('');
+  useEffect(() => {
+    if (urlRef.current) { try { URL.revokeObjectURL(urlRef.current); } catch {} }
+    if (!dataUrl || !dataUrl.startsWith('data:')) {
+      urlRef.current = '';
+      setBlobUrl(dataUrl || '');
+      return;
+    }
+    const url = dataUrlToBlobUrl(dataUrl);
+    urlRef.current = url;
+    setBlobUrl(url);
+    return () => { if (urlRef.current) { try { URL.revokeObjectURL(urlRef.current); } catch {} urlRef.current = ''; } };
+  }, [dataUrl]);
+  return blobUrl;
+}
 type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'create' | 'detail';
 type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
 type SalesMarketFilter = '1st' | '2nd';
@@ -48,6 +86,10 @@ export default function MarketplaceView() {
   // Comment
   const [commentText, setCommentText] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Blob URL for create form video/audio preview
+  const createVideoBlobUrl = useBlobUrl(mediaType === 'video' ? imageData : undefined);
+  const createAudioBlobUrl = useBlobUrl(mediaType === 'audio' ? imageData : undefined);
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -445,6 +487,8 @@ export default function MarketplaceView() {
 
   // ─── Media Renderer ───────────────────────────────────────
   const WartMedia = ({ wart, className = '' }: { wart: Wart; className?: string }) => {
+    const videoBlobUrl = useBlobUrl(wart.mediaType === 'video' ? wart.imageData : undefined);
+    const audioBlobUrl = useBlobUrl(wart.mediaType === 'audio' ? wart.imageData : undefined);
     if (!wart.imageData) {
       return (
         <div className={`bg-current/5 flex items-center justify-center ${className}`}>
@@ -462,7 +506,7 @@ export default function MarketplaceView() {
           ) : (
             <div className="text-4xl mb-2">{'\u266B'}</div>
           )}
-          <audio controls className="w-full h-8" src={wart.imageData} />
+          <audio controls className="w-full h-8" src={audioBlobUrl} />
         </div>
       );
     }
@@ -471,9 +515,9 @@ export default function MarketplaceView() {
         <video
           controls
           playsInline
-          preload="metadata"
+          preload="auto"
           className={`w-full bg-black ${className}`}
-          src={wart.imageData}
+          src={videoBlobUrl}
         />
       );
     }
@@ -1313,7 +1357,7 @@ export default function MarketplaceView() {
         </div>
         <button
           onClick={() => { setTab('create'); setEditionFilter('all'); }}
-          className={`warp-button px-4 py-2 text-body-sm font-bold whitespace-nowrap shrink-0 ${
+          className={`px-5 py-2.5 text-sm font-bold whitespace-nowrap shrink-0 cta-gradient-btn ${
             tab === 'create' ? 'opacity-100' : ''
           }`}
         >
@@ -1328,7 +1372,7 @@ export default function MarketplaceView() {
             <button
               key={t.id}
               onClick={() => { setTab(t.id); setEditionFilter('all'); }}
-              className={`px-3 py-2 text-[11px] font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+              className={`px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                 tab === t.id
                   ? 'bg-current/10 opacity-90'
                   : 'opacity-40 hover:opacity-70 hover:bg-current/5'
@@ -1347,7 +1391,7 @@ export default function MarketplaceView() {
             <button
               key={f.id}
               onClick={() => setEditionFilter(f.id)}
-              className={`px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+              className={`px-4 py-2 text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                 editionFilter === f.id
                   ? 'bg-current/10 border border-current/20 opacity-80'
                   : 'bg-transparent border border-current/10 opacity-40 hover:border-current/20 hover:opacity-60'
@@ -1625,11 +1669,11 @@ export default function MarketplaceView() {
                     </div>
                   )}
                   {mediaType === 'video' && (
-                    <video src={imageData} controls className="w-full max-w-[280px] bg-black border border-current/10" />
+                    <video src={createVideoBlobUrl} controls playsInline preload="auto" className="w-full max-w-[280px] bg-black border border-current/10" />
                   )}
                   {mediaType === 'audio' && (
                     <div className="w-full space-y-2">
-                      <audio src={imageData} controls className="w-full h-10" />
+                      <audio src={createAudioBlobUrl} controls className="w-full h-10" />
                       {audioCover ? (
                         <div className="flex items-center gap-3 p-2 bg-current/5 border border-current/10">
                           <img src={audioCover} alt="Cover" className="w-14 h-14 object-cover" />
