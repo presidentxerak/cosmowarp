@@ -25,7 +25,7 @@
 
 import { storage } from './storage';
 import { sha256, signTransaction } from './crypto';
-import { imageToOnChainSVG, extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
+import { extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
 import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from './cosmovault';
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
 import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
@@ -226,7 +226,7 @@ export class WartEngine {
         for (const w of arr) {
           // Migration: add new fields to old warts
           if (w.vaultBackup === undefined) w.vaultBackup = false;
-          // Rehydrate media from WartMediaStore if stripped during save
+          // Migration: rehydrate media from WartMediaStore if previously stripped
           if ((!w.imageData || w.imageData === '') && w.contentFingerprint) {
             const media = WartMediaStore.retrieve(w.contentFingerprint);
             if (media) w.imageData = media;
@@ -244,34 +244,11 @@ export class WartEngine {
   getFiatGateway(): FiatGateway { return this.fiatGateway; }
 
   private save(): void {
-    // Strip heavy media data from serialized warts — media lives in WartMediaStore
-    const arr = Array.from(this.warts.values()).map(w => {
-      const slim: Record<string, unknown> = { ...w };
-      // Don't serialize full base64 media — it's in WartMediaStore keyed by contentFingerprint
-      if (w.contentFingerprint && w.imageData && w.imageData.length > 1000) {
-        slim.imageData = ''; // Will be rehydrated from WartMediaStore on load
-      }
-      if (w.audioCover && w.audioCover.length > 1000) {
-        slim.audioCover = '';
-      }
-      // Don't serialize the on-chain SVG either (can be very large)
-      if (w.onChainSVG && w.onChainSVG.length > 1000) {
-        slim.onChainSVG = '';
-      }
-      return slim;
-    });
+    const arr = Array.from(this.warts.values());
     try {
       storage.setItem(STORAGE_KEY, JSON.stringify(arr));
-    } catch (e) {
-      // localStorage quota exceeded — try again with even more aggressive stripping
-      const minimal = arr.map(w => {
-        const m = { ...w };
-        delete m.imageData;
-        delete m.audioCover;
-        delete m.onChainSVG;
-        return m;
-      });
-      storage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+    } catch {
+      // localStorage quota exceeded — nothing we can do, data stays in memory
     }
   }
 
@@ -354,37 +331,6 @@ export class WartEngine {
       } catch { /* signing failed, proceed without signature */ }
     }
 
-    // 4. Store media in content-addressable local store (redundant backup)
-    WartMediaStore.store(contentFingerprint, imageData);
-    if (audioCover) {
-      const coverFingerprint = await sha256(audioCover);
-      WartMediaStore.store(coverFingerprint, audioCover);
-    }
-
-    // ─── CosmoCode On-Chain SVG Encoding ────────────────
-    // Only encode native SVG files on-chain (small, compressible).
-    // Data URL media (images, video, audio) are too large for on-chain
-    // compression — they're stored in WartMediaStore by contentFingerprint.
-    let onChainSVG: string | undefined;
-    let cosmoCodeId: string | undefined;
-    let compressionRatio: number | undefined;
-
-    const isNativeSVG = mediaType === 'svg' && !imageData.startsWith('data:');
-    if (isNativeSVG) {
-      try {
-        const container = await imageToOnChainSVG(imageData, title.trim(), creator, {
-          edition: editionType,
-          royalty: royaltyPercent.toString(),
-          fingerprint: contentFingerprint,
-        });
-        onChainSVG = container.svg;
-        cosmoCodeId = container.id;
-        compressionRatio = container.compressionRatio;
-      } catch {
-        // Fallback: on-chain encoding failed, use local-only storage
-      }
-    }
-
     const wart: Wart = {
       id,
       title: title.trim(),
@@ -408,11 +354,7 @@ export class WartEngine {
       certId,
       contentFingerprint,
       creatorSignature,
-      // CosmoCode On-Chain SVG
-      onChainSVG,
-      cosmoCodeId,
-      compressionRatio,
-      storageMode: onChainSVG ? 'hybrid' : 'local',
+      storageMode: 'local',
       // New v3 fields
       vaultBackup: false,
     };
