@@ -615,7 +615,7 @@ export default function WalletView() {
             <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1 animate-float">
               {wallet.balance.toLocaleString()} <span className="text-title-lg">{'\u03A9'}</span>
             </div>
-            <p className="text-label opacity-40">COSMORARE ENERGY UNITS</p>
+            <p className="text-label opacity-40">STRANGRZ ENERGY UNITS</p>
             <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
               {wallet.isAdmin && <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-60 border border-current/10">ADMIN</span>}
               <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10 flex items-center gap-1">

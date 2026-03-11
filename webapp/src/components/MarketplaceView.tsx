@@ -1623,7 +1623,7 @@ export default function MarketplaceView() {
           ) : (
             <div className="space-y-2">
               {topCreators.slice(0, 50).map((creator, idx) => (
-                <div key={creator.address} className="glass-panel p-3 flex items-center gap-3">
+                <div key={creator.address} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(creator.address)}>
                   <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
                     #{idx + 1}
                   </div>
@@ -1660,7 +1660,7 @@ export default function MarketplaceView() {
           ) : (
             <div className="space-y-2">
               {topCollectors.slice(0, 50).map((collector, idx) => (
-                <div key={collector.address} className="glass-panel p-3 flex items-center gap-3">
+                <div key={collector.address} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(collector.address)}>
                   <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
                     #{idx + 1}
                   </div>

@@ -487,7 +487,7 @@ export default function MineView() {
 
               {certPayload && (
                 <div className="bg-current/5 p-2 text-center">
-                  <p className="text-label opacity-40 mb-0.5">COSMORARES CERTIFIÉES</p>
+                  <p className="text-label opacity-40 mb-0.5">STRANGRZ CERTIFIÉES</p>
                   <p className="text-body-sm opacity-60 italic">"{certPayload}"</p>
                 </div>
               )}
