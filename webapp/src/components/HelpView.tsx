@@ -269,6 +269,51 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Portefeuille → Paiement',
     },
   },
+  // Profile features
+  {
+    keywords: ['profil', 'profile', 'adresse', 'address', 'copier', 'copy', 'utilisateur', 'user', 'pseudo', 'alias', 'nom'],
+    response: {
+      answer: "Chaque utilisateur a un profil avec son pseudo, sa bio, ses liens sociaux (site web, Instagram, X) et ses statistiques. Tu peux visiter le profil d'un créateur en cliquant sur son nom dans la Marketplace ou le Mur. Sur chaque profil, tu peux copier l'adresse Strangrz en cliquant dessus — pratique pour envoyer des Strangrz ! Tu verras aussi ses créations, sa collection et ses posts.",
+      navigateTo: 'cosmochat',
+      tabLabel: 'Mur → Profil',
+    },
+  },
+  // Social bar
+  {
+    keywords: ['barre sociale', 'social bar', 'coeur', 'heart', 'signet', 'bookmark', 'partager', 'share', 'repost', 'recosmo', 'hexagone', 'pourboire tip'],
+    response: {
+      answer: "La barre sociale est présente partout — sous les posts du Mur, les cartes de la Marketplace, et les profils utilisateurs. Elle contient : ❤️ Tip (avec le compteur en Strangrz affiché sous forme X⬣), ↻ ReStrangrz (repost), ↑ Partager, et 🔖 Signet (bookmark). L'icône hexagone (⬣) représente la monnaie Strangrz. Quand tu tip un post, tu envoies 1Ω au créateur — c'est un « like » qui a de la vraie valeur !",
+      navigateTo: 'cosmochat',
+      tabLabel: 'Mur',
+    },
+  },
+  // Delete profile
+  {
+    keywords: ['supprimer', 'delete', 'effacer', 'compte', 'désinscription', 'desinscription', 'quitter'],
+    response: {
+      answer: "Tu veux quitter le cosmos ? C'est triste, mais c'est ton droit. Va dans Paramètres et cherche « Supprimer le profil ». La suppression est définitive : ton solde de Strangrz est réintégré dans le pool d'airdrop pour les futurs voyageurs, et toutes tes données locales sont effacées (portefeuille, profil social, données du Mur). Assure-toi de sauvegarder tes objets avant — une fois supprimé, il n'y a pas de retour !",
+      navigateTo: 'settings',
+      tabLabel: 'Paramètres',
+    },
+  },
+  // Forgot password
+  {
+    keywords: ['oublié', 'forgot', 'password', 'mot de passe', 'perdu mot de passe', 'lost password', 'connexion impossible'],
+    response: {
+      answer: "Mot de passe oublié ? Si tu utilises un CosmoID, ton portefeuille est dérivé de ton nom d'utilisateur + mot de passe. Sans le mot de passe exact, il est mathématiquement impossible de retrouver ta clé privée (PBKDF2 avec 600 000 itérations). Tu peux cependant te déconnecter dans l'écran de verrouillage via le bouton « Mot de passe oublié ? », et créer un nouveau compte. Si tu as sauvegardé ta clé de récupération (Recovery Kit), tu peux aussi importer ton portefeuille existant.",
+      navigateTo: 'wallet',
+      tabLabel: 'Portefeuille',
+    },
+  },
+  // CosmoID
+  {
+    keywords: ['cosmoid', 'cosmo id', 'identifiant', 'login', 'connexion', 'se connecter', 'sign in', 'sign up', 'inscription'],
+    response: {
+      answer: "CosmoID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit un airdrop de 1 000 Ω pour démarrer. Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
+      navigateTo: 'wallet',
+      tabLabel: 'Portefeuille',
+    },
+  },
 ];
 
 const FALLBACK: CosmoResponse = {
@@ -400,6 +445,9 @@ const FAQ_SECTIONS = [
       { q: `Qu'est-ce que le Recovery Kit ?`, a: `Un bundle JSON chiffré contenant tous tes objets de vault, double-chiffré (clé vault + mot de passe de récupération). Téléchargeable dans Portefeuille → Aperçu. Il est auto-généré à la création du wallet et un rappel apparaît tous les 7 jours.` },
       { q: `Est-ce que ça fonctionne hors ligne ?`, a: `Oui ! Le service worker met l'app en cache pour une utilisation hors ligne. Elle se met aussi à jour automatiquement quand une nouvelle version est disponible.` },
       { q: `Où sont stockées mes données ?`, a: `Stockage multi-couches via Vobjct : IndexedDB local (échelle Go), Supabase Cloud, et StrangrzMesh on-chain. CosmoVault chiffre les médias en AES-256-GCM. Vobjct Safe garantit la redondance avec au moins 2 routes actives par objet.` },
+      { q: `J'ai oublié mon mot de passe, que faire ?`, a: `Si tu utilises un CosmoID, le mot de passe est irréversible (PBKDF2 600K itérations). Tu peux te déconnecter via « Mot de passe oublié ? » sur l'écran de verrouillage, puis créer un nouveau compte. Si tu as un Recovery Kit, tu peux restaurer ton portefeuille.` },
+      { q: `Comment supprimer mon compte ?`, a: `Va dans Paramètres → Supprimer le profil. Ton solde est réintégré au pool d'airdrop. Toutes les données locales sont effacées définitivement (portefeuille, profil, données sociales).` },
+      { q: `Comment copier l'adresse d'un utilisateur ?`, a: `Visite son profil (clique sur son nom dans le Mur ou la Marketplace), puis clique sur l'adresse affichée sous le pseudo. Elle sera copiée dans ton presse-papiers. Une icône ✓ confirme la copie.` },
     ],
   },
 ];

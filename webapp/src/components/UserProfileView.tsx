@@ -28,6 +28,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
   const [twitter, setTwitter] = useState('');
+  const [copied, setCopied] = useState(false);
   // Follow dropdown state
   const [showFollowMenu, setShowFollowMenu] = useState(false);
   const [isCloseFriend, setIsCloseFriend] = useState(false);
@@ -297,7 +298,24 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         <div className="flex flex-col items-center text-center">
           <HexAvatar address={targetAddress} size={80} animate className="mb-3" />
           <h2 className="text-title-md font-bold opacity-100 font-title">{alias}</h2>
-          <p className="text-[11px] opacity-40 font-mono mt-0.5">{targetAddress}</p>
+          <p
+            className="text-[11px] opacity-40 font-mono mt-0.5 cursor-pointer hover:opacity-60 transition-opacity"
+            onClick={() => {
+              navigator.clipboard.writeText(targetAddress);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            title="Copier l'adresse"
+          >
+            {targetAddress}
+            <span className="ml-1 inline-block align-middle">
+              {copied ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              )}
+            </span>
+          </p>
 
           {/* Social links */}
           {(website || instagram || twitter) && (
