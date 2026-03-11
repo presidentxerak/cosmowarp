@@ -273,6 +273,14 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     { id: 'collection', label: 'Collection', count: collection.length },
   ];
 
+  // ─── Resolve creator alias ─────────────────────────────
+  const getCreatorName = (address: string): string => {
+    if (wallet && address === wallet.address) return wallet.alias || shortAddress(address);
+    const social = SocialEngine.load();
+    const profile = social.getProfile(address);
+    return profile?.alias || shortAddress(address);
+  };
+
   // ─── Wart Card with social bar ─────────────────────────
   const WartCard = ({ wart }: { wart: Wart }) => (
     <div className="glass-panel overflow-hidden cursor-pointer" onClick={() => handleViewWart(wart)}>
@@ -293,6 +301,15 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       </div>
       <div className="p-2">
         <p className="text-body-sm font-medium opacity-90 truncate">{wart.title}</p>
+        <div
+          className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={(e) => { e.stopPropagation(); handleViewUser(wart.creator); }}
+        >
+          <HexAvatar address={wart.creator} size={16} />
+          <p className="text-[10px] opacity-40 truncate">
+            {getCreatorName(wart.creator)}
+          </p>
+        </div>
         <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
         {/* Social bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
