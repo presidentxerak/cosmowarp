@@ -4,7 +4,7 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
-import { setup2FA, enable2FA, disable2FA, is2FAEnabled, generateTOTPUri } from '../engine/totp';
+import { setup2FA, enable2FA, disable2FA, is2FAEnabled } from '../engine/totp';
 import MineView from './MineView';
 import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';

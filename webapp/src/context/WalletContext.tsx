@@ -15,7 +15,7 @@ import type { MeshStats } from '../engine/cosmomesh';
 import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
-import { is2FAEnabled, verify2FALogin, type TOTPConfig } from '../engine/totp';
+import { is2FAEnabled, verify2FALogin } from '../engine/totp';
 import type { CosmoContract } from '../engine/cosmocontract';
 import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
 // ─── Supabase Sync ──────────────────────────────────────────

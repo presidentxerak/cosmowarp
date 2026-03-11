@@ -11,7 +11,7 @@ import type { VobjctManifest, StorageRoute, RecoveryRoute } from './schema';
 import { validateManifest, getTrustSignals, isSafeProtected, getActiveStorageRoutes } from './schema';
 import { buildManifest, verifyManifest, type ManifestBuildInput, type VerificationResult } from './manifest';
 import { VobjctSafeEngine, getSafeBadges, type VobjctSafeConfig, type RouteCheckResult } from './safe';
-import { CosmorareAdapter, registerAdapter, getAdapter, type ChainAdapter } from './adapters';
+import { CosmorareAdapter, registerAdapter, type ChainAdapter } from './adapters';
 import { VobjctStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
 
 // Re-exports

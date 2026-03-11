@@ -9,7 +9,7 @@
  * validation states, and storage continuity according to policy.
  */
 
-import { sha256 } from '../crypto';
+// crypto used for future integrity checks
 import { storage } from '../storage';
 import type { VobjctManifest, StorageRoute, RecoveryRoute } from './schema';
 
@@ -162,7 +162,7 @@ export interface HealthEvaluation {
 }
 
 export function evaluateHealth(
-  manifest: VobjctManifest,
+  _manifest: VobjctManifest,
   safeConfig: VobjctSafeConfig,
   routeChecks: RouteCheckResult[],
 ): HealthEvaluation {
