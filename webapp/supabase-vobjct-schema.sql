@@ -1,6 +1,6 @@
 -- ============================================================
 -- Vobjct — Supabase Schema Extension
--- Add these tables to your existing Cosmorare database.
+-- Add these tables to your existing Strangrz database.
 -- ============================================================
 
 -- ─── VOBJCT MANIFESTS ─────────────────────────────────────────
@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS vobjct_manifests (
   vobjct_version      TEXT NOT NULL DEFAULT '1.0.0',
   wart_id             TEXT REFERENCES warts(id) ON DELETE CASCADE,
   object_type         TEXT NOT NULL DEFAULT 'digital_art',
-  namespace_name      TEXT NOT NULL DEFAULT 'Cosmorare',
-  namespace_slug      TEXT NOT NULL DEFAULT 'cosmorare',
+  namespace_name      TEXT NOT NULL DEFAULT 'Strangrz',
+  namespace_slug      TEXT NOT NULL DEFAULT 'strangrz',
 
   -- Token Binding
-  chain_family        TEXT NOT NULL DEFAULT 'cosmorare',
+  chain_family        TEXT NOT NULL DEFAULT 'strangrz',
   chain_name          TEXT NOT NULL DEFAULT 'cosmochain',
   token_standard      TEXT NOT NULL DEFAULT 'CW-721',
   contract_ref        TEXT NOT NULL,

@@ -1,5 +1,5 @@
 /**
- * TOTP (Time-based One-Time Password) Engine for Cosmorare 2FA
+ * TOTP (Time-based One-Time Password) Engine for Strangrz 2FA
  *
  * Implements RFC 6238 TOTP using Web Crypto API (no dependencies).
  * Uses HMAC-SHA1 with 6-digit codes, 30-second time steps.
@@ -15,7 +15,7 @@ import { storage } from './storage';
 
 // ─── Constants ────────────────────────────────────────────
 
-const TOTP_STORAGE_KEY = 'cosmorare_totp';
+const TOTP_STORAGE_KEY = 'strangrz_totp';
 const DIGITS = 6;
 const PERIOD = 30; // seconds
 const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -186,7 +186,7 @@ export async function verifyTOTP(secret: string, code: string): Promise<boolean>
  * Compatible with Google Authenticator, Authy, 1Password, etc.
  */
 export function generateTOTPUri(secret: string, username: string): string {
-  const issuer = 'Cosmorare';
+  const issuer = 'Strangrz';
   const label = encodeURIComponent(`${issuer}:${username}`);
   return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=${DIGITS}&period=${PERIOD}`;
 }

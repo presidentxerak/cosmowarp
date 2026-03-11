@@ -11,7 +11,7 @@ import {
 } from '../engine/wallet';
 import type { MiningProof } from '../engine/miner';
 import { generateCosmoLink, parseCosmoLink } from '../engine/cosmolink';
-import type { MeshStats } from '../engine/cosmomesh';
+import type { MeshStats } from '../engine/strangrmesh';
 import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
@@ -24,7 +24,7 @@ import { realtime } from '../lib/supabase-realtime';
 import { isBackendAvailable } from '../lib/supabase';
 
 // ─── Recovery Kit reminder ────────────────────────────────
-const RECOVERY_REMINDER_KEY = 'cosmorare_recovery_reminder';
+const RECOVERY_REMINDER_KEY = 'strangrz_recovery_reminder';
 const RECOVERY_REMINDER_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 function shouldShowRecoveryReminder(): boolean {
@@ -41,7 +41,7 @@ function dismissRecoveryReminderStorage(): void {
 // ─── Session persistence ─────────────────────────────────
 // Store private key in sessionStorage so the user stays logged in
 // across page refreshes (cleared automatically when tab closes).
-const SESSION_PK_KEY = 'cosmorare_session_pk';
+const SESSION_PK_KEY = 'strangrz_session_pk';
 
 function saveSessionKey(pk: string): void {
   try { sessionStorage.setItem(SESSION_PK_KEY, pk); } catch { /* quota */ }
@@ -276,7 +276,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
               const merged = [...newTxs, ...localTxs]
                 .sort((a, b) => b.timestamp - a.timestamp)
                 .slice(0, 200);
-              storage.setItem('cosmorare_global_tx', JSON.stringify(merged));
+              storage.setItem('strangrz_global_tx', JSON.stringify(merged));
               setGlobalTxs(merged);
               // Also update wallet.transactions
               const addrTxs = merged.filter(t => t.from === w.address || t.to === w.address);
@@ -409,7 +409,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const merged = [...newTxs, ...localTxs]
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 200);
-          storage.setItem('cosmorare_global_tx', JSON.stringify(merged));
+          storage.setItem('strangrz_global_tx', JSON.stringify(merged));
           setGlobalTxs(merged);
           w.transactions = merged.filter(t => t.from === w.address || t.to === w.address);
           saveWallet(w);
@@ -433,7 +433,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `cosmorare-recovery-kit-${w.address.slice(0, 10)}.json`;
+          a.download = `strangrz-recovery-kit-${w.address.slice(0, 10)}.json`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -692,11 +692,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       timestamp: Date.now(),
       signature: 'wart_mint',
       type: 'wart_mint',
-      memo: `Minted Cosmorare: ${title}`,
+      memo: `Minted Strangrz: ${title}`,
     };
-    const txs = JSON.parse(storage.getItem('cosmorare_global_tx') || '[]');
+    const txs = JSON.parse(storage.getItem('strangrz_global_tx') || '[]');
     txs.unshift(tx);
-    storage.setItem('cosmorare_global_tx', JSON.stringify(txs.slice(0, 200)));
+    storage.setItem('strangrz_global_tx', JSON.stringify(txs.slice(0, 200)));
     wallet.transactions.unshift(tx);
 
     setWallet({ ...wallet });
@@ -723,7 +723,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet || !wallet.privateKey) return { success: false, error: 'Wallet locked' };
     const engine = getWartEngine();
     const wart = engine.getWart(wartId);
-    if (!wart) return { success: false, error: 'Cosmorare not found' };
+    if (!wart) return { success: false, error: 'Strangrz not found' };
     if (!wart.listed || wart.price === null) return { success: false, error: 'Not for sale' };
     if (wart.owner === wallet.address) return { success: false, error: 'You already own this' };
     if (wallet.balance < wart.price) return { success: false, error: 'Insufficient Warps' };
@@ -736,12 +736,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const sellerAmount = price - royaltyAmount;
 
     // Pay seller
-    const payResult = await sendWarps(wallet, seller, sellerAmount, `Cosmorare purchase: ${wart.title}`);
+    const payResult = await sendWarps(wallet, seller, sellerAmount, `Strangrz purchase: ${wart.title}`);
     if (!payResult.success) return { success: false, error: payResult.error };
 
     // Pay royalty to creator if resale
     if (royaltyAmount > 0 && creator !== seller) {
-      await sendWarps(wallet, creator, royaltyAmount, `Cosmorare royalty: ${wart.title}`);
+      await sendWarps(wallet, creator, royaltyAmount, `Strangrz royalty: ${wart.title}`);
     }
 
     // Transfer ownership
@@ -757,7 +757,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       timestamp: Date.now(),
       signature: 'wart_buy',
       type: 'wart_buy',
-      memo: `Bought Cosmorare: ${wart.title}`,
+      memo: `Bought Strangrz: ${wart.title}`,
     };
     wallet.transactions.unshift(buyTx);
 
@@ -815,8 +815,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet || !wallet.privateKey) return { success: false, error: 'Wallet locked' };
     const engine = getWartEngine();
     const wart = engine.getWart(wartId);
-    if (!wart) return { success: false, error: 'Cosmorare not found' };
-    if (wart.owner !== wallet.address) return { success: false, error: 'Not your Cosmorare' };
+    if (!wart) return { success: false, error: 'Strangrz not found' };
+    if (wart.owner !== wallet.address) return { success: false, error: 'Not your Strangrz' };
 
     const ok = engine.transfer(wartId, wallet.address, toAddress, '');
     if (!ok) return { success: false, error: 'Transfer failed' };
@@ -829,7 +829,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       timestamp: Date.now(),
       signature: 'wart_transfer',
       type: 'wart_transfer',
-      memo: `Transferred Cosmorare: ${wart.title}`,
+      memo: `Transferred Strangrz: ${wart.title}`,
     };
     wallet.transactions.unshift(tx);
     setWallet({ ...wallet });

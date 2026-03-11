@@ -22,7 +22,7 @@ export default function SettingsView() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cosmorare-wallet-${wallet ? shortAddress(wallet.address) : 'backup'}.json`;
+    a.download = `strangrz-wallet-${wallet ? shortAddress(wallet.address) : 'backup'}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -82,7 +82,7 @@ export default function SettingsView() {
           </svg>
           Settings
         </h2>
-        <p className="text-body-sm opacity-40">Manage your Cosmorare experience</p>
+        <p className="text-body-sm opacity-40">Manage your Strangrz experience</p>
       </div>
 
       {/* ─── Profile ──────────────────────────────────────── */}
@@ -335,7 +335,7 @@ export default function SettingsView() {
               <p className="text-label opacity-40">Coffre-fort sécurisé pour vos objets rares</p>
             </div>
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'vault' }))}
+              onClick={() => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'vault' }))}
               className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
@@ -351,7 +351,7 @@ export default function SettingsView() {
                 <p className="text-label opacity-40">Panneau d'administration du protocole</p>
               </div>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'admin' }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'admin' }))}
                 className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
               >
                 <span className="flex items-center gap-1.5">
@@ -375,11 +375,11 @@ export default function SettingsView() {
         <div className="space-y-2 text-body-sm">
           <div className="flex justify-between">
             <span className="opacity-40">Version</span>
-            <span className="opacity-70">Cosmorare Terminal v2.0</span>
+            <span className="opacity-70">Strangrz Terminal v2.0</span>
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Engine</span>
-            <span className="opacity-70">CosmoMesh v2.0</span>
+            <span className="opacity-70">StrangrzMesh v2.0</span>
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Protocol</span>

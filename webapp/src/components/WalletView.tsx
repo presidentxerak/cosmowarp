@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
-import { LAYER_NAMES } from '../engine/cosmomesh';
+import { LAYER_NAMES } from '../engine/strangrmesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 import { setup2FA, enable2FA, disable2FA, is2FAEnabled } from '../engine/totp';
 import MineView from './MineView';
@@ -193,7 +193,7 @@ export default function WalletView() {
           <Logo className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
         <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-title">{'\u30B3\u30B9\u30E2\u30E9\u30EC'}</h2>
-        <p className="text-body-sm opacity-60 mb-1">Cosmorare</p>
+        <p className="text-body-sm opacity-60 mb-1">Strangrz</p>
         <p className="text-body-sm opacity-40 mb-5">
           Protocole de certification pour objets rares
         </p>
@@ -451,7 +451,7 @@ export default function WalletView() {
         <div className="flex justify-center mb-4">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
         </div>
-        <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">Bienvenue sur Cosmorare !</h2>
+        <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">Bienvenue sur Strangrz !</h2>
         <p className="text-base opacity-70 mb-2">Your wallet is ready.</p>
 
         <div className="p-4 bg-current/5 border border-current/10 mb-5 text-left space-y-3">
@@ -485,7 +485,7 @@ export default function WalletView() {
         <button className="warp-button w-full py-3 text-base" onClick={() => setShowWelcome(false)}>
           <span className="flex items-center justify-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-            Entrer dans Cosmorare
+            Entrer dans Strangrz
           </span>
         </button>
 
@@ -532,7 +532,7 @@ export default function WalletView() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `cosmorare-wallet-${shortAddress(wallet.address)}.json`; a.click();
+    a.href = url; a.download = `strangrz-wallet-${shortAddress(wallet.address)}.json`; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -551,7 +551,7 @@ export default function WalletView() {
     setSending(true);
     try {
       const res = await send(sendTo.trim(), amt, sendMemo || undefined);
-      if (res.success) { setSendResult({ success: true, message: `Sent ${amt} \u03A9 via CosmoMesh DAG!` }); setSendTo(''); setSendAmount(''); setSendMemo(''); }
+      if (res.success) { setSendResult({ success: true, message: `Sent ${amt} \u03A9 via StrangrzMesh DAG!` }); setSendTo(''); setSendAmount(''); setSendMemo(''); }
       else setSendResult({ success: false, message: res.error || 'Transaction failed' });
     } catch (err) { setSendResult({ success: false, message: err instanceof Error ? err.message : 'Transaction failed' }); }
     finally { setSending(false); }
@@ -575,7 +575,7 @@ export default function WalletView() {
     { id: 'overview', label: 'Overview' },
     { id: 'send', label: 'Send' },
     { id: 'mine', label: 'Mine' },
-    { id: 'payment', label: 'Cosmorares Coins' },
+    { id: 'payment', label: 'Strangrz Coin' },
   ];
 
   return (
@@ -611,7 +611,7 @@ export default function WalletView() {
               <span className={`text-title-sm ${levelDef.color}`}>{wallet.levelSymbol}</span>
               <span className={`text-body-sm font-bold ${levelDef.color}`}>{wallet.levelTitle}</span>
             </div>
-            <p className="text-body-sm opacity-50 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Cosmorare Balance'}</p>
+            <p className="text-body-sm opacity-50 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Strangrz Balance'}</p>
             <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1 animate-float">
               {wallet.balance.toLocaleString()} <span className="text-title-lg">{'\u03A9'}</span>
             </div>
@@ -665,7 +665,7 @@ export default function WalletView() {
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url;
-                          a.download = `cosmorare-recovery-kit-${wallet.address.slice(0, 10)}.json`;
+                          a.download = `strangrz-recovery-kit-${wallet.address.slice(0, 10)}.json`;
                           document.body.appendChild(a);
                           a.click();
                           document.body.removeChild(a);
@@ -867,7 +867,7 @@ export default function WalletView() {
           {/* Mesh Stats */}
           {meshStats && (
             <div className="glass-panel p-4">
-              <h3 className="text-base font-bold opacity-70 mb-3">CosmoMesh Status</h3>
+              <h3 className="text-base font-bold opacity-70 mb-3">StrangrzMesh Status</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
                 <div><span className="opacity-40">DAG Nodes:</span><span className="opacity-80 ml-1">{meshStats.totalTransactions}</span></div>
                 <div><span className="opacity-40">Active Tips:</span><span className="opacity-80 ml-1">{meshStats.totalTips}</span></div>
@@ -928,7 +928,7 @@ export default function WalletView() {
           <div className="glass-panel p-5">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title flex items-center gap-2">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-              Envoyer des Cosmorares
+              Envoyer des Strangrz
             </h2>
             <p className="text-body-sm opacity-40 mb-4">
               Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>

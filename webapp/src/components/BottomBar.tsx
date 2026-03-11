@@ -28,7 +28,7 @@ const tabs = [
   },
   {
     id: 'cosmo',
-    label: 'Cosmo',
+    label: 'Dr. S',
     icon: (active: boolean) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
         <path d="M12 2L2 7l10 5 10-5-10-5z" />

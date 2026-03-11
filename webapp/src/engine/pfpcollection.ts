@@ -41,7 +41,7 @@ export interface PFPCollection {
 
 // ─── Storage ───────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_pfp_collections';
+const STORAGE_KEY = 'strangrz_pfp_collections';
 
 function loadCollections(): PFPCollection[] {
   try {

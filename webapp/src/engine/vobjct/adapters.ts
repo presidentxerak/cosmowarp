@@ -4,7 +4,7 @@
  * Provides a chain-agnostic interface for resolving token bindings,
  * ownership, and metadata across different blockchain ecosystems.
  *
- * Includes concrete adapter for the Cosmorare (CosmoChain) protocol.
+ * Includes concrete adapter for the Strangrz (CosmoChain) protocol.
  */
 
 import type { TokenBinding, ChainFamily } from './schema';
@@ -35,14 +35,14 @@ export interface ChainAdapter {
   getTransactionRef(assetId: string): string | null;
 }
 
-// ─── Cosmorare Chain Adapter ────────────────────────────────
+// ─── Strangrz Chain Adapter ────────────────────────────────
 
 /**
- * Concrete adapter for the Cosmorare protocol.
+ * Concrete adapter for the Strangrz protocol.
  * Maps Warts (digital artworks) to Vobjct token bindings.
  */
-export class CosmorareAdapter implements ChainAdapter {
-  readonly chainFamily: ChainFamily = 'cosmorare';
+export class StrangrzAdapter implements ChainAdapter {
+  readonly chainFamily: ChainFamily = 'strangrz';
   readonly chainName = 'cosmochain';
   readonly tokenStandard = 'CW-721';
 
@@ -57,7 +57,7 @@ export class CosmorareAdapter implements ChainAdapter {
       chain_family: this.chainFamily,
       chain_name: this.chainName,
       token_standard: this.tokenStandard,
-      contract_or_issuer_reference: contractRef || 'cosmorare_protocol',
+      contract_or_issuer_reference: contractRef || 'strangrz_protocol',
       token_id_or_asset_reference: assetId,
     };
   }
@@ -68,7 +68,7 @@ export class CosmorareAdapter implements ChainAdapter {
   }
 
   resolveMetadataUri(assetId: string): string | null {
-    return `cosmorare://wart/${assetId}/metadata`;
+    return `strangrz://wart/${assetId}/metadata`;
   }
 
   async verifyOwnership(assetId: string, address: string): Promise<boolean> {

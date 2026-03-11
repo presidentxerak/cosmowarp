@@ -1,5 +1,5 @@
 /**
- * Cosmorare Fiat Gateway Server — Stripe + PayPal Payment Processing
+ * Strangrz Fiat Gateway Server — Stripe + PayPal Payment Processing
  *
  * Production backend for fiat on/off ramp.
  *
@@ -34,7 +34,7 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY;
 const PAYOUT_SECRET = process.env.PAYOUT_SECRET_KEY;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://strangrz.com';
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
@@ -251,17 +251,17 @@ const server = createServer(async (req, res) => {
                 currency: currency.toLowerCase(),
                 unit_amount: Math.round(amount * 100), // Stripe uses cents
                 product_data: {
-                  name: wartId ? `Cosmorare #${wartId}` : `${warpAmount} Warps (Ω)`,
-                  description: `Cosmorare purchase — ${warpAmount} Ω`,
+                  name: wartId ? `Strangrz #${wartId}` : `${warpAmount} Warps (Ω)`,
+                  description: `Strangrz purchase — ${warpAmount} Ω`,
                 },
               },
               quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-success?tx=${txId}`,
-            cancel_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-cancel?tx=${txId}`,
+            success_url: `${req.headers.origin || 'https://strangrz.com'}/payment-success?tx=${txId}`,
+            cancel_url: `${req.headers.origin || 'https://strangrz.com'}/payment-cancel?tx=${txId}`,
             metadata: {
-              cosmorare_tx_id: txId,
+              strangrz_tx_id: txId,
               buyer_address: buyerAddress,
               seller_address: sellerAddress || '',
               warp_amount: warpAmount.toString(),
@@ -320,7 +320,7 @@ const server = createServer(async (req, res) => {
 
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        const txId = (session.metadata as Record<string, string>)?.cosmorare_tx_id;
+        const txId = (session.metadata as Record<string, string>)?.strangrz_tx_id;
         if (txId) {
           const record = transactions.get(txId);
           if (record) {
@@ -354,7 +354,7 @@ const server = createServer(async (req, res) => {
 
       if (event.type === 'checkout.session.expired') {
         const session = event.data.object;
-        const txId = (session.metadata as Record<string, string>)?.cosmorare_tx_id;
+        const txId = (session.metadata as Record<string, string>)?.strangrz_tx_id;
         if (txId) {
           const record = transactions.get(txId);
           if (record) {
@@ -426,7 +426,7 @@ const server = createServer(async (req, res) => {
             amount: Math.round((fiatAmount - fees.total) * 100),
             currency: currency.toLowerCase(),
             destination: sellerAddress, // This would be the Stripe Connect account ID
-            metadata: { cosmorare_tx_id: txId },
+            metadata: { strangrz_tx_id: txId },
           });
           record.processorRef = transfer.id;
           record.status = 'completed';
@@ -481,7 +481,7 @@ async function start() {
   server.listen(PORT, () => {
     console.log(`
 ┌─────────────────────────────────────────────┐
-│  Cosmorare Fiat Gateway                     │
+│  Strangrz Fiat Gateway                     │
 │  HTTP:   http://0.0.0.0:${PORT}                │
 │  Health: http://0.0.0.0:${PORT}/health          │
 │                                             │

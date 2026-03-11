@@ -102,7 +102,7 @@ class AppErrorBoundary extends Component<
         >
           <div className="text-center max-w-md">
             <p className="text-4xl mb-6">{'\u2B21'}</p>
-            <h1 className="text-title-md font-bold mb-3">Cosmorare encountered an error</h1>
+            <h1 className="text-title-md font-bold mb-3">Strangrz encountered an error</h1>
             <p className="text-base opacity-50 mb-6">{this.state.error || 'Something went wrong.'}</p>
             <button
               onClick={() => window.location.reload()}
@@ -159,8 +159,8 @@ function App() {
       const detail = (e as CustomEvent).detail;
       if (typeof detail === 'string') navigate(detail);
     };
-    window.addEventListener('cosmorare-navigate', handler);
-    return () => window.removeEventListener('cosmorare-navigate', handler);
+    window.addEventListener('strangrz-navigate', handler);
+    return () => window.removeEventListener('strangrz-navigate', handler);
   }, [navigate]);
 
   // Landing page renders full-screen without app chrome

@@ -2,7 +2,7 @@
  * Vobjct — Manifest Generation Pipeline
  *
  * Creates, signs, and verifies Vobjct manifests from digital assets.
- * Integrates with the Cosmorare Wart system and any chain adapter.
+ * Integrates with the Strangrz Wart system and any chain adapter.
  */
 
 import { sha256, signTransaction, verifySignature } from '../crypto';

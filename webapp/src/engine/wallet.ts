@@ -1,7 +1,7 @@
 /**
- * Cosmorare Wallet Engine — Integrated with CosmoMesh + Tokenomics + Hierarchy + Security
+ * Strangrz Wallet Engine — Integrated with StrangrzMesh + Tokenomics + Hierarchy + Security
  *
- * Manages wallet state, transactions via the CosmoMesh DAG,
+ * Manages wallet state, transactions via the StrangrzMesh DAG,
  * consensus validation, tokenomics (Resonance Decay), hierarchy levels,
  * admin registry, and security hardening.
  *
@@ -19,10 +19,10 @@ import {
 } from './crypto';
 import { storage } from './storage';
 import {
-  CosmoMesh,
+  StrangrzMesh,
   type MeshTransaction,
   type MeshStats,
-} from './cosmomesh';
+} from './strangrmesh';
 import { ResonanceConsensus } from './consensus';
 import { TokenomicsEngine, AIRDROP_AMOUNT, type SupplyBreakdown } from './tokenomics';
 import { HierarchyEngine, HIERARCHY_LEVELS, type HierarchyLevel, type LevelUpResult } from './hierarchy';
@@ -77,16 +77,16 @@ export interface WalletExport {
 
 // ─── Storage Keys ────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_wallet';
-const TX_STORAGE_KEY = 'cosmorare_global_tx';
-const MESH_STORAGE_KEY = 'cosmorare_mesh';
-const CONSENSUS_STORAGE_KEY = 'cosmorare_consensus';
-const ADMIN_ADDRESS_KEY = 'cosmorare_admin_address';
-const DAILY_TOTAL_KEY = 'cosmorare_daily_totals';
+const STORAGE_KEY = 'strangrz_wallet';
+const TX_STORAGE_KEY = 'strangrz_global_tx';
+const MESH_STORAGE_KEY = 'strangrz_mesh';
+const CONSENSUS_STORAGE_KEY = 'strangrz_consensus';
+const ADMIN_ADDRESS_KEY = 'strangrz_admin_address';
+const DAILY_TOTAL_KEY = 'strangrz_daily_totals';
 
 // ─── Singletons ─────────────────────────────────────────
 
-let meshInstance: CosmoMesh | null = null;
+let meshInstance: StrangrzMesh | null = null;
 let consensusInstance: ResonanceConsensus | null = null;
 let tokenomicsInstance: TokenomicsEngine | null = null;
 let hierarchyInstance: HierarchyEngine | null = null;
@@ -94,17 +94,17 @@ let registryInstance: AdminRegistry | null = null;
 let securityInstance: SecurityManager | null = null;
 let cosmoChainInstance: CosmoChain | null = null;
 
-export function getMesh(): CosmoMesh {
+export function getMesh(): StrangrzMesh {
   if (!meshInstance) {
     const saved = storage.getItem(MESH_STORAGE_KEY);
     if (saved) {
       try {
-        meshInstance = CosmoMesh.deserialize(saved);
+        meshInstance = StrangrzMesh.deserialize(saved);
       } catch {
-        meshInstance = new CosmoMesh();
+        meshInstance = new StrangrzMesh();
       }
     } else {
-      meshInstance = new CosmoMesh();
+      meshInstance = new StrangrzMesh();
     }
   }
   return meshInstance;
@@ -158,7 +158,7 @@ export function getSecurity(): SecurityManager {
 export function getCosmoChain(): CosmoChain {
   if (!cosmoChainInstance) {
     cosmoChainInstance = CosmoChain.load() || new CosmoChain();
-    // Bridge CosmoMesh → CosmoChain for dual-layer persistence
+    // Bridge StrangrzMesh → CosmoChain for dual-layer persistence
     getMesh().connectCosmoChain(cosmoChainInstance);
   }
   return cosmoChainInstance;
@@ -431,7 +431,7 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to Cosmorare! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u03A9`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,
@@ -622,7 +622,7 @@ export async function loginCosmoID(
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to Cosmorare! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u03A9`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,

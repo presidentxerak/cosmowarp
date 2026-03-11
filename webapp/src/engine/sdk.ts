@@ -1,12 +1,12 @@
 /**
- * Cosmorare Public SDK — Developer API
+ * Strangrz Public SDK — Developer API
  *
- * Open-source API for building apps on the Cosmorare ecosystem.
+ * Open-source API for building apps on the Strangrz ecosystem.
  * Provides read access to the mesh, wallet creation, transaction
  * submission, and event subscriptions.
  *
  * Usage:
- *   const cosmo = new CosmorareSDK();
+ *   const cosmo = new StrangrzSDK();
  *   const wallet = await cosmo.createWallet('MyApp User');
  *   const tx = await cosmo.send(wallet, recipientAddress, 100, 'Payment');
  *   const balance = cosmo.getBalance(wallet.address);
@@ -15,7 +15,7 @@
 import { generateKeyPair, sha256, shortAddress, isValidAddress, type CosmoKeyPair } from './crypto';
 import { TOTAL_SUPPLY, AIRDROP_AMOUNT, calculateMiningReward } from './tokenomics';
 import { HIERARCHY_LEVELS } from './hierarchy';
-import { LAYER_NAMES } from './cosmomesh';
+import { LAYER_NAMES } from './strangrmesh';
 
 // ─── SDK Wallet (Public Interface) ───────────────────────
 
@@ -55,9 +55,9 @@ export interface SDKEvent {
   timestamp: number;
 }
 
-// ─── Cosmorare SDK ───────────────────────────────────────
+// ─── Strangrz SDK ───────────────────────────────────────
 
-export class CosmorareSDK {
+export class StrangrzSDK {
   private version = '1.0.0';
   private eventListeners: Map<SDKEventType, Array<(event: SDKEvent) => void>> = new Map();
 
@@ -83,7 +83,7 @@ export class CosmorareSDK {
   /** Get protocol constants */
   getProtocolInfo(): ProtocolInfo {
     return {
-      name: 'Cosmorare',
+      name: 'Strangrz',
       version: this.version,
       totalSupply: TOTAL_SUPPLY,
       airdropAmount: AIRDROP_AMOUNT,
@@ -225,4 +225,4 @@ export interface ProtocolInfo {
 
 // ─── Global SDK Instance ─────────────────────────────────
 
-export const cosmorare = new CosmorareSDK();
+export const strangrz = new StrangrzSDK();

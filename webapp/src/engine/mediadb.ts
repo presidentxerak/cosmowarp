@@ -1,5 +1,5 @@
 /**
- * IndexedDB-based media storage for Cosmorare artworks.
+ * IndexedDB-based media storage for Strangrz artworks.
  *
  * localStorage has a ~5MB limit which is too small for base64 images/videos.
  * IndexedDB supports hundreds of MB, making it suitable for media storage.
@@ -7,7 +7,7 @@
  * API is async but uses a simple key-value pattern (wartId → imageData).
  */
 
-const DB_NAME = 'cosmorare_media';
+const DB_NAME = 'strangrz_media';
 const DB_VERSION = 1;
 const STORE_NAME = 'media';
 

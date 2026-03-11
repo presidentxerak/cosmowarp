@@ -98,10 +98,10 @@ export default function CosmoChatView() {
   const alias = wallet.alias || shortAddress(wallet.address);
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
+    sessionStorage.setItem('strangrz_view_user', address);
     // Navigate to user-profile - we need a way to do this
     // Use a custom event that App.tsx listens to
-    window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'user-profile' }));
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'user-profile' }));
   };
 
   // ─── Media upload ──────────────────────────────────────
@@ -286,7 +286,7 @@ export default function CosmoChatView() {
         {/* Content */}
         {post.content && <p className="text-base opacity-70 mb-1 whitespace-pre-wrap">{post.content}</p>}
         {post.wartLink && (
-          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Cosmorare: {post.wartLink}</p>
+          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Strangrz: {post.wartLink}</p>
         )}
         <MediaContent post={post} />
 
@@ -373,7 +373,7 @@ export default function CosmoChatView() {
           </div>
 
           {post.content && <p className="text-base opacity-70 whitespace-pre-wrap mb-3">{post.content}</p>}
-          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Cosmorare: {post.wartLink}</p>}
+          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Strangrz: {post.wartLink}</p>}
           <MediaContent post={post} />
 
           {/* Stats bar */}
@@ -610,7 +610,7 @@ export default function CosmoChatView() {
                     </button>
                     <input
                       className="warp-input text-label py-1 px-2 w-36"
-                      placeholder="Lien Cosmorare (optionnel)"
+                      placeholder="Lien Strangrz (optionnel)"
                       value={composeWartLink}
                       onChange={e => setComposeWartLink(e.target.value)}
                     />

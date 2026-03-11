@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useWallet } from '../context/WalletContext';
 
-// ─── Cosmo Chatbot Knowledge Base ────────────────────────
+// ─── Doctor Strangrz Chatbot Knowledge Base ────────────────────────
 
 interface CosmoResponse {
   answer: string;
@@ -20,7 +20,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wallet', 'portefeuille', 'create', 'creer', 'créer', 'account', 'compte', 'sign up', 'inscription'],
     response: {
-      answer: "Ah, un nouveau voyageur dans le cosmos ! Créer un portefeuille, c'est plus simple que d'expliquer la physique quantique à un chat. Va dans la section Portefeuille, choisis un mot de passe (pas 'motdepasse123' s'il te plaît — le cosmos observe), et hop — te voilà Particle. Tout le monde commence Particle. Même moi. Enfin, moi c'est Cosmo, donc techniquement j'ai commencé en tant qu'univers entier. Mais c'est une autre histoire.",
+      answer: "Ah, un nouveau voyageur dans le cosmos ! Créer un portefeuille, c'est plus simple que d'expliquer la physique quantique à un chat. Va dans la section Portefeuille, choisis un mot de passe (pas 'motdepasse123' s'il te plaît — le cosmos observe), et hop — te voilà Particle. Tout le monde commence Particle. Même moi. Enfin, moi c'est Doctor Strangrz, donc techniquement j'ai commencé en tant qu'univers entier. Mais c'est une autre histoire.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille',
     },
@@ -28,7 +28,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['balance', 'solde', 'warp', 'warps', 'zero', '0', 'argent', 'money'],
     response: {
-      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Cosmorares (Ω). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
+      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Strangrz (Ω). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Miner',
     },
@@ -36,7 +36,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['send', 'envoyer', 'transfer', 'transferer', 'transférer', 'payer', 'pay'],
     response: {
-      answer: "Envoyer des Cosmorares, c'est comme lancer une étoile filante à travers le mesh — magnifique ET rapide. Ouvre ton Portefeuille, va dans l'onglet Envoyer, entre l'adresse Cosmorare du destinataire et le montant. Ajoute un mémo si tu te sens poétique. Conseil de pro : vérifie l'adresse deux fois. Le cosmos pardonne, mais les fautes de frappe non.",
+      answer: "Envoyer des Strangrz, c'est comme lancer une étoile filante à travers le mesh — magnifique ET rapide. Ouvre ton Portefeuille, va dans l'onglet Envoyer, entre l'adresse Strangrz du destinataire et le montant. Ajoute un mémo si tu te sens poétique. Conseil de pro : vérifie l'adresse deux fois. Le cosmos pardonne, mais les fautes de frappe non.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Envoyer',
     },
@@ -53,7 +53,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mine', 'miner', 'mining', 'minage', 'earn', 'gagner', 'difficulty', 'difficulté'],
     response: {
-      answer: "Miner sur Cosmorare, ce n'est pas faire bouillir les océans ! Tu exécutes des programmes CosmoASM de preuve de calcul. Choisis ta difficulté : Léger (petit en-cas), Moyen (bon steak), ou Intense (escalader l'Everest en tongs). Plus c'est difficile = plus de Cosmorares. La récompense suit la courbe de Décroissance par Résonance — une formule basée sur le nombre d'or (φ) bien plus douce que les halvings capricieux de Bitcoin. Va miner de la poussière d'étoile !",
+      answer: "Miner sur Strangrz, ce n'est pas faire bouillir les océans ! Tu exécutes des programmes CosmoASM de preuve de calcul. Choisis ta difficulté : Léger (petit en-cas), Moyen (bon steak), ou Intense (escalader l'Everest en tongs). Plus c'est difficile = plus de Strangrz. La récompense suit la courbe de Décroissance par Résonance — une formule basée sur le nombre d'or (φ) bien plus douce que les halvings capricieux de Bitcoin. Va miner de la poussière d'étoile !",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Miner',
     },
@@ -62,7 +62,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Les Cosmorares, ce sont les objets rares certifiés sur Cosmorare — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Cosmorare reçoit un Certificat d'Authenticité infalsifiable (CRCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
+      answer: "Les Strangrz, ce sont les objets rares certifiés sur Strangrz — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat d'Authenticité infalsifiable (CRCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -70,7 +70,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace'],
     response: {
-      answer: "Tu veux acheter une Cosmorare ? Parcours la Marketplace, trouve un objet rare qui parle à ton âme cosmique, et clique sur Acheter. Le créateur est payé, et en cas de revente, il touche encore des royalties (5 % par défaut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le goût est subjectif, mais les maths non — vérifie le certificat CRCERT avant d'acheter !",
+      answer: "Tu veux acheter une Strangrz ? Parcours la Marketplace, trouve un objet rare qui parle à ton âme cosmique, et clique sur Acheter. Le créateur est payé, et en cas de revente, il touche encore des royalties (5 % par défaut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le goût est subjectif, mais les maths non — vérifie le certificat CRCERT avant d'acheter !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -78,7 +78,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
     response: {
-      answer: "Chaque Cosmorare certifiée possède un CRCERT — un Certificat d'Authenticité infalsifiable. C'est un hash SHA-256 de l'adresse Cosmorare du créateur + empreinte du contenu + horodatage + titre, signé avec la clé privée Ed25519 du créateur. Traduction : c'est mathématiquement impossible à falsifier. Clique sur « Vérifier » sur n'importe quelle Cosmorare pour lancer une vérification d'intégrité complète. Si ça affiche « ✔ Authentique » — tu es tranquille. Sinon... quelqu'un a fait des bêtises.",
+      answer: "Chaque Strangrz certifiée possède un CRCERT — un Certificat d'Authenticité infalsifiable. C'est un hash SHA-256 de l'adresse Strangrz du créateur + empreinte du contenu + horodatage + titre, signé avec la clé privée Ed25519 du créateur. Traduction : c'est mathématiquement impossible à falsifier. Clique sur « Vérifier » sur n'importe quelle Strangrz pour lancer une vérification d'intégrité complète. Si ça affiche « ✔ Authentique » — tu es tranquille. Sinon... quelqu'un a fait des bêtises.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace → Détail',
     },
@@ -87,7 +87,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mur', 'cosmochat', 'chat', 'social', 'message', 'messages', 'dm', 'channel', 'canal', 'post', 'publier'],
     response: {
-      answer: "Le Mur, c'est ton réseau social chiffré et décentralisé ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares au lieu de likes (parce que mettre ton argent là où tu parles > un emoji cœur). Partage des liens vers des Cosmorares, des actus, des pensées cosmiques... l'univers est ton fil. Chiffré. Anonyme. Sécurisé.",
+      answer: "Le Mur, c'est ton réseau social chiffré et décentralisé ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, crée des canaux, envoie des DM, et donne des pourboires en Strangrz au lieu de likes (parce que mettre ton argent là où tu parles > un emoji cœur). Partage des liens vers des Strangrz, des actus, des pensées cosmiques... l'univers est ton fil. Chiffré. Anonyme. Sécurisé.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -95,7 +95,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['tip', 'tips', 'pourboire', 'like', 'aimer', 'rewarp', 'retweet', 'share', 'partager'],
     response: {
-      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Cosmorare (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReCosmo (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReCosmos, vues et favoris. C'est comme X, mais avec une âme.",
+      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Strangrz (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReStrangrz (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReStrangrzs, vues et favoris. C'est comme X, mais avec une âme.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -104,7 +104,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['feed', 'transaction', 'transactions', 'history', 'historique', 'activity', 'activité'],
     response: {
-      answer: "Le Feed, c'est là où tu observes le pouls cosmique de Cosmorare. Chaque transaction — envois, minages, certifications de Cosmorares, achats — apparaît ici en temps réel avec le fuseau horaire français (parce que Paris est le centre de l'univers, évidemment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
+      answer: "Le Feed, c'est là où tu observes le pouls cosmique de Strangrz. Chaque transaction — envois, minages, certifications de Strangrz, achats — apparaît ici en temps réel avec le fuseau horaire français (parce que Paris est le centre de l'univers, évidemment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
       navigateTo: 'feed',
       tabLabel: 'Feed',
     },
@@ -122,18 +122,18 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['dev', 'developer', 'développeur', 'sdk', 'api', 'console', 'admin', 'code', 'technical'],
     response: {
-      answer: "Ah, un fellow magicien du code ! La section Dev combine la documentation SDK, le panneau Admin et la Console en un seul atelier puissant. Construis des apps sur Cosmorare, interagis directement avec le protocole, et gère les fonctionnalités avancées. Le jeu d'instructions CosmoASM t'attend. Rappelle-toi : avec un grand pouvoir vient une grande probabilité d'oublier un point-virgule.",
+      answer: "Ah, un fellow magicien du code ! La section Dev combine la documentation SDK, le panneau Admin et la Console en un seul atelier puissant. Construis des apps sur Strangrz, interagis directement avec le protocole, et gère les fonctionnalités avancées. Le jeu d'instructions CosmoASM t'attend. Rappelle-toi : avec un grand pouvoir vient une grande probabilité d'oublier un point-virgule.",
       navigateTo: 'dev',
       tabLabel: 'Dev',
     },
   },
-  // CosmoMesh
+  // StrangrzMesh
   {
-    keywords: ['cosmomesh', 'mesh', 'cosmochain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon', 'dag', 'couche', 'couches', 'layer', 'layers'],
+    keywords: ['strangrmesh', 'mesh', 'cosmochain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon', 'dag', 'couche', 'couches', 'layer', 'layers'],
     response: {
-      answer: "CosmoMesh est notre réseau DAG à 7 couches parallèles fonctionnant simultanément via de vrais Web Workers. Chaque couche (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) traite des blocs toutes les 1,5 secondes dans son propre thread. Le TPS dépend de ton matériel — lance le benchmark intégré pour le mesurer. Frais de gas ? Zéro. Les données sont stockées dans IndexedDB (échelle Go). Consulte le Livre Blanc pour le schéma d'architecture !",
+      answer: "StrangrzMesh est notre réseau DAG à 7 couches parallèles fonctionnant simultanément via de vrais Web Workers. Chaque couche (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) traite des blocs toutes les 1,5 secondes dans son propre thread. Le TPS dépend de ton matériel — lance le benchmark intégré pour le mesurer. Frais de gas ? Zéro. Les données sont stockées dans IndexedDB (échelle Go). Consulte le Livre Blanc pour le schéma d'architecture !",
       navigateTo: 'whitepaper',
-      tabLabel: 'Livre Blanc → CosmoMesh',
+      tabLabel: 'Livre Blanc → StrangrzMesh',
     },
   },
   // CosmoCode SVG
@@ -149,34 +149,34 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['gas', 'fee', 'fees', 'free', 'gratuit', 'cost', 'coût', 'cout', 'price', 'zero', 'frais'],
     response: {
-      answer: "Frais de gas ? On ne fait pas ça ici. Les transactions CosmoMesh sont 100 % GRATUITES. Zéro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les récompenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de débit (100 TX/min) au lieu d'exclure les gens par les prix. (3) CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go à coût zéro. Ethereum facture 0,50 à 100 $ par TX. Nous, c'est 0 Ω. De rien.",
+      answer: "Frais de gas ? On ne fait pas ça ici. Les transactions StrangrzMesh sont 100 % GRATUITES. Zéro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les récompenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de débit (100 TX/min) au lieu d'exclure les gens par les prix. (3) CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go à coût zéro. Ethereum facture 0,50 à 100 $ par TX. Nous, c'est 0 Ω. De rien.",
       navigateTo: 'whitepaper',
-      tabLabel: 'Livre Blanc → CosmoMesh',
+      tabLabel: 'Livre Blanc → StrangrzMesh',
     },
   },
   // Speed
   {
     keywords: ['speed', 'fast', 'rapide', 'vitesse', 'tps', 'throughput', 'performance', 'slow', 'lent'],
     response: {
-      answer: "CosmoMesh traite les blocs rapidement. Chacune de nos 7 couches tourne dans son propre Web Worker et produit un bloc toutes les 1,5 secondes (contre 12s pour Ethereum). Le TPS réel dépend de ton matériel — utilise le benchmark intégré pour mesurer le débit réel. Ta transaction est confirmée en ~1,5s avec ancrage final via un Beacon Block toutes les ~15s. Pas de chiffres gonflés — benchmark-le toi-même.",
+      answer: "StrangrzMesh traite les blocs rapidement. Chacune de nos 7 couches tourne dans son propre Web Worker et produit un bloc toutes les 1,5 secondes (contre 12s pour Ethereum). Le TPS réel dépend de ton matériel — utilise le benchmark intégré pour mesurer le débit réel. Ta transaction est confirmée en ~1,5s avec ancrage final via un Beacon Block toutes les ~15s. Pas de chiffres gonflés — benchmark-le toi-même.",
       navigateTo: 'whitepaper',
-      tabLabel: 'Livre Blanc → CosmoMesh',
+      tabLabel: 'Livre Blanc → StrangrzMesh',
     },
   },
   // On-chain NFT
   {
     keywords: ['on-chain nft', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
     response: {
-      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), CosmoMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur CosmoCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 Ω. GRATUIT.",
+      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur CosmoCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 Ω. GRATUIT.",
       navigateTo: 'whitepaper',
-      tabLabel: 'Livre Blanc → CosmoMesh',
+      tabLabel: 'Livre Blanc → StrangrzMesh',
     },
   },
   // WhitePaper
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "Le Cosmorare Protocole, c'est le parchemin sacré de Cosmorare ! 7 sections couvrant l'essentiel : comment ça marche, les certificats CRCERT, le Cosmorare (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
+      answer: "Le Strangrz Protocole, c'est le parchemin sacré de Strangrz ! 7 sections couvrant l'essentiel : comment ça marche, les certificats CRCERT, le Strangrz (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc',
     },
@@ -185,7 +185,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['security', 'sécurité', 'securite', 'hack', 'safe', 'sûr', 'sur', 'protect', 'protéger', 'encryption', 'chiffrement', 'encrypt'],
     response: {
-      answer: "Cosmorare prend la sécurité TRÈS au sérieux — 7 couches, pour être exact. Signatures Ed25519 (infalsifiables), limitation de débit (pas de spam), suivi des nonces (pas d'attaques par rejeu), limites progressives de montant, détection de patterns, intégrité d'état (checksums SHA-256), et registre admin chiffré. En plus, le service worker permet à l'app de fonctionner hors ligne et se met à jour automatiquement. Dors tranquille — le cosmos veille sur toi.",
+      answer: "Strangrz prend la sécurité TRÈS au sérieux — 7 couches, pour être exact. Signatures Ed25519 (infalsifiables), limitation de débit (pas de spam), suivi des nonces (pas d'attaques par rejeu), limites progressives de montant, détection de patterns, intégrité d'état (checksums SHA-256), et registre admin chiffré. En plus, le service worker permet à l'app de fonctionner hors ligne et se met à jour automatiquement. Dors tranquille — le cosmos veille sur toi.",
       navigateTo: 'settings',
       tabLabel: 'Paramètres → Sécurité',
     },
@@ -194,7 +194,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['offline', 'hors ligne', 'online', 'en ligne', 'pwa', 'install', 'app'],
     response: {
-      answer: "Cosmorare fonctionne hors ligne ET en ligne ! Grâce à notre service worker, l'app se met en cache sur ton appareil et continue de fonctionner même sans internet. Quand tu te reconnectes, elle se synchronise automatiquement. Tu peux même l'installer en PWA (Progressive Web App) sur ton téléphone — utilise simplement l'option « Ajouter à l'écran d'accueil » de ton navigateur. C'est une app native sans l'intermédiaire de l'App Store. Prends ça, Apple.",
+      answer: "Strangrz fonctionne hors ligne ET en ligne ! Grâce à notre service worker, l'app se met en cache sur ton appareil et continue de fonctionner même sans internet. Quand tu te reconnectes, elle se synchronise automatiquement. Tu peux même l'installer en PWA (Progressive Web App) sur ton téléphone — utilise simplement l'option « Ajouter à l'écran d'accueil » de ton navigateur. C'est une app native sans l'intermédiaire de l'App Store. Prends ça, Apple.",
       navigateTo: 'settings',
       tabLabel: 'Paramètres',
     },
@@ -208,11 +208,11 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Livre Blanc → Hiérarchie',
     },
   },
-  // What is Cosmorare
+  // What is Strangrz
   {
-    keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'cosmorare', 'cosmowarp', 'about'],
+    keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'strangrz', 'cosmowarp', 'about'],
     response: {
-      answer: "Cosmorare (コスモラレ) est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux enchères avaient eu un bébé dans l'espace. Tu obtiens un réseau DAG transactionnel (CosmoMesh — 7 couches parallèles, pas une seule chaîne lente), un réseau social chiffré (le Mur), une marketplace d'objets rares certifiés (les Cosmorares), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout ça sécurisé par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'intermédiaires. Pas de banques. Pas de surveillance. Juste de l'échange de valeur cosmique pur.",
+      answer: "Strangrz (ストレンジャーズ) est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux enchères avaient eu un bébé dans l'espace. Tu obtiens un réseau DAG transactionnel (StrangrzMesh — 7 couches parallèles, pas une seule chaîne lente), un réseau social chiffré (le Mur), une marketplace d'objets rares certifiés (les Strangrz), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout ça sécurisé par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'intermédiaires. Pas de banques. Pas de surveillance. Juste de l'échange de valeur cosmique pur.",
       navigateTo: 'landing',
       tabLabel: 'Accueil',
     },
@@ -221,7 +221,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['help', 'aide', 'assist', 'guide', 'support', 'hello', 'bonjour', 'salut', 'hi', 'hey'],
     response: {
-      answer: "Bonjour, voyageur cosmique ! Je suis Cosmo, ton oracle et guide dans l'univers Cosmorare. Je sais tout sur cet écosystème (modeste, je sais). Pose-moi des questions sur les portefeuilles, le minage, les Cosmorares, le Mur, la sécurité, la tokenomics, le paiement par carte, ou littéralement n'importe quoi d'autre. Je promets que mes réponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
+      answer: "Bonjour, voyageur cosmique ! Je suis Doctor Strangrz, ton oracle et guide dans l'univers Strangrz. Je sais tout sur cet écosystème (modeste, je sais). Pose-moi des questions sur les portefeuilles, le minage, les Strangrz, le Mur, la sécurité, la tokenomics, le paiement par carte, ou littéralement n'importe quoi d'autre. Je promets que mes réponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
       navigateTo: 'help',
       tabLabel: 'Aide',
     },
@@ -230,7 +230,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mobile', 'desktop', 'sync', 'synchron', 'different', 'différent', 'device', 'appareil'],
     response: {
-      answer: "Solde différent sur mobile et desktop ? C'est parce que Cosmorare est local-first — chaque appareil a son propre portefeuille indépendant stocké localement. Pour synchroniser, va dans Portefeuille → Aperçu sur un appareil, exporte ta sauvegarde, puis importe-la sur l'autre. C'est comme avoir des stations spatiales jumelles — elles sont indépendantes jusqu'à ce que tu envoies une navette entre elles.",
+      answer: "Solde différent sur mobile et desktop ? C'est parce que Strangrz est local-first — chaque appareil a son propre portefeuille indépendant stocké localement. Pour synchroniser, va dans Portefeuille → Aperçu sur un appareil, exporte ta sauvegarde, puis importe-la sur l'autre. C'est comme avoir des stations spatiales jumelles — elles sont indépendantes jusqu'à ce que tu envoies une navette entre elles.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Aperçu',
     },
@@ -239,7 +239,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['vobjct', 'safe', 'protection', 'intégrité', 'integrite', 'integrity', 'manifest', 'manifeste', 'resilience', 'résilience', 'persistance', 'persistence', 'storage route', 'route de stockage', 'recovery route', 'route de récupération'],
     response: {
-      answer: "Vobjct, c'est le bouclier cosmique de tes Cosmorares ! Chaque objet certifié reçoit un Vobjct Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Vobjct Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
+      answer: "Vobjct, c'est le bouclier cosmique de tes Strangrz ! Chaque objet certifié reçoit un Vobjct Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Vobjct Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace → Détail',
     },
@@ -247,7 +247,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['stockage', 'storage', 'où sont stockés', 'where stored', 'persistant', 'persistent', 'perte', 'perdu ordinateur', 'lost computer', 'hack', 'hacké', 'vol', 'stolen'],
     response: {
-      answer: "Tes Cosmorares sont protégées par un système de stockage multi-couches grâce à Vobjct : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud. (3) On-chain — stockage permanent dans CosmoMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé CosmoID. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Vobjct Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
+      answer: "Tes Strangrz sont protégées par un système de stockage multi-couches grâce à Vobjct : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud. (3) On-chain — stockage permanent dans StrangrzMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé CosmoID. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Vobjct Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -264,7 +264,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
     response: {
-      answer: "Cosmorare intègre une passerelle de paiement fiat complète ! Tu peux acheter des Cosmorares (Ω) ou des Cosmorares directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
+      answer: "Strangrz intègre une passerelle de paiement fiat complète ! Tu peux acheter des Strangrz (Ω) ou des Strangrz directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Paiement',
     },
@@ -272,7 +272,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
 ];
 
 const FALLBACK: CosmoResponse = {
-  answer: "Hmm, voilà une question que même le cosmos n'a jamais entendue ! Je ne suis pas sûr d'avoir la réponse exacte, mais je parie que le Livre Blanc l'a. Il contient 11 sections couvrant littéralement tout sur Cosmorare. Va le consulter, et si tu as encore des questions, reviens — je serai là, à contempler l'entropie de l'univers.",
+  answer: "Hmm, voilà une question que même le cosmos n'a jamais entendue ! Je ne suis pas sûr d'avoir la réponse exacte, mais je parie que le Livre Blanc l'a. Il contient 11 sections couvrant littéralement tout sur Strangrz. Va le consulter, et si tu as encore des questions, reviens — je serai là, à contempler l'entropie de l'univers.",
   navigateTo: 'whitepaper',
   tabLabel: 'Livre Blanc',
 };
@@ -313,10 +313,10 @@ interface ChatMsg {
 
 const FAQ_ICONS: Record<string, ReactNode> = {
   'Pour commencer': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>,
-  'Minage & Cosmorares': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
-  'Marketplace (Cosmorares)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
+  'Minage & Strangrz': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
+  'Marketplace (Strangrz)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
-  'CosmoMesh & CosmoCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
+  'StrangrzMesh & CosmoCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
   'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
   'Vobjct & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
@@ -328,47 +328,47 @@ const FAQ_SECTIONS = [
     icon: 'Pour commencer',
     items: [
       { q: `Comment créer un portefeuille ?`, a: `Va dans l'onglet Portefeuille et clique sur « Créer un portefeuille ». Choisis un mot de passe solide et sauvegarde ta clé de récupération en lieu sûr.` },
-      { q: `Pourquoi mon solde est à 0 ?`, a: `Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Cosmorares en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.` },
+      { q: `Pourquoi mon solde est à 0 ?`, a: `Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Strangrz en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.` },
       { q: `Comment sauvegarder mon portefeuille ?`, a: `Dans Portefeuille → Aperçu, télécharge ta clé de récupération. Garde-la en lieu sûr — il n'y a pas de réinitialisation de mot de passe !` },
     ],
   },
   {
-    title: 'Minage & Cosmorares',
-    icon: 'Minage & Cosmorares',
+    title: 'Minage & Strangrz',
+    icon: 'Minage & Strangrz',
     items: [
-      { q: `Comment miner ?`, a: `Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Cosmorares.` },
+      { q: `Comment miner ?`, a: `Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Strangrz.` },
       { q: `Qu'est-ce que la Décroissance par Résonance ?`, a: `Une courbe de minage progressive basée sur le nombre d'or (φ). Contrairement au halving brutal de Bitcoin, les récompenses diminuent graduellement et de façon prévisible.` },
-      { q: `Quel est le supply total ?`, a: `69 millions de Cosmorares. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.` },
+      { q: `Quel est le supply total ?`, a: `69 millions de Strangrz. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.` },
     ],
   },
   {
-    title: 'Marketplace (Cosmorares)',
-    icon: 'Marketplace (Cosmorares)',
+    title: 'Marketplace (Strangrz)',
+    icon: 'Marketplace (Strangrz)',
     items: [
-      { q: `Qu'est-ce qu'une Cosmorare ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (CRCERT) sur le protocole Cosmorare.` },
+      { q: `Qu'est-ce qu'une Strangrz ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (CRCERT) sur le protocole Strangrz.` },
       { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 50 Mo.` },
       { q: `Qu'est-ce que le CRCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
-      { q: `Les Cosmorares sont-elles stockées on-chain ?`, a: `Oui ! Avec CosmoMesh, les objets sont compressés via CosmoCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
+      { q: `Les Strangrz sont-elles stockées on-chain ?`, a: `Oui ! Avec StrangrzMesh, les objets sont compressés via CosmoCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
     ],
   },
   {
     title: 'Le Mur (Réseau social)',
     icon: 'Le Mur (Réseau social)',
     items: [
-      { q: `Qu'est-ce que le Mur ?`, a: `Un réseau social chiffré et anonyme au sein de Cosmorare. Publie, crée des canaux, envoie des DM, et donne des pourboires en Cosmorares.` },
-      { q: `Comment fonctionnent les pourboires ?`, a: `1 Cosmorare par utilisateur par post. C'est comme un « like » mais adossé à une vraie valeur.` },
-      { q: `Qu'est-ce que le ReCosmo ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur la timeline du Mur.` },
+      { q: `Qu'est-ce que le Mur ?`, a: `Un réseau social chiffré et anonyme au sein de Strangrz. Publie, crée des canaux, envoie des DM, et donne des pourboires en Strangrz.` },
+      { q: `Comment fonctionnent les pourboires ?`, a: `1 Strangrz par utilisateur par post. C'est comme un « like » mais adossé à une vraie valeur.` },
+      { q: `Qu'est-ce que le ReStrangrz ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur la timeline du Mur.` },
     ],
   },
   {
-    title: 'CosmoMesh & CosmoCode',
-    icon: 'CosmoMesh & CosmoCode',
+    title: 'StrangrzMesh & CosmoCode',
+    icon: 'StrangrzMesh & CosmoCode',
     items: [
-      { q: `Qu'est-ce que CosmoMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 Ω.` },
+      { q: `Qu'est-ce que StrangrzMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 Ω.` },
       { q: `Quelles sont les 7 couches ?`, a: `GRID (<10Ω), HELIX (10-100Ω), GLYPH (100-1KΩ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.` },
       { q: `Pourquoi les transactions sont-elles gratuites ?`, a: `Les validateurs gagnent via les récompenses de staking, pas via les frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go.` },
       { q: `Qu'est-ce que CosmoCode SVG ?`, a: `Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.` },
-      { q: `Les Cosmorares sont-elles vraiment stockées on-chain ?`, a: `Oui ! CosmoMesh stocke les objets en tant que CosmoCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },
+      { q: `Les Strangrz sont-elles vraiment stockées on-chain ?`, a: `Oui ! StrangrzMesh stocke les objets en tant que CosmoCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },
       { q: `Qu'est-ce qu'un Beacon Block ?`, a: `Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d'État Global. Cela fournit une finalité inter-couches absolue.` },
     ],
   },
@@ -376,17 +376,17 @@ const FAQ_SECTIONS = [
     title: 'Paiement',
     icon: 'Paiement',
     items: [
-      { q: `Puis-je payer par carte bancaire ?`, a: `Oui ! Cosmorare intègre une passerelle fiat complète : carte bancaire, PayPal et virement SEPA.` },
-      { q: `Faut-il passer par un exchange crypto ?`, a: `Non. Tu peux acheter des Cosmorares et des Cosmorares directement en euros, sans passer par une plateforme d'échange.` },
+      { q: `Puis-je payer par carte bancaire ?`, a: `Oui ! Strangrz intègre une passerelle fiat complète : carte bancaire, PayPal et virement SEPA.` },
+      { q: `Faut-il passer par un exchange crypto ?`, a: `Non. Tu peux acheter des Strangrz et des Strangrz directement en euros, sans passer par une plateforme d'échange.` },
     ],
   },
   {
     title: 'Vobjct & Protection des actifs',
     icon: 'Vobjct & Protection des actifs',
     items: [
-      { q: `Qu'est-ce que Vobjct ?`, a: `Vobjct est le standard d'intégrité et de résilience des actifs numériques de Cosmorare. Chaque objet certifié reçoit un « Vobjct Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
+      { q: `Qu'est-ce que Vobjct ?`, a: `Vobjct est le standard d'intégrité et de résilience des actifs numériques de Strangrz. Chaque objet certifié reçoit un « Vobjct Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
       { q: `Qu'est-ce que Vobjct Safe ?`, a: `Vobjct Safe est le système de surveillance et réparation automatique. Il vérifie régulièrement que les routes de stockage sont actives (Supabase, IndexedDB, on-chain). Si une route tombe, Safe passe l'objet en état « warning » puis « degraded » et peut lancer des réparations automatiques (re-upload, ajout de miroir). Un journal d'incidents trace chaque action.` },
-      { q: `Où sont stockées mes Cosmorares ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) CosmoMesh on-chain pour le stockage permanent. Vobjct Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
+      { q: `Où sont stockées mes Strangrz ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) StrangrzMesh on-chain pour le stockage permanent. Vobjct Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
       { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même CosmoID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via CosmoCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
       { q: `Quels sont les droits gérés par Vobjct ?`, a: `Chaque manifest définit : droits d'affichage (allowed/forbidden), usage commercial (personal_only/commercial), dérivés (forbidden/allowed), licence version, et termes personnalisés. Ces droits sont embarqués dans le manifest et signés cryptographiquement.` },
     ],
@@ -395,11 +395,11 @@ const FAQ_SECTIONS = [
     title: 'Sécurité',
     icon: 'Sécurité',
     items: [
-      { q: `Cosmorare est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré. En plus, Vobjct Safe surveille l'intégrité de chaque objet certifié en continu.` },
-      { q: `Qu'est-ce que la 2FA sur Cosmorare ?`, a: `Authentification à deux facteurs (TOTP RFC 6238) pour ton CosmoID. Active-la dans Portefeuille → Aperçu. Compatible avec Google Authenticator, Authy, 1Password. Tu reçois 8 codes de secours en cas de perte de téléphone.` },
+      { q: `Strangrz est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré. En plus, Vobjct Safe surveille l'intégrité de chaque objet certifié en continu.` },
+      { q: `Qu'est-ce que la 2FA sur Strangrz ?`, a: `Authentification à deux facteurs (TOTP RFC 6238) pour ton CosmoID. Active-la dans Portefeuille → Aperçu. Compatible avec Google Authenticator, Authy, 1Password. Tu reçois 8 codes de secours en cas de perte de téléphone.` },
       { q: `Qu'est-ce que le Recovery Kit ?`, a: `Un bundle JSON chiffré contenant tous tes objets de vault, double-chiffré (clé vault + mot de passe de récupération). Téléchargeable dans Portefeuille → Aperçu. Il est auto-généré à la création du wallet et un rappel apparaît tous les 7 jours.` },
       { q: `Est-ce que ça fonctionne hors ligne ?`, a: `Oui ! Le service worker met l'app en cache pour une utilisation hors ligne. Elle se met aussi à jour automatiquement quand une nouvelle version est disponible.` },
-      { q: `Où sont stockées mes données ?`, a: `Stockage multi-couches via Vobjct : IndexedDB local (échelle Go), Supabase Cloud, et CosmoMesh on-chain. CosmoVault chiffre les médias en AES-256-GCM. Vobjct Safe garantit la redondance avec au moins 2 routes actives par objet.` },
+      { q: `Où sont stockées mes données ?`, a: `Stockage multi-couches via Vobjct : IndexedDB local (échelle Go), Supabase Cloud, et StrangrzMesh on-chain. CosmoVault chiffre les médias en AES-256-GCM. Vobjct Safe garantit la redondance avec au moins 2 routes actives par objet.` },
     ],
   },
 ];
@@ -413,7 +413,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
     {
       id: 'welcome',
       role: 'cosmo',
-      text: `Salut ! Je suis Cosmo, ton oracle et guide dans l'univers Cosmorare (コスモラレ). Pose-moi n'importe quelle question — portefeuilles, minage, Cosmorares, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
+      text: `Salut ! Je suis Doctor Strangrz, ton oracle et guide dans l'univers Strangrz (ストレンジャーズ). Pose-moi n'importe quelle question — portefeuilles, minage, Strangrz, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -466,7 +466,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
             Centre d'aide
           </h1>
           <p className="text-body-sm opacity-40">
-            FAQ & Cosmo — Votre guide IA dans l'univers Cosmorare
+            FAQ & Doctor Strangrz — Votre guide IA dans l'univers Strangrz
           </p>
         </div>
       </div>
@@ -482,7 +482,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
           }`}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-          Cosmo (Oracle)
+          Doctor Strangrz (Oracle)
         </button>
         <button
           onClick={() => setTab('faq')}
@@ -504,7 +504,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
         </button>
       </div>
 
-      {/* ─── Cosmo Chatbot ──────────────────────────────────── */}
+      {/* ─── Doctor Strangrz Chatbot ──────────────────────────────────── */}
       {tab === 'cosmo' && (
         <div className="glass-panel flex flex-col" style={{ height: '65vh', minHeight: 400 }}>
           {/* Chat header */}
@@ -513,8 +513,8 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
             </div>
             <div>
-              <p className="text-base font-bold opacity-90">Cosmo</p>
-              <p className="text-label opacity-80">En ligne — Oracle de Cosmorare</p>
+              <p className="text-base font-bold opacity-90">Doctor Strangrz</p>
+              <p className="text-label opacity-80">En ligne — Oracle de Strangrz</p>
             </div>
             {wallet && (
               <span className="text-label opacity-30 ml-auto">
@@ -535,7 +535,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                   {msg.role === 'cosmo' && (
                     <p className="text-label opacity-80 font-bold mb-1 flex items-center gap-1">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-                      Cosmo
+                      Doctor Strangrz
                     </p>
                   )}
                   <p className="text-body-sm opacity-70 leading-relaxed whitespace-pre-wrap">{msg.text}</p>
@@ -562,7 +562,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Posez votre question à Cosmo..."
+                placeholder="Posez votre question à Doctor Strangrz..."
                 className="flex-1 bg-current/5 border border-current/10 px-3 py-2 text-body-sm opacity-90 placeholder-current/30 outline-none focus:border-current/15"
               />
               <button

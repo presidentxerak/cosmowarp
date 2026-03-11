@@ -1,7 +1,7 @@
 /**
  * CosmoCode — SVG On-Chain Encoding & Fractal Compression Engine
  *
- * The core innovation of Cosmorare's new blockchain protocol.
+ * The core innovation of Strangrz's new blockchain protocol.
  * ALL on-chain data is encoded into optimized SVG containers.
  *
  * ─── Why SVG? ──────────────────────────────────────────────
@@ -771,7 +771,7 @@ function buildCosmoCodeSVG(
   filterDefsBlock: string,
   layers: CompressionLayer[],
 ): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://cosmorare.io/cosmocode/v1" viewBox="0 0 1 1">
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://strangrz.io/cosmocode/v1" viewBox="0 0 1 1">
 <cc:meta type="${type}" version="1" layers="${layers.join(',')}" ts="${Date.now()}"/>
 ${defsBlock}${freqTable}${quantTableBlock}${filterDefsBlock}<cc:data><![CDATA[${data}]]></cc:data>
 </svg>`;
@@ -949,13 +949,13 @@ export async function imageToOnChainSVG(
     // Data URL — extract and embed in SVG
     const mediaType = imageData.split(';')[0].split(':')[1] || 'image/png';
     const base64 = imageData.split(',')[1] || imageData;
-    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://cosmorare.io/cosmocode/v1">
+    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://strangrz.io/cosmocode/v1">
 <cc:wart title="${escapeXml(title)}" creator="${creator}"${metadata ? ` ${Object.entries(metadata).map(([k, v]) => `${k}="${escapeXml(v)}"`).join(' ')}` : ''}/>
 <image href="data:${mediaType};base64,${base64}" width="100%" height="100%"/>
 </svg>`;
   } else {
     // Raw base64 — wrap in SVG with data URI
-    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://cosmorare.io/cosmocode/v1">
+    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="https://strangrz.io/cosmocode/v1">
 <cc:wart title="${escapeXml(title)}" creator="${creator}"/>
 <image href="data:image/png;base64,${imageData}" width="100%" height="100%"/>
 </svg>`;
@@ -1080,7 +1080,7 @@ export function computeMetrics(containers: CosmoCodeContainer[]): CosmoCodeMetri
 
 /**
  * Quick estimate of compression ratio without performing full compression.
- * Useful for gas estimation (which is always 0 in Cosmorare, but useful for display).
+ * Useful for gas estimation (which is always 0 in Strangrz, but useful for display).
  */
 export function estimateCompressionRatio(data: string, type: CosmoCodeType): number {
   const size = data.length;

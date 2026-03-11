@@ -1,5 +1,5 @@
 /**
- * Cosmorare Merkle-DAG — Cryptographic Integrity Layer
+ * Strangrz Merkle-DAG — Cryptographic Integrity Layer
  *
  * Implements a Merkle Directed Acyclic Graph for transaction verification.
  * Each node in the DAG contains the SHA-256 hash of its content + parent hashes.

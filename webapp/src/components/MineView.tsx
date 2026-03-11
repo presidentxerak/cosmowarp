@@ -48,8 +48,8 @@ export default function MineView() {
   const diffState = loadDifficultyState();
   const selectedEnergy = ENERGY_LEVELS.find(e => e.id === energyLevel)!;
 
-  // Get recent Cosmorares for certification suggestions
-  const recentCosmorares = (marketplace || []).slice(0, 5);
+  // Get recent Strangrz for certification suggestions
+  const recentStrangrz = (marketplace || []).slice(0, 5);
 
   useEffect(() => {
     setHistory(loadMiningHistory());
@@ -58,7 +58,7 @@ export default function MineView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Créez un wallet pour miner des Cosmorares.</p>
+        <p className="opacity-50">Créez un wallet pour miner des Strangrz.</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function MineView() {
   if (!unlocked) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Déverrouillez votre wallet pour miner des Cosmorares.</p>
+        <p className="opacity-50">Déverrouillez votre wallet pour miner des Strangrz.</p>
       </div>
     );
   }
@@ -145,7 +145,7 @@ export default function MineView() {
           <div className="flex-1">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u03C6'} Resonance Mining</h2>
             <p className="text-body-sm opacity-40">
-              {'\u03C6'}-Chain Proof-of-Work — algorithme unique à Cosmorare. Difficulté grade Bitcoin, blocs de 10 min.
+              {'\u03C6'}-Chain Proof-of-Work — algorithme unique à Strangrz. Difficulté grade Bitcoin, blocs de 10 min.
             </p>
           </div>
           <button
@@ -161,7 +161,7 @@ export default function MineView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u26D3'} Sécurité du réseau</p>
-                <p>Chaque bloc miné renforce la chaîne de certification des Cosmorares. Le {'\u03C6'}-mixing rend chaque preuve unique et impossible à raccourcir.</p>
+                <p>Chaque bloc miné renforce la chaîne de certification des Strangrz. Le {'\u03C6'}-mixing rend chaque preuve unique et impossible à raccourcir.</p>
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2696'} Distribution équitable</p>
@@ -169,7 +169,7 @@ export default function MineView() {
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2713'} Certification des oeuvres</p>
-                <p>Chaque bloc peut référencer des Cosmorares à certifier. Le mineur participe activement à l'authentification des oeuvres numériques de la galerie.</p>
+                <p>Chaque bloc peut référencer des Strangrz à certifier. Le mineur participe activement à l'authentification des oeuvres numériques de la galerie.</p>
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2B06'} Progression personnelle</p>
@@ -303,18 +303,18 @@ export default function MineView() {
           {/* Certification Payload */}
           <div>
             <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Certification payload</label>
-            <p className="text-[10px] opacity-30 mb-2">Référencez des Cosmorares à certifier dans ce bloc. Votre preuve de travail renforce leur authenticité.</p>
+            <p className="text-[10px] opacity-30 mb-2">Référencez des Strangrz à certifier dans ce bloc. Votre preuve de travail renforce leur authenticité.</p>
             <input
               type="text"
-              placeholder="ID ou titre de Cosmorare à certifier..."
+              placeholder="ID ou titre de Strangrz à certifier..."
               value={certPayload}
               onChange={e => setCertPayload(e.target.value.slice(0, 120))}
               className="warp-input w-full text-body-sm py-2"
               maxLength={120}
             />
-            {recentCosmorares.length > 0 && (
+            {recentStrangrz.length > 0 && (
               <div className="flex gap-1 mt-1.5 flex-wrap">
-                {recentCosmorares.map(w => (
+                {recentStrangrz.map(w => (
                   <button
                     key={w.id}
                     onClick={() => setCertPayload(prev => {
@@ -496,9 +496,9 @@ export default function MineView() {
 
           {/* Contribution feedback */}
           <div className="bg-current/5 border border-current/10 p-3 text-[11px] opacity-40 text-center space-y-1">
-            <p>Ce bloc Resonance renforce la chaîne de certification Cosmorare.</p>
+            <p>Ce bloc Resonance renforce la chaîne de certification Strangrz.</p>
             <p>Preuve {'\u03C6'}-Chain : SHA-256 {'\u2192'} Golden Mixing ({'\u03C6'} = 1.618...) {'\u2192'} SHA-256</p>
-            {certPayload && <p>Les Cosmorares référencées bénéficient d'une authentification renforcée.</p>}
+            {certPayload && <p>Les Strangrz référencées bénéficient d'une authentification renforcée.</p>}
           </div>
 
           <button
@@ -537,7 +537,7 @@ export default function MineView() {
         <h3 className="text-base font-bold opacity-70 mb-2">Comment fonctionne le {'\u03C6'}-Chain Resonance Mining</h3>
         <div className="text-[11px] opacity-40 space-y-2">
           <div className="bg-current/5 border border-current/10 p-2 mb-2 text-center">
-            <p className="font-bold opacity-60">Algorithme unique à Cosmorare — difficulté comparable à Bitcoin mais fondé sur le nombre d'or ({'\u03C6'})</p>
+            <p className="font-bold opacity-60">Algorithme unique à Strangrz — difficulté comparable à Bitcoin mais fondé sur le nombre d'or ({'\u03C6'})</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">1.</span>
@@ -553,7 +553,7 @@ export default function MineView() {
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">4.</span>
-            <p><span className="font-bold opacity-60">Certification :</span> Les Cosmorares référencées dans le payload sont liées cryptographiquement au bloc. La preuve de travail renforce leur authenticité — plus un objet est référencé dans des blocs, plus sa certification est solide.</p>
+            <p><span className="font-bold opacity-60">Certification :</span> Les Strangrz référencées dans le payload sont liées cryptographiquement au bloc. La preuve de travail renforce leur authenticité — plus un objet est référencé dans des blocs, plus sa certification est solide.</p>
           </div>
           <div className="flex gap-2">
             <span className="opacity-60 font-bold shrink-0">5.</span>
@@ -564,11 +564,11 @@ export default function MineView() {
             <p className="font-bold mb-1">Différences avec Bitcoin :</p>
             <div className="space-y-0.5">
               <p>• Bitcoin : SHA-256(SHA-256(x)) — double hash identique</p>
-              <p>• Cosmorare : SHA-256(x) {'\u2192'} {'\u03C6'}-Resonance Mix {'\u2192'} SHA-256(mixed) — transformation dorée intermédiaire</p>
+              <p>• Strangrz : SHA-256(x) {'\u2192'} {'\u03C6'}-Resonance Mix {'\u2192'} SHA-256(mixed) — transformation dorée intermédiaire</p>
               <p>• Bitcoin : halving brutal tous les 210,000 blocs</p>
-              <p>• Cosmorare : Resonance Decay continue ({'\u03C6'}<sup>-totalMined/5M</sup>) — courbe lisse et prévisible</p>
+              <p>• Strangrz : Resonance Decay continue ({'\u03C6'}<sup>-totalMined/5M</sup>) — courbe lisse et prévisible</p>
               <p>• Bitcoin : blocs sans contexte applicatif</p>
-              <p>• Cosmorare : chaque bloc peut certifier des oeuvres numériques</p>
+              <p>• Strangrz : chaque bloc peut certifier des oeuvres numériques</p>
             </div>
           </div>
         </div>

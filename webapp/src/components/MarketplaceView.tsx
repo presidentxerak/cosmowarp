@@ -204,15 +204,15 @@ export default function MarketplaceView() {
   };
 
   const navigateToProfile = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
-    window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'user-profile' }));
+    sessionStorage.setItem('strangrz_view_user', address);
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'user-profile' }));
   };
 
   // Auto-open wart detail when navigating from profile
   useEffect(() => {
-    const wartId = sessionStorage.getItem('cosmorare_open_wart');
+    const wartId = sessionStorage.getItem('strangrz_open_wart');
     if (wartId) {
-      sessionStorage.removeItem('cosmorare_open_wart');
+      sessionStorage.removeItem('strangrz_open_wart');
       const wart = allWarts.find(w => w.id === wartId);
       if (wart) {
         setSelectedWart(wart);
@@ -224,7 +224,7 @@ export default function MarketplaceView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Créez un portefeuille pour accéder à la marketplace Cosmorares.</p>
+        <p className="text-base opacity-50">Créez un portefeuille pour accéder à la marketplace Strangrz.</p>
       </div>
     );
   }
@@ -232,7 +232,7 @@ export default function MarketplaceView() {
   if (!unlocked) {
     return (
       <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Déverrouillez votre portefeuille pour accéder à la marketplace Cosmorares.</p>
+        <p className="text-base opacity-50">Déverrouillez votre portefeuille pour accéder à la marketplace Strangrz.</p>
       </div>
     );
   }
@@ -321,7 +321,7 @@ export default function MarketplaceView() {
       await new Promise(r => setTimeout(r, 100));
 
       // Step 4: Mint
-      setUploadStatus('Inscription sur le protocole Cosmorare...');
+      setUploadStatus('Inscription sur le protocole Strangrz...');
       setUploadProgress(70);
 
       const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined);
@@ -1212,7 +1212,7 @@ export default function MarketplaceView() {
                           </div>
                         )}
                         <p className="text-[10px] opacity-40">
-                          {pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Cosmorares (\u03A9)'}
+                          {pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Strangrz (\u03A9)'}
                         </p>
                       </div>
                     )}
@@ -1476,7 +1476,7 @@ export default function MarketplaceView() {
         <div className="flex-1 relative">
           <input
             type="text"
-            placeholder="Rechercher une Cosmorare..."
+            placeholder="Rechercher une Strangrz..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="warp-input w-full text-body-sm py-2 pl-8 pr-3"
@@ -1562,7 +1562,7 @@ export default function MarketplaceView() {
         (() => {
           const warts = getTabWarts();
           const tabLabels: Record<string, string> = {
-            all: 'Gallery Cosmorares',
+            all: 'Gallery Strangrz',
             art: 'Art',
             video: 'Video',
             music: 'Music',
@@ -1574,7 +1574,7 @@ export default function MarketplaceView() {
               <div className="glass-panel p-4 text-center">
                 <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{tabLabels[tab] || 'Gallery'}</h2>
                 <p className="text-body-sm opacity-40">
-                  {tab === 'all' && 'Objets rares certifiés sur le protocole Cosmorare.'}
+                  {tab === 'all' && 'Objets rares certifiés sur le protocole Strangrz.'}
                   {tab === 'art' && 'Art visuel — images, illustrations et oeuvres graphiques.'}
                   {tab === 'video' && 'Oeuvres vidéo certifiées.'}
                   {tab === 'music' && 'Oeuvres musicales certifiées.'}
@@ -1586,12 +1586,12 @@ export default function MarketplaceView() {
               {warts.length === 0 ? (
                 <div className="glass-panel p-8 text-center">
                   <p className="text-2xl mb-2">{'\u2742'}</p>
-                  <p className="opacity-50 text-base">Aucune Cosmorare dans cette catégorie.</p>
+                  <p className="opacity-50 text-base">Aucune Strangrz dans cette catégorie.</p>
                   <button
                     className="warp-button text-body-sm mt-3 px-4 py-2"
                     onClick={() => setTab('create')}
                   >
-                    Créer une Cosmorare
+                    Créer une Strangrz
                   </button>
                 </div>
               ) : (
@@ -1651,7 +1651,7 @@ export default function MarketplaceView() {
         <>
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Collectors</h2>
-            <p className="text-body-sm opacity-40">Les plus grands collectionneurs de Cosmorares.</p>
+            <p className="text-body-sm opacity-40">Les plus grands collectionneurs de Strangrz.</p>
           </div>
           {topCollectors.length === 0 ? (
             <div className="glass-panel p-8 text-center">
@@ -1733,9 +1733,9 @@ export default function MarketplaceView() {
         <div className="glass-panel p-0 overflow-hidden">
           {/* Create header */}
           <div className="p-5 pb-3 border-b border-current/10">
-            <h2 className="text-title-sm font-bold opacity-100 font-title">Create a Cosmorare</h2>
+            <h2 className="text-title-sm font-bold opacity-100 font-title">Create a Strangrz</h2>
             <p className="text-body-sm opacity-40 mt-1">
-              Certify a rare digital object on the Cosmorare protocol. Earn royalties on every resale.
+              Certify a rare digital object on the Strangrz protocol. Earn royalties on every resale.
             </p>
           </div>
 

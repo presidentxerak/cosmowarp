@@ -1,5 +1,5 @@
 /**
- * Cosmorare Security — Protocol Hardening
+ * Strangrz Security — Protocol Hardening
  *
  * Multi-layer security against hacking:
  * 1. Rate Limiting — per-address TX rate limits

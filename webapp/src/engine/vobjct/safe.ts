@@ -221,7 +221,7 @@ export function evaluateHealth(
 
 // ─── Safe Engine ────────────────────────────────────────────
 
-const SAFE_STORAGE_KEY = 'cosmorare_vobjct_safe';
+const SAFE_STORAGE_KEY = 'strangrz_vobjct_safe';
 
 export class VobjctSafeEngine {
   private configs: Map<string, VobjctSafeConfig> = new Map();

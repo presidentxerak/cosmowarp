@@ -1,5 +1,5 @@
 /**
- * Cosmorare — Supabase Database Operations
+ * Strangrz — Supabase Database Operations
  *
  * Full CRUD layer for all tables. Each function gracefully returns null/false
  * when the backend is unavailable (offline mode).

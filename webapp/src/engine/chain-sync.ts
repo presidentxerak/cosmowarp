@@ -1,5 +1,5 @@
 /**
- * Cosmorare Chain Sync — Bridges CosmoChain to Supabase for Multi-Node Persistence
+ * Strangrz Chain Sync — Bridges CosmoChain to Supabase for Multi-Node Persistence
  *
  * This module connects the local CosmoChain (IndexedDB/localStorage) to the
  * Supabase backend, enabling:

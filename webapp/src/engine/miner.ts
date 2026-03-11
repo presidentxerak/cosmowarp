@@ -1,8 +1,8 @@
 /**
- * Cosmorare Resonance Miner — φ-Chain Proof-of-Work
+ * Strangrz Resonance Miner — φ-Chain Proof-of-Work
  *
- * A unique mining algorithm built around Cosmorare's golden ratio (φ) philosophy.
- * NOT a Bitcoin clone — this is a 3-phase hash chain specific to Cosmorare:
+ * A unique mining algorithm built around Strangrz's golden ratio (φ) philosophy.
+ * NOT a Bitcoin clone — this is a 3-phase hash chain specific to Strangrz:
  *
  *   Phase 1 — SEED:      SHA-256(blockHeader + nonce) → seedHash
  *   Phase 2 — RESONANCE: Golden ratio byte-mixing of seedHash → resonanceData
@@ -21,7 +21,7 @@
  * - Range: 16 to 64 bits (20 bits initial ≈ 1M hashes average)
  *
  * Each block also carries a "certification payload" — a reference to
- * Cosmorares being validated, tying mining directly to the ecosystem.
+ * Strangrz being validated, tying mining directly to the ecosystem.
  */
 
 import { sha256Raw } from './crypto';
@@ -171,8 +171,8 @@ export function countLeadingZeroBits(hash: string): number {
 
 // ─── Difficulty Adjustment ────────────────────────────────
 
-const DIFFICULTY_STORAGE_KEY = 'cosmorare_mining_difficulty';
-const MINING_HISTORY_KEY = 'cosmorare_mining_history';
+const DIFFICULTY_STORAGE_KEY = 'strangrz_mining_difficulty';
+const MINING_HISTORY_KEY = 'strangrz_mining_history';
 const TARGET_BLOCK_TIME_MS = 600_000;    // 10 minutes per block
 const ADJUSTMENT_INTERVAL = 10;          // Adjust every 10 blocks (faster feedback for browser)
 const MIN_DIFFICULTY = 16;               // 16 bits minimum
@@ -244,7 +244,7 @@ function buildBlockData(
   certPayload: string,
 ): string {
   return [
-    'CW_RESONANCE_V1',          // Cosmorare Resonance block
+    'CW_RESONANCE_V1',          // Strangrz Resonance block
     previousHash,                // Chain continuity
     timestamp.toString(16),      // Timestamp hex
     difficulty.toString(16),     // Difficulty hex
@@ -269,7 +269,7 @@ const CHUNK_SIZE = 3000;
  *   4. Check: finalHash < difficultyTarget?
  *
  * The 3-phase chain with φ-mixing makes each hash ~2x slower than plain SHA-256
- * (comparable to Bitcoin's double-SHA-256) while being unique to Cosmorare.
+ * (comparable to Bitcoin's double-SHA-256) while being unique to Strangrz.
  *
  * At 20 bits: ~1M hashes avg → minutes
  * At 24 bits: ~16M hashes → tens of minutes

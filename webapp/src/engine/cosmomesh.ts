@@ -1,5 +1,5 @@
 /**
- * CosmoMesh — DAG-Based Transactional Fabric
+ * StrangrzMesh — DAG-Based Transactional Fabric
  *
  * NOT a blockchain. A Directed Acyclic Graph of transactions where:
  * - Each transaction references 2+ parent transactions (validates them)
@@ -20,7 +20,7 @@
  * - CosmoASM programmable = smart contracts via VM
  *
  * ─── CosmoChain Integration ───────────────────────────────
- * CosmoMesh now serves as the DAG layer for the CosmoChain protocol.
+ * StrangrzMesh now serves as the DAG layer for the CosmoChain protocol.
  * Transactions are simultaneously recorded in the DAG (for instant settlement)
  * and submitted to CosmoChain (for on-chain SVG storage and finality).
  * The DAG provides sub-second optimistic confirmation while CosmoChain
@@ -95,9 +95,9 @@ export interface ValidationResult {
   layer: MeshLayer;
 }
 
-// ─── CosmoMesh Engine ────────────────────────────────────
+// ─── StrangrzMesh Engine ────────────────────────────────────
 
-export class CosmoMesh {
+export class StrangrzMesh {
   private transactions: Map<string, MeshTransaction> = new Map();
   private merkleDAG: MerkleDAG = new MerkleDAG();
   private balances: Map<string, number> = new Map();
@@ -148,7 +148,7 @@ export class CosmoMesh {
       parentIds: [],
       layer: MeshLayer.LUMINA,
       type: 'genesis',
-      memo: `CosmoMesh Genesis — ${amount} Ω created`,
+      memo: `StrangrzMesh Genesis — ${amount} Ω created`,
       resonanceScore: 1.0, // Genesis is fully confirmed
       confirmations: 0,
       meshDepth: 0,
@@ -567,9 +567,9 @@ export class CosmoMesh {
     });
   }
 
-  static deserialize(json: string): CosmoMesh {
+  static deserialize(json: string): StrangrzMesh {
     const data = JSON.parse(json);
-    const mesh = new CosmoMesh();
+    const mesh = new StrangrzMesh();
     mesh.transactions = new Map(data.transactions);
     mesh.balances = new Map(data.balances);
     mesh.genesisId = data.genesisId;

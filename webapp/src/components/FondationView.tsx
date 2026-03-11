@@ -7,14 +7,14 @@ export default function FondationView() {
         <div className="flex items-center gap-3 mb-4">
           <Logo className="w-10 h-10 animate-float" />
           <div>
-            <h2 className="text-title-md font-bold opacity-100 font-title">Cosmorare Foundation</h2>
+            <h2 className="text-title-md font-bold opacity-100 font-title">Strangrz Foundation</h2>
             <p className="text-body-sm opacity-40">Protocole de certification pour objets rares</p>
           </div>
         </div>
 
         <div className="space-y-4 text-base opacity-70 leading-relaxed">
           <p>
-            La Cosmorare Foundation est l'organisation à but non lucratif derrière l'écosystème Cosmorare.
+            La Strangrz Foundation est l'organisation à but non lucratif derrière l'écosystème Strangrz.
             Notre mission : développer et maintenir un protocole ouvert, décentralisé et respectueux de la vie privée
             pour la certification d'objets rares — numériques ou physiques.
           </p>
@@ -68,7 +68,7 @@ export default function FondationView() {
             <div className="space-y-2 text-body-sm opacity-50">
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'Ω'}</span>
-                <span><span className="opacity-90">Cosmorares</span> - Token natif, supply fixe 69M</span>
+                <span><span className="opacity-90">Strangrz</span> - Token natif, supply fixe 69M</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'✦'}</span>
@@ -76,7 +76,7 @@ export default function FondationView() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'⬢'}</span>
-                <span><span className="opacity-90">Cosmorares</span> - Objets rares certifiés sur la place de marché</span>
+                <span><span className="opacity-90">Strangrz</span> - Objets rares certifiés sur la place de marché</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'◎'}</span>
@@ -88,7 +88,7 @@ export default function FondationView() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'⬡'}</span>
-                <span><span className="opacity-90">CosmoMesh</span> - Réseau DAG à 7 couches</span>
+                <span><span className="opacity-90">StrangrzMesh</span> - Réseau DAG à 7 couches</span>
               </div>
             </div>
           </div>

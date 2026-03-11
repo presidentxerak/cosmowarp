@@ -11,7 +11,7 @@
 
 // ─── Core Types ─────────────────────────────────────────────
 
-export type ChainFamily = 'evm' | 'xrpl' | 'solana' | 'utxo' | 'cosmorare' | 'custom';
+export type ChainFamily = 'evm' | 'xrpl' | 'solana' | 'utxo' | 'strangrz' | 'custom';
 
 export type ObjectType =
   | 'digital_collectible'

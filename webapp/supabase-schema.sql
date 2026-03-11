@@ -1,5 +1,5 @@
 -- ============================================================
--- Cosmorare — Full Supabase Schema (Production)
+-- Strangrz — Full Supabase Schema (Production)
 -- Run this in your Supabase SQL Editor to set up all tables,
 -- storage buckets, RLS policies, and realtime subscriptions.
 -- ============================================================

@@ -12,38 +12,38 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     signIn: 'Se connecter',
     signUp: 'S\'inscrire',
     heroSubtitle: 'Protocole de certification pour oeuvres rares',
-    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur le réseau Cosmorare.',
+    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur le réseau Strangrz.',
     mySpace: 'Mon Espace',
     createAccount: 'Créer un compte',
     learnMore: 'En savoir plus',
-    conceptTitle: 'C\'est quoi Cosmorare ?',
-    conceptDesc: 'Cosmorare est un protocole de certification pour objets rares. Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat d\'authenticité infalsifiable. C\'est exactement ce que Cosmorare propose, grâce à des certificats cryptographiques appelés CRCERT.',
-    conceptDesc2: 'Contrairement aux blockchains classiques qui chaînent des blocs de manière linéaire, Cosmorare utilise un graphe acyclique orienté (DAG) avec 7 couches de validation parallèles, permettant un débit massif sans le goulot d\'étranglement de la confirmation séquentielle.',
-    conceptDesc3: 'Là où les systèmes fiat dépendent d\'intermédiaires centralisés (banques, processeurs de paiement), Cosmorare fonctionne comme un maillage pair-à-pair où chaque transaction valide deux transactions précédentes, créant un réseau de confiance auto-renforçant.',
+    conceptTitle: 'C\'est quoi Strangrz ?',
+    conceptDesc: 'Strangrz est un protocole de certification pour objets rares. Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat d\'authenticité infalsifiable. C\'est exactement ce que Strangrz propose, grâce à des certificats cryptographiques appelés CRCERT.',
+    conceptDesc2: 'Contrairement aux blockchains classiques qui chaînent des blocs de manière linéaire, Strangrz utilise un graphe acyclique orienté (DAG) avec 7 couches de validation parallèles, permettant un débit massif sans le goulot d\'étranglement de la confirmation séquentielle.',
+    conceptDesc3: 'Là où les systèmes fiat dépendent d\'intermédiaires centralisés (banques, processeurs de paiement), Strangrz fonctionne comme un maillage pair-à-pair où chaque transaction valide deux transactions précédentes, créant un réseau de confiance auto-renforçant.',
     certify: 'Certifier',
     certifyDesc: 'Chaque oeuvre reçoit un certificat CRCERT : empreinte SHA-256, signature Ed25519 du créateur, horodatage. Infalsifiable et vérifiable par tous.',
     publishTitle: 'Publier',
     publishDesc: 'Publiez vos créations — art numérique, photo, musique, objets physiques. Votre certificat prouve que vous en êtes l\'auteur et le premier propriétaire.',
     exchange: 'Échanger',
-    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement en Cosmorares (Ω) ou en euros.',
+    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement en Strangrz (Ω) ou en euros.',
     forCreators: 'Pour les créateurs',
     publishWorks: 'Publiez vos oeuvres',
     step1: 'Créez votre profil',
-    step1Desc: 'Un nom d\'utilisateur et un mot de passe suffisent. Cosmorare génère votre clé cryptographique Ed25519. Aucun email requis.',
+    step1Desc: 'Un nom d\'utilisateur et un mot de passe suffisent. Strangrz génère votre clé cryptographique Ed25519. Aucun email requis.',
     step2: 'Uploadez votre oeuvre',
     step2Desc: 'Photo, vidéo, illustration, musique, objet 3D — tout format est accepté. Ajoutez un titre, une description et un prix.',
     step3: 'Certification automatique',
-    step3Desc: 'Cosmorare calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat CRCERT est créé instantanément.',
+    step3Desc: 'Strangrz calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat CRCERT est créé instantanément.',
     step4: 'Mise en vente',
-    step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Cosmorares (Ω) ou via la passerelle de paiement en euros.',
+    step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Strangrz (Ω) ou via la passerelle de paiement en euros.',
     publishWork: 'Publier une oeuvre',
     forCollectors: 'Pour les collectionneurs',
     collectCertified: 'Collectionnez des oeuvres certifiées',
-    collectDesc: 'Explorez la marketplace, découvrez des créateurs, et constituez votre collection d\'oeuvres authentifiées par le protocole Cosmorare.',
+    collectDesc: 'Explorez la marketplace, découvrez des créateurs, et constituez votre collection d\'oeuvres authentifiées par le protocole Strangrz.',
     explore: 'Explorer',
     exploreDesc: 'Parcourez la marketplace et découvrez des oeuvres de créateurs du monde entier.',
     buy: 'Acheter',
-    buyDesc: 'Payez en Cosmorares (Ω) ou en euros via la passerelle de paiement intégrée.',
+    buyDesc: 'Payez en Strangrz (Ω) ou en euros via la passerelle de paiement intégrée.',
     own: 'Posséder',
     ownDesc: 'Chaque achat transfère le certificat CRCERT sur votre wallet. Vous êtes le propriétaire vérifié.',
     resell: 'Revendre',
@@ -63,15 +63,15 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     vinyl: 'Vinyles',
     vinylDesc: 'Pressages limités',
     technology: 'Technologie',
-    protocolTitle: 'Le Protocole Cosmorare',
+    protocolTitle: 'Le Protocole Strangrz',
     crcert: 'Certificat CRCERT',
     crcertDesc: 'Empreinte SHA-256 du contenu + signature Ed25519 du créateur + horodatage. Impossible à falsifier, vérifiable par tous.',
-    cosmomesh: 'CosmoMesh — Réseau en graphe',
-    cosmomeshDesc: 'Un graphe acyclique dirigé (DAG) à 7 couches de validation parallèles. Chaque transaction en valide deux autres.',
+    strangrmesh: 'StrangrzMesh — Réseau en graphe',
+    strangrmeshDesc: 'Un graphe acyclique dirigé (DAG) à 7 couches de validation parallèles. Chaque transaction en valide deux autres.',
     crypto: 'Cryptographie de pointe',
     cryptoDesc: 'Signatures Ed25519, hachage SHA-256, chiffrement AES-GCM. Les mêmes standards que Signal et Tor.',
     tokenomics: 'Tokenomics équitable',
-    tokenomicsDesc: 'Le token Cosmorare (Ω) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
+    tokenomicsDesc: 'Le token Strangrz (Ω) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
     vobjct: 'Vobjct Safe — Résilience',
     vobjctDesc: 'Chaque oeuvre est protégée par un manifeste Vobjct : intégrité SHA-256, routes de stockage multi-réseau (on-chain, IPFS, cloud), monitoring actif, et réparation automatique. Vos actifs numériques sont vérifiables, récupérables et permanents.',
     totalSupply: 'Supply totale',
@@ -82,7 +82,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     ctaDesc: 'Créez votre compte en 10 secondes. Pas d\'email, pas de tiers. Juste vous et le protocole.',
     ctaSignUp: 'Sign Up — Créer un compte',
     readWhitepaper: 'Lire le White Paper',
-    footer: 'Cosmorare Foundation — Protocole de certification pour oeuvres rares',
+    footer: 'Strangrz Foundation — Protocole de certification pour oeuvres rares',
     whitePaper: 'White Paper',
     legal: 'Légal',
     privacy: 'Confidentialité',
@@ -96,38 +96,38 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     signIn: 'Sign In',
     signUp: 'Sign Up',
     heroSubtitle: 'Certification protocol for rare works',
-    heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on the Cosmorare network.',
+    heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on the Strangrz network.',
     mySpace: 'My Space',
     createAccount: 'Create Account',
     learnMore: 'Learn More',
-    conceptTitle: 'What is Cosmorare?',
-    conceptDesc: 'Cosmorare is a certification protocol for rare objects. Pokémon cards, sneakers, vinyl records, watches, digital art: every rare object deserves a tamper-proof certificate of authenticity. That\'s exactly what Cosmorare offers, through cryptographic certificates called CRCERT.',
-    conceptDesc2: 'Unlike traditional blockchains that chain blocks linearly, Cosmorare uses a directed acyclic graph (DAG) with 7 parallel validation layers, enabling massive throughput without the bottleneck of sequential confirmation.',
-    conceptDesc3: 'Where fiat systems depend on centralized intermediaries (banks, payment processors), Cosmorare operates as a peer-to-peer mesh where each transaction validates two previous transactions, creating a self-reinforcing trust network.',
+    conceptTitle: 'What is Strangrz?',
+    conceptDesc: 'Strangrz is a certification protocol for rare objects. Pokémon cards, sneakers, vinyl records, watches, digital art: every rare object deserves a tamper-proof certificate of authenticity. That\'s exactly what Strangrz offers, through cryptographic certificates called CRCERT.',
+    conceptDesc2: 'Unlike traditional blockchains that chain blocks linearly, Strangrz uses a directed acyclic graph (DAG) with 7 parallel validation layers, enabling massive throughput without the bottleneck of sequential confirmation.',
+    conceptDesc3: 'Where fiat systems depend on centralized intermediaries (banks, payment processors), Strangrz operates as a peer-to-peer mesh where each transaction validates two previous transactions, creating a self-reinforcing trust network.',
     certify: 'Certify',
     certifyDesc: 'Each work receives a CRCERT certificate: SHA-256 fingerprint, Ed25519 signature from the creator, timestamp. Tamper-proof and verifiable by all.',
     publishTitle: 'Publish',
     publishDesc: 'Publish your creations — digital art, photos, music, physical objects. Your certificate proves you are the author and first owner.',
     exchange: 'Exchange',
-    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay in Cosmorares (Ω) or in euros.',
+    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay in Strangrz (Ω) or in euros.',
     forCreators: 'For creators',
     publishWorks: 'Publish your works',
     step1: 'Create your profile',
-    step1Desc: 'A username and password is all you need. Cosmorare generates your Ed25519 cryptographic key. No email required.',
+    step1Desc: 'A username and password is all you need. Strangrz generates your Ed25519 cryptographic key. No email required.',
     step2: 'Upload your work',
     step2Desc: 'Photo, video, illustration, music, 3D object — all formats are accepted. Add a title, description and price.',
     step3: 'Automatic certification',
-    step3Desc: 'Cosmorare computes the SHA-256 fingerprint of the file and signs it with your private key. The CRCERT certificate is created instantly.',
+    step3Desc: 'Strangrz computes the SHA-256 fingerprint of the file and signs it with your private key. The CRCERT certificate is created instantly.',
     step4: 'Listed for sale',
-    step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Cosmorares (Ω) or via the integrated euro payment gateway.',
+    step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Strangrz (Ω) or via the integrated euro payment gateway.',
     publishWork: 'Publish a work',
     forCollectors: 'For collectors',
     collectCertified: 'Collect certified works',
-    collectDesc: 'Explore the marketplace, discover creators, and build your collection of works authenticated by the Cosmorare protocol.',
+    collectDesc: 'Explore the marketplace, discover creators, and build your collection of works authenticated by the Strangrz protocol.',
     explore: 'Explore',
     exploreDesc: 'Browse the marketplace and discover works from creators worldwide.',
     buy: 'Buy',
-    buyDesc: 'Pay in Cosmorares (Ω) or in euros via the integrated payment gateway.',
+    buyDesc: 'Pay in Strangrz (Ω) or in euros via the integrated payment gateway.',
     own: 'Own',
     ownDesc: 'Each purchase transfers the CRCERT certificate to your wallet. You are the verified owner.',
     resell: 'Resell',
@@ -147,15 +147,15 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     vinyl: 'Vinyl',
     vinylDesc: 'Limited pressings',
     technology: 'Technology',
-    protocolTitle: 'The Cosmorare Protocol',
+    protocolTitle: 'The Strangrz Protocol',
     crcert: 'CRCERT Certificate',
     crcertDesc: 'SHA-256 content fingerprint + Ed25519 creator signature + timestamp. Impossible to forge, verifiable by all.',
-    cosmomesh: 'CosmoMesh — Graph Network',
-    cosmomeshDesc: 'A directed acyclic graph (DAG) with 7 parallel validation layers. Each transaction validates two others.',
+    strangrmesh: 'StrangrzMesh — Graph Network',
+    strangrmeshDesc: 'A directed acyclic graph (DAG) with 7 parallel validation layers. Each transaction validates two others.',
     crypto: 'Cutting-edge Cryptography',
     cryptoDesc: 'Ed25519 signatures, SHA-256 hashing, AES-GCM encryption. The same standards as Signal and Tor.',
     tokenomics: 'Fair Tokenomics',
-    tokenomicsDesc: 'The Cosmorare (Ω) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
+    tokenomicsDesc: 'The Strangrz (Ω) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
     vobjct: 'Vobjct Safe — Resilience',
     vobjctDesc: 'Every artwork is protected by a Vobjct manifest: SHA-256 integrity, multi-network storage routes (on-chain, IPFS, cloud), active monitoring, and automated repair. Your digital assets are verifiable, recoverable, and permanent.',
     totalSupply: 'Total Supply',
@@ -166,7 +166,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     ctaDesc: 'Create your account in 10 seconds. No email, no middleman. Just you and the protocol.',
     ctaSignUp: 'Sign Up — Create Account',
     readWhitepaper: 'Read the White Paper',
-    footer: 'Cosmorare Foundation — Certification protocol for rare works',
+    footer: 'Strangrz Foundation — Certification protocol for rare works',
     whitePaper: 'White Paper',
     legal: 'Legal',
     privacy: 'Privacy',
@@ -180,38 +180,38 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     signIn: 'ログイン',
     signUp: 'サインアップ',
     heroSubtitle: 'レアワークのための認証プロトコル',
-    heroDesc: 'デジタルおよび物理的作品を公開、認証、収集。各オブジェクトはCosmorareネットワーク上で改ざん不可能な真正性証明書を受け取ります。',
+    heroDesc: 'デジタルおよび物理的作品を公開、認証、収集。各オブジェクトはStrangrzネットワーク上で改ざん不可能な真正性証明書を受け取ります。',
     mySpace: 'マイスペース',
     createAccount: 'アカウント作成',
     learnMore: '詳しく見る',
-    conceptTitle: 'Cosmorareとは？',
-    conceptDesc: 'Cosmorareはレアオブジェクトの認証プロトコルです。ポケモンカード、スニーカー、レコード、時計、デジタルアート：すべてのレアオブジェクトはCRCERTと呼ばれる暗号証明書による改ざん不可能な真正性証明書を受け取ります。',
-    conceptDesc2: 'ブロックを直線的に連鎖させる従来のブロックチェーンとは異なり、Cosmorareは7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）を使用し、順次確認のボトルネックなしに大量のスループットを実現します。',
-    conceptDesc3: '法定通貨システムが中央集権的な仲介者に依存するのに対し、Cosmorareは各トランザクションが2つの前のトランザクションを検証するピアツーピアメッシュとして機能し、自己強化型の信頼ネットワークを作成します。',
+    conceptTitle: 'Strangrzとは？',
+    conceptDesc: 'Strangrzはレアオブジェクトの認証プロトコルです。ポケモンカード、スニーカー、レコード、時計、デジタルアート：すべてのレアオブジェクトはCRCERTと呼ばれる暗号証明書による改ざん不可能な真正性証明書を受け取ります。',
+    conceptDesc2: 'ブロックを直線的に連鎖させる従来のブロックチェーンとは異なり、Strangrzは7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）を使用し、順次確認のボトルネックなしに大量のスループットを実現します。',
+    conceptDesc3: '法定通貨システムが中央集権的な仲介者に依存するのに対し、Strangrzは各トランザクションが2つの前のトランザクションを検証するピアツーピアメッシュとして機能し、自己強化型の信頼ネットワークを作成します。',
     certify: '認証',
     certifyDesc: '各作品はCRCERT証明書を受け取ります：SHA-256フィンガープリント、クリエイターのEd25519署名、タイムスタンプ。改ざん不可能で全員が検証可能。',
     publishTitle: '公開',
     publishDesc: '作品を公開 — デジタルアート、写真、音楽、物理オブジェクト。証明書はあなたが著者であり最初の所有者であることを証明します。',
     exchange: '交換',
-    exchangeDesc: '認証済み作品を安心して売買。証明書はオブジェクトに従い、その起源を証明します。Cosmorares（Ω）またはユーロで支払い。',
+    exchangeDesc: '認証済み作品を安心して売買。証明書はオブジェクトに従い、その起源を証明します。Strangrz（Ω）またはユーロで支払い。',
     forCreators: 'クリエイター向け',
     publishWorks: '作品を公開する',
     step1: 'プロフィール作成',
-    step1Desc: 'ユーザー名とパスワードだけで十分です。CosmorareがEd25519暗号鍵を生成します。メール不要。',
+    step1Desc: 'ユーザー名とパスワードだけで十分です。StrangrzがEd25519暗号鍵を生成します。メール不要。',
     step2: '作品をアップロード',
     step2Desc: '写真、動画、イラスト、音楽、3Dオブジェクト — すべてのフォーマットに対応。タイトル、説明、価格を追加。',
     step3: '自動認証',
-    step3Desc: 'CosmorareがファイルのSHA-256フィンガープリントを計算し、秘密鍵で署名します。CRCERT証明書が即座に作成されます。',
+    step3Desc: 'StrangrzがファイルのSHA-256フィンガープリントを計算し、秘密鍵で署名します。CRCERT証明書が即座に作成されます。',
     step4: '販売開始',
-    step4Desc: '作品がマーケットプレイスに表示されます。コレクターはCosmorares（Ω）または統合ユーロ決済ゲートウェイで購入できます。',
+    step4Desc: '作品がマーケットプレイスに表示されます。コレクターはStrangrz（Ω）または統合ユーロ決済ゲートウェイで購入できます。',
     publishWork: '作品を公開',
     forCollectors: 'コレクター向け',
     collectCertified: '認証済み作品を収集',
-    collectDesc: 'マーケットプレイスを探索し、クリエイターを発見し、Cosmorareプロトコルで認証された作品のコレクションを構築。',
+    collectDesc: 'マーケットプレイスを探索し、クリエイターを発見し、Strangrzプロトコルで認証された作品のコレクションを構築。',
     explore: '探索',
     exploreDesc: 'マーケットプレイスを閲覧し、世界中のクリエイターの作品を発見。',
     buy: '購入',
-    buyDesc: 'Cosmorares（Ω）またはユーロで統合決済ゲートウェイ経由で支払い。',
+    buyDesc: 'Strangrz（Ω）またはユーロで統合決済ゲートウェイ経由で支払い。',
     own: '所有',
     ownDesc: '各購入でCRCERT証明書がウォレットに転送されます。あなたが検証済みの所有者です。',
     resell: '再販',
@@ -231,15 +231,15 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     vinyl: 'レコード',
     vinylDesc: '限定プレス',
     technology: 'テクノロジー',
-    protocolTitle: 'Cosmorareプロトコル',
+    protocolTitle: 'Strangrzプロトコル',
     crcert: 'CRCERT証明書',
     crcertDesc: 'SHA-256コンテンツフィンガープリント + Ed25519クリエイター署名 + タイムスタンプ。偽造不可能、全員が検証可能。',
-    cosmomesh: 'CosmoMesh — グラフネットワーク',
-    cosmomeshDesc: '7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）。各トランザクションが他の2つを検証。',
+    strangrmesh: 'StrangrzMesh — グラフネットワーク',
+    strangrmeshDesc: '7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）。各トランザクションが他の2つを検証。',
     crypto: '最先端の暗号技術',
     cryptoDesc: 'Ed25519署名、SHA-256ハッシュ、AES-GCM暗号化。SignalやTorと同じ標準。',
     tokenomics: '公平なトケノミクス',
-    tokenomicsDesc: 'Cosmorare（Ω）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
+    tokenomicsDesc: 'Strangrz（Ω）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
     vobjct: 'Vobjct Safe — レジリエンス',
     vobjctDesc: 'すべての作品はVobjctマニフェストで保護：SHA-256整合性、マルチネットワークストレージルート（オンチェーン、IPFS、クラウド）、アクティブモニタリング、自動修復。デジタル資産は検証可能、回復可能、永続的。',
     totalSupply: '総供給量',
@@ -250,7 +250,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     ctaDesc: '10秒でアカウント作成。メール不要、仲介者不要。あなたとプロトコルだけ。',
     ctaSignUp: 'サインアップ — アカウント作成',
     readWhitepaper: 'ホワイトペーパーを読む',
-    footer: 'Cosmorare Foundation — レアワークのための認証プロトコル',
+    footer: 'Strangrz Foundation — レアワークのための認証プロトコル',
     whitePaper: 'ホワイトペーパー',
     legal: '法的情報',
     privacy: 'プライバシー',
@@ -527,7 +527,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 h-16">
           {/* Logo + name in katakana */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 cursor-pointer group">
-            <img src={logoSrc} alt="Cosmorare" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
+            <img src={logoSrc} alt="Strangrz" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
             <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title">コスモレア</span>
           </button>
 
@@ -614,7 +614,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             playsInline
             poster=""
           >
-            <source src={`${import.meta.env.BASE_URL}cosmorare-landing-hero-random-${heroVideoNum}.mp4`} type="video/mp4" />
+            <source src={`${import.meta.env.BASE_URL}strangrz-landing-hero-random-${heroVideoNum}.mp4`} type="video/mp4" />
           </video>
         </div>
 
@@ -632,7 +632,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         >
           <img
             src={logoSrc}
-            alt="Cosmorare"
+            alt="Strangrz"
             className="w-20 sm:w-28 h-20 sm:h-28 mx-auto mb-8 animate-float"
             style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))' }}
           />
@@ -640,10 +640,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             className="text-5xl sm:text-7xl lg:text-8xl font-bold font-title mb-4 tracking-wide"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
-            {'コスモレア'}
+            {'ストレンジャーズ'}
           </h1>
           <p className="text-lg sm:text-xl opacity-50 mb-2 tracking-[0.3em] uppercase">
-            Cosmorare
+            STRANGRZ
           </p>
           <p className="text-base sm:text-lg opacity-70 font-bold mb-3">
             {t('heroSubtitle')}
@@ -883,8 +883,8 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               },
               {
                 icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="14" cy="14" r="5" /><circle cx="5" cy="6" r="3" /><circle cx="23" cy="6" r="3" /><circle cx="5" cy="22" r="3" /><circle cx="23" cy="22" r="3" /><path d="M8 8l3 3M17 11l3-3M8 20l3-3M17 17l3 3" /></svg>,
-                title: t('cosmomesh'),
-                desc: t('cosmomeshDesc'),
+                title: t('strangrmesh'),
+                desc: t('strangrmeshDesc'),
               },
               {
                 icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3"><rect x="4" y="10" width="20" height="14" rx="2" /><path d="M8 10V7a6 6 0 0 1 12 0v3" /><circle cx="14" cy="18" r="2" /><path d="M14 20v2" /></svg>,
@@ -975,7 +975,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <footer className="py-10 px-4 sm:px-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src={logoSrc} alt="Cosmorare" className="w-6 h-6 opacity-40" />
+            <img src={logoSrc} alt="Strangrz" className="w-6 h-6 opacity-40" />
             <span className="text-xs opacity-30">{t('footer')}</span>
           </div>
           <div className="flex gap-4 text-xs opacity-30">

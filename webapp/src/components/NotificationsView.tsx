@@ -1,6 +1,6 @@
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
-import { LAYER_NAMES } from '../engine/cosmomesh';
+import { LAYER_NAMES } from '../engine/strangrmesh';
 
 export default function NotificationsView() {
   const { globalTxs, wallet, meshStats, refreshTxs, refreshStats } = useWallet();

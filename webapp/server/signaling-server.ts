@@ -1,5 +1,5 @@
 /**
- * Cosmorare Signaling Server — WebSocket Relay for WebRTC Peer Discovery
+ * Strangrz Signaling Server — WebSocket Relay for WebRTC Peer Discovery
  *
  * Production-ready signaling relay that enables CosmoP2P nodes to discover
  * each other across different machines/networks.
@@ -11,7 +11,7 @@
  *
  * Clients connect via:
  *   ws://localhost:8787  (dev)
- *   wss://signal.cosmorare.com  (prod — deploy behind nginx/caddy with TLS)
+ *   wss://signal.strangrz.com  (prod — deploy behind nginx/caddy with TLS)
  *
  * Protocol:
  *   - Client sends JSON messages: { type, senderId, targetId?, payload, timestamp }
@@ -29,7 +29,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 const STALE_PEER_TIMEOUT_MS = 90_000;
 const MAX_PEERS = 10_000;
 const MAX_MESSAGE_SIZE = 64 * 1024; // 64KB max message
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'https://cosmorare.com').split(',').map(s => s.trim());
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'https://strangrz.com').split(',').map(s => s.trim());
 const PEERS_API_KEY = process.env.PEERS_API_KEY; // Optional: protect /peers endpoint
 
 // ─── Types ────────────────────────────────────────────────
@@ -103,7 +103,7 @@ const httpServer = createServer((req, res) => {
   }
 
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Cosmorare Signaling Server\n');
+  res.end('Strangrz Signaling Server\n');
 });
 
 // ─── WebSocket Server ─────────────────────────────────────
@@ -271,7 +271,7 @@ setInterval(() => {
 httpServer.listen(PORT, () => {
   console.log(`
 ┌─────────────────────────────────────────────┐
-│  Cosmorare Signaling Server                 │
+│  Strangrz Signaling Server                 │
 │  WebSocket: ws://0.0.0.0:${PORT}              │
 │  Health:    http://0.0.0.0:${PORT}/health      │
 │  Peers:    http://0.0.0.0:${PORT}/peers        │

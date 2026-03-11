@@ -1,5 +1,5 @@
 /**
- * Cosmorare Resonance Consensus — Fractal Layer Consensus with PBFT
+ * Strangrz Resonance Consensus — Fractal Layer Consensus with PBFT
  *
  * Consensus modes (honest about what each provides):
  *
@@ -40,7 +40,7 @@
  */
 
 import { sha256, signTransaction, verifySignature } from './crypto';
-import { type MeshTransaction, MeshLayer } from './cosmomesh';
+import { type MeshTransaction, MeshLayer } from './strangrmesh';
 
 // ─── Validator State ─────────────────────────────────────
 

@@ -1,7 +1,7 @@
 /**
- * Cosmorare Wart Engine — NFT-like Digital Art on the Cosmorare Protocol
+ * Strangrz Wart Engine — NFT-like Digital Art on the Strangrz Protocol
  *
- * Warts are unique digital artworks stored in the Cosmorare protocol.
+ * Warts are unique digital artworks stored in the Strangrz protocol.
  * Anyone with a wallet can mint, list, buy, and transfer Warts.
  * Creators earn royalties on every resale.
  *
@@ -168,8 +168,8 @@ export function formatDateFR(timestamp: number): string {
 
 // ─── Storage ─────────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_warts';
-const CERT_REGISTRY_KEY = 'cosmorare_cert_registry';
+const STORAGE_KEY = 'strangrz_warts';
+const CERT_REGISTRY_KEY = 'strangrz_cert_registry';
 const MEDIA_STORE_PREFIX = 'cw_media_';
 
 // ─── Content-Addressable Media Store ─────────────────────

@@ -41,9 +41,9 @@ export default function FiatGatewayView() {
       <div className="flex items-center justify-center h-[calc(100dvh-200px)]">
         <div className="text-center px-6">
           <p className="text-5xl mb-4">{'€'}</p>
-          <h2 className="text-title-sm font-bold mb-1 font-title">Cosmorares Coins</h2>
-          <p className="opacity-50 text-base">Déverrouillez votre wallet pour accéder à Cosmorares Coins</p>
-          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Cosmorares en monnaie fiat (EUR, USD, GBP...)</p>
+          <h2 className="text-title-sm font-bold mb-1 font-title">Strangrz Coin</h2>
+          <p className="opacity-50 text-base">Déverrouillez votre wallet pour accéder à Strangrz Coin</p>
+          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Strangrz en monnaie fiat (EUR, USD, GBP...)</p>
         </div>
       </div>
     );
@@ -132,13 +132,13 @@ export default function FiatGatewayView() {
     <div className="space-y-4 pb-8">
       {/* Header */}
       <div className="glass-panel p-5 text-center">
-        <h2 className="text-title-sm font-bold font-title">{'\u03A9'} Cosmorares Coins</h2>
+        <h2 className="text-title-sm font-bold font-title">{'\u03A9'} Strangrz Coin</h2>
         <p className="text-body-sm opacity-40 mt-1">
-          Passerelle fiat/crypto pour acheter et vendre des Cosmorares ({'\u03A9'}) en monnaie traditionnelle.
+          Passerelle fiat/crypto pour acheter et vendre des Strangrz ({'\u03A9'}) en monnaie traditionnelle.
         </p>
         <div className="text-[11px] opacity-30 mt-2 space-y-0.5 max-w-md mx-auto text-left">
-          <p><span className="opacity-60 font-bold">Comment ça marche :</span> Cosmorares Coins est la passerelle officielle qui permet de convertir votre monnaie fiat (EUR, USD, GBP...) en tokens {'\u03A9'} et inversement.</p>
-          <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Cosmorare. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Cosmorares certifiées. Les frais de transaction (2.5%) financent le développement et la maintenance du protocole.</p>
+          <p><span className="opacity-60 font-bold">Comment ça marche :</span> Strangrz Coin est la passerelle officielle qui permet de convertir votre monnaie fiat (EUR, USD, GBP...) en tokens {'\u03A9'} et inversement.</p>
+          <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Strangrz. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Strangrz certifiées. Les frais de transaction (2.5%) financent le développement et la maintenance du protocole.</p>
         </div>
         <p className="text-label opacity-30 mt-2">SIMULATION — Paiement réel via Stripe/PayPal en production</p>
         <div className="flex justify-center gap-3 mt-3">
@@ -183,7 +183,7 @@ export default function FiatGatewayView() {
       {/* ─── Buy Tab ──────────────────────────────────── */}
       {tab === 'buy' && (
         <div className="glass-panel p-5 space-y-4">
-          <h3 className="text-base font-bold opacity-70">Acheter des Cosmorares en {currency}</h3>
+          <h3 className="text-base font-bold opacity-70">Acheter des Strangrz en {currency}</h3>
 
           <div>
             <label className="text-label opacity-40 block mb-1">MONTANT ({getCurrencySymbol(currency)})</label>
@@ -252,7 +252,7 @@ export default function FiatGatewayView() {
             className="warp-button w-full py-3 text-base"
             disabled={buying || buyFiat <= 0}
           >
-            {buying ? 'En cours...' : `Acheter ${buyWarps > 0 ? buyWarps.toFixed(2) + ' Ω' : 'Cosmorares'}`}
+            {buying ? 'En cours...' : `Acheter ${buyWarps > 0 ? buyWarps.toFixed(2) + ' Ω' : 'Strangrz'}`}
           </button>
 
           {buyResult && (
@@ -264,7 +264,7 @@ export default function FiatGatewayView() {
       {/* ─── Sell Tab ─────────────────────────────────── */}
       {tab === 'sell' && (
         <div className="glass-panel p-5 space-y-4">
-          <h3 className="text-base font-bold opacity-70">Vendre des Cosmorares en {currency}</h3>
+          <h3 className="text-base font-bold opacity-70">Vendre des Strangrz en {currency}</h3>
 
           <div>
             <label className="text-label opacity-40 block mb-1">MONTANT ({'Ω'})</label>
@@ -330,7 +330,7 @@ export default function FiatGatewayView() {
             className="warp-button w-full py-3 text-base"
             disabled={selling || sellWarpAmount <= 0}
           >
-            {selling ? 'En cours...' : `Vendre ${sellWarpAmount > 0 ? sellWarpAmount.toFixed(2) + ' Ω' : 'Cosmorares'}`}
+            {selling ? 'En cours...' : `Vendre ${sellWarpAmount > 0 ? sellWarpAmount.toFixed(2) + ' Ω' : 'Strangrz'}`}
           </button>
 
           {sellResult && (
@@ -344,7 +344,7 @@ export default function FiatGatewayView() {
         <div className="space-y-3">
           <div className="glass-panel p-5">
             <h3 className="text-base font-bold opacity-70 mb-3">Taux de change</h3>
-            <p className="text-label opacity-30 mb-4">1 unité fiat = X Cosmorares ({'Ω'})</p>
+            <p className="text-label opacity-30 mb-4">1 unité fiat = X Strangrz ({'Ω'})</p>
             <div className="space-y-2">
               {rates.map(r => (
                 <div key={r.currency} className="flex items-center justify-between py-2 border-b border-current/5">
@@ -397,7 +397,7 @@ export default function FiatGatewayView() {
           {transactions.length === 0 ? (
             <div className="glass-panel p-10 text-center">
               <p className="text-base opacity-50">Aucune transaction</p>
-              <p className="text-body-sm opacity-30 mt-1">Achetez ou vendez des Cosmorares pour voir votre historique</p>
+              <p className="text-body-sm opacity-30 mt-1">Achetez ou vendez des Strangrz pour voir votre historique</p>
             </div>
           ) : (
             transactions.map(tx => (
@@ -427,7 +427,7 @@ export default function FiatGatewayView() {
                   <span>Fee: {getCurrencySymbol(tx.fiatCurrency)}{(tx.platformFeeAmount + tx.processorFeeAmount).toFixed(2)}</span>
                 </div>
                 {tx.wartTitle && (
-                  <p className="text-label opacity-40 mt-1">Cosmorare: {tx.wartTitle}</p>
+                  <p className="text-label opacity-40 mt-1">Strangrz: {tx.wartTitle}</p>
                 )}
               </div>
             ))

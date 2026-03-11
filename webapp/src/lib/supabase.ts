@@ -1,5 +1,5 @@
 /**
- * Cosmorare — Supabase Client Configuration
+ * Strangrz — Supabase Client Configuration
  *
  * Initializes the Supabase client for database, storage, and realtime.
  * Uses environment variables set in .env (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
@@ -12,7 +12,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.warn(
-    '[Cosmorare] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. ' +
+    '[Strangrz] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. ' +
     'Backend sync is disabled — running in offline mode.'
   );
 }
@@ -28,7 +28,7 @@ export const supabase: SupabaseClient | null =
           schema: 'public',
         },
         global: {
-          headers: { 'x-cosmorare-client': 'webapp/2.0' },
+          headers: { 'x-strangrz-client': 'webapp/2.0' },
         },
       })
     : null;

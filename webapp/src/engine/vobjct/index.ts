@@ -2,7 +2,7 @@
  * Vobjct — Main Module
  *
  * Integrates Vobjct manifests, Safe monitoring, chain adapters,
- * and storage layer into the Cosmorare application.
+ * and storage layer into the Strangrz application.
  */
 
 import { storage } from '../storage';
@@ -11,7 +11,7 @@ import type { VobjctManifest, StorageRoute, RecoveryRoute } from './schema';
 import { validateManifest, getTrustSignals, isSafeProtected, getActiveStorageRoutes } from './schema';
 import { buildManifest, verifyManifest, type ManifestBuildInput, type VerificationResult } from './manifest';
 import { VobjctSafeEngine, getSafeBadges, type VobjctSafeConfig, type RouteCheckResult } from './safe';
-import { CosmorareAdapter, registerAdapter, type ChainAdapter } from './adapters';
+import { StrangrzAdapter, registerAdapter, type ChainAdapter } from './adapters';
 import { VobjctStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
 
 // Re-exports
@@ -22,7 +22,7 @@ export type { ChainAdapter };
 
 // ─── Storage Keys ───────────────────────────────────────────
 
-const VOBJCT_STORAGE_KEY = 'cosmorare_vobjcts';
+const VOBJCT_STORAGE_KEY = 'strangrz_vobjcts';
 
 // ─── Main Vobjct Engine ─────────────────────────────────────
 
@@ -30,7 +30,7 @@ export class VobjctEngine {
   private manifests: Map<string, VobjctManifest> = new Map();
   private safeEngine: VobjctSafeEngine;
   private storageLayer: VobjctStorageLayer;
-  private adapter: CosmorareAdapter | null = null;
+  private adapter: StrangrzAdapter | null = null;
 
   constructor() {
     this.safeEngine = new VobjctSafeEngine();
@@ -60,9 +60,9 @@ export class VobjctEngine {
   // ─── Initialization ─────────────────────────────────────
 
   /**
-   * Initialize the Vobjct engine with the Cosmorare adapter and storage providers.
+   * Initialize the Vobjct engine with the Strangrz adapter and storage providers.
    */
-  initCosmorare(
+  initStrangrz(
     wartLookup: (id: string) => { owner: string; certId?: string; onChainTxId?: string } | null,
     supabaseUpload?: (data: string, wartId: string, type: 'main' | 'cover') => Promise<string | null>,
     supabaseDownload?: (path: string) => Promise<string | null>,
@@ -71,9 +71,9 @@ export class VobjctEngine {
     indexedDBRetrieve?: (wartId: string) => Promise<{ imageData: string; audioCover?: string } | null>,
     getOnChainSVG?: (wartId: string) => string | undefined,
   ): void {
-    // Register Cosmorare adapter
-    this.adapter = new CosmorareAdapter(wartLookup);
-    registerAdapter('cosmorare', this.adapter);
+    // Register Strangrz adapter
+    this.adapter = new StrangrzAdapter(wartLookup);
+    registerAdapter('strangrz', this.adapter);
 
     // Register storage providers
     if (supabaseUpload && supabaseDownload && supabaseGetUrl) {
@@ -155,21 +155,21 @@ export class VobjctEngine {
     }
 
     const input: ManifestBuildInput = {
-      objectId: `cosmorare:wart:${params.wartId}`,
+      objectId: `strangrz:wart:${params.wartId}`,
       objectType,
-      namespaceName: 'Cosmorare',
-      namespaceSlug: 'cosmorare',
-      chainFamily: 'cosmorare',
+      namespaceName: 'Strangrz',
+      namespaceSlug: 'strangrz',
+      chainFamily: 'strangrz',
       chainName: 'cosmochain',
       tokenStandard: 'CW-721',
-      contractRef: params.certId || 'cosmorare_protocol',
+      contractRef: params.certId || 'strangrz_protocol',
       tokenRef: params.wartId,
       ownerRef: params.creator,
       canonicalData: params.imageData,
       canonicalMimeType: mimeMap[params.mediaType] || 'application/octet-stream',
       name: params.title,
       description: params.description,
-      externalUrl: `cosmorare://wart/${params.wartId}`,
+      externalUrl: `strangrz://wart/${params.wartId}`,
       attributes: [
         { trait_type: 'Edition Type', value: params.editionType },
         { trait_type: 'Edition Number', value: params.editionNumber },

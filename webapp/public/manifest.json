@@ -1,7 +1,7 @@
 {
-  "name": "Cosmorare",
-  "short_name": "Cosmorare",
-  "description": "Cosmorare — Certificats d'authenticite pour objets rares. Protocole Cosmorare.",
+  "name": "Strangrz",
+  "short_name": "Strangrz",
+  "description": "Strangrz — Certificats d'authenticite pour objets rares. Protocole Strangrz.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

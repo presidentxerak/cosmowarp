@@ -12,7 +12,7 @@ export default function Header({ activeTab, setActiveTab }: {
 
   const tabs = [
     { id: 'wallet', label: 'Wallet', icon: '\u25C8', group: 'main' },
-    { id: 'warts', label: 'Cosmorares', icon: '\u2B22', group: 'main' },
+    { id: 'warts', label: 'Strangrz', icon: '\u2B22', group: 'main' },
     { id: 'cosmochat', label: 'CosmoChat', icon: '\u25CE', group: 'main' },
     { id: 'feed', label: 'Feed', icon: '\u25C9', group: 'main' },
     { id: 'settings', label: 'Settings', icon: '\u2699', group: 'main' },
@@ -67,7 +67,7 @@ export default function Header({ activeTab, setActiveTab }: {
               className="text-base font-bold opacity-90 leading-tight cursor-pointer font-title"
               onClick={() => selectTab('landing')}
             >
-              コスモラレ
+              ストレンジャーズ
             </h1>
             <p className="text-[10px] opacity-40">Terminal v2.0</p>
           </div>

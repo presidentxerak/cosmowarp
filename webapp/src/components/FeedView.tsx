@@ -1,6 +1,6 @@
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
-import { LAYER_NAMES } from '../engine/cosmomesh';
+import { LAYER_NAMES } from '../engine/strangrmesh';
 import Logo from './Logo';
 
 export default function FeedView() {
@@ -43,11 +43,11 @@ export default function FeedView() {
     <div className="space-y-4">
       <div className="glass-panel p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-title-sm font-bold opacity-100 font-title">{'\u25CE'} CosmoMesh Feed</h2>
+          <h2 className="text-title-sm font-bold opacity-100 font-title">{'\u25CE'} StrangrzMesh Feed</h2>
           <button className="warp-button text-body-sm" onClick={handleRefresh}>Refresh</button>
         </div>
         <p className="text-body-sm opacity-40">
-          {globalTxs.length} transactions on the CosmoMesh DAG
+          {globalTxs.length} transactions on the StrangrzMesh DAG
         </p>
 
         {/* Mesh Stats Summary */}

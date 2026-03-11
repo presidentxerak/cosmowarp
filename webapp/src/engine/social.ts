@@ -33,7 +33,7 @@ export interface SocialStats {
 
 // ─── Storage ───────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_social';
+const STORAGE_KEY = 'strangrz_social';
 
 function loadProfiles(): UserProfile[] {
   try {

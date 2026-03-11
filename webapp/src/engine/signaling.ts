@@ -1,5 +1,5 @@
 /**
- * Cosmorare Signaling — WebRTC Peer Discovery
+ * Strangrz Signaling — WebRTC Peer Discovery
  *
  * Two complementary signaling channels for WebRTC peer discovery:
  *
@@ -50,7 +50,7 @@ interface SignalingMessage {
 
 // ─── LocalSignaling (BroadcastChannel) ───────────────────
 
-const LOCAL_CHANNEL_NAME = 'cosmorare-signaling';
+const LOCAL_CHANNEL_NAME = 'strangrz-signaling';
 
 export class LocalSignaling {
   private channel: BroadcastChannel | null = null;
@@ -224,7 +224,7 @@ export class LocalSignaling {
 
 // ─── RemoteSignaling (Supabase Realtime Broadcast) ───────
 
-const SUPABASE_SIGNAL_CHANNEL = 'cosmorare-signaling';
+const SUPABASE_SIGNAL_CHANNEL = 'strangrz-signaling';
 
 export class RemoteSignaling {
   private channel: RealtimeChannel | null = null;

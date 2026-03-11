@@ -1,5 +1,5 @@
 /**
- * Cosmorare P2P — WebRTC Mesh Network
+ * Strangrz P2P — WebRTC Mesh Network
  *
  * Browser-native peer-to-peer networking using WebRTC DataChannels.
  * No server required for data transfer (only signaling).
@@ -18,7 +18,7 @@
  */
 
 import { randomHex } from './crypto';
-import type { MeshTransaction } from './cosmomesh';
+import type { MeshTransaction } from './strangrmesh';
 import type { ConsensusVote } from './consensus';
 import type { ShardBlock, BeaconBlock } from './cosmochain';
 import { blockDB, beaconDB } from './chaindb';
@@ -28,7 +28,7 @@ import { SignalingManager } from './signaling';
 
 export interface PeerInfo {
   id: string;
-  address: string;          // Cosmorare address
+  address: string;          // Strangrz address
   connectedAt: number;
   lastSeen: number;
   latencyMs: number;
@@ -126,7 +126,7 @@ function getIceServers(): RTCIceServer[] {
 
   if (turnUrl) {
     servers.push({
-      urls: turnUrl, // e.g. 'turn:turn.cosmorare.com:3478'
+      urls: turnUrl, // e.g. 'turn:turn.strangrz.com:3478'
       username: turnUser,
       credential: turnCredential,
     });
@@ -216,7 +216,7 @@ export class CosmoP2P {
       iceServers: getIceServers(),
     });
 
-    const dataChannel = pc.createDataChannel('cosmomesh', {
+    const dataChannel = pc.createDataChannel('strangrmesh', {
       ordered: true,
     });
 

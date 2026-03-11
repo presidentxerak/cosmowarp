@@ -1,5 +1,5 @@
 /**
- * Cosmorare — Supabase Realtime Subscriptions
+ * Strangrz — Supabase Realtime Subscriptions
  *
  * Subscribes to real-time changes on key tables so all connected
  * clients stay synchronized. Uses Supabase Realtime (Postgres changes).

@@ -38,7 +38,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const addr = sessionStorage.getItem('cosmorare_view_user');
+    const addr = sessionStorage.getItem('strangrz_view_user');
     if (!addr) return;
     setTargetAddress(addr);
     refresh(addr);
@@ -139,12 +139,12 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   };
 
   const handleMessage = () => {
-    sessionStorage.setItem('cosmorare_dm_to', targetAddress);
+    sessionStorage.setItem('strangrz_dm_to', targetAddress);
     onNavigate('message');
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
+    sessionStorage.setItem('strangrz_view_user', address);
     setTargetAddress(address);
     setTab('posts');
     refresh(address);
@@ -415,7 +415,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
+              <p className="opacity-40 text-base">Aucune Strangrz créée</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

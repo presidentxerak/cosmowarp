@@ -12,7 +12,7 @@ export default function SendView() {
   if (!wallet) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Créez un wallet pour envoyer des Cosmorares.</p>
+        <p className="opacity-50">Créez un wallet pour envoyer des Strangrz.</p>
       </div>
     );
   }
@@ -20,7 +20,7 @@ export default function SendView() {
   if (!unlocked) {
     return (
       <div className="glass-panel p-6 text-center">
-        <p className="opacity-50">Déverrouillez votre wallet pour envoyer des Cosmorares.</p>
+        <p className="opacity-50">Déverrouillez votre wallet pour envoyer des Strangrz.</p>
       </div>
     );
   }
@@ -35,7 +35,7 @@ export default function SendView() {
     try {
       const res = await send(to.trim(), amt, memo || undefined);
       if (res.success) {
-        setResult({ success: true, message: `${amt} \u03A9 envoyés via CosmoMesh DAG !` });
+        setResult({ success: true, message: `${amt} \u03A9 envoyés via StrangrzMesh DAG !` });
         setTo('');
         setAmount('');
         setMemo('');
@@ -53,7 +53,7 @@ export default function SendView() {
   return (
     <div className="space-y-4">
       <div className="glass-panel p-5">
-        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2197'} Envoyer des Cosmorares</h2>
+        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2197'} Envoyer des Strangrz</h2>
         <p className="text-body-sm opacity-40 mb-4">
           Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
           <span className="opacity-30 ml-2">Ed25519 signed + DAG validated</span>

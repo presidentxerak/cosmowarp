@@ -93,13 +93,13 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
+    sessionStorage.setItem('strangrz_view_user', address);
     onNavigate('user-profile');
   };
 
   const handleViewWart = (wart: Wart) => {
     // Store the wart id so MarketplaceView can open it in detail mode
-    sessionStorage.setItem('cosmorare_open_wart', wart.id);
+    sessionStorage.setItem('strangrz_open_wart', wart.id);
     onNavigate('gallery');
   };
 
@@ -276,7 +276,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'warts' && (
           myCreated.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
+              <p className="opacity-40 text-base">Aucune Strangrz créée</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Gallery</button>
             </div>
           ) : (
@@ -306,7 +306,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'collected' && (
           myCollection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Cosmorare dans la collection</p>
+              <p className="opacity-40 text-base">Aucune Strangrz dans la collection</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Browse Gallery</button>
             </div>
           ) : (

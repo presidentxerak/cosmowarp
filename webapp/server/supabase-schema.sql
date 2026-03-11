@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════
--- Cosmorare — Supabase Database Schema
+-- Strangrz — Supabase Database Schema
 -- Run this in the Supabase SQL Editor to set up all tables.
 -- ═══════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at BIGINT NOT NULL DEFAULT 0
 );
 
--- ─── Warts (NFTs / Cosmorares) ─────────────────────────────
+-- ─── Warts (NFTs / Strangrz) ─────────────────────────────
 
 CREATE TABLE IF NOT EXISTS warts (
   id TEXT PRIMARY KEY,
@@ -414,7 +414,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 -- ═══════════════════════════════════════════════════════════
 
 -- Profiles: anyone can read, only the service role or address owner can write.
--- Note: Cosmorare uses service_role key server-side; client writes go through
+-- Note: Strangrz uses service_role key server-side; client writes go through
 --       server functions, so RLS restricts direct client access.
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);

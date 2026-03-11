@@ -43,9 +43,9 @@ export default function MessageView() {
     refresh();
     // Auto-open DM if navigated from user profile
     if (wallet) {
-      const dmTo = sessionStorage.getItem('cosmorare_dm_to');
+      const dmTo = sessionStorage.getItem('strangrz_dm_to');
       if (dmTo) {
-        sessionStorage.removeItem('cosmorare_dm_to');
+        sessionStorage.removeItem('strangrz_dm_to');
         const e = CosmoChatEngine.load();
         const alias = wallet.alias || shortAddress(wallet.address);
         const existingThreads = e.getThreads(wallet.address);

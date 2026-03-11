@@ -350,7 +350,7 @@ export default function MusicView() {
       <div className="glass-panel p-4 text-center">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u266B'} Musique</h2>
         <p className="text-body-sm opacity-40">
-          Écoutez, collectionnez et vendez des oeuvres musicales certifiées sur Cosmorare.
+          Écoutez, collectionnez et vendez des oeuvres musicales certifiées sur Strangrz.
         </p>
       </div>
 
@@ -392,7 +392,7 @@ export default function MusicView() {
             {filter === 'my-tracks' ? 'Aucun titre dans votre collection.' : 'Aucun titre disponible.'}
           </p>
           <p className="text-body-sm opacity-30 mt-1">
-            Créez une Cosmorare audio (.wav) avec une pochette dans l'onglet Créer.
+            Créez une Strangrz audio (.wav) avec une pochette dans l'onglet Créer.
           </p>
         </div>
       ) : (
