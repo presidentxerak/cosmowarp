@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS vobjct_manifests (
 
   -- Token Binding
   chain_family        TEXT NOT NULL DEFAULT 'strangrz',
-  chain_name          TEXT NOT NULL DEFAULT 'cosmochain',
+  chain_name          TEXT NOT NULL DEFAULT 'strangrzchain',
   token_standard      TEXT NOT NULL DEFAULT 'CW-721',
   contract_ref        TEXT NOT NULL,
   token_ref           TEXT NOT NULL,

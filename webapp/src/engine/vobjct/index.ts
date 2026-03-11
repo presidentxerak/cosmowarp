@@ -160,7 +160,7 @@ export class VobjctEngine {
       namespaceName: 'Strangrz',
       namespaceSlug: 'strangrz',
       chainFamily: 'strangrz',
-      chainName: 'cosmochain',
+      chainName: 'strangrzchain',
       tokenStandard: 'CW-721',
       contractRef: params.certId || 'strangrz_protocol',
       tokenRef: params.wartId,

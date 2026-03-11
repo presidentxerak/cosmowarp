@@ -4,7 +4,7 @@
  * Provides a chain-agnostic interface for resolving token bindings,
  * ownership, and metadata across different blockchain ecosystems.
  *
- * Includes concrete adapter for the Strangrz (CosmoChain) protocol.
+ * Includes concrete adapter for the Strangrz (StrangrzChain) protocol.
  */
 
 import type { TokenBinding, ChainFamily } from './schema';
@@ -43,7 +43,7 @@ export interface ChainAdapter {
  */
 export class StrangrzAdapter implements ChainAdapter {
   readonly chainFamily: ChainFamily = 'strangrz';
-  readonly chainName = 'cosmochain';
+  readonly chainName = 'strangrzchain';
   readonly tokenStandard = 'CW-721';
 
   private getWart: (id: string) => { owner: string; certId?: string; onChainTxId?: string } | null;

@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS warts (
   content_fingerprint TEXT,
   creator_signature TEXT,
   on_chain_svg TEXT,
-  cosmo_code_id TEXT,
+  strangrz_code_id TEXT,
   compression_ratio NUMERIC,
   on_chain_tx_id TEXT,
   storage_mode TEXT DEFAULT 'hybrid',
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notif_recipient ON notifications(recipient, created_at DESC);
 
 -- ═══════════════════════════════════════════════════════════
--- CosmoChain Tables (Block + Transaction persistence)
+-- StrangrzChain Tables (Block + Transaction persistence)
 -- ═══════════════════════════════════════════════════════════
 
 -- ─── Chain Blocks (Shard Blocks) ───────────────────────────
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS chain_blocks (
   validator TEXT NOT NULL,
   tx_count INTEGER DEFAULT 0,
   processing_time_ms REAL DEFAULT 0,
-  cosmo_code_svg TEXT,
+  strangrz_code_svg TEXT,
   created_at BIGINT NOT NULL
 );
 

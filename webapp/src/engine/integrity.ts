@@ -25,7 +25,7 @@ import type { StoredBlock, StoredBeacon, StoredTransaction } from './chaindb';
 
 // ─── Constants ──────────────────────────────────────────
 
-const CHAIN_VERSION = 'CosmoChain-v1';
+const CHAIN_VERSION = 'StrangrzChain-v1';
 
 // ─── Tamper Alert Types ─────────────────────────────────
 
@@ -427,7 +427,7 @@ export class BlockIntegrityVerifier {
 
   // ─── Internal Helpers ───────────────────────────────
 
-  /** Compute a block hash from its header fields (same algorithm as CosmoChain) */
+  /** Compute a block hash from its header fields (same algorithm as StrangrzChain) */
   private async computeBlockHash(block: StoredBlock): Promise<string> {
     const headerData = [
       CHAIN_VERSION,

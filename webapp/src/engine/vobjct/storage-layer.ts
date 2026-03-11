@@ -4,7 +4,7 @@
  * Modular storage architecture supporting multiple providers:
  * - Supabase Storage (HTTPS)
  * - IndexedDB (local cache)
- * - On-chain CosmoCode SVG
+ * - On-chain StrangrzCode SVG
  * - IPFS (via gateway)
  * - Arweave (via gateway)
  *
@@ -128,7 +128,7 @@ export class IndexedDBStorageProvider implements StorageProvider {
 
 export class OnChainStorageProvider implements StorageProvider {
   readonly network: StorageNetwork = 'onchain';
-  readonly name = 'CosmoChain On-Chain SVG';
+  readonly name = 'StrangrzChain On-Chain SVG';
 
   private getOnChainSVG: (wartId: string) => string | undefined;
 
@@ -137,7 +137,7 @@ export class OnChainStorageProvider implements StorageProvider {
   }
 
   async upload(_data: string, _path: string): Promise<string | null> {
-    // On-chain storage is handled by the CosmoCode pipeline
+    // On-chain storage is handled by the StrangrzCode pipeline
     return null;
   }
 

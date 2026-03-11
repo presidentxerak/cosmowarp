@@ -28,7 +28,7 @@ import { TokenomicsEngine, AIRDROP_AMOUNT, type SupplyBreakdown } from './tokeno
 import { HierarchyEngine, HIERARCHY_LEVELS, type HierarchyLevel, type LevelUpResult } from './hierarchy';
 import { AdminRegistry, type RegistryDashboard } from './registry';
 import { SecurityManager } from './security';
-import { CosmoChain, type ChainStats } from './cosmochain';
+import { StrangrzChain, type ChainStats } from './cosmochain';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ let tokenomicsInstance: TokenomicsEngine | null = null;
 let hierarchyInstance: HierarchyEngine | null = null;
 let registryInstance: AdminRegistry | null = null;
 let securityInstance: SecurityManager | null = null;
-let cosmoChainInstance: CosmoChain | null = null;
+let strangrzChainInstance: StrangrzChain | null = null;
 
 export function getMesh(): StrangrzMesh {
   if (!meshInstance) {
@@ -154,19 +154,19 @@ export function getSecurity(): SecurityManager {
   return securityInstance;
 }
 
-/** Get or create the CosmoChain instance (new blockchain with parallel shards) */
-export function getCosmoChain(): CosmoChain {
-  if (!cosmoChainInstance) {
-    cosmoChainInstance = CosmoChain.load() || new CosmoChain();
-    // Bridge StrangrzMesh → CosmoChain for dual-layer persistence
-    getMesh().connectCosmoChain(cosmoChainInstance);
+/** Get or create the StrangrzChain instance (new blockchain with parallel shards) */
+export function getStrangrzChain(): StrangrzChain {
+  if (!strangrzChainInstance) {
+    strangrzChainInstance = StrangrzChain.load() || new StrangrzChain();
+    // Bridge StrangrzMesh → StrangrzChain for dual-layer persistence
+    getMesh().connectStrangrzChain(strangrzChainInstance);
   }
-  return cosmoChainInstance;
+  return strangrzChainInstance;
 }
 
-/** Get CosmoChain statistics */
+/** Get StrangrzChain statistics */
 export function getChainStats(): ChainStats {
-  return getCosmoChain().getStats();
+  return getStrangrzChain().getStats();
 }
 
 function saveMesh(): void {
@@ -186,7 +186,7 @@ function saveEngines(): void {
   saveConsensus();
   getTokenomics().save();
   getHierarchy().save();
-  if (cosmoChainInstance) cosmoChainInstance.save();
+  if (strangrzChainInstance) strangrzChainInstance.save();
 }
 
 // ─── ID Generation ───────────────────────────────────────
@@ -691,7 +691,7 @@ export function deleteProfile(wallet: WarpWallet): boolean {
   hierarchyInstance = null;
   registryInstance = null;
   securityInstance = null;
-  cosmoChainInstance = null;
+  strangrzChainInstance = null;
 
   return true;
 }

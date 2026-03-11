@@ -1,5 +1,5 @@
 /**
- * ChainDB — IndexedDB Storage Engine for CosmoChain
+ * ChainDB — IndexedDB Storage Engine for StrangrzChain
  *
  * Replaces localStorage (5-10MB limit) with IndexedDB (up to browser quota,
  * typically 50-80% of free disk space — often several GB).
@@ -15,7 +15,7 @@
  *   beacons     — Beacon blocks keyed by number
  *   transactions — All transactions keyed by id, indexed by address & shard
  *   state       — Global state snapshots keyed by shard
- *   media       — On-chain media (CosmoCode SVG containers) keyed by content hash
+ *   media       — On-chain media (StrangrzCode SVG containers) keyed by content hash
  *   meta        — Chain metadata (balances, nonces, config)
  */
 
@@ -80,7 +80,7 @@ function openDB(): Promise<IDBDatabase> {
         db.createObjectStore(STORES.state, { keyPath: 'shard' });
       }
 
-      // Media: on-chain CosmoCode SVG containers keyed by content hash
+      // Media: on-chain StrangrzCode SVG containers keyed by content hash
       if (!db.objectStoreNames.contains(STORES.media)) {
         const mediaStore = db.createObjectStore(STORES.media, { keyPath: 'hash' });
         mediaStore.createIndex('type', 'type', { unique: false });
@@ -196,7 +196,7 @@ export interface StoredBlock {
   hash: string;
   txCount: number;
   processingTimeMs: number;
-  cosmoCodeSVG?: string;    // CosmoCode SVG encoded block data
+  strangrzCodeSVG?: string;    // StrangrzCode SVG encoded block data
   rawSize: number;          // Original data size
   compressedSize: number;   // Compressed size (for real ratio measurement)
 }
@@ -390,11 +390,11 @@ export const beaconDB = {
   },
 };
 
-// ─── Media (On-Chain CosmoCode SVG) ───────────────────────
+// ─── Media (On-Chain StrangrzCode SVG) ───────────────────────
 
 export interface StoredMedia {
   hash: string;           // SHA-256 content hash
-  svg: string;            // CosmoCode SVG container
+  svg: string;            // StrangrzCode SVG container
   type: string;           // 'wart' | 'media' | 'state'
   creator: string;        // Creator address
   originalSize: number;

@@ -19,17 +19,17 @@
  * - Merkle-DAG = fully auditable
  * - CosmoASM programmable = smart contracts via VM
  *
- * ─── CosmoChain Integration ───────────────────────────────
- * StrangrzMesh now serves as the DAG layer for the CosmoChain protocol.
+ * ─── StrangrzChain Integration ───────────────────────────────
+ * StrangrzMesh now serves as the DAG layer for the StrangrzChain protocol.
  * Transactions are simultaneously recorded in the DAG (for instant settlement)
- * and submitted to CosmoChain (for on-chain SVG storage and finality).
- * The DAG provides sub-second optimistic confirmation while CosmoChain
- * provides full on-chain SVG-encoded persistence via CosmoCode.
+ * and submitted to StrangrzChain (for on-chain SVG storage and finality).
+ * The DAG provides sub-second optimistic confirmation while StrangrzChain
+ * provides full on-chain SVG-encoded persistence via StrangrzCode.
  */
 
 import { signTransaction, verifySignature, computeTxId, isValidAddress } from './crypto';
 import { MerkleDAG } from './merkle';
-import type { CosmoChain } from './cosmochain';
+import type { StrangrzChain } from './cosmochain';
 
 // ─── Fractal Layers ──────────────────────────────────────
 
@@ -108,8 +108,8 @@ export class StrangrzMesh {
   // Layer-specific throughput counters
   private layerTps: Map<MeshLayer, number[]> = new Map();
 
-  // CosmoChain bridge — enables on-chain SVG persistence
-  private cosmoChain: CosmoChain | null = null;
+  // StrangrzChain bridge — enables on-chain SVG persistence
+  private strangrzChain: StrangrzChain | null = null;
 
   constructor() {
     // Initialize layer tip sets
@@ -119,14 +119,14 @@ export class StrangrzMesh {
     }
   }
 
-  /** Connect to a CosmoChain instance for on-chain SVG persistence */
-  connectCosmoChain(chain: CosmoChain): void {
-    this.cosmoChain = chain;
+  /** Connect to a StrangrzChain instance for on-chain SVG persistence */
+  connectStrangrzChain(chain: StrangrzChain): void {
+    this.strangrzChain = chain;
   }
 
-  /** Get the connected CosmoChain instance */
-  getCosmoChain(): CosmoChain | null {
-    return this.cosmoChain;
+  /** Get the connected StrangrzChain instance */
+  getStrangrzChain(): StrangrzChain | null {
+    return this.strangrzChain;
   }
 
   get size(): number { return this.transactions.size; }

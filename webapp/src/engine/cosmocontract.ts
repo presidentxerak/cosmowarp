@@ -45,7 +45,7 @@
  * - All contracts are signed by both parties (Ed25519)
  * - State transitions are deterministic and verifiable
  * - No arbitrary code execution = no exploits
- * - Contract state is stored on-chain via CosmoChain
+ * - Contract state is stored on-chain via StrangrzChain
  */
 
 import { sha256, signTransaction } from './crypto';
@@ -68,7 +68,7 @@ export interface CosmoContract {
   history: ContractEvent[];
   signatures: ContractSignature[];
   wartId?: string;                 // Associated artwork
-  onChainTxId?: string;           // CosmoChain TX
+  onChainTxId?: string;           // StrangrzChain TX
 }
 
 export interface ContractParty {

@@ -52,10 +52,10 @@ export const MessageType = {
   PONG:              'pong',
   SYNC_REQUEST:      'sync_request',
   SYNC_RESPONSE:     'sync_response',
-  // CosmoChain block propagation
+  // StrangrzChain block propagation
   SHARD_BLOCK:       'shard_block',
   BEACON_BLOCK:      'beacon_block',
-  COSMOCODE_SVG:     'cosmocode_svg',
+  STRANGRZCODE_SVG:     'strangrzcode_svg',
   // Block/state sync
   BLOCK_SYNC_REQUEST:  'block_sync_request',
   BLOCK_SYNC_RESPONSE: 'block_sync_response',
@@ -478,9 +478,9 @@ export class CosmoP2P {
             hash: block.hash,
             txCount: block.txCount,
             processingTimeMs: block.processingTimeMs,
-            cosmoCodeSVG: block.cosmoCodeSVG,
+            strangrzCodeSVG: block.strangrzCodeSVG,
             rawSize: JSON.stringify(block).length,
-            compressedSize: block.cosmoCodeSVG?.length ?? JSON.stringify(block).length,
+            compressedSize: block.strangrzCodeSVG?.length ?? JSON.stringify(block).length,
           }).catch(err => console.error('[P2P] Failed to store shard block:', err));
 
           this.handlers.onShardBlockReceived?.(block);
@@ -538,9 +538,9 @@ export class CosmoP2P {
                 hash: block.hash,
                 txCount: block.txCount,
                 processingTimeMs: block.processingTimeMs,
-                cosmoCodeSVG: block.cosmoCodeSVG,
+                strangrzCodeSVG: block.strangrzCodeSVG,
                 rawSize: JSON.stringify(block).length,
-                compressedSize: block.cosmoCodeSVG?.length ?? JSON.stringify(block).length,
+                compressedSize: block.strangrzCodeSVG?.length ?? JSON.stringify(block).length,
               }).catch(err => console.error('[P2P] Failed to store synced block:', err));
 
               this.handlers.onShardBlockReceived?.(block);
@@ -560,7 +560,7 @@ export class CosmoP2P {
 
       case MessageType.STATE_SYNC_RESPONSE: {
         // State sync responses are forwarded to the generic handler
-        // since shard state structure is managed by CosmoChain
+        // since shard state structure is managed by StrangrzChain
         this.handlers.onMessage?.(msg, peerId);
         break;
       }

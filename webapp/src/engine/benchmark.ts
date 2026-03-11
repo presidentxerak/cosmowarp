@@ -1,14 +1,14 @@
 /**
- * CosmoCode Benchmark — Real Compression Measurement
+ * StrangrzCode Benchmark — Real Compression Measurement
  *
  * No estimates. No guesses. This module measures actual compression ratios
- * by running real data through the CosmoCode pipeline and reporting honest numbers.
+ * by running real data through the StrangrzCode pipeline and reporting honest numbers.
  *
  * Call `runFullBenchmark()` to get a complete report with measured ratios
  * for every data type and compression layer.
  */
 
-import { encodeToCosmoCode, decodeFromCosmoCode, encodeTransactionBatch, type CosmoCodeContainer, type CosmoCodeType } from './cosmocode';
+import { encodeToStrangrzCode, decodeFromStrangrzCode, encodeTransactionBatch, type StrangrzCodeContainer, type StrangrzCodeType } from './cosmocode';
 
 // ─── Benchmark Result Types ──────────────────────────────
 
@@ -21,7 +21,7 @@ export interface LayerBenchmark {
 }
 
 export interface DataTypeBenchmark {
-  type: CosmoCodeType;
+  type: StrangrzCodeType;
   description: string;
   sampleCount: number;
   avgOriginalSize: number;
@@ -90,7 +90,7 @@ function generateSampleState(): string {
 /** Generate sample metadata */
 function generateSampleMetadata(): string {
   return JSON.stringify({
-    chainVersion: 'CosmoChain-v1',
+    chainVersion: 'StrangrzChain-v1',
     shardCount: 7,
     blockTime: 1500,
     maxTxPerBlock: 1000,
@@ -136,7 +136,7 @@ function generateSampleBase64Image(sizeKB: number): string {
 // ─── Individual Type Benchmark ────────────────────────────
 
 async function benchmarkType(
-  type: CosmoCodeType,
+  type: StrangrzCodeType,
   description: string,
   samples: string[],
 ): Promise<DataTypeBenchmark> {
@@ -154,9 +154,9 @@ async function benchmarkType(
 
     // Encode
     const encStart = performance.now();
-    let container: CosmoCodeContainer;
+    let container: StrangrzCodeContainer;
     try {
-      container = await encodeToCosmoCode(
+      container = await encodeToStrangrzCode(
         sample,
         type,
         i > 0 ? samples[i - 1] : undefined,  // Use previous as delta reference
@@ -179,7 +179,7 @@ async function benchmarkType(
     // Decode and verify integrity
     const decStart = performance.now();
     try {
-      const decoded = await decodeFromCosmoCode(
+      const decoded = await decodeFromStrangrzCode(
         container,
         i > 0 ? samples[i - 1] : undefined,
       );
@@ -268,7 +268,7 @@ async function benchmarkBatch(): Promise<DataTypeBenchmark> {
 // ─── Full Benchmark ───────────────────────────────────────
 
 /**
- * Run a complete benchmark of the CosmoCode compression pipeline.
+ * Run a complete benchmark of the StrangrzCode compression pipeline.
  * Returns honest, measured results — no estimates.
  */
 export async function runFullBenchmark(): Promise<FullBenchmarkReport> {
@@ -330,7 +330,7 @@ function generateHonestSummary(
   const base64Large = results.find(r => r.description.includes('100KB'));
 
   const lines = [
-    `COSMOCODE BENCHMARK REPORT — HONEST MEASURED RESULTS`,
+    `STRANGRZCODE BENCHMARK REPORT — HONEST MEASURED RESULTS`,
     `═══════════════════════════════════════════════════`,
     ``,
     `Integrity check: ${integrityPass ? 'PASS — all decoded data matches originals' : 'FAIL — some data corrupted'}`,
@@ -349,7 +349,7 @@ function generateHonestSummary(
     `  - Raster images: ${base64Small ? base64Small.avgRatio.toFixed(1) : '?'}x (base64 resists compression)`,
     `  - Best use case: transaction batches and state snapshots`,
     ``,
-    `CosmoCode is REAL compression, not smoke and mirrors.`,
+    `StrangrzCode is REAL compression, not smoke and mirrors.`,
     `But it's not 1000x for everything — honest ratios vary by data type.`,
   ];
 
@@ -359,7 +359,7 @@ function generateHonestSummary(
 /**
  * Quick single-sample benchmark (for real-time display)
  */
-export async function quickBenchmark(data: string, type: CosmoCodeType): Promise<{
+export async function quickBenchmark(data: string, type: StrangrzCodeType): Promise<{
   originalSize: number;
   compressedSize: number;
   ratio: number;
@@ -369,7 +369,7 @@ export async function quickBenchmark(data: string, type: CosmoCodeType): Promise
   const originalSize = new TextEncoder().encode(data).length;
 
   const encStart = performance.now();
-  const container = await encodeToCosmoCode(data, type);
+  const container = await encodeToStrangrzCode(data, type);
   const encodeMs = performance.now() - encStart;
 
   const compressedSize = new TextEncoder().encode(container.svg).length;
@@ -377,7 +377,7 @@ export async function quickBenchmark(data: string, type: CosmoCodeType): Promise
   // Verify integrity
   let integrityOk = false;
   try {
-    const decoded = await decodeFromCosmoCode(container);
+    const decoded = await decodeFromStrangrzCode(container);
     integrityOk = decoded === data;
   } catch { /* failed */ }
 

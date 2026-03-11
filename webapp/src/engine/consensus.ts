@@ -22,8 +22,8 @@
  * on top of PBFT — it determines vote weight within the protocol, not a
  * replacement for it.
  *
- * ─── CosmoChain Integration ───────────────────────────────
- * With CosmoChain, validators now participate in shard-level consensus.
+ * ─── StrangrzChain Integration ───────────────────────────────
+ * With StrangrzChain, validators now participate in shard-level consensus.
  * Each validator specializes in 1-3 shards based on their affinity.
  * Shard blocks achieve finality through Resonance Consensus.
  * Beacon blocks achieve cross-shard consensus every 10 shard blocks.

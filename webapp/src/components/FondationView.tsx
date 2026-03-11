@@ -72,7 +72,7 @@ export default function FondationView() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'✦'}</span>
-                <span><span className="opacity-90">CRCERT</span> - Certificats d'authenticité infalsifiables</span>
+                <span><span className="opacity-90">STCERT</span> - Certificats d'authenticité infalsifiables</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'⬢'}</span>

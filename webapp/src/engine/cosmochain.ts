@@ -1,14 +1,14 @@
 /**
- * CosmoChain — Blockchain with Parallel Shard Processing
+ * StrangrzChain — Blockchain with Parallel Shard Processing
  *
- * Built on Strangrz's CosmoCode protocol with REAL infrastructure:
+ * Built on Strangrz's StrangrzCode protocol with REAL infrastructure:
  *
  * ─── What Is REAL ──────────────────────────────────────────
  *
  * 1. REAL CRYPTOGRAPHY — Ed25519 signatures, SHA-256 hashing via Web Crypto API
  * 2. REAL PARALLEL PROCESSING — Web Workers (OS-level threads), one per shard
  * 3. REAL STORAGE — IndexedDB (GBs of capacity, not 5MB localStorage)
- * 4. REAL COMPRESSION — CosmoCode SVG, benchmarked with honest measured ratios
+ * 4. REAL COMPRESSION — StrangrzCode SVG, benchmarked with honest measured ratios
  * 5. REAL RATE LIMITING — Per-address limits enforced, not just documented
  * 6. ZERO GAS — Free because validators earn from staking, not user fees
  *
@@ -40,7 +40,7 @@
  */
 
 import { sha256, signTransaction, verifySignature, isValidAddress, computeTxId } from './crypto';
-import { encodeTransactionBatch, type CosmoCodeContainer } from './cosmocode';
+import { encodeTransactionBatch, type StrangrzCodeContainer } from './cosmocode';
 import { ShardCoordinator, type ShardMetrics } from './shardworker';
 import { blockDB, txDB, beaconDB, initChainDB } from './chaindb';
 import { storage } from './storage';
@@ -58,7 +58,7 @@ export const MAX_TX_PER_SHARD_BLOCK = 1000;        // 1000 TXs per shard block
 export const MAX_TX_PER_SECOND = 7000;             // 7 shards × 1000 TXs = 7000 TPS theoretical
 export const RATE_LIMIT_PER_MINUTE = 100;          // Anti-spam: max 100 TX/min per address
 export const GAS_COST = 0;                         // Zero gas — always free
-export const CHAIN_VERSION = 'CosmoChain-v2.1';
+export const CHAIN_VERSION = 'StrangrzChain-v2.1';
 
 // ─── Shard Types ─────────────────────────────────────────
 
@@ -116,8 +116,8 @@ export interface ChainTransaction {
   memo?: string;
   nonce: number;               // Per-address sequential nonce (replay protection)
   gasCost: 0;                  // Always 0 — zero gas
-  // On-chain data (stored as CosmoCode SVG)
-  onChainData?: string;        // CosmoCode SVG container (for wart mints, metadata, etc.)
+  // On-chain data (stored as StrangrzCode SVG)
+  onChainData?: string;        // StrangrzCode SVG container (for wart mints, metadata, etc.)
   // Status
   status: 'pending' | 'confirmed' | 'finalized';
   blockNumber?: number;        // Block number in the shard
@@ -136,8 +136,8 @@ export interface ShardBlock {
   timestamp: number;
   validator: string;           // Validator address that produced this block
   transactions: ChainTransaction[];
-  // CosmoCode SVG encoding of the block
-  cosmoCodeSVG?: string;       // The full block encoded as CosmoCode SVG
+  // StrangrzCode SVG encoding of the block
+  strangrzCodeSVG?: string;       // The full block encoded as StrangrzCode SVG
   hash: string;                // Block hash = SHA-256(header fields)
   gasUsed: 0;                  // Always 0
   // Metrics
@@ -153,7 +153,7 @@ export interface BeaconBlock {
   timestamp: number;
   validator: string;
   hash: string;
-  cosmoCodeSVG?: string;
+  strangrzCodeSVG?: string;
   // Cross-shard settlements
   crossShardSettlements: CrossShardSettlement[];
 }
@@ -182,9 +182,9 @@ export interface ShardState {
   txCounts: Map<string, { count: number; windowStart: number }>;
 }
 
-// ─── CosmoChain Engine ───────────────────────────────────
+// ─── StrangrzChain Engine ───────────────────────────────────
 
-export class CosmoChain {
+export class StrangrzChain {
   private shards: Map<ShardId, ShardState> = new Map();
   private beaconBlocks: BeaconBlock[] = [];
   private globalBalances: Map<string, number> = new Map();
@@ -346,7 +346,7 @@ export class CosmoChain {
       publicKey: '',
       shard: ShardId.LUMINA,
       type: 'genesis',
-      memo: `CosmoChain Genesis — ${amount} Ω created`,
+      memo: `StrangrzChain Genesis — ${amount} Ω created`,
       nonce: 0,
       gasCost: 0,
       status: 'finalized',
@@ -490,7 +490,7 @@ export class CosmoChain {
     }
 
     // 8. Gas cost is always 0
-    if (tx.gasCost !== 0) errors.push('Gas cost must be 0 (CosmoChain is free)');
+    if (tx.gasCost !== 0) errors.push('Gas cost must be 0 (StrangrzChain is free)');
 
     return {
       valid: errors.length === 0,
@@ -552,8 +552,8 @@ export class CosmoChain {
           const rawJson = JSON.stringify(batch);
           const rawSize = new TextEncoder().encode(rawJson).length;
 
-          // CosmoCode SVG compression (real, measured)
-          let cosmoCodeSVG: string | undefined;
+          // StrangrzCode SVG compression (real, measured)
+          let strangrzCodeSVG: string | undefined;
           let compressedSize = rawSize;
           try {
             const txData = batch.map(tx => ({
@@ -561,9 +561,9 @@ export class CosmoChain {
               type: tx.type, nonce: tx.nonce, ts: tx.timestamp,
             }));
             const container = await encodeTransactionBatch(txData);
-            cosmoCodeSVG = container.svg;
-            compressedSize = new TextEncoder().encode(cosmoCodeSVG).length;
-            block.cosmoCodeSVG = cosmoCodeSVG;
+            strangrzCodeSVG = container.svg;
+            compressedSize = new TextEncoder().encode(strangrzCodeSVG).length;
+            block.strangrzCodeSVG = strangrzCodeSVG;
           } catch {
             // Compression failed — store raw (honest about it)
           }
@@ -580,7 +580,7 @@ export class CosmoChain {
             hash: block.hash,
             txCount: block.txCount,
             processingTimeMs: block.processingTimeMs,
-            cosmoCodeSVG,
+            strangrzCodeSVG,
             rawSize,
             compressedSize,
           });
@@ -801,7 +801,7 @@ export class CosmoChain {
       privateKey: params.privateKey,
       publicKey: params.publicKey,
       type: 'mine',
-      memo: `CosmoChain Mining Reward: ${params.reward} Ω`,
+      memo: `StrangrzChain Mining Reward: ${params.reward} Ω`,
     });
   }
 
@@ -840,20 +840,20 @@ export class CosmoChain {
     privateKey: string;
     publicKey: string;
     metadata?: Record<string, string>;
-  }): Promise<{ tx: ChainTransaction; validation: TransactionValidation; cosmoCode?: CosmoCodeContainer }> {
-    // Encode the artwork as CosmoCode SVG (full on-chain storage)
-    let cosmoCode: CosmoCodeContainer | undefined;
+  }): Promise<{ tx: ChainTransaction; validation: TransactionValidation; strangrzCode?: StrangrzCodeContainer }> {
+    // Encode the artwork as StrangrzCode SVG (full on-chain storage)
+    let strangrzCode: StrangrzCodeContainer | undefined;
     let onChainData: string | undefined;
 
     try {
       const { imageToOnChainSVG } = await import('./cosmocode');
-      cosmoCode = await imageToOnChainSVG(
+      strangrzCode = await imageToOnChainSVG(
         params.imageData,
         params.title,
         params.creator,
         params.metadata,
       );
-      onChainData = cosmoCode.svg;
+      onChainData = strangrzCode.svg;
     } catch {
       // If SVG encoding fails, store raw (less efficient but still works)
       onChainData = params.imageData;
@@ -870,7 +870,7 @@ export class CosmoChain {
       onChainData,
     });
 
-    return { ...result, cosmoCode };
+    return { ...result, strangrzCode };
   }
 
   // ─── Queries ───────────────────────────────────────────
@@ -1106,7 +1106,7 @@ export class CosmoChain {
     for (const shard of this.shards.values()) {
       for (const block of shard.blocks) {
         const rawSize = JSON.stringify(block.transactions).length;
-        const compressedSize = block.cosmoCodeSVG?.length || rawSize;
+        const compressedSize = block.strangrzCodeSVG?.length || rawSize;
         totalRaw += rawSize;
         totalCompressed += compressedSize;
       }
@@ -1139,9 +1139,9 @@ export class CosmoChain {
     return JSON.stringify(data);
   }
 
-  static deserialize(json: string): CosmoChain {
+  static deserialize(json: string): StrangrzChain {
     const data = JSON.parse(json);
-    const chain = new CosmoChain();
+    const chain = new StrangrzChain();
 
     for (const shardData of data.shards) {
       const shard = chain.shards.get(shardData.id as ShardId)!;
@@ -1167,11 +1167,11 @@ export class CosmoChain {
     storage.setItem('strangrz_chain', this.serialize());
   }
 
-  static load(): CosmoChain | null {
+  static load(): StrangrzChain | null {
     const raw = storage.getItem('strangrz_chain');
     if (!raw) return null;
     try {
-      return CosmoChain.deserialize(raw);
+      return StrangrzChain.deserialize(raw);
     } catch {
       return null;
     }

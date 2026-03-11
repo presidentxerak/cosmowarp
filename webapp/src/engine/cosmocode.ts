@@ -1,5 +1,5 @@
 /**
- * CosmoCode — SVG On-Chain Encoding & Fractal Compression Engine
+ * StrangrzCode — SVG On-Chain Encoding & Fractal Compression Engine
  *
  * The core innovation of Strangrz's new blockchain protocol.
  * ALL on-chain data is encoded into optimized SVG containers.
@@ -26,11 +26,11 @@
 
 import { sha256 } from './crypto';
 
-// ─── CosmoCode SVG Container ─────────────────────────────
+// ─── StrangrzCode SVG Container ─────────────────────────────
 
-export interface CosmoCodeContainer {
+export interface StrangrzCodeContainer {
   version: 1;
-  type: CosmoCodeType;
+  type: StrangrzCodeType;
   id: string;                    // SHA-256 of compressed content
   svg: string;                   // The SVG-encoded data
   originalSize: number;          // Original data size in bytes
@@ -41,7 +41,7 @@ export interface CosmoCodeContainer {
   checksum: string;              // SHA-256 of SVG content for integrity
 }
 
-export type CosmoCodeType =
+export type StrangrzCodeType =
   | 'transaction'     // Transaction data encoded in SVG
   | 'block'           // Full block encoded in SVG
   | 'wart'            // NFT/artwork stored as SVG on-chain
@@ -597,14 +597,14 @@ function filterChainDecompress(filtered: string, filterDefs: Map<string, string>
 // ─── SVG Encoder (Main Pipeline) ──────────────────────────
 
 /**
- * Encode arbitrary data into a CosmoCode SVG container.
+ * Encode arbitrary data into a StrangrzCode SVG container.
  * This is the main entry point for the compression pipeline.
  */
-export async function encodeToCosmoCode(
+export async function encodeToStrangrzCode(
   data: string,
-  type: CosmoCodeType,
+  type: StrangrzCodeType,
   reference?: string,
-): Promise<CosmoCodeContainer> {
+): Promise<StrangrzCodeContainer> {
   const originalSize = new TextEncoder().encode(data).length;
   const appliedLayers: CompressionLayer[] = [];
 
@@ -682,7 +682,7 @@ export async function encodeToCosmoCode(
     ? buildFilterDefs(filterDefs)
     : '';
 
-  const svg = buildCosmoCodeSVG(compressed, type, defsBlock, freqTable, quantTableBlock, filterDefsBlock, appliedLayers);
+  const svg = buildStrangrzCodeSVG(compressed, type, defsBlock, freqTable, quantTableBlock, filterDefsBlock, appliedLayers);
 
   const compressedSize = new TextEncoder().encode(svg).length;
   const checksum = await sha256(svg);
@@ -703,16 +703,16 @@ export async function encodeToCosmoCode(
 }
 
 /**
- * Decode a CosmoCode SVG container back to original data.
+ * Decode a StrangrzCode SVG container back to original data.
  */
-export async function decodeFromCosmoCode(
-  container: CosmoCodeContainer,
+export async function decodeFromStrangrzCode(
+  container: StrangrzCodeContainer,
   reference?: string,
 ): Promise<string> {
   // Verify integrity
   const checksum = await sha256(container.svg);
   if (checksum !== container.checksum) {
-    throw new Error('CosmoCode integrity check failed — SVG has been tampered with');
+    throw new Error('StrangrzCode integrity check failed — SVG has been tampered with');
   }
 
   // Extract compressed data from SVG
@@ -762,9 +762,9 @@ export async function decodeFromCosmoCode(
 
 // ─── SVG Builder Helpers ──────────────────────────────────
 
-function buildCosmoCodeSVG(
+function buildStrangrzCodeSVG(
   data: string,
-  type: CosmoCodeType,
+  type: StrangrzCodeType,
   defsBlock: string,
   freqTable: string,
   quantTableBlock: string,
@@ -936,7 +936,7 @@ export async function imageToOnChainSVG(
   title: string,
   creator: string,
   metadata?: Record<string, string>,
-): Promise<CosmoCodeContainer> {
+): Promise<StrangrzCodeContainer> {
   const isSVG = imageData.trim().startsWith('<svg') || imageData.trim().startsWith('<?xml');
   const isDataUrl = imageData.startsWith('data:');
 
@@ -961,16 +961,16 @@ export async function imageToOnChainSVG(
 </svg>`;
   }
 
-  return encodeToCosmoCode(svgContent, 'wart');
+  return encodeToStrangrzCode(svgContent, 'wart');
 }
 
 /**
  * Extract the renderable image from an on-chain SVG container.
  */
 export async function extractImageFromOnChainSVG(
-  container: CosmoCodeContainer,
+  container: StrangrzCodeContainer,
 ): Promise<string> {
-  const svgData = await decodeFromCosmoCode(container);
+  const svgData = await decodeFromStrangrzCode(container);
 
   // If it contains an embedded image, extract the data URL
   const hrefMatch = svgData.match(/href="(data:[^"]+)"/);
@@ -991,7 +991,7 @@ export async function extractImageFromOnChainSVG(
  */
 export async function encodeTransactionBatch(
   transactions: Array<Record<string, unknown>>,
-): Promise<CosmoCodeContainer> {
+): Promise<StrangrzCodeContainer> {
   // Serialize all transactions
   const txStrings = transactions.map(tx => JSON.stringify(tx));
 
@@ -1003,16 +1003,16 @@ export async function encodeTransactionBatch(
   }
 
   const batchData = encoded.join('\n§TX\n');
-  return encodeToCosmoCode(batchData, 'block');
+  return encodeToStrangrzCode(batchData, 'block');
 }
 
 /**
  * Decode a batch of transactions from a compressed SVG block.
  */
 export async function decodeTransactionBatch(
-  container: CosmoCodeContainer,
+  container: StrangrzCodeContainer,
 ): Promise<Array<Record<string, unknown>>> {
-  const batchData = await decodeFromCosmoCode(container);
+  const batchData = await decodeFromStrangrzCode(container);
   const parts = batchData.split('\n§TX\n');
 
   const transactions: Array<Record<string, unknown>> = [];
@@ -1029,16 +1029,16 @@ export async function decodeTransactionBatch(
 
 // ─── Storage Metrics ─────────────────────────────────────
 
-export interface CosmoCodeMetrics {
+export interface StrangrzCodeMetrics {
   totalContainers: number;
   totalOriginalBytes: number;
   totalCompressedBytes: number;
   overallCompressionRatio: number;
-  byType: Record<CosmoCodeType, { count: number; originalBytes: number; compressedBytes: number }>;
+  byType: Record<StrangrzCodeType, { count: number; originalBytes: number; compressedBytes: number }>;
   layerEffectiveness: Record<CompressionLayer, number>; // avg compression per layer
 }
 
-export function computeMetrics(containers: CosmoCodeContainer[]): CosmoCodeMetrics {
+export function computeMetrics(containers: StrangrzCodeContainer[]): StrangrzCodeMetrics {
   const byType: Record<string, { count: number; originalBytes: number; compressedBytes: number }> = {};
   const layerCounts: Record<string, number[]> = {};
   let totalOriginal = 0;
@@ -1071,8 +1071,8 @@ export function computeMetrics(containers: CosmoCodeContainer[]): CosmoCodeMetri
     totalOriginalBytes: totalOriginal,
     totalCompressedBytes: totalCompressed,
     overallCompressionRatio: totalOriginal / Math.max(1, totalCompressed),
-    byType: byType as CosmoCodeMetrics['byType'],
-    layerEffectiveness: layerEffectiveness as CosmoCodeMetrics['layerEffectiveness'],
+    byType: byType as StrangrzCodeMetrics['byType'],
+    layerEffectiveness: layerEffectiveness as StrangrzCodeMetrics['layerEffectiveness'],
   };
 }
 
@@ -1082,11 +1082,11 @@ export function computeMetrics(containers: CosmoCodeContainer[]): CosmoCodeMetri
  * Quick estimate of compression ratio without performing full compression.
  * Useful for gas estimation (which is always 0 in Strangrz, but useful for display).
  */
-export function estimateCompressionRatio(data: string, type: CosmoCodeType): number {
+export function estimateCompressionRatio(data: string, type: StrangrzCodeType): number {
   const size = data.length;
 
   // Base ratios by type (empirically determined)
-  const baseRatios: Record<CosmoCodeType, number> = {
+  const baseRatios: Record<StrangrzCodeType, number> = {
     transaction: 15,    // ~15x for single transactions
     block: 200,         // ~200x for batched blocks (inter-tx compression)
     wart: 3,            // ~3x for artwork (already compressed base64)

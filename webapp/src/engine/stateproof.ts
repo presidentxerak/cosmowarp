@@ -380,7 +380,7 @@ export class MerklePatriciaTrie {
     return this.getRoot();
   }
 
-  /** Compute state root from a map of balances (for CosmoChain integration) */
+  /** Compute state root from a map of balances (for StrangrzChain integration) */
   static async computeStateRoot(state: Map<string, number>): Promise<{
     root: string;
     trie: MerklePatriciaTrie;

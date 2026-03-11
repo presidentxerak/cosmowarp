@@ -5,19 +5,19 @@
  * Anyone with a wallet can mint, list, buy, and transfer Warts.
  * Creators earn royalties on every resale.
  *
- * ─── Full On-Chain SVG Architecture (CosmoCode) ──────────
- * With CosmoChain integration, all artwork is stored FULLY ON-CHAIN
- * as optimized CosmoCode SVG containers. The 7-layer fractal compression
+ * ─── Full On-Chain SVG Architecture (StrangrzCode) ──────────
+ * With StrangrzChain integration, all artwork is stored FULLY ON-CHAIN
+ * as optimized StrangrzCode SVG containers. The 7-layer fractal compression
  * pipeline achieves ~1000x storage efficiency, making on-chain storage
  * of full images practical at zero cost.
  *
  * ─── Hybrid Storage ──────────────────────────────────────
- * - On-Chain: CosmoCode SVG container in the CosmoChain block (permanent)
+ * - On-Chain: StrangrzCode SVG container in the StrangrzChain block (permanent)
  * - Local Cache: Content-addressable storage for fast rendering
  * - Both: Certificate of Authenticity with Ed25519 creator signature
  *
  * ─── Certificate of Authenticity ─────────────────────────
- * Every Wart receives an unforgeable Certificate ID (CRCERT_*) computed
+ * Every Wart receives an unforgeable Certificate ID (STCERT_*) computed
  * from SHA-256(creator + content fingerprint + timestamp + title).
  * The creator's Ed25519 signature proves authenticity. Certificates are
  * permanently registered in an append-only local registry.
@@ -25,7 +25,7 @@
 
 import { storage } from './storage';
 import { sha256, signTransaction } from './crypto';
-import { extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
+import { extractImageFromOnChainSVG, type StrangrzCodeContainer } from './cosmocode';
 import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from './cosmovault';
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
 import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
@@ -53,7 +53,7 @@ export interface WartComment {
 }
 
 export interface WartCertificate {
-  certId: string;              // CRCERT_<SHA256[0:32]> — unforgeable
+  certId: string;              // STCERT_<SHA256[0:32]> — unforgeable
   contentFingerprint: string;  // SHA-256 of media data
   creatorSignature: string;    // Ed25519 signature of certId
   issuedAt: number;
@@ -83,14 +83,14 @@ export interface Wart {
   editionNumber: number;         // Which edition this is (1-based)
   availableUntil: number | null; // Timestamp deadline (null = forever)
   // ─── Certificate of Authenticity ──────────────────────
-  certId?: string;               // CRCERT_<SHA256[0:32]> — unforgeable certificate ID
+  certId?: string;               // STCERT_<SHA256[0:32]> — unforgeable certificate ID
   contentFingerprint?: string;   // SHA-256 of media content — integrity proof
   creatorSignature?: string;     // Ed25519 signature — creator authenticity proof
-  // ─── CosmoCode On-Chain SVG Storage ─────────────────
-  onChainSVG?: string;           // Full CosmoCode SVG container (on-chain data)
-  cosmoCodeId?: string;          // CosmoCode container ID (SHA-256 of compressed content)
+  // ─── StrangrzCode On-Chain SVG Storage ─────────────────
+  onChainSVG?: string;           // Full StrangrzCode SVG container (on-chain data)
+  strangrzCodeId?: string;          // StrangrzCode container ID (SHA-256 of compressed content)
   compressionRatio?: number;     // How much the on-chain data was compressed
-  onChainTxId?: string;          // CosmoChain transaction ID that stores this Wart
+  onChainTxId?: string;          // StrangrzChain transaction ID that stores this Wart
   storageMode: 'local' | 'onchain' | 'hybrid';  // Where the data lives
   // ─── Fiat Pricing ────────────────────────────────────
   priceFiat?: number;              // Price in fiat currency
@@ -376,7 +376,7 @@ export class WartEngine {
     // 2. Compute unforgeable certificate ID
     const certSource = `CW_CERT:v1:${creator}:${contentFingerprint}:${timestamp}:${title.trim()}`;
     const certHash = await sha256(certSource);
-    const certId = 'CRCERT_' + certHash.slice(0, 32).toUpperCase();
+    const certId = 'STCERT_' + certHash.slice(0, 32).toUpperCase();
 
     // 3. Creator signs the certificate with their Ed25519 private key
     let creatorSignature: string | undefined;
@@ -457,7 +457,7 @@ export class WartEngine {
   // ─── On-Chain SVG Recovery ───────────────────────────
 
   /**
-   * Recover a Wart's image data from its on-chain CosmoCode SVG.
+   * Recover a Wart's image data from its on-chain StrangrzCode SVG.
    * This works even if the local cache is lost — the data is on-chain forever.
    */
   async recoverFromOnChain(wartId: string): Promise<string | null> {
@@ -465,10 +465,10 @@ export class WartEngine {
     if (!wart || !wart.onChainSVG) return null;
 
     try {
-      const container: CosmoCodeContainer = {
+      const container: StrangrzCodeContainer = {
         version: 1,
         type: 'wart',
-        id: wart.cosmoCodeId || '',
+        id: wart.strangrzCodeId || '',
         svg: wart.onChainSVG,
         originalSize: 0,
         compressedSize: wart.onChainSVG.length,
@@ -506,10 +506,10 @@ export class WartEngine {
       localSize,
       onChainSize,
       compressionRatio: wart.compressionRatio || 1,
-      cosmoCodeId: wart.cosmoCodeId,
+      strangrzCodeId: wart.strangrzCodeId,
       hasOnChainBackup: !!wart.onChainSVG,
       hasLocalCache: !!wart.imageData,
-      gasCost: 0, // Always free on CosmoChain
+      gasCost: 0, // Always free on StrangrzChain
     };
   }
 
@@ -531,7 +531,7 @@ export class WartEngine {
     // 2. Verify certificate ID — recompute and compare
     const certSource = `CW_CERT:v1:${wart.creator}:${wart.contentFingerprint}:${wart.createdAt}:${wart.title}`;
     const certHash = await sha256(certSource);
-    const expectedCertId = 'CRCERT_' + certHash.slice(0, 32).toUpperCase();
+    const expectedCertId = 'STCERT_' + certHash.slice(0, 32).toUpperCase();
     if (expectedCertId !== wart.certId) {
       return { valid: false, reason: 'Certificate ID mismatch — data has been altered' };
     }
@@ -1046,8 +1046,8 @@ export interface WartStorageInfo {
   localSize: number;
   onChainSize: number;
   compressionRatio: number;
-  cosmoCodeId?: string;
+  strangrzCodeId?: string;
   hasOnChainBackup: boolean;
   hasLocalCache: boolean;
-  gasCost: 0;  // Always free on CosmoChain
+  gasCost: 0;  // Always free on StrangrzChain
 }

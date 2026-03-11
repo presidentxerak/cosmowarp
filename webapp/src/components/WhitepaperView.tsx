@@ -117,7 +117,7 @@ function OverviewSection() {
       <div className="space-y-3 mb-4">
         {[
           ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
-          ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Strangrz génère un certificat CRCERT infalsifiable avec empreinte numérique et signature cryptographique.'],
+          ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Strangrz génère un certificat STCERT infalsifiable avec empreinte numérique et signature cryptographique.'],
           ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Strangrz certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Strangrz (Ω).'],
           ['4', 'Collectionnez en confiance', 'Chaque Strangrz a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
@@ -135,7 +135,7 @@ function OverviewSection() {
       <div className="space-y-2 mb-4">
         {[
           ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Strangrz, vérifier un certificat : tout est gratuit.'],
-          ['✓', 'Infalsifiable', 'Les certificats CRCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
+          ['✓', 'Infalsifiable', 'Les certificats STCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
           ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Strangrz (Ω). Pas besoin d\u2019exchange crypto."],
           ['✓', 'Décentralisé', "Vos données vous appartiennent. Pas d\u2019intermédiaire, pas de banque."],
           ['✓', 'Hors ligne', "L\u2019app fonctionne même sans internet grâce au mode PWA."],
@@ -179,17 +179,17 @@ function HowItWorksSection() {
         <Stat label="Confirmation" value="~15s" />
       </div>
 
-      <H3>Le stockage : CosmoCode</H3>
+      <H3>Le stockage : StrangrzCode</H3>
       <P>
         Chaque certificat contient une représentation visuelle de l'objet certifié.
-        <span className="opacity-80 font-bold"> CosmoCode</span> compresse ces images
+        <span className="opacity-80 font-bold"> StrangrzCode</span> compresse ces images
         via 7 couches de compression pour les stocker directement sur le réseau.
         Pas de serveur externe qui pourrait disparaître : votre certificat est permanent et autosuffisant.
       </P>
 
-      <H3>L'exécution : CosmoChain</H3>
+      <H3>L'exécution : StrangrzChain</H3>
       <P>
-        <span className="opacity-80 font-bold">CosmoChain</span> est le moteur d'exécution.
+        <span className="opacity-80 font-bold">StrangrzChain</span> est le moteur d'exécution.
         7 shards (zones de traitement) fonctionnent en parallèle dans votre navigateur
         grâce aux Web Workers. Même sur un smartphone, les transactions se traitent
         en arrière-plan sans ralentir l'interface.
@@ -216,30 +216,30 @@ function HowItWorksSection() {
         Quand vous certifiez un objet rare, voici ce qui se passe en coulisses :
       </P>
       <div className="p-4 rounded-none bg-current/5 mb-4 text-body-sm opacity-60 space-y-1">
-        <p>1. Votre photo est compressée par <span className="font-bold">CosmoCode</span> (7 couches de compression)</p>
-        <p>2. Un certificat CRCERT est généré avec empreinte SHA-256 + signature Ed25519</p>
+        <p>1. Votre photo est compressée par <span className="font-bold">StrangrzCode</span> (7 couches de compression)</p>
+        <p>2. Un certificat STCERT est généré avec empreinte SHA-256 + signature Ed25519</p>
         <p>3. Le tout est validé par le <span className="font-bold">StrangrzMesh</span> (7 couches parallèles)</p>
-        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">CosmoChain</span></p>
+        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">StrangrzChain</span></p>
         <p>5. Vous recevez un certificat vérifiable à tout moment par n'importe qui</p>
       </div>
     </div>
   );
 }
 
-// ─── Certificats CRCERT ─────────────────────────────────
+// ─── Certificats STCERT ─────────────────────────────────
 
 function CertificatesSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg>} title="Certificats CRCERT" subtitle="Comment vos objets rares sont protégés" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg>} title="Certificats STCERT" subtitle="Comment vos objets rares sont protégés" />
       <P>
-        Chaque objet certifié sur Strangrz reçoit un <span className="opacity-80 font-bold">CRCERT</span> (Certificat Strangrz).
+        Chaque objet certifié sur Strangrz reçoit un <span className="opacity-80 font-bold">STCERT</span> (Certificat Strangrz).
         C'est une preuve mathématique que cet objet est authentique et qu'il vous appartient.
       </P>
 
-      <H3>Qu'est-ce qu'un CRCERT contient ?</H3>
+      <H3>Qu'est-ce qu'un STCERT contient ?</H3>
       <div className="p-4 rounded-none bg-current/5 mb-4 font-mono text-body-sm opacity-60 space-y-1">
-        <p>CRCERT = {'{'}</p>
+        <p>STCERT = {'{'}</p>
         <p>  empreinte: SHA-256(photo de l'objet),</p>
         <p>  signature: Ed25519(votre clé privée),</p>
         <p>  horodatage: date et heure précises,</p>
@@ -415,7 +415,7 @@ function SecuritySection() {
       <div className="space-y-3 mb-4">
         {[
           [<svg key="enc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>, 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Strangrz ne peut pas lire vos messages.'],
-          [<svg key="cert" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4"/><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>, 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
+          [<svg key="cert" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4"/><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>, 'Certificats infalsifiables', 'Les STCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
           [<svg key="pwa" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>, 'Mode hors ligne (PWA)', "L\u2019app fonctionne sans internet. Consultez vos certificats et pr\u00e9parez des transactions hors ligne. Tout se synchronise automatiquement \u00e0 la reconnexion."],
           [<svg key="pay" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Paiement intégré', 'Achetez des Strangrz par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
         ].map(([icon, title, desc]) => (
@@ -462,7 +462,7 @@ function RoadmapSection() {
         {[
           ['Phase 1 — Genèse', 'T1 2026', [
             'Lancement du réseau StrangrzMesh',
-            'Premiers certificats CRCERT',
+            'Premiers certificats STCERT',
             'Application PWA avec mode hors ligne',
             'Passerelle de paiement fiat',
           ]],

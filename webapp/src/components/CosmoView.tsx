@@ -22,7 +22,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
-    response: 'Les Strangrz sont des objets certifiés sur Strangrz. Chaque objet reçoit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
+    response: 'Les Strangrz sont des objets certifiés sur Strangrz. Chaque objet reçoit un certificat STCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
     suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {
@@ -51,7 +51,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
-    response: 'Strangrz (ストレンジャーズ) est une plateforme de certification pour objets rares. Le Protocole Strangrz crée des certificats d\'authenticité infalsifiables (CRCERT) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
+    response: 'Strangrz (ストレンジャーズ) est une plateforme de certification pour objets rares. Le Protocole Strangrz crée des certificats d\'authenticité infalsifiables (STCERT) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics'],

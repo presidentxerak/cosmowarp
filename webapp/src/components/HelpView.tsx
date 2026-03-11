@@ -62,7 +62,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Les Strangrz, ce sont les objets rares certifiés sur Strangrz — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat d'Authenticité infalsifiable (CRCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
+      answer: "Les Strangrz, ce sont les objets rares certifiés sur Strangrz — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat d'Authenticité infalsifiable (STCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -70,7 +70,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace'],
     response: {
-      answer: "Tu veux acheter une Strangrz ? Parcours la Marketplace, trouve un objet rare qui parle à ton âme cosmique, et clique sur Acheter. Le créateur est payé, et en cas de revente, il touche encore des royalties (5 % par défaut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le goût est subjectif, mais les maths non — vérifie le certificat CRCERT avant d'acheter !",
+      answer: "Tu veux acheter une Strangrz ? Parcours la Marketplace, trouve un objet rare qui parle à ton âme cosmique, et clique sur Acheter. Le créateur est payé, et en cas de revente, il touche encore des royalties (5 % par défaut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le goût est subjectif, mais les maths non — vérifie le certificat STCERT avant d'acheter !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -78,7 +78,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
     response: {
-      answer: "Chaque Strangrz certifiée possède un CRCERT — un Certificat d'Authenticité infalsifiable. C'est un hash SHA-256 de l'adresse Strangrz du créateur + empreinte du contenu + horodatage + titre, signé avec la clé privée Ed25519 du créateur. Traduction : c'est mathématiquement impossible à falsifier. Clique sur « Vérifier » sur n'importe quelle Strangrz pour lancer une vérification d'intégrité complète. Si ça affiche « ✔ Authentique » — tu es tranquille. Sinon... quelqu'un a fait des bêtises.",
+      answer: "Chaque Strangrz certifiée possède un STCERT — un Certificat d'Authenticité infalsifiable. C'est un hash SHA-256 de l'adresse Strangrz du créateur + empreinte du contenu + horodatage + titre, signé avec la clé privée Ed25519 du créateur. Traduction : c'est mathématiquement impossible à falsifier. Clique sur « Vérifier » sur n'importe quelle Strangrz pour lancer une vérification d'intégrité complète. Si ça affiche « ✔ Authentique » — tu es tranquille. Sinon... quelqu'un a fait des bêtises.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace → Détail',
     },
@@ -129,27 +129,27 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   },
   // StrangrzMesh
   {
-    keywords: ['strangrmesh', 'mesh', 'cosmochain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon', 'dag', 'couche', 'couches', 'layer', 'layers'],
+    keywords: ['strangrmesh', 'mesh', 'strangrzchain', 'chain', 'blockchain', 'shard', 'shards', 'parallel', 'block', 'blocks', 'beacon', 'dag', 'couche', 'couches', 'layer', 'layers'],
     response: {
       answer: "StrangrzMesh est notre réseau DAG à 7 couches parallèles fonctionnant simultanément via de vrais Web Workers. Chaque couche (GRID, HELIX, GLYPH, COSMO, CHRONOS, NEXUS, LUMINA) traite des blocs toutes les 1,5 secondes dans son propre thread. Le TPS dépend de ton matériel — lance le benchmark intégré pour le mesurer. Frais de gas ? Zéro. Les données sont stockées dans IndexedDB (échelle Go). Consulte le Livre Blanc pour le schéma d'architecture !",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },
   },
-  // CosmoCode SVG
+  // StrangrzCode SVG
   {
-    keywords: ['cosmocode', 'svg', 'compression', 'on-chain', 'onchain', 'storage', 'stockage', '1000x', 'fractal'],
+    keywords: ['strangrzcode', 'cosmocode', 'svg', 'compression', 'on-chain', 'onchain', 'storage', 'stockage', '1000x', 'fractal'],
     response: {
-      answer: "CosmoCode est le moteur de compression derrière le stockage on-chain. Il prend n'importe quelle donnée — transactions, images, objets rares — et la compresse à travers 7 couches fractales dans un conteneur SVG minuscule. Couche 1 : Encodage Delta (ne stocker que les différences). Couche 2 : Dictionnaire (symboles courts). Couche 3 : Run-Length. Couche 4 : Imbrication Fractale (SVG <defs>/<use> = déduplication). Couches 5-7 : Fréquence, Quantification, Filtres. Ratios réels mesurés : 5-30x pour les données structurées (transactions), ~1-2x pour les données binaires (images). Lance le benchmark pour vérifier.",
+      answer: "StrangrzCode est le moteur de compression derrière le stockage on-chain. Il prend n'importe quelle donnée — transactions, images, objets rares — et la compresse à travers 7 couches fractales dans un conteneur SVG minuscule. Couche 1 : Encodage Delta (ne stocker que les différences). Couche 2 : Dictionnaire (symboles courts). Couche 3 : Run-Length. Couche 4 : Imbrication Fractale (SVG <defs>/<use> = déduplication). Couches 5-7 : Fréquence, Quantification, Filtres. Ratios réels mesurés : 5-30x pour les données structurées (transactions), ~1-2x pour les données binaires (images). Lance le benchmark pour vérifier.",
       navigateTo: 'whitepaper',
-      tabLabel: 'Livre Blanc → CosmoCode',
+      tabLabel: 'Livre Blanc → StrangrzCode',
     },
   },
   // Zero gas
   {
     keywords: ['gas', 'fee', 'fees', 'free', 'gratuit', 'cost', 'coût', 'cout', 'price', 'zero', 'frais'],
     response: {
-      answer: "Frais de gas ? On ne fait pas ça ici. Les transactions StrangrzMesh sont 100 % GRATUITES. Zéro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les récompenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de débit (100 TX/min) au lieu d'exclure les gens par les prix. (3) CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go à coût zéro. Ethereum facture 0,50 à 100 $ par TX. Nous, c'est 0 Ω. De rien.",
+      answer: "Frais de gas ? On ne fait pas ça ici. Les transactions StrangrzMesh sont 100 % GRATUITES. Zéro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les récompenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de débit (100 TX/min) au lieu d'exclure les gens par les prix. (3) StrangrzCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go à coût zéro. Ethereum facture 0,50 à 100 $ par TX. Nous, c'est 0 Ω. De rien.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },
@@ -167,7 +167,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['on-chain nft', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
     response: {
-      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur CosmoCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 Ω. GRATUIT.",
+      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur StrangrzCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 Ω. GRATUIT.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },
@@ -176,7 +176,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "Le Strangrz Protocole, c'est le parchemin sacré de Strangrz ! 7 sections couvrant l'essentiel : comment ça marche, les certificats CRCERT, le Strangrz (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
+      answer: "Le Strangrz Protocole, c'est le parchemin sacré de Strangrz ! 7 sections couvrant l'essentiel : comment ça marche, les certificats STCERT, le Strangrz (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc',
     },
@@ -361,7 +361,7 @@ const FAQ_ICONS: Record<string, ReactNode> = {
   'Minage & Strangrz': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
   'Marketplace (Strangrz)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
-  'StrangrzMesh & CosmoCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
+  'StrangrzMesh & StrangrzCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
   'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
   'Vobjct & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
@@ -390,10 +390,10 @@ const FAQ_SECTIONS = [
     title: 'Marketplace (Strangrz)',
     icon: 'Marketplace (Strangrz)',
     items: [
-      { q: `Qu'est-ce qu'une Strangrz ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (CRCERT) sur le protocole Strangrz.` },
+      { q: `Qu'est-ce qu'une Strangrz ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (STCERT) sur le protocole Strangrz.` },
       { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 50 Mo.` },
-      { q: `Qu'est-ce que le CRCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
-      { q: `Les Strangrz sont-elles stockées on-chain ?`, a: `Oui ! Avec StrangrzMesh, les objets sont compressés via CosmoCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
+      { q: `Qu'est-ce que le STCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
+      { q: `Les Strangrz sont-elles stockées on-chain ?`, a: `Oui ! Avec StrangrzMesh, les objets sont compressés via StrangrzCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
     ],
   },
   {
@@ -406,14 +406,14 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    title: 'StrangrzMesh & CosmoCode',
-    icon: 'StrangrzMesh & CosmoCode',
+    title: 'StrangrzMesh & StrangrzCode',
+    icon: 'StrangrzMesh & StrangrzCode',
     items: [
       { q: `Qu'est-ce que StrangrzMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 Ω.` },
       { q: `Quelles sont les 7 couches ?`, a: `GRID (<10Ω), HELIX (10-100Ω), GLYPH (100-1KΩ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.` },
-      { q: `Pourquoi les transactions sont-elles gratuites ?`, a: `Les validateurs gagnent via les récompenses de staking, pas via les frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. CosmoCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go.` },
-      { q: `Qu'est-ce que CosmoCode SVG ?`, a: `Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.` },
-      { q: `Les Strangrz sont-elles vraiment stockées on-chain ?`, a: `Oui ! StrangrzMesh stocke les objets en tant que CosmoCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },
+      { q: `Pourquoi les transactions sont-elles gratuites ?`, a: `Les validateurs gagnent via les récompenses de staking, pas via les frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. StrangrzCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go.` },
+      { q: `Qu'est-ce que StrangrzCode SVG ?`, a: `Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.` },
+      { q: `Les Strangrz sont-elles vraiment stockées on-chain ?`, a: `Oui ! StrangrzMesh stocke les objets en tant que StrangrzCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },
       { q: `Qu'est-ce qu'un Beacon Block ?`, a: `Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d'État Global. Cela fournit une finalité inter-couches absolue.` },
     ],
   },
@@ -432,7 +432,7 @@ const FAQ_SECTIONS = [
       { q: `Qu'est-ce que Vobjct ?`, a: `Vobjct est le standard d'intégrité et de résilience des actifs numériques de Strangrz. Chaque objet certifié reçoit un « Vobjct Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
       { q: `Qu'est-ce que Vobjct Safe ?`, a: `Vobjct Safe est le système de surveillance et réparation automatique. Il vérifie régulièrement que les routes de stockage sont actives (Supabase, IndexedDB, on-chain). Si une route tombe, Safe passe l'objet en état « warning » puis « degraded » et peut lancer des réparations automatiques (re-upload, ajout de miroir). Un journal d'incidents trace chaque action.` },
       { q: `Où sont stockées mes Strangrz ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) StrangrzMesh on-chain pour le stockage permanent. Vobjct Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
-      { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même CosmoID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via CosmoCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
+      { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même CosmoID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via StrangrzCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
       { q: `Quels sont les droits gérés par Vobjct ?`, a: `Chaque manifest définit : droits d'affichage (allowed/forbidden), usage commercial (personal_only/commercial), dérivés (forbidden/allowed), licence version, et termes personnalisés. Ces droits sont embarqués dans le manifest et signés cryptographiquement.` },
     ],
   },

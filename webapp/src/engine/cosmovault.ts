@@ -12,12 +12,12 @@
  *    a) Fingerprinted (SHA-256 of raw media)
  *    b) Encrypted with AES-256-GCM using the vault key
  *    c) Stored in IndexedDB (local, multi-GB capacity)
- *    d) Optionally encoded as CosmoCode SVG for on-chain backup
+ *    d) Optionally encoded as StrangrzCode SVG for on-chain backup
  *
  * 3. RECOVERY MODES:
  *    - CosmoID Recovery: Same username + password → same vault key → decrypt all
  *    - Recovery Kit: Encrypted JSON bundle (downloadable, works offline)
- *    - On-Chain Recovery: CosmoCode SVG stored in CosmoChain blocks
+ *    - On-Chain Recovery: StrangrzCode SVG stored in StrangrzChain blocks
  *    - Peer Recovery: Request encrypted fragments from connected peers
  *
  * 4. VAULT MANIFEST — A signed, encrypted index of all owned artworks.
@@ -50,8 +50,8 @@ export interface VaultEntry {
   mediaSizeBytes: number;          // Original media size
   createdAt: number;
   addedToVaultAt: number;
-  onChainTxId?: string;            // CosmoChain TX that stores the on-chain backup
-  onChainSVG?: string;             // CosmoCode SVG backup (if available)
+  onChainTxId?: string;            // StrangrzChain TX that stores the on-chain backup
+  onChainSVG?: string;             // StrangrzCode SVG backup (if available)
   recoveryStatus: 'local' | 'onchain' | 'hybrid' | 'peer';
 }
 
