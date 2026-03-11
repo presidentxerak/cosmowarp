@@ -6,7 +6,7 @@ import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import * as sync from '../lib/supabase-sync';
-import { fetchSocialProfile } from '../lib/supabase-db';
+import { fetchSocialProfile, fetchProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
 import HexAvatar from './HexAvatar';
 
 type Tab = 'posts' | 'created' | 'collection';
@@ -99,18 +99,35 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     const localAlias = profile?.alias || '';
     const isTruncated = !localAlias || localAlias === addr.slice(0, 10) || localAlias === shortAddress(addr);
     if (isTruncated && !(wallet && wallet.address === addr)) {
-      fetchSocialProfile(addr).then(remote => {
-        if (remote && remote.alias) {
-          // Save to local SocialEngine for future use
+      // Try social_profiles first, then fall back to profiles table
+      Promise.all([
+        fetchSocialProfile(addr).catch(() => null),
+        fetchProfile(addr).catch(() => null),
+      ]).then(([remote, walletProfile]) => {
+        const resolvedAlias = (remote?.alias && remote.alias !== addr.slice(0, 10) && remote.alias !== shortAddress(addr))
+          ? remote.alias
+          : walletProfile?.alias || '';
+
+        if (resolvedAlias) {
           const s = SocialEngine.load();
-          s.ensureProfile(addr, remote.alias);
-          if (remote.bio) s.updateBio(addr, remote.bio);
-          if (remote.website || remote.instagram || remote.twitter) {
-            s.updateLinks(addr, { website: remote.website, instagram: remote.instagram, twitter: remote.twitter });
+          s.ensureProfile(addr, resolvedAlias);
+          if (remote?.bio) s.updateBio(addr, remote.bio);
+          if (remote?.website || remote?.instagram || remote?.twitter) {
+            s.updateLinks(addr, { website: remote?.website, instagram: remote?.instagram, twitter: remote?.twitter });
           }
           applyProfile(s.getProfile(addr));
         }
       }).catch(() => { /* non-critical */ });
+
+      // Fetch follower/following counts from Supabase
+      Promise.all([
+        fetchFollowers(addr).catch(() => []),
+        fetchFollowing(addr).catch(() => []),
+      ]).then(([followers, following]) => {
+        setFollowersCount(followers.length);
+        setFollowingCount(following.length);
+      });
+    }
     }
 
     if (wallet) {
@@ -299,7 +316,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   );
 
   return (
-    <div className="space-y-0 pb-4 max-w-2xl mx-auto px-2.5">
+    <div className="space-y-0 pb-4">
       {/* Back button */}
       <div className="px-3 py-2">
         <button
