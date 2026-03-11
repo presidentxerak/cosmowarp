@@ -103,13 +103,12 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         if (remote && remote.alias) {
           // Save to local SocialEngine for future use
           const s = SocialEngine.load();
-          const p = s.ensureProfile(addr, remote.alias);
-          if (remote.bio) p.bio = remote.bio;
-          if (remote.website) p.website = remote.website;
-          if (remote.instagram) p.instagram = remote.instagram;
-          if (remote.twitter) p.twitter = remote.twitter;
-          s.save();
-          applyProfile(p);
+          s.ensureProfile(addr, remote.alias);
+          if (remote.bio) s.updateBio(addr, remote.bio);
+          if (remote.website || remote.instagram || remote.twitter) {
+            s.updateLinks(addr, { website: remote.website, instagram: remote.instagram, twitter: remote.twitter });
+          }
+          applyProfile(s.getProfile(addr));
         }
       }).catch(() => { /* non-critical */ });
     }
