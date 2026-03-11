@@ -4,6 +4,7 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/cosmomesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
+import { setup2FA, enable2FA, disable2FA, is2FAEnabled, generateTOTPUri } from '../engine/totp';
 import MineView from './MineView';
 import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
@@ -17,8 +18,11 @@ export default function WalletView() {
   const {
     wallet, unlocked, needsMigration,
     meshStats, supplyInfo, levelProgress,
-    cosmoIDLogin, unlock, lock, migrate, send,
+    cosmoIDLogin, verify2FACode, pending2FA,
+    showRecoveryReminder, dismissRecoveryReminder,
+    unlock, lock, migrate, send,
     doExportWallet, doImportWallet, doImportCosmoLink,
+    generateRecoveryKit,
   } = useWallet();
 
   const [alias, setAlias] = useState('');
@@ -48,6 +52,18 @@ export default function WalletView() {
   const [signInPassword, setSignInPassword] = useState('');
   const [signInError, setSignInError] = useState('');
   const [signingIn, setSigningIn] = useState(false);
+
+  // 2FA state
+  const [twoFACode, setTwoFACode] = useState('');
+  const [twoFAError, setTwoFAError] = useState('');
+  const [verifying2FA, setVerifying2FA] = useState(false);
+  // 2FA setup state (in wallet settings)
+  const [setting2FA, setSetting2FA] = useState(false);
+  const [setup2FAData, setSetup2FAData] = useState<{ secret: string; uri: string; backupCodes: string[] } | null>(null);
+  const [setup2FACode, setSetup2FACode] = useState('');
+  const [setup2FAError, setSetup2FAError] = useState('');
+  const [disable2FACode, setDisable2FACode] = useState('');
+  const [disable2FAError, setDisable2FAError] = useState('');
 
   // Wallet sub-tabs
   const [walletTab, setWalletTab] = useState<WalletTab>('overview');
@@ -96,8 +112,26 @@ export default function WalletView() {
       if (!result.success) {
         setSignInError(result.error || 'Sign in failed');
       }
+      // If needs2FA, the UI will show the 2FA prompt via pending2FA state
     } finally {
       setSigningIn(false);
+    }
+  };
+
+  // ─── 2FA Verification handler ──────────────────────────
+  const handle2FAVerify = async () => {
+    if (!twoFACode.trim()) { setTwoFAError('Enter your 2FA code'); return; }
+    setVerifying2FA(true);
+    setTwoFAError('');
+    try {
+      const result = await verify2FACode(twoFACode.trim());
+      if (!result.success) {
+        setTwoFAError(result.error || 'Invalid code');
+      } else {
+        setTwoFACode('');
+      }
+    } finally {
+      setVerifying2FA(false);
     }
   };
 
@@ -113,6 +147,43 @@ export default function WalletView() {
       setCosmoLinkError('Failed to import CosmoLink');
     }
   };
+
+  // ─── 2FA Verification Screen ──────────────────────────────
+  if (pending2FA) {
+    return (
+      <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
+        <div className="flex justify-center mb-4">
+          <Logo className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
+        </div>
+        <h2 className="text-title-md font-bold opacity-100 mb-2 font-title">2FA Verification</h2>
+        <p className="text-base opacity-50 mb-4">
+          Enter the 6-digit code from your authenticator app.
+        </p>
+        <div className="max-w-xs mx-auto space-y-3">
+          <input
+            className="warp-input text-center text-title-md tracking-[0.5em] font-mono"
+            placeholder="000000"
+            value={twoFACode}
+            maxLength={8}
+            onChange={e => { setTwoFACode(e.target.value.replace(/[^0-9A-Fa-f]/g, '')); setTwoFAError(''); }}
+            onKeyDown={e => { if (e.key === 'Enter') handle2FAVerify(); }}
+            autoFocus
+          />
+          {twoFAError && <p className="text-body-sm opacity-70">{twoFAError}</p>}
+          <button
+            className="warp-button w-full text-base py-3"
+            onClick={handle2FAVerify}
+            disabled={verifying2FA || !twoFACode.trim()}
+          >
+            {verifying2FA ? (
+              <span className="flex items-center justify-center gap-2"><Spinner /> Verifying...</span>
+            ) : 'Verify'}
+          </button>
+          <p className="text-label opacity-30">You can also enter a backup code</p>
+        </div>
+      </div>
+    );
+  }
 
   // ─── No wallet: Sign Up / Sign In screen ───────────────
   if (!wallet) {
@@ -573,6 +644,163 @@ export default function WalletView() {
                 ) : 'Copy'}
               </button>
             </div>
+          </div>
+
+          {/* Recovery Kit Reminder */}
+          {showRecoveryReminder && (
+            <div className="glass-panel p-4 border-l-4 border-current/30">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-base font-bold opacity-80">{'\u26A0'} Recovery Kit Reminder</p>
+                  <p className="text-body-sm opacity-50 mt-1">
+                    Download your Recovery Kit to protect your artworks. Without it, local vault data may be lost if you lose access to this device.
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      className="warp-button text-body-sm px-3 py-1.5"
+                      onClick={async () => {
+                        const kit = await generateRecoveryKit(prompt('Enter a recovery password:') || '');
+                        if (kit) {
+                          const blob = new Blob([JSON.stringify(kit, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `cosmorare-recovery-kit-${wallet.address.slice(0, 10)}.json`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                          dismissRecoveryReminder();
+                        }
+                      }}
+                    >
+                      Download Recovery Kit
+                    </button>
+                    <button
+                      className="text-body-sm px-3 py-1.5 opacity-40 hover:opacity-70 border border-current/10 cursor-pointer"
+                      onClick={dismissRecoveryReminder}
+                    >
+                      Later
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2FA Security */}
+          <div className="glass-panel p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-label opacity-40">TWO-FACTOR AUTHENTICATION</p>
+                <p className="text-body-sm opacity-50">
+                  {is2FAEnabled(wallet.address) ? 'Enabled — your account is protected' : 'Not enabled — add an extra layer of security'}
+                </p>
+              </div>
+              {is2FAEnabled(wallet.address) ? (
+                <span className="text-label px-2 py-0.5 bg-current/5 opacity-80 border border-current/10">{'\u2714'} Active</span>
+              ) : (
+                <button
+                  className="warp-button text-body-sm px-3 py-1.5"
+                  onClick={async () => {
+                    setSetting2FA(true);
+                    const data = await setup2FA(wallet.address, wallet.alias || wallet.address.slice(0, 10));
+                    setSetup2FAData(data);
+                  }}
+                >
+                  Enable
+                </button>
+              )}
+            </div>
+
+            {/* 2FA Setup Flow */}
+            {setting2FA && setup2FAData && !is2FAEnabled(wallet.address) && (
+              <div className="mt-3 p-3 bg-current/5 border border-current/10 space-y-3">
+                <p className="text-body-sm font-bold opacity-70">Setup TOTP</p>
+                <p className="text-label opacity-50">
+                  1. Copy this secret into your authenticator app (Google Authenticator, Authy, etc.):
+                </p>
+                <div className="p-2 bg-current/5 border border-current/10">
+                  <code className="text-body-sm opacity-80 break-all select-all">{setup2FAData.secret}</code>
+                </div>
+                <p className="text-label opacity-50">
+                  2. Or use this URI: <code className="text-[9px] opacity-60 break-all select-all">{setup2FAData.uri}</code>
+                </p>
+                <p className="text-label opacity-50">
+                  3. Enter the 6-digit code from your app to verify:
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    className="warp-input flex-1 text-center font-mono tracking-widest"
+                    placeholder="000000"
+                    value={setup2FACode}
+                    maxLength={6}
+                    onChange={e => { setSetup2FACode(e.target.value.replace(/\D/g, '')); setSetup2FAError(''); }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        enable2FA(wallet.address, setup2FACode).then(ok => {
+                          if (ok) { setSetting2FA(false); setSetup2FACode(''); setSetup2FAData(null); }
+                          else setSetup2FAError('Invalid code. Try again.');
+                        });
+                      }
+                    }}
+                  />
+                  <button
+                    className="warp-button text-body-sm px-3"
+                    onClick={async () => {
+                      const ok = await enable2FA(wallet.address, setup2FACode);
+                      if (ok) { setSetting2FA(false); setSetup2FACode(''); setSetup2FAData(null); }
+                      else setSetup2FAError('Invalid code. Try again.');
+                    }}
+                  >
+                    Verify
+                  </button>
+                </div>
+                {setup2FAError && <p className="text-body-sm opacity-70">{setup2FAError}</p>}
+
+                <div className="p-2 bg-current/5 border border-current/10">
+                  <p className="text-label font-bold opacity-60 mb-1">Backup Codes (save these!)</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {setup2FAData.backupCodes.map((code, i) => (
+                      <code key={i} className="text-[10px] opacity-70 font-mono">{code}</code>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer"
+                  onClick={() => { setSetting2FA(false); setSetup2FAData(null); setSetup2FACode(''); }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Disable 2FA */}
+            {is2FAEnabled(wallet.address) && (
+              <div className="mt-2">
+                <div className="flex gap-2 items-center">
+                  <input
+                    className="warp-input flex-1 text-center font-mono text-body-sm"
+                    placeholder="Enter code to disable"
+                    value={disable2FACode}
+                    maxLength={6}
+                    onChange={e => { setDisable2FACode(e.target.value.replace(/\D/g, '')); setDisable2FAError(''); }}
+                  />
+                  <button
+                    className="text-body-sm px-3 py-1.5 opacity-50 hover:opacity-80 border border-current/15 cursor-pointer"
+                    onClick={async () => {
+                      const ok = await disable2FA(wallet.address, disable2FACode);
+                      if (ok) { setDisable2FACode(''); }
+                      else setDisable2FAError('Invalid code');
+                    }}
+                  >
+                    Disable 2FA
+                  </button>
+                </div>
+                {disable2FAError && <p className="text-body-sm opacity-70 mt-1">{disable2FAError}</p>}
+              </div>
+            )}
           </div>
 
           {/* Sync info */}

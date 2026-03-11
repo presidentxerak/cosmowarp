@@ -15,12 +15,28 @@ import type { MeshStats } from '../engine/cosmomesh';
 import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
+import { is2FAEnabled, verify2FALogin, type TOTPConfig } from '../engine/totp';
 import type { CosmoContract } from '../engine/cosmocontract';
 import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
 // ─── Supabase Sync ──────────────────────────────────────────
 import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
 import { isBackendAvailable } from '../lib/supabase';
+
+// ─── Recovery Kit reminder ────────────────────────────────
+const RECOVERY_REMINDER_KEY = 'cosmorare_recovery_reminder';
+const RECOVERY_REMINDER_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function shouldShowRecoveryReminder(): boolean {
+  const last = storage.getItem(RECOVERY_REMINDER_KEY);
+  if (!last) return true; // never dismissed
+  const ts = parseInt(last, 10);
+  return Date.now() - ts > RECOVERY_REMINDER_INTERVAL;
+}
+
+function dismissRecoveryReminderStorage(): void {
+  storage.setItem(RECOVERY_REMINDER_KEY, Date.now().toString());
+}
 
 // ─── Session persistence ─────────────────────────────────
 // Store private key in sessionStorage so the user stays logged in
@@ -50,7 +66,11 @@ interface WalletContextType {
   levelProgress: number;
   lastLevelUp: LevelUpResult | null;
   initWallet: (password: string, alias?: string) => Promise<void>;
-  cosmoIDLogin: (username: string, password: string) => Promise<{ success: boolean; error?: string; isNew?: boolean }>;
+  cosmoIDLogin: (username: string, password: string) => Promise<{ success: boolean; error?: string; isNew?: boolean; needs2FA?: boolean }>;
+  verify2FACode: (code: string) => Promise<{ success: boolean; error?: string }>;
+  pending2FA: boolean;
+  showRecoveryReminder: boolean;
+  dismissRecoveryReminder: () => void;
   unlock: (password: string) => Promise<boolean>;
   lock: () => void;
   signOut: () => void;
@@ -113,6 +133,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [myCollection, setMyCollection] = useState<Wart[]>([]);
   const [myCreated, setMyCreated] = useState<Wart[]>([]);
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
+  const [pending2FA, setPending2FA] = useState(false);
+  const pending2FARef = useRef<{ username: string; password: string } | null>(null);
+  const [showRecoveryReminder, setShowRecoveryReminder] = useState(false);
   const wartEngineRef = useRef<WartEngine | null>(null);
 
   function getWartEngine(): WartEngine {
@@ -351,67 +374,126 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     for (const tx of w.transactions) sync.syncTransaction(tx);
   }, []);
 
+  // ─── Complete login (shared between initial login and 2FA verification) ──
+  const completeLogin = useCallback(async (w: WarpWallet, username: string, password: string, isNew: boolean) => {
+    setWallet({ ...w });
+    setUnlocked(true);
+    saveSessionKey(w.privateKey);
+    setNeedsMigration(false);
+    try {
+      setMeshStats(getMeshStats());
+      setSupplyInfo(getSupplyBreakdown());
+    } catch { /* first load */ }
+    setLevelProgress(getProgressToNextLevel(w.address));
+    // Initialize vault with CosmoID credentials
+    const engine = getWartEngine();
+    await engine.initVault(username, password);
+    refreshWartsState(w.address);
+
+    // Pull cloud data and persist locally for cross-device sync
+    const cloudData = await sync.fullSync(w.address);
+    if (cloudData) {
+      if (cloudData.profile && cloudData.profile.balance > w.balance) {
+        w.balance = cloudData.profile.balance;
+        w.level = Math.max(w.level, cloudData.profile.level);
+        w.xp = Math.max(w.xp, cloudData.profile.xp);
+        if (cloudData.profile.alias && !w.alias) w.alias = cloudData.profile.alias;
+        saveWallet(w);
+        setWallet({ ...w });
+      }
+      if (cloudData.transactions.length > 0) {
+        const localTxs = getGlobalTransactions();
+        const localIds = new Set(localTxs.map(t => t.id));
+        const newTxs = cloudData.transactions.filter(t => !localIds.has(t.id));
+        if (newTxs.length > 0) {
+          const merged = [...newTxs, ...localTxs]
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, 200);
+          storage.setItem('cosmorare_global_tx', JSON.stringify(merged));
+          setGlobalTxs(merged);
+          w.transactions = merged.filter(t => t.from === w.address || t.to === w.address);
+          saveWallet(w);
+          setWallet({ ...w });
+        }
+      }
+      if (cloudData.warts.length > 0) {
+        mergeCloudWarts(cloudData.warts);
+        refreshWartsState(w.address);
+      }
+    }
+    sync.syncProfile(w);
+    for (const tx of w.transactions) sync.syncTransaction(tx);
+
+    // Auto-export Recovery Kit for new wallets
+    if (isNew) {
+      try {
+        const recoveryKit = await engine.generateRecoveryKit(w.address, password, w.privateKey);
+        if (recoveryKit) {
+          const blob = new Blob([JSON.stringify(recoveryKit, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `cosmorare-recovery-kit-${w.address.slice(0, 10)}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      } catch { /* non-critical */ }
+    }
+
+    // Check recovery reminder (periodic)
+    if (!isNew && shouldShowRecoveryReminder()) {
+      setShowRecoveryReminder(true);
+    }
+  }, []);
+
   // ─── CosmoID Login ───────────────────────────────────────
-  const doCosmoIDLogin = useCallback(async (username: string, password: string): Promise<{ success: boolean; error?: string; isNew?: boolean }> => {
+  const doCosmoIDLogin = useCallback(async (username: string, password: string): Promise<{ success: boolean; error?: string; isNew?: boolean; needs2FA?: boolean }> => {
     try {
       const existingBefore = loadWallet();
       const w = await loginCosmoID(username, password);
       const isNew = !existingBefore;
-      setWallet({ ...w });
-      setUnlocked(true);
-      saveSessionKey(w.privateKey);
-      setNeedsMigration(false);
-      try {
-        setMeshStats(getMeshStats());
-        setSupplyInfo(getSupplyBreakdown());
-      } catch { /* first load */ }
-      setLevelProgress(getProgressToNextLevel(w.address));
-      // Initialize vault with CosmoID credentials
-      const engine = getWartEngine();
-      await engine.initVault(username, password);
-      refreshWartsState(w.address);
 
-      // Pull cloud data and persist locally for cross-device sync
-      const cloudData = await sync.fullSync(w.address);
-      if (cloudData) {
-        // Restore balance from cloud (source of truth)
-        if (cloudData.profile && cloudData.profile.balance > w.balance) {
-          w.balance = cloudData.profile.balance;
-          w.level = Math.max(w.level, cloudData.profile.level);
-          w.xp = Math.max(w.xp, cloudData.profile.xp);
-          if (cloudData.profile.alias && !w.alias) w.alias = cloudData.profile.alias;
-          saveWallet(w);
-          setWallet({ ...w });
-        }
-        // Restore transactions from cloud
-        if (cloudData.transactions.length > 0) {
-          const localTxs = getGlobalTransactions();
-          const localIds = new Set(localTxs.map(t => t.id));
-          const newTxs = cloudData.transactions.filter(t => !localIds.has(t.id));
-          if (newTxs.length > 0) {
-            const merged = [...newTxs, ...localTxs]
-              .sort((a, b) => b.timestamp - a.timestamp)
-              .slice(0, 200);
-            storage.setItem('cosmorare_global_tx', JSON.stringify(merged));
-            setGlobalTxs(merged);
-            w.transactions = merged.filter(t => t.from === w.address || t.to === w.address);
-            saveWallet(w);
-            setWallet({ ...w });
-          }
-        }
-        // Restore warts from cloud
-        if (cloudData.warts.length > 0) {
-          mergeCloudWarts(cloudData.warts);
-          refreshWartsState(w.address);
-        }
+      // Check if 2FA is enabled for this address
+      if (is2FAEnabled(w.address)) {
+        // Store credentials temporarily for 2FA verification
+        pending2FARef.current = { username, password };
+        setPending2FA(true);
+        // Store the wallet temporarily but don't complete login
+        setWallet({ ...w });
+        return { success: true, isNew, needs2FA: true };
       }
-      // Push local state to cloud
-      sync.syncProfile(w);
-      for (const tx of w.transactions) sync.syncTransaction(tx);
+
+      await completeLogin(w, username, password, isNew);
       return { success: true, isNew };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Login failed' };
     }
+  }, [completeLogin]);
+
+  // ─── 2FA Verification ────────────────────────────────────
+  const doVerify2FACode = useCallback(async (code: string): Promise<{ success: boolean; error?: string }> => {
+    if (!wallet || !pending2FARef.current) {
+      return { success: false, error: '2FA session expired. Please sign in again.' };
+    }
+    const valid = await verify2FALogin(wallet.address, code);
+    if (!valid) {
+      return { success: false, error: 'Invalid 2FA code. Try again or use a backup code.' };
+    }
+    const { username, password } = pending2FARef.current;
+    pending2FARef.current = null;
+    setPending2FA(false);
+    const existingBefore = loadWallet();
+    const isNew = !existingBefore;
+    await completeLogin(wallet, username, password, isNew);
+    return { success: true };
+  }, [wallet, completeLogin]);
+
+  // ─── Dismiss Recovery Reminder ────────────────────────────
+  const doDismissRecoveryReminder = useCallback(() => {
+    dismissRecoveryReminderStorage();
+    setShowRecoveryReminder(false);
   }, []);
 
   // ─── Unlock ────────────────────────────────────────────
@@ -919,8 +1001,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     <WalletContext.Provider value={{
       wallet, unlocked, needsMigration, globalTxs, meshStats, supplyInfo,
       adminDashboard, levelProgress, lastLevelUp,
-      initWallet, cosmoIDLogin: doCosmoIDLogin, unlock: doUnlock,
-      lock: doLock, signOut: doSignOut, migrate: doMigrate,
+      initWallet, cosmoIDLogin: doCosmoIDLogin, verify2FACode: doVerify2FACode,
+      pending2FA, showRecoveryReminder, dismissRecoveryReminder: doDismissRecoveryReminder,
+      unlock: doUnlock, lock: doLock, signOut: doSignOut, migrate: doMigrate,
       doExportWallet, doImportWallet,
       doGenerateCosmoLink, doImportCosmoLink,
       send, mine, refreshTxs, refreshStats, unlockAdmin, unlockCreator,
