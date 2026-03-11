@@ -6,6 +6,7 @@ import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import * as sync from '../lib/supabase-sync';
+import { fetchSocialProfile } from '../lib/supabase-db';
 import HexAvatar from './HexAvatar';
 
 type Tab = 'posts' | 'created' | 'collection';
@@ -67,31 +68,51 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     const social = SocialEngine.load();
     const profile = social.getProfile(addr);
 
-    // Resolve best alias: social profile > wallet alias (own profile) > shortAddress
-    let resolvedAlias = shortAddress(addr);
-    if (profile) {
-      const pa = profile.alias;
-      // Check if social alias is just a truncated address (not a real name)
-      const isTruncated = pa === addr.slice(0, 10) || pa === shortAddress(addr);
-      if (pa && !isTruncated) {
-        resolvedAlias = pa;
+    const applyProfile = (p: { alias?: string; bio?: string; followers?: string[]; following?: string[]; website?: string; instagram?: string; twitter?: string } | null) => {
+      let resolvedAlias = shortAddress(addr);
+      if (p) {
+        const pa = p.alias || '';
+        const isTruncated = pa === addr.slice(0, 10) || pa === shortAddress(addr);
+        if (pa && !isTruncated) {
+          resolvedAlias = pa;
+        } else if (wallet && wallet.address === addr && wallet.alias) {
+          resolvedAlias = wallet.alias;
+          social.ensureProfile(addr, wallet.alias);
+        }
+        setBio(p.bio || '');
+        setFollowersCount(p.followers?.length || 0);
+        setFollowingCount(p.following?.length || 0);
+        setWebsite(p.website || '');
+        setInstagram(p.instagram || '');
+        setTwitter(p.twitter || '');
       } else if (wallet && wallet.address === addr && wallet.alias) {
         resolvedAlias = wallet.alias;
-        // Also update the social profile with the correct alias
         social.ensureProfile(addr, wallet.alias);
       }
-      setBio(profile.bio);
-      setFollowersCount(profile.followers.length);
-      setFollowingCount(profile.following.length);
-      setWebsite(profile.website);
-      setInstagram(profile.instagram);
-      setTwitter(profile.twitter);
-    } else if (wallet && wallet.address === addr && wallet.alias) {
-      resolvedAlias = wallet.alias;
-      // Create social profile for current user
-      social.ensureProfile(addr, wallet.alias);
+      setAlias(resolvedAlias);
+    };
+
+    // Apply local profile immediately
+    applyProfile(profile);
+
+    // If no local profile or alias is truncated, fetch from Supabase
+    const localAlias = profile?.alias || '';
+    const isTruncated = !localAlias || localAlias === addr.slice(0, 10) || localAlias === shortAddress(addr);
+    if (isTruncated && !(wallet && wallet.address === addr)) {
+      fetchSocialProfile(addr).then(remote => {
+        if (remote && remote.alias) {
+          // Save to local SocialEngine for future use
+          const s = SocialEngine.load();
+          const p = s.ensureProfile(addr, remote.alias);
+          if (remote.bio) p.bio = remote.bio;
+          if (remote.website) p.website = remote.website;
+          if (remote.instagram) p.instagram = remote.instagram;
+          if (remote.twitter) p.twitter = remote.twitter;
+          s.save();
+          applyProfile(p);
+        }
+      }).catch(() => { /* non-critical */ });
     }
-    setAlias(resolvedAlias);
 
     if (wallet) {
       setIsFollowing(social.isFollowing(wallet.address, addr));
@@ -279,7 +300,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   );
 
   return (
-    <div className="space-y-0 pb-4 max-w-2xl mx-auto px-2.5 sm:px-0">
+    <div className="space-y-0 pb-4 max-w-2xl mx-auto px-2.5">
       {/* Back button */}
       <div className="px-3 py-2">
         <button

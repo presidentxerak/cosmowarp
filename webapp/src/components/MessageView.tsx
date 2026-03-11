@@ -10,6 +10,11 @@ import HexAvatar from './HexAvatar';
 type View = 'list' | 'thread' | 'channel' | 'new-dm' | 'new-group' | 'friends';
 type ListTab = 'messages' | 'groups' | 'friends';
 
+const navigateToProfile = (address: string) => {
+  sessionStorage.setItem('strangrz_view_user', address);
+  window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'user-profile' }));
+};
+
 export default function MessageView() {
   const { wallet, unlocked } = useWallet();
   const [view, setView] = useState<View>('list');
@@ -204,10 +209,10 @@ export default function MessageView() {
       <div className="flex flex-col h-[calc(100dvh-120px)]">
         <div className="flex items-center gap-3 p-3 border-b border-current/10">
           <BackButton onClick={() => { setView('list'); setSelectedThread(null); }} />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateToProfile(peer)}>
             <HexAvatar address={peer} size={32} />
             <div>
-              <p className="text-base font-medium opacity-90">{peerAlias}</p>
+              <p className="text-base font-medium opacity-90 hover:opacity-80">{peerAlias}</p>
               <p className="text-label opacity-40">Chiffré</p>
             </div>
           </div>
@@ -544,7 +549,9 @@ export default function MessageView() {
                     onClick={() => { setSelectedThread(thread); setView('thread'); }}
                     className="w-full flex items-center gap-3 p-3 border-b border-current/10 hover:bg-white/3 transition-colors cursor-pointer text-left"
                   >
-                    <HexAvatar address={peer} size={44} />
+                    <div className="shrink-0" onClick={(e) => { e.stopPropagation(); navigateToProfile(peer); }}>
+                      <HexAvatar address={peer} size={44} className="cursor-pointer" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-base font-medium opacity-90 truncate">{peerAlias}</p>

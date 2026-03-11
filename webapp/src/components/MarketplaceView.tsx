@@ -1435,7 +1435,7 @@ export default function MarketplaceView() {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
-              <div className="flex items-center gap-1 mt-0.5">
+              <div className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigateToProfile(wart.creator)}>
                 <HexAvatar address={wart.creator} size={16} />
                 <p className="text-[10px] opacity-40 truncate">
                   {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
