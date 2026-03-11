@@ -20,7 +20,7 @@ export default function WalletView() {
     meshStats, supplyInfo, levelProgress,
     cosmoIDLogin, verify2FACode, pending2FA,
     showRecoveryReminder, dismissRecoveryReminder,
-    unlock, lock, migrate, send,
+    unlock, lock, signOut, migrate, send,
     doExportWallet, doImportWallet, doImportCosmoLink,
     generateRecoveryKit,
   } = useWallet();
@@ -34,6 +34,7 @@ export default function WalletView() {
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState('');
   const [createError, setCreateError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importPassword, setImportPassword] = useState('');
   const [importError, setImportError] = useState('');
@@ -326,6 +327,9 @@ export default function WalletView() {
                     <span className="flex items-center justify-center gap-2"><Spinner />Deriving keys...</span>
                   ) : 'Sign In'}
                 </button>
+                <p className="text-label opacity-40">
+                  Mot de passe oublié ? Votre wallet est dérivé de votre username + mot de passe. Sans ces identifiants, le wallet ne peut pas être récupéré. Vous pouvez aussi importer un fichier de récupération via l'onglet <strong>File</strong>.
+                </p>
               </div>
             )}
 
@@ -514,6 +518,31 @@ export default function WalletView() {
           <button className="warp-button w-full py-3 text-base" onClick={async () => { setUnlocking(true); const ok = await unlock(unlockPassword); if (!ok) setUnlockError('Wrong password'); setUnlocking(false); setUnlockPassword(''); }} disabled={!unlockPassword || unlocking}>
             {unlocking ? <span className="flex items-center justify-center gap-2"><Spinner />Unlocking...</span> : 'Unlock'}
           </button>
+          <button
+            className="text-label opacity-40 hover:opacity-70 transition-opacity cursor-pointer bg-transparent border-none"
+            onClick={() => setShowForgotPassword(!showForgotPassword)}
+          >
+            Mot de passe oublié ?
+          </button>
+          {showForgotPassword && (
+            <div className="p-3 bg-current/5 border border-current/10 text-left space-y-2">
+              <p className="text-label opacity-60">
+                Votre wallet est lié à votre <strong>username + mot de passe</strong> (CosmoID). Il n'y a pas de serveur qui stocke votre mot de passe — il sert à dériver votre clé privée.
+              </p>
+              <p className="text-label opacity-60">
+                Si vous vous souvenez de vos identifiants CosmoID, déconnectez-vous puis reconnectez-vous avec le même username et mot de passe.
+              </p>
+              <p className="text-label opacity-60">
+                Si vous avez un fichier de récupération (.json), déconnectez-vous puis importez-le via <strong>Sign In &gt; File</strong>.
+              </p>
+              <button
+                className="warp-button w-full py-2 text-label mt-1"
+                onClick={() => { if (confirm('Se déconnecter ? Assurez-vous d\'avoir une sauvegarde.')) signOut(); }}
+              >
+                Se déconnecter
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
