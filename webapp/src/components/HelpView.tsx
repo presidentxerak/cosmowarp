@@ -235,6 +235,31 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Portefeuille → Aperçu',
     },
   },
+  // Vobjct & Asset Protection
+  {
+    keywords: ['vobjct', 'safe', 'protection', 'intégrité', 'integrite', 'integrity', 'manifest', 'manifeste', 'resilience', 'résilience', 'persistance', 'persistence', 'storage route', 'route de stockage', 'recovery route', 'route de récupération'],
+    response: {
+      answer: "Vobjct, c'est le bouclier cosmique de tes Cosmorares ! Chaque objet certifié reçoit un Vobjct Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Vobjct Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
+      navigateTo: 'warts',
+      tabLabel: 'Marketplace → Détail',
+    },
+  },
+  {
+    keywords: ['stockage', 'storage', 'où sont stockés', 'where stored', 'persistant', 'persistent', 'perte', 'perdu ordinateur', 'lost computer', 'hack', 'hacké', 'vol', 'stolen'],
+    response: {
+      answer: "Tes Cosmorares sont protégées par un système de stockage multi-couches grâce à Vobjct : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud. (3) On-chain — stockage permanent dans CosmoMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé CosmoID. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Vobjct Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
+      navigateTo: 'warts',
+      tabLabel: 'Marketplace',
+    },
+  },
+  {
+    keywords: ['2fa', 'two factor', 'deux facteurs', 'authenticator', 'totp', 'google auth', 'authy', 'otp'],
+    response: {
+      answer: "La 2FA (authentification à deux facteurs) ajoute une couche de sécurité cosmique à ton CosmoID ! Va dans Portefeuille → Aperçu et active la 2FA. Tu scanneras un QR code avec ton app d'authentification (Google Authenticator, Authy, 1Password...). Ensuite, à chaque connexion, tu devras entrer un code à 6 chiffres en plus de ton mot de passe. Tu reçois aussi 8 codes de secours — garde-les précieusement au cas où tu perds ton téléphone.",
+      navigateTo: 'wallet',
+      tabLabel: 'Portefeuille → Aperçu',
+    },
+  },
   // Paiement fiat
   {
     keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
@@ -293,6 +318,7 @@ const FAQ_ICONS: Record<string, ReactNode> = {
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
   'CosmoMesh & CosmoCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
   'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
+  'Vobjct & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
 };
 
@@ -355,12 +381,25 @@ const FAQ_SECTIONS = [
     ],
   },
   {
+    title: 'Vobjct & Protection des actifs',
+    icon: 'Vobjct & Protection des actifs',
+    items: [
+      { q: `Qu'est-ce que Vobjct ?`, a: `Vobjct est le standard d'intégrité et de résilience des actifs numériques de Cosmorare. Chaque objet certifié reçoit un « Vobjct Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
+      { q: `Qu'est-ce que Vobjct Safe ?`, a: `Vobjct Safe est le système de surveillance et réparation automatique. Il vérifie régulièrement que les routes de stockage sont actives (Supabase, IndexedDB, on-chain). Si une route tombe, Safe passe l'objet en état « warning » puis « degraded » et peut lancer des réparations automatiques (re-upload, ajout de miroir). Un journal d'incidents trace chaque action.` },
+      { q: `Où sont stockées mes Cosmorares ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) CosmoMesh on-chain pour le stockage permanent. Vobjct Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
+      { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même CosmoID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via CosmoCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
+      { q: `Quels sont les droits gérés par Vobjct ?`, a: `Chaque manifest définit : droits d'affichage (allowed/forbidden), usage commercial (personal_only/commercial), dérivés (forbidden/allowed), licence version, et termes personnalisés. Ces droits sont embarqués dans le manifest et signés cryptographiquement.` },
+    ],
+  },
+  {
     title: 'Sécurité',
     icon: 'Sécurité',
     items: [
-      { q: `Cosmorare est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré.` },
+      { q: `Cosmorare est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré. En plus, Vobjct Safe surveille l'intégrité de chaque objet certifié en continu.` },
+      { q: `Qu'est-ce que la 2FA sur Cosmorare ?`, a: `Authentification à deux facteurs (TOTP RFC 6238) pour ton CosmoID. Active-la dans Portefeuille → Aperçu. Compatible avec Google Authenticator, Authy, 1Password. Tu reçois 8 codes de secours en cas de perte de téléphone.` },
+      { q: `Qu'est-ce que le Recovery Kit ?`, a: `Un bundle JSON chiffré contenant tous tes objets de vault, double-chiffré (clé vault + mot de passe de récupération). Téléchargeable dans Portefeuille → Aperçu. Il est auto-généré à la création du wallet et un rappel apparaît tous les 7 jours.` },
       { q: `Est-ce que ça fonctionne hors ligne ?`, a: `Oui ! Le service worker met l'app en cache pour une utilisation hors ligne. Elle se met aussi à jour automatiquement quand une nouvelle version est disponible.` },
-      { q: `Où sont stockées mes données ?`, a: `Localement sur ton appareil dans IndexedDB (échelle Go, remplaçant le localStorage). La compression CosmoCode SVG réduit la taille des données structurées de 5-30x. Actuellement mono-nœud ; la sauvegarde multi-nœuds nécessite des pairs P2P.` },
+      { q: `Où sont stockées mes données ?`, a: `Stockage multi-couches via Vobjct : IndexedDB local (échelle Go), Supabase Cloud, et CosmoMesh on-chain. CosmoVault chiffre les médias en AES-256-GCM. Vobjct Safe garantit la redondance avec au moins 2 routes actives par objet.` },
     ],
   },
 ];
@@ -535,7 +574,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               </button>
             </div>
             <div className="flex gap-2 mt-2 flex-wrap">
-              {['Comment miner ?', "C'est quoi CosmoMesh ?", "Pourquoi c'est gratuit ?", 'Comment certifier un objet ?', 'Paiement par carte ?'].map(q => (
+              {['Comment miner ?', "C'est quoi Vobjct ?", "Pourquoi c'est gratuit ?", 'Comment certifier un objet ?', 'Sécurité & 2FA'].map(q => (
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}

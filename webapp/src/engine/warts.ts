@@ -30,6 +30,7 @@ import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from '
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
 import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
 import { storeMedia, retrieveAllMedia, deleteMedia } from './mediadb';
+import { getVobjctEngine } from './vobjct';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -99,6 +100,9 @@ export interface Wart {
   // ─── Contract Reference ──────────────────────────────
   royaltyContractId?: string;      // CosmoContract ID for royalties
   activeContractIds?: string[];    // Other active contracts
+  // ─── Vobjct Integration ─────────────────────────────
+  vobjctId?: string;               // Vobjct manifest object ID
+  vobjctProtected?: boolean;       // Whether Vobjct Safe is active
 }
 
 // ─── Rarity Computation ─────────────────────────────────
@@ -423,6 +427,29 @@ export class WartEngine {
       wartId: id,
       title: title.trim(),
     });
+
+    // 6. Create Vobjct manifest & Safe protection
+    try {
+      const vobjctEngine = getVobjctEngine();
+      const manifest = await vobjctEngine.createForWart({
+        wartId: id,
+        title: title.trim(),
+        description: description.trim(),
+        imageData,
+        mediaType,
+        creator,
+        creatorPublicKey: '', // Set by caller via WalletContext
+        creatorPrivateKey: privateKey,
+        certId,
+        editionType,
+        editionNumber: existingEditions + 1,
+        maxEditions: editionType === 'unique' ? 1 : maxEditions,
+        royaltyPercent,
+      });
+      wart.vobjctId = manifest.object_id;
+      wart.vobjctProtected = true;
+      this.save();
+    } catch { /* Vobjct creation non-critical */ }
 
     return wart;
   }

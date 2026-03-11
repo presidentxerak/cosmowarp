@@ -7,6 +7,7 @@ import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
+import { getVobjctEngine } from '../engine/vobjct';
 import HexAvatar from './HexAvatar';
 
 import PFPCollectionView from './PFPCollectionView';
@@ -590,8 +591,15 @@ export default function MarketplaceView() {
             <RarityBadge wart={wart} />
           </div>
           {wart.certId && (
-            <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-current/10 border border-current/15">
-              <span className="text-[9px] opacity-80">{'\u2714'} Cert</span>
+            <div className="absolute top-1.5 right-1.5 flex gap-1">
+              <div className="px-1.5 py-0.5 bg-current/10 border border-current/15">
+                <span className="text-[9px] opacity-80">{'\u2714'} Cert</span>
+              </div>
+              {wart.vobjctProtected && (
+                <div className="px-1.5 py-0.5 bg-current/10 border border-current/15">
+                  <span className="text-[9px] opacity-80">{'\u26E8'} Safe</span>
+                </div>
+              )}
             </div>
           )}
           {expired && (
@@ -871,6 +879,58 @@ export default function MarketplaceView() {
                     )}
                   </div>
                 )}
+
+                {/* Vobjct Trust Signals */}
+                {wart.vobjctProtected && (() => {
+                  const vobjct = getVobjctEngine();
+                  const badges = vobjct.getTrustBadges(wart.id);
+                  const manifest = vobjct.getManifest(wart.id);
+                  return (
+                    <div className="glass-panel p-3 mb-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-body-sm font-bold opacity-70">{'\u26E8'} Vobjct Safe</h4>
+                        <span className="text-[9px] opacity-50">v{manifest?.vobjct_version || '1.0.0'}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {badges.map((badge, i) => (
+                          <span key={i} className="text-[9px] px-1.5 py-0.5 bg-current/5 border border-current/10 opacity-70">
+                            {badge === 'Integrity Verified' ? '\u2714' :
+                             badge === 'Permanent Storage' ? '\u221E' :
+                             badge === 'Multi-Network Backup' ? '\u2726' :
+                             badge === 'Safe Protected' ? '\u26E8' :
+                             badge === 'Rights Embedded' ? '\u00A9' :
+                             badge === 'Recovery Active' ? '\u21BB' : '\u2022'} {badge}
+                          </span>
+                        ))}
+                      </div>
+                      {manifest && (
+                        <div className="text-[10px] opacity-40 space-y-1">
+                          <p>
+                            <span className="opacity-50">Object ID:</span>{' '}
+                            <span className="opacity-70 font-mono break-all">{manifest.object_id}</span>
+                          </p>
+                          <p>
+                            <span className="opacity-50">Storage:</span>{' '}
+                            <span className="opacity-70">{manifest.storage_routes.length} route(s)</span>
+                            {manifest.storage_routes.map((r, i) => (
+                              <span key={i} className={`ml-1 ${r.status === 'active' ? 'opacity-70' : 'opacity-40'}`}>
+                                [{r.network}]
+                              </span>
+                            ))}
+                          </p>
+                          <p>
+                            <span className="opacity-50">Policy:</span>{' '}
+                            <span className="opacity-70">{manifest.policy.mutability}</span>
+                          </p>
+                          <p>
+                            <span className="opacity-50">Rights:</span>{' '}
+                            <span className="opacity-70">Display: {manifest.rights.display} | Commercial: {manifest.rights.commercial_use}</span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Phygital Authentication */}
                 {wart.certId && (isCreator || isMine) && (

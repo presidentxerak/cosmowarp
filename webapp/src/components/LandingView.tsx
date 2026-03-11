@@ -72,6 +72,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cryptoDesc: 'Signatures Ed25519, hachage SHA-256, chiffrement AES-GCM. Les mêmes standards que Signal et Tor.',
     tokenomics: 'Tokenomics équitable',
     tokenomicsDesc: 'Le token Cosmorare (Ω) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
+    vobjct: 'Vobjct Safe — Résilience',
+    vobjctDesc: 'Chaque oeuvre est protégée par un manifeste Vobjct : intégrité SHA-256, routes de stockage multi-réseau (on-chain, IPFS, cloud), monitoring actif, et réparation automatique. Vos actifs numériques sont vérifiables, récupérables et permanents.',
     totalSupply: 'Supply totale',
     goldenRatio: 'Ratio d\'or (minage)',
     layers: 'Couches du réseau',
@@ -154,6 +156,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cryptoDesc: 'Ed25519 signatures, SHA-256 hashing, AES-GCM encryption. The same standards as Signal and Tor.',
     tokenomics: 'Fair Tokenomics',
     tokenomicsDesc: 'The Cosmorare (Ω) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
+    vobjct: 'Vobjct Safe — Resilience',
+    vobjctDesc: 'Every artwork is protected by a Vobjct manifest: SHA-256 integrity, multi-network storage routes (on-chain, IPFS, cloud), active monitoring, and automated repair. Your digital assets are verifiable, recoverable, and permanent.',
     totalSupply: 'Total Supply',
     goldenRatio: 'Golden Ratio (mining)',
     layers: 'Network Layers',
@@ -236,6 +240,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cryptoDesc: 'Ed25519署名、SHA-256ハッシュ、AES-GCM暗号化。SignalやTorと同じ標準。',
     tokenomics: '公平なトケノミクス',
     tokenomicsDesc: 'Cosmorare（Ω）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
+    vobjct: 'Vobjct Safe — レジリエンス',
+    vobjctDesc: 'すべての作品はVobjctマニフェストで保護：SHA-256整合性、マルチネットワークストレージルート（オンチェーン、IPFS、クラウド）、アクティブモニタリング、自動修復。デジタル資産は検証可能、回復可能、永続的。',
     totalSupply: '総供給量',
     goldenRatio: '黄金比（マイニング）',
     layers: 'ネットワークレイヤー',
@@ -889,6 +895,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                 icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="14" cy="14" r="12" /><ellipse cx="14" cy="14" rx="12" ry="5" /><ellipse cx="14" cy="14" rx="5" ry="12" /></svg>,
                 title: t('tokenomics'),
                 desc: t('tokenomicsDesc'),
+              },
+              {
+                icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3"><polygon points="14,2 25,8.5 25,19.5 14,26 3,19.5 3,8.5" /><path d="M14 10v6M11 13h6" /><circle cx="14" cy="14" r="4" /></svg>,
+                title: t('vobjct'),
+                desc: t('vobjctDesc'),
               },
             ].map((card, i) => (
               <Reveal key={card.title} delay={i * 0.1}>
