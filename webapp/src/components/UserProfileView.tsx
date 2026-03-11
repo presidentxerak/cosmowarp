@@ -128,7 +128,6 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         setFollowingCount(following.length);
       });
     }
-    }
 
     if (wallet) {
       setIsFollowing(social.isFollowing(wallet.address, addr));
