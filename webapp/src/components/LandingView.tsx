@@ -528,7 +528,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Logo + name in katakana */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 cursor-pointer group">
             <img src={logoSrc} alt="Strangrz" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
-            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title">コスモレア</span>
+            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title">ストレンジャーズ</span>
           </button>
 
           {/* Desktop nav */}
@@ -614,7 +614,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             playsInline
             poster=""
           >
-            <source src={`${import.meta.env.BASE_URL}strangrz-landing-hero-random-${heroVideoNum}.mp4`} type="video/mp4" />
+            <source src={`${import.meta.env.BASE_URL}cosmorare-landing-hero-random-${heroVideoNum}.mp4`} type="video/mp4" />
           </video>
         </div>
 
@@ -637,7 +637,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))' }}
           />
           <h1
-            className="text-5xl sm:text-7xl lg:text-8xl font-bold font-title mb-4 tracking-wide"
+            className="text-3xl sm:text-5xl lg:text-6xl font-bold font-title mb-4 tracking-wide"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
             {'ストレンジャーズ'}
