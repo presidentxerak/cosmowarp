@@ -18,6 +18,8 @@ import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
 import { is2FAEnabled, verify2FALogin } from '../engine/totp';
 import type { CosmoContract } from '../engine/cosmocontract';
 import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
+import { shortAddress } from '../engine/crypto';
+import { SocialEngine } from '../engine/social';
 // ─── Supabase Sync ──────────────────────────────────────────
 import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
@@ -370,6 +372,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setSupplyInfo(getSupplyBreakdown());
     setLevelProgress(0);
     refreshWartsState(w.address);
+    // Ensure social profile exists
+    SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
     // Sync to Supabase
     sync.syncProfile(w);
     for (const tx of w.transactions) sync.syncTransaction(tx);
@@ -386,6 +390,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setSupplyInfo(getSupplyBreakdown());
     } catch { /* first load */ }
     setLevelProgress(getProgressToNextLevel(w.address));
+    // Ensure social profile exists with correct alias
+    SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
+
     // Initialize vault with CosmoID credentials
     const engine = getWartEngine();
     await engine.initVault(username, password);

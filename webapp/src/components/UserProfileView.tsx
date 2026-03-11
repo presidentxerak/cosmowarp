@@ -65,17 +65,32 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const refresh = (addr: string) => {
     const social = SocialEngine.load();
     const profile = social.getProfile(addr);
+
+    // Resolve best alias: social profile > wallet alias (own profile) > shortAddress
+    let resolvedAlias = shortAddress(addr);
     if (profile) {
-      setAlias(profile.alias);
+      const pa = profile.alias;
+      // Check if social alias is just a truncated address (not a real name)
+      const isTruncated = pa === addr.slice(0, 10) || pa === shortAddress(addr);
+      if (pa && !isTruncated) {
+        resolvedAlias = pa;
+      } else if (wallet && wallet.address === addr && wallet.alias) {
+        resolvedAlias = wallet.alias;
+        // Also update the social profile with the correct alias
+        social.ensureProfile(addr, wallet.alias);
+      }
       setBio(profile.bio);
       setFollowersCount(profile.followers.length);
       setFollowingCount(profile.following.length);
       setWebsite(profile.website);
       setInstagram(profile.instagram);
       setTwitter(profile.twitter);
-    } else {
-      setAlias(shortAddress(addr));
+    } else if (wallet && wallet.address === addr && wallet.alias) {
+      resolvedAlias = wallet.alias;
+      // Create social profile for current user
+      social.ensureProfile(addr, wallet.alias);
     }
+    setAlias(resolvedAlias);
 
     if (wallet) {
       setIsFollowing(social.isFollowing(wallet.address, addr));
@@ -244,8 +259,9 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
         {/* Social bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {wart.history.length > 0 && <span className="text-[10px]">Tip {wart.history.length}{'\u2B23'}</span>}
           </button>
           <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
@@ -262,7 +278,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   );
 
   return (
-    <div className="space-y-0 pb-4 max-w-2xl mx-auto">
+    <div className="space-y-0 pb-4 max-w-2xl mx-auto px-2.5 sm:px-0">
       {/* Back button */}
       <div className="px-3 py-2">
         <button
@@ -453,7 +469,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                     <video controls src={post.mediaData} className="mt-2 w-full max-h-80 object-contain bg-black" />
                   )}
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
-                    <span className="opacity-40 text-body-sm">{post.tipCount} tips</span>
+                    <span className="opacity-40 text-body-sm">{post.tipCount > 0 ? `Tip ${post.tipCount}\u2B23` : '0 tips'}</span>
                     <span className="opacity-40 text-body-sm">{post.rewarpCount} rewarps</span>
                     <span className="opacity-40 text-body-sm">{post.comments.length} comments</span>
                   </div>
@@ -466,7 +482,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Strangrz créée</p>
+              <p className="opacity-40 text-base">No artwork created</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

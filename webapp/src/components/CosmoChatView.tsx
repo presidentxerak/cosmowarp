@@ -309,7 +309,7 @@ export default function CosmoChatView() {
             <span className="text-body-sm">{post.rewarpCount || ''}</span>
           </button>
 
-          {/* Tip (heart) */}
+          {/* Tip */}
           <button
             className={`flex items-center gap-1 cursor-pointer ${
               hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'
@@ -317,7 +317,7 @@ export default function CosmoChatView() {
             onClick={e => { e.stopPropagation(); handleTip(post); }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill={hasTipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span className="text-body-sm">{post.tipCount || ''}</span>
+            {post.tipCount > 0 && <span className="text-body-sm">Tip {post.tipCount}{'\u2B23'}</span>}
           </button>
 
           {/* Views */}
@@ -378,14 +378,15 @@ export default function CosmoChatView() {
           {/* Stats bar */}
           <div className="flex gap-4 mt-3 pt-3 border-t border-current/10 text-body-sm opacity-40">
             <span>{post.rewarpCount} ReCosmo</span>
-            <span>{post.tipCount} Tips ({post.tipCount} {'\u03A9'})</span>
+            <span>{post.tipCount} Tip{post.tipCount !== 1 ? 's' : ''} ({post.tipCount}{'\u2B23'})</span>
             <span>{formatViews(post.views)} vues</span>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-current/10">
-            <button className={`cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
+            <button className={`flex items-center gap-1 cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill={hasTipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {post.tipCount > 0 && <span className="text-body-sm">{post.tipCount}{'\u2B23'}</span>}
             </button>
             <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
