@@ -4,7 +4,7 @@ import {
   getGlobalTransactions, getMeshStats, getSupplyBreakdown,
   getProgressToNextLevel, unlockAdminRegistry, getAdminDashboard,
   unlockCreatorTokens, unlockWalletKey, walletNeedsMigration,
-  migrateWallet, exportWallet, importWallet, loginCosmoID, clearWallet,
+  migrateWallet, exportWallet, importWallet, loginCosmoID, clearWallet, deleteProfile,
   saveWallet,
   type WarpWallet, type Transaction, type SupplyBreakdown,
   type RegistryDashboard, type LevelUpResult, type WalletExport,
@@ -74,6 +74,7 @@ interface WalletContextType {
   unlock: (password: string) => Promise<boolean>;
   lock: () => void;
   signOut: () => void;
+  deleteAccount: () => void;
   migrate: (password: string) => Promise<boolean>;
   doExportWallet: () => WalletExport | null;
   doImportWallet: (data: WalletExport, password: string) => Promise<boolean>;
@@ -540,6 +541,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setMyCreated([]);
   }, []);
 
+  // ─── Delete account (permanently remove profile + reintegrate tokens) ──
+  const doDeleteAccount = useCallback(() => {
+    if (!wallet) return;
+    deleteProfile(wallet);
+    clearSessionKey();
+    setWallet(null);
+    setUnlocked(false);
+    setNeedsMigration(false);
+    setGlobalTxs([]);
+    setMeshStats(null);
+    setSupplyInfo(null);
+    setAdminDashboard(null);
+    setLevelProgress(0);
+    setLastLevelUp(null);
+    setWarts([]);
+    setMarketplace([]);
+    setMyCollection([]);
+    setMyCreated([]);
+    setVaultStats(null);
+  }, [wallet]);
+
   // ─── Migration ─────────────────────────────────────────
   const doMigrate = useCallback(async (password: string): Promise<boolean> => {
     const success = await migrateWallet(password);
@@ -1003,7 +1025,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       adminDashboard, levelProgress, lastLevelUp,
       initWallet, cosmoIDLogin: doCosmoIDLogin, verify2FACode: doVerify2FACode,
       pending2FA, showRecoveryReminder, dismissRecoveryReminder: doDismissRecoveryReminder,
-      unlock: doUnlock, lock: doLock, signOut: doSignOut, migrate: doMigrate,
+      unlock: doUnlock, lock: doLock, signOut: doSignOut, deleteAccount: doDeleteAccount, migrate: doMigrate,
       doExportWallet, doImportWallet,
       doGenerateCosmoLink, doImportCosmoLink,
       send, mine, refreshTxs, refreshStats, unlockAdmin, unlockCreator,

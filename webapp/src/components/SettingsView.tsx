@@ -5,9 +5,10 @@ import { shortAddress } from '../engine/crypto';
 import { storage } from '../engine/storage';
 
 export default function SettingsView() {
-  const { wallet, unlocked, lock, signOut, doExportWallet, doGenerateCosmoLink } = useWallet();
+  const { wallet, unlocked, lock, signOut, deleteAccount, doExportWallet, doGenerateCosmoLink } = useWallet();
   const { theme, toggleTheme } = useTheme();
   const [cleared, setCleared] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [cosmoLink, setCosmoLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [linkPassword, setLinkPassword] = useState('');
@@ -314,6 +315,33 @@ export default function SettingsView() {
                 }`}
               >
                 {confirmSignOut ? 'Confirm Sign Out' : 'Sign Out'}
+              </button>
+            </div>
+          )}
+
+          {/* ─── Delete Profile ─────────────────────────── */}
+          {wallet && (
+            <div className="flex items-center justify-between pt-2 border-t border-current/10">
+              <div>
+                <p className="text-body-sm opacity-90">Supprimer le profil</p>
+                <p className="text-label opacity-40">Supprime définitivement votre profil. Vos {wallet.balance.toLocaleString()} {'\u03A9'} seront réintégrés dans la supply.</p>
+              </div>
+              <button
+                onClick={() => {
+                  if (!confirmDelete) {
+                    setConfirmDelete(true);
+                    setTimeout(() => setConfirmDelete(false), 5000);
+                    return;
+                  }
+                  deleteAccount();
+                }}
+                className={`text-body-sm px-3 py-1.5 border transition-all cursor-pointer shrink-0 ${
+                  confirmDelete
+                    ? 'border-current/30 opacity-90 bg-current/10 hover:bg-current/15'
+                    : 'border-current/15 opacity-50 bg-current/5 hover:bg-current/5'
+                }`}
+              >
+                {confirmDelete ? 'Confirmer la suppression' : 'Supprimer'}
               </button>
             </div>
           )}

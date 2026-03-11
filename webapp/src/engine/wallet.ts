@@ -653,6 +653,49 @@ export function clearWallet(): boolean {
   return true;
 }
 
+/**
+ * Delete the profile permanently.
+ * Reintegrates the wallet's STRNGRZ balance back into the airdrop pool,
+ * removes all local data (wallet, social, warts, transactions).
+ */
+export function deleteProfile(wallet: WarpWallet): boolean {
+  // Reintegrate tokens into the airdrop pool
+  const tokenomics = getTokenomics();
+  if (wallet.balance > 0) {
+    tokenomics.reintegrateToAirdropPool(wallet.balance);
+    tokenomics.save();
+  }
+
+  // Remove social profile
+  storage.removeItem('strangrz_social');
+
+  // Remove wallet
+  storage.removeItem(STORAGE_KEY);
+  storage.removeItem(TX_STORAGE_KEY);
+  storage.removeItem(MESH_STORAGE_KEY);
+  storage.removeItem(CONSENSUS_STORAGE_KEY);
+  storage.removeItem(ADMIN_ADDRESS_KEY);
+  storage.removeItem(DAILY_TOTAL_KEY);
+
+  // Remove warts & certs
+  storage.removeItem('strangrz_warts');
+  storage.removeItem('strangrz_cert_registry');
+
+  // Remove hierarchy
+  storage.removeItem('strangrz_hierarchy');
+
+  // Reset singletons
+  meshInstance = null;
+  consensusInstance = null;
+  tokenomicsInstance = null;
+  hierarchyInstance = null;
+  registryInstance = null;
+  securityInstance = null;
+  cosmoChainInstance = null;
+
+  return true;
+}
+
 // ─── Send Warps ──────────────────────────────────────────
 
 export async function sendWarps(

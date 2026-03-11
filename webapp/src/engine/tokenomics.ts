@@ -298,6 +298,17 @@ export class TokenomicsEngine {
     return rewards;
   }
 
+  // ─── Reintegrate ────────────────────────────────────
+
+  /** Return tokens to the airdrop pool (e.g., when a profile is deleted) */
+  reintegrateToAirdropPool(amount: number): void {
+    this.state.circulatingSupply -= amount;
+    this.state.totalMinted -= amount;
+    this.state.totalAirdropped -= amount;
+    this.state.airdropPoolRemaining += amount;
+    this.state.lastUpdated = Date.now();
+  }
+
   // ─── Burn ────────────────────────────────────────────
 
   /** Burn CW (remove from circulation) */

@@ -290,59 +290,58 @@ export default function CosmoChatView() {
         )}
         <MediaContent post={post} />
 
-        {/* Action bar (X-style) */}
+        {/* Action bar (icon-only) */}
         <div className="flex items-center justify-between mt-3 pt-2 border-t border-current/10">
           {/* Comments */}
-          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 text-body-sm cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedPost(post); }}>
-            <span>{'\u25CB'}</span>
-            <span>{post.comments.length || ''}</span>
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedPost(post); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span className="text-body-sm">{post.comments.length || ''}</span>
           </button>
 
           {/* ReCosmo */}
           <button
-            className={`flex items-center gap-1 text-body-sm cursor-pointer ${
+            className={`flex items-center gap-1 cursor-pointer ${
               post.rewarps.includes(wallet.address) ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleRewarp(post); }}
           >
-            <span>{'\u21C4'}</span>
-            <span>{post.rewarpCount || ''}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <span className="text-body-sm">{post.rewarpCount || ''}</span>
           </button>
 
           {/* Tip (heart) */}
           <button
-            className={`flex items-center gap-1 text-body-sm cursor-pointer ${
+            className={`flex items-center gap-1 cursor-pointer ${
               hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleTip(post); }}
           >
-            <span>{hasTipped ? '\u2665' : '\u2661'}</span>
-            <span>{post.tipCount || ''}</span>
-            {post.tipCount > 0 && <span className="text-label opacity-80">{'\u03A9'}</span>}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={hasTipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span className="text-body-sm">{post.tipCount || ''}</span>
           </button>
 
           {/* Views */}
-          <span className="flex items-center gap-1 opacity-30 text-body-sm">
-            <span>{'\u25C9'}</span>
-            <span>{formatViews(post.views)}</span>
+          <span className="flex items-center gap-1 opacity-30">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span className="text-body-sm">{formatViews(post.views)}</span>
           </span>
 
           {/* Share */}
           <button
-            className="opacity-40 hover:opacity-80 text-body-sm cursor-pointer"
+            className="opacity-40 hover:opacity-80 cursor-pointer"
             onClick={e => { e.stopPropagation(); handleShare(post); }}
           >
-            {'\u2197'}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
 
           {/* Bookmark */}
           <button
-            className={`text-body-sm cursor-pointer ${
+            className={`cursor-pointer ${
               hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleBookmark(post); }}
           >
-            {hasBookmarked ? '\u2605' : '\u2606'}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={hasBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
       </div>
@@ -385,17 +384,17 @@ export default function CosmoChatView() {
 
           {/* Actions */}
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-current/10">
-            <button className={`text-body-sm cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
-              {hasTipped ? '\u2665' : '\u2661'} Tip 1{'\u03A9'}
+            <button className={`cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={hasTipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
-            <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
-              {'\u21C4'} ReCosmo
+            <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
             </button>
-            <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
-              {'\u2197'} Partager
+            <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             </button>
-            <button className={`text-body-sm cursor-pointer ${hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleBookmark(post)}>
-              {hasBookmarked ? '\u2605' : '\u2606'} Sauver
+            <button className={`cursor-pointer ${hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleBookmark(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={hasBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </button>
           </div>
         </div>

@@ -3,7 +3,6 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
-import { WartEngine } from '../engine/warts';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import * as sync from '../lib/supabase-sync';
@@ -12,7 +11,7 @@ import HexAvatar from './HexAvatar';
 type Tab = 'posts' | 'created' | 'collection';
 
 export default function UserProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { wallet } = useWallet();
+  const { wallet, warts } = useWallet();
   const [targetAddress, setTargetAddress] = useState('');
   const [tab, setTab] = useState<Tab>('posts');
   const [alias, setAlias] = useState('');
@@ -43,6 +42,13 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     setTargetAddress(addr);
     refresh(addr);
   }, []);
+
+  // Refresh created/collection when warts from context change (media rehydrated)
+  useEffect(() => {
+    if (!targetAddress) return;
+    setCreated(warts.filter(w => w.creator === targetAddress));
+    setCollection(warts.filter(w => w.owner === targetAddress));
+  }, [warts, targetAddress]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -89,9 +95,9 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(addr));
 
-    const wartEngine = WartEngine.load();
-    setCreated(wartEngine.getCreated(addr));
-    setCollection(wartEngine.getCollection(addr));
+    // Use warts from context (already has media loaded from IndexedDB)
+    setCreated(warts.filter(w => w.creator === addr));
+    setCollection(warts.filter(w => w.owner === addr));
   };
 
   const handleFollow = () => {
@@ -148,6 +154,11 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     setTargetAddress(address);
     setTab('posts');
     refresh(address);
+  };
+
+  const handleViewWart = (wart: Wart) => {
+    sessionStorage.setItem('strangrz_open_wart', wart.id);
+    onNavigate('gallery');
   };
 
   const toggleCloseFriend = () => {
@@ -209,6 +220,46 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     { id: 'created', label: 'Created', count: created.length },
     { id: 'collection', label: 'Collection', count: collection.length },
   ];
+
+  // ─── Wart Card with social bar ─────────────────────────
+  const WartCard = ({ wart }: { wart: Wart }) => (
+    <div className="glass-panel overflow-hidden cursor-pointer" onClick={() => handleViewWart(wart)}>
+      <div className="aspect-square overflow-hidden bg-current/5">
+        {wart.mediaType === 'video' && wart.imageData ? (
+          <video src={wart.imageData} className="w-full h-full object-cover" muted playsInline />
+        ) : wart.mediaType === 'audio' && wart.audioCover ? (
+          <img src={wart.audioCover} alt={wart.title} className="w-full h-full object-cover" />
+        ) : wart.imageData ? (
+          <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl opacity-30">
+              {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="p-2">
+        <p className="text-body-sm font-medium opacity-90 truncate">{wart.title}</p>
+        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
+        {/* Social bar */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-0 pb-4 max-w-2xl mx-auto">
@@ -401,10 +452,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   {post.mediaData && post.mediaType === 'video' && (
                     <video controls src={post.mediaData} className="mt-2 w-full max-h-80 object-contain bg-black" />
                   )}
-                  <div className="flex gap-4 mt-2 text-label opacity-40">
-                    <span>{post.tipCount} tips</span>
-                    <span>{post.rewarpCount} rewarps</span>
-                    <span>{post.comments.length} comments</span>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
+                    <span className="opacity-40 text-body-sm">{post.tipCount} tips</span>
+                    <span className="opacity-40 text-body-sm">{post.rewarpCount} rewarps</span>
+                    <span className="opacity-40 text-body-sm">{post.comments.length} comments</span>
                   </div>
                 </div>
               ))}
@@ -420,16 +471,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {created.map(wart => (
-                <div key={wart.id} className="glass-panel p-2">
-                  {wart.mediaType !== 'audio' && wart.imageData && (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  {wart.mediaType === 'audio' && wart.audioCover && (
-                    <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
-                </div>
+                <WartCard key={wart.id} wart={wart} />
               ))}
             </div>
           )
@@ -443,13 +485,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {collection.map(wart => (
-                <div key={wart.id} className="glass-panel p-2">
-                  {wart.mediaType !== 'audio' && wart.imageData && (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
-                </div>
+                <WartCard key={wart.id} wart={wart} />
               ))}
             </div>
           )
