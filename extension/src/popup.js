@@ -249,7 +249,7 @@ async function createWallet(alias, password) {
       amount: AIRDROP_AMOUNT,
       timestamp: Date.now(),
       type: 'airdrop',
-      memo: `Welcome to CosmoWarp! Airdrop: ${AIRDROP_AMOUNT} \u03A9`,
+      memo: `Welcome to Strangrz! Airdrop: ${AIRDROP_AMOUNT} \u03A9`,
     }],
     createdAt: Date.now(),
     alias: alias || undefined,

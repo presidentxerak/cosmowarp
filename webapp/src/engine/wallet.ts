@@ -390,9 +390,7 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
   // Process airdrop (1000 CW)
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
 
-  // Admin bonus: 999,000 CW
-  const adminBonus = isFirstWallet ? 999000 : 0;
-  const totalInitialBalance = airdropAmount + adminBonus;
+  const totalInitialBalance = airdropAmount;
 
   // Genesis in mesh
   await mesh.createGenesis(keyPair.address, totalInitialBalance);
@@ -437,23 +435,6 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
     layer: 6,
     meshDepth: 0,
   }];
-
-  if (adminBonus > 0) {
-    transactions.unshift({
-      id: genId(),
-      from: 'COSMO_ADMIN_GRANT',
-      to: keyPair.address,
-      amount: adminBonus,
-      timestamp: Date.now(),
-      signature: 'admin_grant',
-      type: 'genesis',
-      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
-      resonanceScore: 1.0,
-      confirmations: 0,
-      layer: 6,
-      meshDepth: 0,
-    });
-  }
 
   const wallet: WarpWallet = {
     address: keyPair.address,
@@ -586,8 +567,8 @@ export async function loginCosmoID(
   }
 
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
-  const adminBonus = isFirstWallet ? 999000 : 0;
-  const totalInitialBalance = airdropAmount + adminBonus;
+
+  const totalInitialBalance = airdropAmount;
 
   await mesh.createGenesis(keyPair.address, totalInitialBalance);
 
@@ -628,23 +609,6 @@ export async function loginCosmoID(
     layer: 6,
     meshDepth: 0,
   }];
-
-  if (adminBonus > 0) {
-    transactions.unshift({
-      id: genId(),
-      from: 'COSMO_ADMIN_GRANT',
-      to: keyPair.address,
-      amount: adminBonus,
-      timestamp: Date.now(),
-      signature: 'admin_grant',
-      type: 'genesis',
-      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
-      resonanceScore: 1.0,
-      confirmations: 0,
-      layer: 6,
-      meshDepth: 0,
-    });
-  }
 
   const wallet: WarpWallet = {
     address: keyPair.address,
