@@ -144,17 +144,10 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
 
   const handleAiGenerate = async (userText: string): Promise<string> => {
     const prompt = extractAiPrompt(userText);
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const blob = await resp.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error('Failed to read image data'));
-      reader.readAsDataURL(blob);
-    });
+    const resp = await fetch(`/api/ai-image?prompt=${encodeURIComponent(prompt)}&width=1024&height=1024`);
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+    return data.imageData;
   };
 
   const handleMintAi = async (_msgId: string, imageData: string, prompt: string) => {

@@ -245,24 +245,14 @@ export default function CosmoChatView() {
     setAiError('');
     setAiImageData('');
 
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-
     try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const blob = await resp.blob();
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAiImageData(reader.result as string);
-        setAiGenerating(false);
-      };
-      reader.onerror = () => {
-        setAiError('Failed to read image data. Try again.');
-        setAiGenerating(false);
-      };
-      reader.readAsDataURL(blob);
-    } catch {
-      setAiError('Failed to generate image. Try again.');
+      const resp = await fetch(`/api/ai-image?prompt=${encodeURIComponent(aiPrompt)}&width=1024&height=1024`);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+      setAiImageData(data.imageData);
+    } catch (e: unknown) {
+      setAiError(e instanceof Error ? e.message : 'Failed to generate image. Try again.');
+    } finally {
       setAiGenerating(false);
     }
   };
