@@ -142,22 +142,30 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, typing]);
 
-  const handleAiGenerate = async (userText: string) => {
+  const handleAiGenerate = (userText: string): Promise<string> => {
     const prompt = extractAiPrompt(userText);
-    try {
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Generation failed');
-      const blob = await res.blob();
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read image'));
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      throw new Error('Failed to generate image');
-    }
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('Canvas not supported')); return; }
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch {
+          // Canvas tainted — use URL directly
+          resolve(url);
+        }
+      };
+      img.onerror = () => reject(new Error('Failed to generate image'));
+      img.src = url;
+    });
   };
 
   const handleMintAi = async (_msgId: string, imageData: string, prompt: string) => {

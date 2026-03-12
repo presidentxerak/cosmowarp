@@ -62,7 +62,6 @@ export default function CosmoChatView() {
   const [showAiGen, setShowAiGen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
-  const [, setAiImageUrl] = useState('');
   const [aiImageData, setAiImageData] = useState('');
   const [aiTitle, setAiTitle] = useState('');
   const [aiPrice, setAiPrice] = useState('');
@@ -240,33 +239,38 @@ export default function CosmoChatView() {
   };
 
   // ─── AI Image Generator ────────────────────────────────
-  const handleAiGenerate = async () => {
+  const handleAiGenerate = () => {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     setAiError('');
     setAiImageData('');
-    setAiImageUrl('');
-    try {
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-      setAiImageUrl(url);
-      // Fetch as blob and convert to base64 for minting
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Generation failed');
-      const blob = await res.blob();
-      const reader = new FileReader();
-      reader.onload = () => {
-        setAiImageData(reader.result as string);
-        setAiGenerating(false);
-      };
-      reader.onerror = () => {
-        setAiError('Failed to load image');
-        setAiGenerating(false);
-      };
-      reader.readAsDataURL(blob);
-    } catch {
+
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+
+    // Use <img> to load (bypasses CORS), then canvas to extract base64
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { setAiError('Canvas not supported'); setAiGenerating(false); return; }
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        setAiImageData(dataUrl);
+      } catch {
+        // Canvas tainted — fallback: store the URL directly as a reference
+        setAiImageData(url);
+      }
+      setAiGenerating(false);
+    };
+    img.onerror = () => {
       setAiError('Failed to generate image. Try again.');
       setAiGenerating(false);
-    }
+    };
+    img.src = url;
   };
 
   const handleAiMintAndPost = async () => {
@@ -283,7 +287,6 @@ export default function CosmoChatView() {
       // Reset
       setShowAiGen(false);
       setAiPrompt('');
-      setAiImageUrl('');
       setAiImageData('');
       setAiTitle('');
       setAiPrice('');
@@ -613,7 +616,7 @@ export default function CosmoChatView() {
     <div className="space-y-4">
       {/* Share modal */}
       {sharePost && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSharePost(null)}>
+        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setSharePost(null)}>
           <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-bold opacity-90">Share Post</h3>
             <button className="warp-button w-full text-body-sm py-2" onClick={() => copyPostLink(sharePost)}>{'\u2398'} Copy Link</button>
@@ -626,7 +629,7 @@ export default function CosmoChatView() {
 
       {/* Artwork picker modal */}
       {showArtPicker && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowArtPicker(false)}>
+        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setShowArtPicker(false)}>
           <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-bold opacity-90 mb-3">Select an artwork to post</h3>
             {allPickerWarts.length === 0 ? (
@@ -648,7 +651,7 @@ export default function CosmoChatView() {
 
       {/* AI Generator modal */}
       {showAiGen && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => { if (!aiGenerating && !aiMinting) setShowAiGen(false); }}>
+        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => { if (!aiGenerating && !aiMinting) setShowAiGen(false); }}>
           <div className="glass-panel p-5 max-w-md w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-bold opacity-90 mb-3">{'\u2B22'} AI Strangrz Generator</h3>
             <div className="space-y-3">
