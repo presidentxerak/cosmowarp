@@ -23,7 +23,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send, myCreated, myCollection } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection, marketplace } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -219,24 +219,34 @@ export default function CosmoChatView() {
 
   // ─── Media Renderer ────────────────────────────────────
   const MediaContent = ({ post }: { post: ChatPost }) => {
-    if (!post.mediaData) return null;
-    if (post.mediaType === 'audio') {
+    // Resolve media: use inline mediaData, or look up wart image from marketplace
+    let mediaSrc = post.mediaData;
+    let mediaType = post.mediaType;
+    if (!mediaSrc && post.wartLink) {
+      const wart = marketplace.find(w => w.id === post.wartLink);
+      if (wart) {
+        mediaSrc = wart.imageData;
+        mediaType = mediaType || 'image';
+      }
+    }
+    if (!mediaSrc) return null;
+    if (mediaType === 'audio') {
       return (
         <div className="mt-2 p-3 bg-current/5 flex items-center gap-3">
           {post.audioCover && (
             <img src={post.audioCover} alt="" className="w-12 h-12 object-cover shrink-0" />
           )}
-          <audio controls className="w-full h-8" src={post.mediaData} />
+          <audio controls className="w-full h-8" src={mediaSrc} />
         </div>
       );
     }
-    if (post.mediaType === 'video') {
+    if (mediaType === 'video') {
       return (
-        <video controls className="mt-2 w-full max-h-[500px] bg-black object-contain" src={post.mediaData} />
+        <video controls className="mt-2 w-full max-h-[500px] bg-black object-contain" src={mediaSrc} />
       );
     }
     return (
-      <img src={post.mediaData} alt="" className="mt-2 w-full max-h-[500px] object-contain" />
+      <img src={mediaSrc} alt="" className="mt-2 w-full max-h-[500px] object-contain" />
     );
   };
 
@@ -494,7 +504,7 @@ export default function CosmoChatView() {
                   key={w.id}
                   className="cursor-pointer border border-current/10 hover:border-current/30 transition-all overflow-hidden"
                   onClick={() => {
-                    setComposeMedia(w.imageData);
+                    setComposeMedia('');
                     setComposeMediaType('image');
                     setComposeWartLink(w.id);
                     setShowArtPicker(false);
@@ -631,12 +641,27 @@ export default function CosmoChatView() {
                       {composeMediaType === 'audio' && <audio src={composeMedia} controls className="h-8" />}
                       <button
                         className="absolute top-0 right-0 bg-black/70 text-white text-body-sm px-1 cursor-pointer"
-                        onClick={() => { setComposeMedia(''); setComposeMediaType(''); }}
+                        onClick={() => { setComposeMedia(''); setComposeMediaType(''); setComposeWartLink(''); }}
                       >
                         {'\u2716'}
                       </button>
                     </div>
                   )}
+                  {!composeMedia && composeWartLink && (() => {
+                    const linkedWart = marketplace.find(w => w.id === composeWartLink);
+                    return linkedWart ? (
+                      <div className="relative inline-block">
+                        <img src={linkedWart.imageData} alt={linkedWart.title || ''} className="max-h-32 object-cover" />
+                        <button
+                          className="absolute top-0 right-0 bg-black/70 text-white text-body-sm px-1 cursor-pointer"
+                          onClick={() => { setComposeWartLink(''); setComposeMediaType(''); }}
+                        >
+                          {'\u2716'}
+                        </button>
+                        <span className="absolute bottom-0 left-0 bg-black/70 text-white text-label px-1">{'\u2B22'} {linkedWart.title}</span>
+                      </div>
+                    ) : null;
+                  })()}
                   {composeMediaType === 'audio' && (
                     <div>
                       <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
@@ -663,7 +688,7 @@ export default function CosmoChatView() {
                     <button
                       className="warp-button text-body-sm px-4 py-1.5 ml-auto"
                       onClick={handlePost}
-                      disabled={posting || (!composeText.trim() && !composeMedia)}
+                      disabled={posting || (!composeText.trim() && !composeMedia && !composeWartLink)}
                     >
                       {posting ? '...' : 'Post'}
                     </button>

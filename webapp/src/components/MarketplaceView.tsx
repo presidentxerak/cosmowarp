@@ -680,7 +680,7 @@ export default function MarketplaceView() {
             e.stopPropagation();
             const chatEngine = CosmoChatEngine.load();
             const creatorName = getCreatorName(wart.creator);
-            chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, wart.imageData, wart.mediaType === 'svg' || wart.mediaType === 'cards' ? 'image' : wart.mediaType, undefined, wart.id);
+            chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, undefined, 'image', undefined, wart.id);
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
@@ -1303,8 +1303,8 @@ export default function MarketplaceView() {
                 wallet.address,
                 wallet.alias || shortAddress(wallet.address),
                 content,
-                wart.imageData,
-                wart.mediaType === 'svg' || wart.mediaType === 'cards' ? 'image' : wart.mediaType,
+                undefined,
+                'image',
                 undefined,
                 wart.id
               );
