@@ -221,7 +221,7 @@ function App() {
           />
 
           {/* Main content area - offset for mini sidebar on desktop */}
-          <main className="flex-1 px-0 sm:pl-[66px] sm:pr-[10px] pb-16">
+          <main className="flex-1 px-[10px] sm:pl-[66px] sm:pr-[10px] pb-16">
             <Suspense fallback={<ViewLoader />}>
               {/* Bottom bar tabs */}
               {activeTab === 'wall' && <CosmoChatView />}

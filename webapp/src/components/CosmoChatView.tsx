@@ -532,153 +532,10 @@ export default function CosmoChatView() {
     );
   }
 
-  // ─── Share modal ───────────────────────────────────────
-  const ShareModal = () => {
-    if (!sharePost) return null;
-    return (
-      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSharePost(null)}>
-        <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
-          <h3 className="text-base font-bold opacity-90">Share Post</h3>
-          <button className="warp-button w-full text-body-sm py-2" onClick={() => copyPostLink(sharePost)}>
-            {'\u2398'} Copy Link
-          </button>
-          <button className="warp-button w-full text-body-sm py-2" onClick={() => {
-            window.open(`mailto:?subject=CosmoChat Post&body=${encodeURIComponent(sharePost.content)}`, '_blank');
-            setSharePost(null);
-          }}>
-            {'\u2709'} Email
-          </button>
-          <button className="warp-button w-full text-body-sm py-2" onClick={() => {
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(sharePost.content.slice(0, 280))}`, '_blank');
-            setSharePost(null);
-          }}>
-            Share on X
-          </button>
-          <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={() => setSharePost(null)}>
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // ─── Artwork Picker Modal ─────────────────────────────
-  const ArtworkPickerModal = () => {
-    if (!showArtPicker) return null;
-    const allWarts = [...(myCreated || []), ...(myCollection || [])].filter(
-      (w, i, arr) => arr.findIndex(x => x.id === w.id) === i
-    );
-    return (
-      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowArtPicker(false)}>
-        <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-base font-bold opacity-90 mb-3">Select an artwork to post</h3>
-          {allWarts.length === 0 ? (
-            <p className="text-body-sm opacity-40 text-center py-6">No artworks found in your profile.</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {allWarts.map(w => (
-                <div
-                  key={w.id}
-                  className="cursor-pointer border border-current/10 hover:border-current/30 transition-all overflow-hidden"
-                  onClick={() => {
-                    setComposeMedia('');
-                    setComposeMediaType('image');
-                    setComposeWartLink(w.id);
-                    setShowArtPicker(false);
-                  }}
-                >
-                  <img src={w.imageData} alt={w.title || ''} className="w-full aspect-square object-cover" />
-                  {w.title && <p className="text-label opacity-60 p-1 truncate">{w.title}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-          <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowArtPicker(false)}>
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // ─── AI Generator Modal ──────────────────────────────
-  const AiGeneratorModal = () => {
-    if (!showAiGen) return null;
-    return (
-      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => { if (!aiGenerating && !aiMinting) setShowAiGen(false); }}>
-        <div className="glass-panel p-5 max-w-md w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-base font-bold opacity-90 mb-3">{'\u2B22'} AI Strangrz Generator</h3>
-
-          {/* Step 1: Prompt */}
-          <div className="space-y-3">
-            <textarea
-              className="warp-input min-h-[60px] resize-y text-base"
-              placeholder="Describe your artwork... (e.g. cosmic nebula with hexagonal patterns)"
-              value={aiPrompt}
-              onChange={e => setAiPrompt(e.target.value)}
-              maxLength={500}
-              disabled={aiGenerating}
-            />
-            <button
-              className="warp-button w-full py-2 text-base"
-              onClick={handleAiGenerate}
-              disabled={aiGenerating || !aiPrompt.trim()}
-            >
-              {aiGenerating ? 'Generating...' : 'Generate Image'}
-            </button>
-          </div>
-
-          {/* Preview */}
-          {aiGenerating && (
-            <div className="mt-3 flex items-center justify-center py-8">
-              <div className="animate-pulse text-body-sm opacity-50">Creating your artwork...</div>
-            </div>
-          )}
-
-          {aiImageData && !aiGenerating && (
-            <div className="mt-3 space-y-3">
-              <img src={aiImageData} alt="AI generated" className="w-full object-contain border border-current/10" />
-
-              {/* Step 2: Mint details */}
-              <input
-                className="warp-input text-base"
-                placeholder="Title for your Strangrz *"
-                value={aiTitle}
-                onChange={e => setAiTitle(e.target.value)}
-                maxLength={100}
-              />
-              <input
-                className="warp-input text-base"
-                placeholder={`Price in ${'\u2B23'} STRNGRZ (optional, leave empty = not for sale)`}
-                value={aiPrice}
-                onChange={e => setAiPrice(e.target.value.replace(/[^0-9.]/g, ''))}
-              />
-              <button
-                className="warp-button w-full py-2 text-base"
-                onClick={handleAiMintAndPost}
-                disabled={aiMinting || !aiTitle.trim()}
-              >
-                {aiMinting ? 'Minting...' : `Mint & Post to Wall`}
-              </button>
-              <button
-                className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center"
-                onClick={handleAiGenerate}
-                disabled={aiGenerating}
-              >
-                {'\u21BB'} Regenerate
-              </button>
-            </div>
-          )}
-
-          {aiError && <p className="text-body-sm opacity-70 mt-2 p-2 bg-current/5 border border-current/15">{aiError}</p>}
-
-          <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowAiGen(false)}>
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  };
+  // ─── Computed values for modals ────────────────────────
+  const allPickerWarts = [...(myCreated || []), ...(myCollection || [])].filter(
+    (w, i, arr) => arr.findIndex(x => x.id === w.id) === i
+  );
 
   // ─── Channel Detail ────────────────────────────────────
   if (selectedChannel) {
@@ -754,9 +611,80 @@ export default function CosmoChatView() {
 
   return (
     <div className="space-y-4">
-      <ShareModal />
-      <ArtworkPickerModal />
-      <AiGeneratorModal />
+      {/* Share modal */}
+      {sharePost && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSharePost(null)}>
+          <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold opacity-90">Share Post</h3>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => copyPostLink(sharePost)}>{'\u2398'} Copy Link</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => { window.open(`mailto:?subject=CosmoChat Post&body=${encodeURIComponent(sharePost.content)}`, '_blank'); setSharePost(null); }}>{'\u2709'} Email</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(sharePost.content.slice(0, 280))}`, '_blank'); setSharePost(null); }}>Share on X</button>
+            <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={() => setSharePost(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Artwork picker modal */}
+      {showArtPicker && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowArtPicker(false)}>
+          <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold opacity-90 mb-3">Select an artwork to post</h3>
+            {allPickerWarts.length === 0 ? (
+              <p className="text-body-sm opacity-40 text-center py-6">No artworks found in your profile.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {allPickerWarts.map(w => (
+                  <div key={w.id} className="cursor-pointer border border-current/10 hover:border-current/30 transition-all overflow-hidden" onClick={() => { setComposeMedia(''); setComposeMediaType('image'); setComposeWartLink(w.id); setShowArtPicker(false); }}>
+                    <img src={w.imageData} alt={w.title || ''} className="w-full aspect-square object-cover" />
+                    {w.title && <p className="text-label opacity-60 p-1 truncate">{w.title}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+            <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowArtPicker(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* AI Generator modal */}
+      {showAiGen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => { if (!aiGenerating && !aiMinting) setShowAiGen(false); }}>
+          <div className="glass-panel p-5 max-w-md w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold opacity-90 mb-3">{'\u2B22'} AI Strangrz Generator</h3>
+            <div className="space-y-3">
+              <textarea
+                className="warp-input min-h-[60px] resize-y text-base"
+                placeholder="Describe your artwork... (e.g. cosmic nebula with hexagonal patterns)"
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                maxLength={500}
+                disabled={aiGenerating}
+              />
+              <button className="warp-button w-full py-2 text-base" onClick={handleAiGenerate} disabled={aiGenerating || !aiPrompt.trim()}>
+                {aiGenerating ? 'Generating...' : 'Generate Image'}
+              </button>
+            </div>
+            {aiGenerating && (
+              <div className="mt-3 flex items-center justify-center py-8">
+                <div className="animate-pulse text-body-sm opacity-50">Creating your artwork...</div>
+              </div>
+            )}
+            {aiImageData && !aiGenerating && (
+              <div className="mt-3 space-y-3">
+                <img src={aiImageData} alt="AI generated" className="w-full object-contain border border-current/10" />
+                <input className="warp-input text-base" placeholder="Title for your Strangrz *" value={aiTitle} onChange={e => setAiTitle(e.target.value)} maxLength={100} />
+                <input className="warp-input text-base" placeholder={`Price in ${'\u2B23'} STRNGRZ (optional, leave empty = not for sale)`} value={aiPrice} onChange={e => setAiPrice(e.target.value.replace(/[^0-9.]/g, ''))} />
+                <button className="warp-button w-full py-2 text-base" onClick={handleAiMintAndPost} disabled={aiMinting || !aiTitle.trim()}>
+                  {aiMinting ? 'Minting...' : 'Mint & Post to Wall'}
+                </button>
+                <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={handleAiGenerate} disabled={aiGenerating}>{'\u21BB'} Regenerate</button>
+              </div>
+            )}
+            {aiError && <p className="text-body-sm opacity-70 mt-2 p-2 bg-current/5 border border-current/15">{aiError}</p>}
+            <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowAiGen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       {/* Sub-tabs */}
       <div className="flex gap-1 overflow-x-auto border-b border-current/10 px-2 pt-2">

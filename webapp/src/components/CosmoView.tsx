@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import { useWallet } from '../context/WalletContext';
+import { shortAddress } from '../engine/crypto';
+import { CosmoChatEngine } from '../engine/cosmochat';
 import Logo from './Logo';
 
 interface Message {
@@ -7,6 +10,8 @@ interface Message {
   text: string;
   timestamp: number;
   suggestion?: { label: string; tab: string };
+  aiImage?: string; // base64 image data from AI generation
+  aiPrompt?: string; // prompt used for generation
 }
 
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
@@ -37,7 +42,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['help', 'aide', 'how', 'comment'],
-    response: 'Je suis là pour vous guider dans Strangrz ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Que souhaitez-vous explorer ?',
+    response: 'Je suis là pour vous guider dans Strangrz ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Vous pouvez aussi me demander de générer une image AI !',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   },
   {
@@ -47,7 +52,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz ストレンジャーズ. Je peux vous expliquer comment certifier un objet rare, miner des Strangrz, utiliser le paiement, ou naviguer dans l\'écosystème.',
+    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz ストレンジャーズ. Je peux vous expliquer comment certifier un objet rare, miner des Strangrz, utiliser le paiement, ou générer une oeuvre d\'art AI.',
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
@@ -75,25 +80,50 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
 ];
 
-function getResponse(input: string): { response: string; suggestion?: { label: string; tab: string } } {
+function getResponse(input: string): { response: string; suggestion?: { label: string; tab: string }; isAiRequest?: boolean } {
   const lower = input.toLowerCase();
+
+  // Detect AI image generation requests
+  const aiKeywords = ['generate', 'génère', 'genere', 'crée', 'cree', 'create', 'dessine', 'draw', 'imagine', 'image ai', 'ai art', 'art ai', 'génération', 'generation'];
+  if (aiKeywords.some(kw => lower.includes(kw))) {
+    return {
+      response: 'Je génère votre oeuvre avec l\'IA...',
+      isAiRequest: true,
+    };
+  }
+
   for (const entry of COSMO_RESPONSES) {
     if (entry.keywords.some(kw => lower.includes(kw))) {
       return { response: entry.response, suggestion: entry.suggestion };
     }
   }
   return {
-    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le réseau StrangrzMesh. Vous pouvez aussi consulter la section Aide.',
+    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le réseau StrangrzMesh. Vous pouvez aussi me demander de générer une image AI !',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   };
 }
 
+/** Extract the actual image prompt from user input by stripping command prefixes */
+function extractAiPrompt(input: string): string {
+  const lower = input.toLowerCase();
+  const prefixes = ['génère ', 'genere ', 'generate ', 'crée ', 'cree ', 'create ', 'dessine ', 'draw ', 'imagine '];
+  for (const p of prefixes) {
+    const idx = lower.indexOf(p);
+    if (idx !== -1) {
+      return input.slice(idx + p.length).trim();
+    }
+  }
+  // Fallback: use full input
+  return input.trim();
+}
+
 export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const { wallet, unlocked, mintWart } = useWallet();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       role: 'cosmo',
-      text: 'Bienvenue sur Strangrz ストレンジャーズ ! Je suis Doctor Strangrz, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
+      text: 'Bienvenue sur Strangrz ストレンジャーズ ! Je suis Doctor Strangrz, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau... ou demandez-moi de générer une oeuvre d\'art AI !',
       timestamp: Date.now(),
     },
   ]);
@@ -102,9 +132,59 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // AI minting state
+  const [mintingId, setMintingId] = useState<string | null>(null);
+  const [mintTitle, setMintTitle] = useState('');
+  const [mintPrice, setMintPrice] = useState('');
+  const [mintError, setMintError] = useState('');
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, typing]);
+
+  const handleAiGenerate = async (userText: string) => {
+    const prompt = extractAiPrompt(userText);
+    try {
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Generation failed');
+      const blob = await res.blob();
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read image'));
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      throw new Error('Failed to generate image');
+    }
+  };
+
+  const handleMintAi = async (_msgId: string, imageData: string, prompt: string) => {
+    if (!wallet || !unlocked || !mintTitle.trim()) return;
+    setMintError('');
+    try {
+      const price = mintPrice.trim() ? parseFloat(mintPrice) : null;
+      const wart = await mintWart(mintTitle, `AI generated: ${prompt}`, imageData, price);
+      const alias = wallet.alias || shortAddress(wallet.address);
+      const chatEngine = CosmoChatEngine.load();
+      chatEngine.createPost(wallet.address, alias, `${mintTitle} — AI generated artwork`, undefined, 'image', undefined, wart.id);
+
+      // Add confirmation message
+      setMessages(prev => [...prev, {
+        id: `cosmo-mint-${Date.now()}`,
+        role: 'cosmo',
+        text: `Votre Strangrz "${mintTitle}" a été créé et posté sur le Mur ! ${price ? `Prix: ${price} ⬣` : 'Pas de prix défini.'}`,
+        timestamp: Date.now(),
+        suggestion: { label: 'Voir sur le Mur', tab: 'wall' },
+      }]);
+      setMintingId(null);
+      setMintTitle('');
+      setMintPrice('');
+    } catch (e: unknown) {
+      setMintError(e instanceof Error ? e.message : 'Minting failed');
+    }
+  };
 
   const handleSend = () => {
     const text = input.trim();
@@ -120,25 +200,52 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     setInput('');
     setTyping(true);
 
-    setTimeout(() => {
-      const { response, suggestion } = getResponse(text);
-      const cosmoMsg: Message = {
-        id: `cosmo-${Date.now()}`,
-        role: 'cosmo',
-        text: response,
-        timestamp: Date.now(),
-        suggestion,
-      };
-      setMessages(prev => [...prev, cosmoMsg]);
-      setTyping(false);
-    }, 800 + Math.random() * 1200);
+    const { response, suggestion, isAiRequest } = getResponse(text);
+
+    if (isAiRequest) {
+      // Generate AI image
+      const prompt = extractAiPrompt(text);
+      handleAiGenerate(text).then(imageData => {
+        const cosmoMsg: Message = {
+          id: `cosmo-${Date.now()}`,
+          role: 'cosmo',
+          text: `Voici votre oeuvre "${prompt}" ! Vous pouvez la mint comme Strangrz NFT pour la vendre et la poster dans le feed.`,
+          timestamp: Date.now(),
+          aiImage: imageData,
+          aiPrompt: prompt,
+        };
+        setMessages(prev => [...prev, cosmoMsg]);
+        setTyping(false);
+      }).catch(() => {
+        const cosmoMsg: Message = {
+          id: `cosmo-${Date.now()}`,
+          role: 'cosmo',
+          text: 'Désolé, la génération a échoué. Réessayez avec un autre prompt !',
+          timestamp: Date.now(),
+        };
+        setMessages(prev => [...prev, cosmoMsg]);
+        setTyping(false);
+      });
+    } else {
+      setTimeout(() => {
+        const cosmoMsg: Message = {
+          id: `cosmo-${Date.now()}`,
+          role: 'cosmo',
+          text: response,
+          timestamp: Date.now(),
+          suggestion,
+        };
+        setMessages(prev => [...prev, cosmoMsg]);
+        setTyping(false);
+      }, 800 + Math.random() * 1200);
+    }
   };
 
   const quickActions = [
     { label: 'C\'est quoi Strangrz ?', query: 'C\'est quoi Strangrz ?' },
     { label: 'Comment miner ?', query: 'Comment miner des Strangrz ?' },
     { label: 'Certifier un objet', query: 'Comment certifier un objet rare ?' },
-    { label: 'Paiement par carte', query: 'Comment acheter avec ma carte ?' },
+    { label: 'Générer une image AI', query: 'Génère une oeuvre cosmique avec des hexagones' },
   ];
 
   return (
@@ -162,6 +269,57 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
               }`}>
                 {msg.text}
               </p>
+
+              {/* AI generated image */}
+              {msg.aiImage && (
+                <div className="mt-2 space-y-2">
+                  <img src={msg.aiImage} alt="AI generated" className="w-full object-contain border border-current/10" />
+
+                  {wallet && unlocked && mintingId !== msg.id && (
+                    <button
+                      className="warp-button w-full py-2 text-body-sm"
+                      onClick={() => { setMintingId(msg.id); setMintTitle(''); setMintPrice(''); setMintError(''); }}
+                    >
+                      {'\u2B22'} Mint as Strangrz NFT
+                    </button>
+                  )}
+
+                  {mintingId === msg.id && (
+                    <div className="space-y-2 p-2 border border-current/10 bg-current/5">
+                      <input
+                        className="warp-input text-base w-full"
+                        placeholder="Title for your Strangrz *"
+                        value={mintTitle}
+                        onChange={e => setMintTitle(e.target.value)}
+                        maxLength={100}
+                      />
+                      <input
+                        className="warp-input text-base w-full"
+                        placeholder={`Price in \u2B23 STRNGRZ (optional)`}
+                        value={mintPrice}
+                        onChange={e => setMintPrice(e.target.value.replace(/[^0-9.]/g, ''))}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          className="warp-button flex-1 py-1.5 text-body-sm"
+                          onClick={() => handleMintAi(msg.id, msg.aiImage!, msg.aiPrompt || '')}
+                          disabled={!mintTitle.trim()}
+                        >
+                          Mint & Post
+                        </button>
+                        <button
+                          className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer px-3"
+                          onClick={() => setMintingId(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      {mintError && <p className="text-body-sm opacity-70 p-1 bg-current/5">{mintError}</p>}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {msg.suggestion && (
                 <button
                   onClick={() => onNavigate(msg.suggestion!.tab)}
@@ -210,19 +368,44 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                     };
                     setMessages(prev => [...prev, userMsg]);
                     setTyping(true);
-                    setTimeout(() => {
-                      const { response, suggestion } = getResponse(text);
-                      const cosmoMsg: Message = {
-                        id: `cosmo-${Date.now()}`,
-                        role: 'cosmo',
-                        text: response,
-                        timestamp: Date.now(),
-                        suggestion,
-                      };
-                      setMessages(prev => [...prev, cosmoMsg]);
-                      setTyping(false);
-                      setInput('');
-                    }, 800 + Math.random() * 1200);
+
+                    const { response, suggestion, isAiRequest } = getResponse(text);
+                    if (isAiRequest) {
+                      handleAiGenerate(text).then(imageData => {
+                        setMessages(prev => [...prev, {
+                          id: `cosmo-${Date.now()}`,
+                          role: 'cosmo',
+                          text: `Voici votre oeuvre "${extractAiPrompt(text)}" ! Vous pouvez la mint comme Strangrz NFT.`,
+                          timestamp: Date.now(),
+                          aiImage: imageData,
+                          aiPrompt: extractAiPrompt(text),
+                        }]);
+                        setTyping(false);
+                        setInput('');
+                      }).catch(() => {
+                        setMessages(prev => [...prev, {
+                          id: `cosmo-${Date.now()}`,
+                          role: 'cosmo',
+                          text: 'Désolé, la génération a échoué. Réessayez !',
+                          timestamp: Date.now(),
+                        }]);
+                        setTyping(false);
+                        setInput('');
+                      });
+                    } else {
+                      setTimeout(() => {
+                        const cosmoMsg: Message = {
+                          id: `cosmo-${Date.now()}`,
+                          role: 'cosmo',
+                          text: response,
+                          timestamp: Date.now(),
+                          suggestion,
+                        };
+                        setMessages(prev => [...prev, cosmoMsg]);
+                        setTyping(false);
+                        setInput('');
+                      }, 800 + Math.random() * 1200);
+                    }
                   }, 50);
                 }}
                 className="px-3 py-1.5 text-body-sm opacity-80 border border-current/10 bg-current/5 hover:bg-current/5 transition-all cursor-pointer"
@@ -243,7 +426,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Posez votre question à Doctor Strangrz..."
+            placeholder="Posez votre question ou demandez une image AI..."
             className="flex-1 warp-input py-2.5"
             disabled={typing}
           />
@@ -260,7 +443,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           </button>
         </div>
         <p className="text-label opacity-30 mt-1.5 text-center">
-          Doctor Strangrz est votre guide IA Strangrz. Réponses générées localement.
+          Doctor Strangrz — guide IA & générateur d'art AI Strangrz
         </p>
       </div>
     </div>
