@@ -37,6 +37,7 @@ export interface PFPCollection {
   items: PFPItem[];
   basePrice: number | null;  // in Warps
   fingerprint: string;       // collection content hash
+  mintChain?: 'strangrz' | 'ethereum';  // target blockchain
 }
 
 // ─── Storage ───────────────────────────────────────────
@@ -106,6 +107,7 @@ export class PFPCollectionEngine {
     description: string,
     maxSupply: number,
     basePrice: number | null,
+    mintChain?: 'strangrz' | 'ethereum',
   ): PFPCollection {
     const collection: PFPCollection = {
       id: generateId(),
@@ -118,6 +120,7 @@ export class PFPCollectionEngine {
       items: [],
       basePrice,
       fingerprint: hashString(name + creator + Date.now()),
+      mintChain: mintChain || 'strangrz',
     };
     this.collections.push(collection);
     this.save();

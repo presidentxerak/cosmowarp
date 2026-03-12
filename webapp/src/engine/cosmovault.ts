@@ -46,7 +46,7 @@ export interface VaultEntry {
   creator: string;                 // Creator address
   owner: string;                   // Current owner address
   encryptedMedia: EncryptedPayload; // AES-256-GCM encrypted media data
-  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' | 'cards';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
   mediaSizeBytes: number;          // Original media size
   createdAt: number;
   addedToVaultAt: number;
@@ -186,7 +186,7 @@ export class CosmoVault {
     creator: string;
     owner: string;
     mediaData: string;          // Raw media (data URL or base64)
-    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' | 'cards';
+    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
     onChainSVG?: string;
     onChainTxId?: string;
   }): Promise<VaultEntry> {

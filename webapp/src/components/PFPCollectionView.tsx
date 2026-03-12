@@ -71,7 +71,7 @@ export default function PFPCollectionView() {
     if (price !== null && (isNaN(price) || price < 0)) { setCreateError('Invalid price'); return; }
 
     const engine = PFPCollectionEngine.load();
-    const collection = engine.createCollection(wallet.address, name.trim(), description, supply, price);
+    const collection = engine.createCollection(wallet.address, name.trim(), description, supply, price, mintChain);
     setCollections(engine.getAllCollections());
     setSelectedCollection(collection);
     setStep('edit');
