@@ -77,6 +77,8 @@ export interface Wart {
   history: WartTransfer[];       // Full transfer history
   royaltyPercent: number;        // % paid to creator on resale (default 5)
   comments: WartComment[];       // User comments
+  likes?: string[];              // Addresses that liked this Wart
+  bookmarks?: string[];          // Addresses that bookmarked this Wart
   // ─── Temporal Edition System ────────────────────────
   editionType: 'unique' | 'limited' | 'unlimited';   // Edition model
   maxEditions: number | null;    // null = unlimited, otherwise max copies
@@ -664,6 +666,26 @@ export class WartEngine {
     wart.comments.push(comment);
     this.save();
     return comment;
+  }
+
+  toggleLike(wartId: string, address: string): boolean {
+    const wart = this.warts.get(wartId);
+    if (!wart) return false;
+    if (!wart.likes) wart.likes = [];
+    const idx = wart.likes.indexOf(address);
+    if (idx >= 0) { wart.likes.splice(idx, 1); } else { wart.likes.push(address); }
+    this.save();
+    return idx < 0; // true if now liked
+  }
+
+  toggleBookmark(wartId: string, address: string): boolean {
+    const wart = this.warts.get(wartId);
+    if (!wart) return false;
+    if (!wart.bookmarks) wart.bookmarks = [];
+    const idx = wart.bookmarks.indexOf(address);
+    if (idx >= 0) { wart.bookmarks.splice(idx, 1); } else { wart.bookmarks.push(address); }
+    this.save();
+    return idx < 0; // true if now bookmarked
   }
 
   // ─── Queries ─────────────────────────────────────────

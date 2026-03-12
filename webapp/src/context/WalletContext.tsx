@@ -101,6 +101,8 @@ interface WalletContextType {
   deleteWart: (wartId: string) => boolean;
   editWart: (wartId: string, updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number }) => boolean;
   addWartComment: (wartId: string, content: string) => boolean;
+  toggleWartLike: (wartId: string) => boolean;
+  toggleWartBookmark: (wartId: string) => boolean;
   verifyWartCertificate: (wartId: string) => Promise<{ valid: boolean; reason: string }>;
   refreshWarts: () => void;
   // Vault operations
@@ -931,6 +933,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return !!comment;
   }, [wallet]);
 
+  const doToggleWartLike = useCallback((wartId: string): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const liked = engine.toggleLike(wartId, wallet.address);
+    refreshWartsState(wallet.address);
+    return liked;
+  }, [wallet]);
+
+  const doToggleWartBookmark = useCallback((wartId: string): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const bookmarked = engine.toggleBookmark(wartId, wallet.address);
+    refreshWartsState(wallet.address);
+    return bookmarked;
+  }, [wallet]);
+
   const verifyWartCertificate = useCallback(async (wartId: string): Promise<{ valid: boolean; reason: string }> => {
     const engine = getWartEngine();
     return engine.verifyCertificate(wartId);
@@ -1040,7 +1058,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       warts, marketplace, myCollection, myCreated,
       mintWart, buyWart, listWart, delistWart, transferWart,
       deleteWart: doDeleteWart, editWart: doEditWart,
-      addWartComment: doAddWartComment, verifyWartCertificate, refreshWarts,
+      addWartComment: doAddWartComment, toggleWartLike: doToggleWartLike, toggleWartBookmark: doToggleWartBookmark, verifyWartCertificate, refreshWarts,
       // Vault
       vaultStats,
       addToVault: doAddToVault,

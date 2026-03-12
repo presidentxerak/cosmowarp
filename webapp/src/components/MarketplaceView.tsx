@@ -58,7 +58,7 @@ export default function MarketplaceView() {
   const {
     wallet, unlocked, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart,
-    deleteWart, editWart, addWartComment, verifyWartCertificate, refreshWarts,
+    deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
     listWartFiat, buyWartFiat, getWartFiatPrice,
   } = useWallet();
 
@@ -666,18 +666,23 @@ export default function MarketplaceView() {
         </div>
         {/* Social bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
-          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            {wart.history.length > 0 && <span className="text-[10px]">Tip {wart.history.length}{'\u2B23'}</span>}
+          {/* Like */}
+          <button className={`flex items-center gap-1 cursor-pointer transition-all ${wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-40 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length}</span>}
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          {/* Share to Wall */}
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" title="Share to Wall" onClick={e => { e.stopPropagation(); const chatEngine = CosmoChatEngine.load(); const creatorName = getCreatorName(wart.creator); chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, wart.imageData, wart.mediaType === 'svg' || wart.mediaType === 'cards' ? 'image' : wart.mediaType, undefined, wart.id); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          {/* Comments count */}
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedWart(wart); setTab('detail'); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {wart.comments?.length > 0 && <span className="text-[10px]">{wart.comments.length}</span>}
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          {/* Bookmark */}
+          <button className={`cursor-pointer transition-all ${wart.bookmarks?.includes(wallet.address) ? 'opacity-90' : 'opacity-40 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
         {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet.address && (

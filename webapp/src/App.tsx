@@ -7,27 +7,43 @@ import Sidebar from './components/Sidebar';
 import BottomBar from './components/BottomBar';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
 
-// ─── Lazy-loaded views (code splitting) ──────────────────
-const WalletView = lazy(() => import('./components/WalletView'));
-const MarketplaceView = lazy(() => import('./components/MarketplaceView'));
-const CosmoChatView = lazy(() => import('./components/CosmoChatView'));
-const CosmoView = lazy(() => import('./components/CosmoView'));
-const MessageView = lazy(() => import('./components/MessageView'));
-const NotificationsView = lazy(() => import('./components/NotificationsView'));
-const ProfileView = lazy(() => import('./components/ProfileView'));
-const SignetsView = lazy(() => import('./components/SignetsView'));
-const WhitepaperView = lazy(() => import('./components/WhitepaperView'));
-const AdminView = lazy(() => import('./components/AdminView'));
-const HelpView = lazy(() => import('./components/HelpView'));
-const SettingsView = lazy(() => import('./components/SettingsView'));
-const LegalsView = lazy(() => import('./components/LegalsView'));
-const PrivacyView = lazy(() => import('./components/PrivacyView'));
-const LandingView = lazy(() => import('./components/LandingView'));
-const DevView = lazy(() => import('./components/DevView'));
-const UserProfileView = lazy(() => import('./components/UserProfileView'));
-const DiscoverView = lazy(() => import('./components/DiscoverView'));
-const VaultView = lazy(() => import('./components/VaultView'));
-const FiatGatewayView = lazy(() => import('./components/FiatGatewayView'));
+// ─── Lazy-loaded views with auto-reload on chunk failure ─
+function lazyRetry<T extends { default: React.ComponentType<any> }>(
+  factory: () => Promise<T>,
+): React.LazyExoticComponent<T['default']> {
+  return lazy(() =>
+    factory().catch(() => {
+      // Chunk failed to load (stale deployment) — reload once
+      const reloaded = sessionStorage.getItem('chunk_reload');
+      if (!reloaded) {
+        sessionStorage.setItem('chunk_reload', '1');
+        window.location.reload();
+      }
+      return factory();
+    })
+  );
+}
+
+const WalletView = lazyRetry(() => import('./components/WalletView'));
+const MarketplaceView = lazyRetry(() => import('./components/MarketplaceView'));
+const CosmoChatView = lazyRetry(() => import('./components/CosmoChatView'));
+const CosmoView = lazyRetry(() => import('./components/CosmoView'));
+const MessageView = lazyRetry(() => import('./components/MessageView'));
+const NotificationsView = lazyRetry(() => import('./components/NotificationsView'));
+const ProfileView = lazyRetry(() => import('./components/ProfileView'));
+const SignetsView = lazyRetry(() => import('./components/SignetsView'));
+const WhitepaperView = lazyRetry(() => import('./components/WhitepaperView'));
+const AdminView = lazyRetry(() => import('./components/AdminView'));
+const HelpView = lazyRetry(() => import('./components/HelpView'));
+const SettingsView = lazyRetry(() => import('./components/SettingsView'));
+const LegalsView = lazyRetry(() => import('./components/LegalsView'));
+const PrivacyView = lazyRetry(() => import('./components/PrivacyView'));
+const LandingView = lazyRetry(() => import('./components/LandingView'));
+const DevView = lazyRetry(() => import('./components/DevView'));
+const UserProfileView = lazyRetry(() => import('./components/UserProfileView'));
+const DiscoverView = lazyRetry(() => import('./components/DiscoverView'));
+const VaultView = lazyRetry(() => import('./components/VaultView'));
+const FiatGatewayView = lazyRetry(() => import('./components/FiatGatewayView'));
 
 // ─── URL routing map ─────────────────────────────────────
 const ROUTE_MAP: Record<string, string> = {
@@ -133,6 +149,9 @@ function ViewLoader() {
 function App() {
   const [activeTab, setActiveTab] = useState(getTabFromPath);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Clear chunk reload flag on successful app load
+  useEffect(() => { sessionStorage.removeItem('chunk_reload'); }, []);
 
   // Navigate with URL update
   const navigate = useCallback((tab: string) => {
