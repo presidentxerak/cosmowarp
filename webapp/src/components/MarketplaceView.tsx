@@ -62,7 +62,14 @@ export default function MarketplaceView() {
     listWartFiat, buyWartFiat, getWartFiatPrice,
   } = useWallet();
 
-  const [tab, setTab] = useState<GalleryTab>('all');
+  const [tab, setTab] = useState<GalleryTab>(() => {
+    const stored = sessionStorage.getItem('strangrz_gallery_tab');
+    if (stored) {
+      sessionStorage.removeItem('strangrz_gallery_tab');
+      return stored as GalleryTab;
+    }
+    return 'all';
+  });
   const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
   const [editionFilter, setEditionFilter] = useState<EditionFilter>('all');
   const [salesMarketFilter, setSalesMarketFilter] = useState<SalesMarketFilter>('1st');
@@ -1537,7 +1544,7 @@ export default function MarketplaceView() {
     <div className="space-y-3">
       <TransferModal />
 
-      {/* ─── Search Bar + Create Button ─────────────────────── */}
+      {/* ─── Search Bar ─────────────────────────────────────── */}
       <div className="glass-panel p-2 flex items-center gap-2">
         <div className="flex-1 relative">
           <input
@@ -1549,14 +1556,6 @@ export default function MarketplaceView() {
           />
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30 text-body-sm">{'\u2315'}</span>
         </div>
-        <button
-          onClick={() => { setTab('create'); setEditionFilter('all'); }}
-          className={`px-5 py-2.5 text-sm font-bold whitespace-nowrap shrink-0 cta-gradient-btn ${
-            tab === 'create' ? 'opacity-100' : ''
-          }`}
-        >
-          + Create
-        </button>
       </div>
 
       {/* ─── Gallery Tabs (scrollable) ──────────────────────── */}

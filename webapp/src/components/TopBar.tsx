@@ -185,7 +185,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
 
         {/* Create button — always visible */}
         <button
-          onClick={() => onNavigate('gallery')}
+          onClick={() => { sessionStorage.setItem('strangrz_gallery_tab', 'create'); onNavigate('gallery'); }}
           className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-body-sm font-medium cursor-pointer transition-all hover:opacity-80"
           style={{ backgroundColor: '#e91e8c', color: '#fff' }}
         >
