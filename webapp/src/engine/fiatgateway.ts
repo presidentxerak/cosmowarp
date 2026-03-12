@@ -17,7 +17,7 @@
  *
  * For external payment processors (Stripe, PayPal, SEPA):
  * - Create PaymentIntent → return checkout URL → await webhook → settle
- * - When a backend is available, set COSMORARE_GATEWAY_URL to enable
+ * - When a backend is available, set STRANGRZ_GATEWAY_URL to enable
  *   real processor integration. Without a backend, transactions
  *   are settled locally with proper state transitions.
  *
@@ -337,7 +337,7 @@ export class FiatGateway {
    * Create a fiat buy transaction (user buys artwork with fiat).
    *
    * Flow: pending → processing → completed
-   * If COSMORARE_GATEWAY_URL is set, this will call the backend to create
+   * If STRANGRZ_GATEWAY_URL is set, this will call the backend to create
    * a real PaymentIntent. Otherwise, transactions are settled locally.
    */
   async createBuyTransaction(params: {

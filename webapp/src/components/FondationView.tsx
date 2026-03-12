@@ -8,15 +8,15 @@ export default function FondationView() {
           <Logo className="w-10 h-10 animate-float" />
           <div>
             <h2 className="text-title-md font-bold opacity-100 font-title">Strangrz Foundation</h2>
-            <p className="text-body-sm opacity-40">Protocole de certification pour objets rares</p>
+            <p className="text-body-sm opacity-40">Protocole multi-chaîne de certification pour objets rares</p>
           </div>
         </div>
 
         <div className="space-y-4 text-base opacity-70 leading-relaxed">
           <p>
             La Strangrz Foundation est l'organisation à but non lucratif derrière l'écosystème Strangrz.
-            Notre mission : développer et maintenir un protocole ouvert, décentralisé et respectueux de la vie privée
-            pour la certification d'objets rares — numériques ou physiques.
+            Notre mission : développer et maintenir un protocole multi-chaîne ouvert, décentralisé et respectueux de la vie privée
+            pour la certification d'objets rares — numériques ou physiques — via les standards CW-721 (Strangrz) et ERC-721 (Ethereum).
           </p>
 
           <div className="glass-panel p-4">
@@ -72,7 +72,7 @@ export default function FondationView() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'✦'}</span>
-                <span><span className="opacity-90">STCERT</span> - Certificats d'authenticité infalsifiables</span>
+                <span><span className="opacity-90">STCERT</span> - Certificats d'authenticité infalsifiables (CW-721 + ERC-721)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="opacity-80">{'⬢'}</span>

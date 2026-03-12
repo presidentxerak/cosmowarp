@@ -108,7 +108,7 @@ export interface SignalData {
 //   - Cloudflare TURN: https://developers.cloudflare.com/calls/turn/
 //
 // Set TURN credentials via environment or config:
-//   window.COSMORARE_TURN_URL, COSMORARE_TURN_USER, COSMORARE_TURN_CREDENTIAL
+//   window.STRANGRZ_TURN_URL, STRANGRZ_TURN_USER, STRANGRZ_TURN_CREDENTIAL
 
 function getIceServers(): RTCIceServer[] {
   const servers: RTCIceServer[] = [
@@ -120,9 +120,9 @@ function getIceServers(): RTCIceServer[] {
 
   // Add TURN server if configured (required for ~20% of connections behind symmetric NAT)
   const w = typeof window !== 'undefined' ? (window as unknown as Record<string, string>) : {};
-  const turnUrl = w.COSMORARE_TURN_URL || '';
-  const turnUser = w.COSMORARE_TURN_USER || '';
-  const turnCredential = w.COSMORARE_TURN_CREDENTIAL || '';
+  const turnUrl = w.STRANGRZ_TURN_URL || '';
+  const turnUser = w.STRANGRZ_TURN_USER || '';
+  const turnCredential = w.STRANGRZ_TURN_CREDENTIAL || '';
 
   if (turnUrl) {
     servers.push({

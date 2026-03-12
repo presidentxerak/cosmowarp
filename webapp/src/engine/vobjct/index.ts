@@ -11,7 +11,7 @@ import type { VobjctManifest, StorageRoute, RecoveryRoute } from './schema';
 import { validateManifest, getTrustSignals, isSafeProtected, getActiveStorageRoutes } from './schema';
 import { buildManifest, verifyManifest, type ManifestBuildInput, type VerificationResult } from './manifest';
 import { VobjctSafeEngine, getSafeBadges, type VobjctSafeConfig, type RouteCheckResult } from './safe';
-import { StrangrzAdapter, registerAdapter, type ChainAdapter } from './adapters';
+import { StrangrzAdapter, EVMAdapter, registerAdapter, type ChainAdapter } from './adapters';
 import { VobjctStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
 
 // Re-exports
@@ -96,6 +96,12 @@ export class VobjctEngine {
 
     // Always register HTTPS mirror support
     this.storageLayer.registerProvider(new HTTPSMirrorProvider());
+  }
+
+  /** Initialize Ethereum (EVM) adapter for ERC-721 minting */
+  initEthereum(): void {
+    const evmAdapter = new EVMAdapter('ethereum_mainnet', 'ERC-721');
+    registerAdapter('ethereum', evmAdapter);
   }
 
   // ─── Manifest CRUD ──────────────────────────────────────

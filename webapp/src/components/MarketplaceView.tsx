@@ -50,7 +50,7 @@ function useBlobUrl(dataUrl: string | undefined): string {
   }, [dataUrl]);
   return blobUrl;
 }
-type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'create' | 'detail';
+type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'top-collections' | 'create' | 'detail';
 type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
 type SalesMarketFilter = '1st' | '2nd';
 
@@ -80,6 +80,7 @@ export default function MarketplaceView() {
   const [editionType, setEditionType] = useState<'unique' | 'limited' | 'unlimited'>('unique');
   const [maxEditions, setMaxEditions] = useState('');
   const [durationHours, setDurationHours] = useState('');
+  const [mintChain, setMintChain] = useState<'strangrz' | 'ethereum'>('strangrz');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
@@ -194,6 +195,26 @@ export default function MarketplaceView() {
       : sales.filter(s => !s.isFirstSale);
     return filtered.sort((a, b) => b.transfer.price - a.transfer.price);
   }, [allWarts, salesMarketFilter]);
+
+  // ─── Top Collections ──────────────────────────────────
+  const topCollections = useMemo(() => {
+    const collMap: Record<string, { title: string; creator: string; count: number; totalVolume: number; floorPrice: number; warts: Wart[] }> = {};
+    allWarts.forEach(w => {
+      if (w.editionType === 'unique' && !w.maxEditions) return; // skip isolated uniques
+      // Group by creator + title base (remove edition suffix like " #2")
+      const baseTitle = w.title.replace(/\s*#\d+$/, '');
+      const key = `${w.creator}::${baseTitle}`;
+      if (!collMap[key]) collMap[key] = { title: baseTitle, creator: w.creator, count: 0, totalVolume: 0, floorPrice: Infinity, warts: [] };
+      collMap[key].count++;
+      collMap[key].warts.push(w);
+      if (w.price !== null && w.listed && w.price < collMap[key].floorPrice) collMap[key].floorPrice = w.price;
+      (w.history || []).forEach(h => { collMap[key].totalVolume += h.price; });
+    });
+    return Object.values(collMap)
+      .filter(c => c.count >= 2)
+      .map(c => ({ ...c, floorPrice: c.floorPrice === Infinity ? null : c.floorPrice }))
+      .sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
+  }, [allWarts]);
 
   // ─── Resolve creator alias ─────────────────────────────
   const getCreatorName = (address: string): string => {
@@ -321,7 +342,9 @@ export default function MarketplaceView() {
       await new Promise(r => setTimeout(r, 100));
 
       // Step 4: Mint
-      setUploadStatus('Inscription sur le protocole Strangrz...');
+      setUploadStatus(mintChain === 'ethereum'
+        ? 'Inscription ERC-721 sur Ethereum...'
+        : 'Inscription sur le protocole Strangrz...');
       setUploadProgress(70);
 
       const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined);
@@ -329,9 +352,9 @@ export default function MarketplaceView() {
       // Step 5: Done
       setUploadProgress(100);
       setUploadStatus('');
-      setCreateSuccess(`"${wart.title}" certifié avec succès (Édition #${wart.editionNumber}) !`);
+      setCreateSuccess(`"${wart.title}" certifié avec succès sur ${mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (CW-721)'} (Édition #${wart.editionNumber}) !`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
-      setEditionType('unique'); setMaxEditions(''); setDurationHours('');
+      setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
       setMediaType('image'); setAudioCover('');
       setTimeout(() => { setCreateSuccess(''); setUploadProgress(0); }, 5000);
     } catch (err) {
@@ -821,6 +844,10 @@ export default function MarketplaceView() {
                   <div>
                     <span className="opacity-40">Royalty:</span>
                     <span className="opacity-80 ml-1">{wart.royaltyPercent}%</span>
+                  </div>
+                  <div>
+                    <span className="opacity-40">Chain:</span>
+                    <span className="opacity-80 ml-1">{wart.mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (CW-721)'}</span>
                   </div>
                   <div>
                     <span className="opacity-40">Sales:</span>
@@ -1400,6 +1427,7 @@ export default function MarketplaceView() {
     { id: 'top-creators', label: 'Top Creators' },
     { id: 'top-collectors', label: 'Top Collectors' },
     { id: 'top-sales', label: 'Top Sales' },
+    { id: 'top-collections', label: 'Top Collections' },
   ];
 
   const editionFilters: { id: EditionFilter; label: string }[] = [
@@ -1744,6 +1772,46 @@ export default function MarketplaceView() {
         </>
       )}
 
+      {/* ─── Top Collections Tab ──────────────────────────── */}
+      {tab === 'top-collections' && (
+        <>
+          <div className="glass-panel p-4 text-center">
+            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Collections</h2>
+            <p className="text-body-sm opacity-40">Les collections les plus populaires de Strangrz.</p>
+          </div>
+          {topCollections.length === 0 ? (
+            <div className="glass-panel p-8 text-center">
+              <p className="opacity-50 text-base">Aucune collection pour le moment.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {topCollections.slice(0, 50).map((coll, idx) => (
+                <div key={`${coll.creator}-${coll.title}`} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(coll.creator)}>
+                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
+                    #{idx + 1}
+                  </div>
+                  {coll.warts[0]?.imageData && (
+                    <div className="w-12 h-12 bg-current/5 overflow-hidden shrink-0">
+                      <img src={coll.warts[0].imageData} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold opacity-80 truncate">{coll.title}</p>
+                    <p className="text-[10px] opacity-40">
+                      {getCreatorName(coll.creator)} {'\u00B7'} {coll.count} item{coll.count > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u03A9'}</p>
+                    <p className="text-[10px] opacity-40">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u03A9` : 'Not listed'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
       {/* ─── Create Tab ────────────────────────────────────── */}
       {tab === 'create' && (
         <div className="glass-panel p-0 overflow-hidden">
@@ -1780,6 +1848,36 @@ export default function MarketplaceView() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* ─── Chain Selection ──────────────────────── */}
+            <div>
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Blockchain</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'CW-721 \u00B7 0 gas', icon: '\u2B22' },
+                  { id: 'ethereum' as const, label: 'Ethereum', sub: 'ERC-721 \u00B7 Gas fees', icon: '\u039E' },
+                ]).map(ch => (
+                  <button
+                    key={ch.id}
+                    onClick={() => setMintChain(ch.id)}
+                    className={`p-3 text-center transition-all cursor-pointer ${
+                      mintChain === ch.id
+                        ? 'bg-current/10 border border-current/20 opacity-90'
+                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                    }`}
+                  >
+                    <div className="text-base mb-1">{ch.icon}</div>
+                    <div className="text-[11px] font-medium">{ch.label}</div>
+                    <div className="text-[9px] opacity-60 mt-0.5">{ch.sub}</div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] opacity-30 mt-1.5">
+                {mintChain === 'strangrz'
+                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Vobjct Safe inclus.'
+                  : 'Mint sur Ethereum via ERC-721. N\u00E9cessite un wallet Ethereum connect\u00E9 (MetaMask). Gas fees requis.'}
+              </p>
             </div>
 
             {/* ─── Media Upload ─────────────────────────── */}
@@ -2019,7 +2117,7 @@ export default function MarketplaceView() {
                   {uploadStatus || 'Minting...'}
                 </span>
               ) : (
-                'Certifier & Mint'
+                mintChain === 'ethereum' ? 'Certifier & Mint (Ethereum)' : 'Certifier & Mint (Strangrz)'
               )}
             </button>
           </div>

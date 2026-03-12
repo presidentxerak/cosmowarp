@@ -103,6 +103,8 @@ export interface Wart {
   // ─── Vobjct Integration ─────────────────────────────
   vobjctId?: string;               // Vobjct manifest object ID
   vobjctProtected?: boolean;       // Whether Vobjct Safe is active
+  // ─── Multi-Chain Minting ──────────────────────────────
+  mintChain?: 'strangrz' | 'ethereum';  // Which chain was used for minting
 }
 
 // ─── Rarity Computation ─────────────────────────────────
@@ -342,6 +344,7 @@ export class WartEngine {
     mediaType: 'image' | 'audio' | 'video' | 'svg' = 'image',
     audioCover?: string,
     privateKey?: string,
+    mintChain?: 'strangrz' | 'ethereum',
   ): Promise<Wart> {
     if (!title.trim()) throw new Error('Title required');
     if (!imageData) throw new Error('Media required');
@@ -412,6 +415,7 @@ export class WartEngine {
       storageMode: 'local',
       // New v3 fields
       vaultBackup: false,
+      mintChain: mintChain || 'strangrz',
     };
 
     this.warts.set(id, wart);

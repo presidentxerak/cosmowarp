@@ -62,9 +62,17 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Les Strangrz, ce sont les objets rares certifiés sur Strangrz — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat d'Authenticité infalsifiable (STCERT) avec une empreinte SHA-256 signée par ta clé Ed25519. C'est un acte de naissance cosmique qui prouve que TU l'as certifié. Tu peux uploader des images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
+      answer: "Les Strangrz, ce sont les objets rares certifiés — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat STCERT infalsifiable (SHA-256 + Ed25519). Tu choisis ta blockchain au moment du mint : StrangrzChain (CW-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Dans les deux cas, Vobjct Safe protège ton œuvre et garantit la provenance. Tu peux uploader images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
+    },
+  },
+  {
+    keywords: ['ethereum', 'eth', 'erc-721', 'erc721', 'metamask', 'gas', 'multi-chain', 'multichain'],
+    response: {
+      answer: "Strangrz supporte le minting multi-chain ! Tu peux mint sur StrangrzChain (CW-721, gratuit, sans gas) ou sur Ethereum (ERC-721, nécessite MetaMask + gas fees). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Vobjct Safe. Pour Ethereum : connecte ton wallet MetaMask, choisis 'Ethereum' dans le sélecteur de blockchain lors du mint, et confirme la transaction. Les royalties et la provenance sont garanties sur les deux chaînes via le système Vobjct.",
+      navigateTo: 'warts',
+      tabLabel: 'Marketplace → Create',
     },
   },
   {
@@ -76,7 +84,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
     },
   },
   {
-    keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
+    keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'stcert', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
     response: {
       answer: "Chaque Strangrz certifiée possède un STCERT — un Certificat d'Authenticité infalsifiable. C'est un hash SHA-256 de l'adresse Strangrz du créateur + empreinte du contenu + horodatage + titre, signé avec la clé privée Ed25519 du créateur. Traduction : c'est mathématiquement impossible à falsifier. Clique sur « Vérifier » sur n'importe quelle Strangrz pour lancer une vérification d'intégrité complète. Si ça affiche « ✔ Authentique » — tu es tranquille. Sinon... quelqu'un a fait des bêtises.",
       navigateTo: 'warts',
@@ -239,7 +247,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['vobjct', 'safe', 'protection', 'intégrité', 'integrite', 'integrity', 'manifest', 'manifeste', 'resilience', 'résilience', 'persistance', 'persistence', 'storage route', 'route de stockage', 'recovery route', 'route de récupération'],
     response: {
-      answer: "Vobjct, c'est le bouclier cosmique de tes Strangrz ! Chaque objet certifié reçoit un Vobjct Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Vobjct Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
+      answer: "Vobjct, c'est le bouclier cosmique de tes Strangrz ! Chaque objet certifié reçoit un Vobjct Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Vobjct Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. Vobjct supporte aussi le multi-chain : tes objets peuvent être mintés sur StrangrzChain (CW-721) ou Ethereum (ERC-721), avec la même protection et provenance garanties sur les deux chaînes. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace → Détail',
     },
