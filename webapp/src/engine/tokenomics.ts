@@ -192,6 +192,11 @@ export class TokenomicsEngine {
     };
   }
 
+  /** Set the creator/admin address (called once for the first wallet) */
+  setCreatorAddress(address: string): void {
+    this.state.creatorAddress = address;
+  }
+
   // ─── Airdrop ─────────────────────────────────────────
 
   /** Process airdrop for a new account. Returns actual amount (may be less if pool low) */

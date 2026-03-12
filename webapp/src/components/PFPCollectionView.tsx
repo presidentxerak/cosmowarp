@@ -42,6 +42,10 @@ export default function PFPCollectionView() {
   // Preview
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Upload state (must be before early returns to respect Rules of Hooks)
+  const [uploadError, setUploadError] = useState('');
+  const [bulkProgress, setBulkProgress] = useState('');
+
   useEffect(() => {
     const engine = PFPCollectionEngine.load();
     setCollections(engine.getAllCollections());
@@ -94,8 +98,6 @@ export default function PFPCollectionView() {
     refreshCollection();
   };
 
-  const [uploadError, setUploadError] = useState('');
-
   const handleVariantUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -105,8 +107,6 @@ export default function PFPCollectionView() {
     reader.onload = () => setVariantImage(reader.result as string);
     reader.readAsDataURL(file);
   };
-
-  const [bulkProgress, setBulkProgress] = useState('');
 
   const handleBulkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

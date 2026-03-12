@@ -511,8 +511,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wallet) return false;
     try {
       const privateKey = await unlockWalletKey(wallet, password);
-      wallet.privateKey = privateKey;
-      setWallet({ ...wallet });
+      setWallet({ ...wallet, privateKey });
       setUnlocked(true);
       saveSessionKey(privateKey);
       return true;
@@ -524,8 +523,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   // ─── Lock ──────────────────────────────────────────────
   const doLock = useCallback(() => {
     if (wallet) {
-      wallet.privateKey = '';
-      setWallet({ ...wallet });
+      setWallet({ ...wallet, privateKey: '' });
     }
     setUnlocked(false);
     clearSessionKey();

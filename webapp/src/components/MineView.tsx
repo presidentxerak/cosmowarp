@@ -45,6 +45,10 @@ export default function MineView() {
   const [showExplainer, setShowExplainer] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
+  const stopMining = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
   const diffState = loadDifficultyState();
   const selectedEnergy = ENERGY_LEVELS.find(e => e.id === energyLevel)!;
 
@@ -124,10 +128,6 @@ export default function MineView() {
 
     abortRef.current = null;
   };
-
-  const stopMining = useCallback(() => {
-    abortRef.current?.abort();
-  }, []);
 
   const resetToConfig = () => {
     setPhase('config');

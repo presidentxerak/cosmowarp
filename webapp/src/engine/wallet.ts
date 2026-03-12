@@ -383,7 +383,7 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
   const isFirstWallet = !existingAdmin;
   if (isFirstWallet) {
     storage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
-    tokenomics.constructor.prototype; // ensure creator address set
+    tokenomics.setCreatorAddress(keyPair.address);
     await registry.initAdmin(keyPair.address);
   }
 
