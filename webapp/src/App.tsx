@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
 import TopBar from './components/TopBar';
-import Sidebar from './components/Sidebar';
 import BottomBar from './components/BottomBar';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
 
@@ -27,17 +26,13 @@ function lazyRetry<T extends { default: React.ComponentType<any> }>(
 const WalletView = lazyRetry(() => import('./components/WalletView'));
 const MarketplaceView = lazyRetry(() => import('./components/MarketplaceView'));
 const CosmoChatView = lazyRetry(() => import('./components/CosmoChatView'));
-const CosmoView = lazyRetry(() => import('./components/CosmoView'));
 const MessageView = lazyRetry(() => import('./components/MessageView'));
 const NotificationsView = lazyRetry(() => import('./components/NotificationsView'));
 const ProfileView = lazyRetry(() => import('./components/ProfileView'));
 const SignetsView = lazyRetry(() => import('./components/SignetsView'));
 const WhitepaperView = lazyRetry(() => import('./components/WhitepaperView'));
 const AdminView = lazyRetry(() => import('./components/AdminView'));
-const HelpView = lazyRetry(() => import('./components/HelpView'));
 const SettingsView = lazyRetry(() => import('./components/SettingsView'));
-const LegalsView = lazyRetry(() => import('./components/LegalsView'));
-const PrivacyView = lazyRetry(() => import('./components/PrivacyView'));
 const LandingView = lazyRetry(() => import('./components/LandingView'));
 const DevView = lazyRetry(() => import('./components/DevView'));
 const UserProfileView = lazyRetry(() => import('./components/UserProfileView'));
@@ -50,7 +45,6 @@ const ROUTE_MAP: Record<string, string> = {
   '/': 'landing',
   '/wall': 'wall',
   '/gallery': 'gallery',
-  '/cosmo': 'cosmo',
   '/messages': 'message',
   '/profile': 'profile',
   '/wallet': 'wallet',
@@ -58,10 +52,7 @@ const ROUTE_MAP: Record<string, string> = {
   '/whitepaper': 'whitepaper',
   '/vault': 'vault',
   '/admin': 'admin',
-  '/help': 'help',
   '/settings': 'settings',
-  '/legals': 'legals',
-  '/privacy': 'privacy',
   '/discover': 'discover',
   '/fiat-gateway': 'fiat-gateway',
   '/notifications': 'notifications',
@@ -148,7 +139,6 @@ function ViewLoader() {
 
 function App() {
   const [activeTab, setActiveTab] = useState(getTabFromPath);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Clear chunk reload flag on successful app load
   useEffect(() => { sessionStorage.removeItem('chunk_reload'); }, []);
@@ -205,28 +195,15 @@ function App() {
           <Suspense fallback={null}><CosmicBackground /></Suspense>
         </BackgroundErrorBoundary>
         <div className="min-h-screen min-h-[100dvh] relative z-10 flex flex-col">
-          {/* Top bar - sticky search + profile + notifications */}
-          <TopBar
-            onProfileClick={() => setSidebarOpen(true)}
-            onNotificationsClick={() => navigate('notifications')}
-            onNavigate={navigate}
-          />
+          {/* Top bar - sticky search + create */}
+          <TopBar onNavigate={navigate} />
 
-          {/* Sidebar - slides from left */}
-          <Sidebar
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            activeTab={activeTab}
-            setActiveTab={navigate}
-          />
-
-          {/* Main content area - offset for mini sidebar on desktop */}
-          <main className="flex-1 px-[10px] sm:pl-[66px] sm:pr-[10px] pb-16">
+          {/* Main content area */}
+          <main className="flex-1 px-[10px] pb-16">
             <Suspense fallback={<ViewLoader />}>
               {/* Bottom bar tabs */}
               {activeTab === 'wall' && <CosmoChatView />}
               {activeTab === 'gallery' && <MarketplaceView />}
-              {activeTab === 'cosmo' && <CosmoView onNavigate={navigate} />}
               {activeTab === 'message' && <MessageView />}
 
               {/* Sidebar pages */}
@@ -236,10 +213,7 @@ function App() {
               {activeTab === 'whitepaper' && <WhitepaperView />}
               {activeTab === 'vault' && <VaultView />}
               {activeTab === 'admin' && <AdminView />}
-              {activeTab === 'help' && <HelpView onNavigate={navigate} />}
-              {activeTab === 'settings' && <SettingsView />}
-              {activeTab === 'legals' && <LegalsView />}
-              {activeTab === 'privacy' && <PrivacyView />}
+              {activeTab === 'settings' && <SettingsView onNavigate={navigate} />}
 
               {/* Social */}
               {activeTab === 'user-profile' && <UserProfileView onNavigate={navigate} />}

@@ -1,11 +1,22 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { useTheme } from '../context/ThemeContext';
 import { shortAddress } from '../engine/crypto';
 import { storage } from '../engine/storage';
 
-export default function SettingsView() {
+const LegalsView = lazy(() => import('./LegalsView'));
+const PrivacyView = lazy(() => import('./PrivacyView'));
+const HelpView = lazy(() => import('./HelpView'));
+
+type SettingsTab = 'settings' | 'legal' | 'privacy' | 'help';
+
+interface SettingsViewProps {
+  onNavigate: (tab: string) => void;
+}
+
+export default function SettingsView({ onNavigate }: SettingsViewProps) {
   const { wallet, unlocked, lock, signOut, deleteAccount, doExportWallet, doGenerateCosmoLink } = useWallet();
+  const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>('settings');
   const { theme, toggleTheme } = useTheme();
   const [cleared, setCleared] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -73,17 +84,97 @@ export default function SettingsView() {
     signOut();
   };
 
+  const settingsTabs: { id: SettingsTab; label: string }[] = [
+    { id: 'settings', label: 'Settings' },
+    { id: 'legal', label: 'Legal' },
+    { id: 'privacy', label: 'Privacy' },
+    { id: 'help', label: 'Help' },
+  ];
+
+  if (activeSettingsTab === 'legal') {
+    return (
+      <div className="space-y-4">
+        <div className="glass-panel p-2 flex gap-1">
+          {settingsTabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveSettingsTab(t.id)}
+              className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
+                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-30"><div className="animate-pulse text-sm">Loading...</div></div>}>
+          <LegalsView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeSettingsTab === 'privacy') {
+    return (
+      <div className="space-y-4">
+        <div className="glass-panel p-2 flex gap-1">
+          {settingsTabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveSettingsTab(t.id)}
+              className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
+                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-30"><div className="animate-pulse text-sm">Loading...</div></div>}>
+          <PrivacyView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeSettingsTab === 'help') {
+    return (
+      <div className="space-y-4">
+        <div className="glass-panel p-2 flex gap-1">
+          {settingsTabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveSettingsTab(t.id)}
+              className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
+                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-30"><div className="animate-pulse text-sm">Loading...</div></div>}>
+          <HelpView onNavigate={onNavigate} />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="glass-panel p-5 text-center">
-        <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="inline-block align-text-bottom mr-1">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          Settings
-        </h2>
-        <p className="text-body-sm opacity-40">Manage your Strangrz experience</p>
+      {/* ─── Tab bar ──────────────────────────────────────── */}
+      <div className="glass-panel p-2 flex gap-1">
+        {settingsTabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setActiveSettingsTab(t.id)}
+            className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
+              t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* ─── Profile ──────────────────────────────────────── */}
@@ -363,7 +454,7 @@ export default function SettingsView() {
               <p className="text-label opacity-40">Coffre-fort sécurisé pour vos objets rares</p>
             </div>
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'vault' }))}
+              onClick={() => onNavigate('vault')}
               className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
@@ -379,7 +470,7 @@ export default function SettingsView() {
                 <p className="text-label opacity-40">Panneau d'administration du protocole</p>
               </div>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'admin' }))}
+                onClick={() => onNavigate('admin')}
                 className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
               >
                 <span className="flex items-center gap-1.5">

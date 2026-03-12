@@ -5,8 +5,6 @@ import { shortAddress } from '../engine/crypto';
 import HexAvatar from './HexAvatar';
 
 interface TopBarProps {
-  onProfileClick: () => void;
-  onNotificationsClick: () => void;
   onNavigate: (tab: string) => void;
 }
 
@@ -19,8 +17,8 @@ interface SearchResult {
   imageData?: string;
 }
 
-export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
-  const { wallet, warts } = useWallet();
+export default function TopBar({ onNavigate }: TopBarProps) {
+  const { warts } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -112,16 +110,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-50 glass-panel">
-      <div className="flex items-center gap-3 px-3 py-2 sm:px-[10px]">
-        {/* Profile icon */}
-        <button
-          onClick={onProfileClick}
-          className="shrink-0 w-10 h-10 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity profile-icon-ring"
-          aria-label="Open menu"
-        >
-          <HexAvatar address={wallet?.address || 'default'} size={34} animate />
-        </button>
-
+      <div className="flex items-center gap-2 px-3 py-2 sm:px-[10px]">
         {/* Search bar */}
         <div className="flex-1 relative" ref={containerRef}>
           <div className={`flex items-center gap-3 px-4 py-2 transition-all duration-200 ${
@@ -193,6 +182,19 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
             </div>
           )}
         </div>
+
+        {/* Create button — always visible */}
+        <button
+          onClick={() => onNavigate('gallery')}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-body-sm font-medium cursor-pointer transition-all hover:opacity-80"
+          style={{ backgroundColor: '#e91e8c', color: '#fff' }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Create
+        </button>
       </div>
     </header>
   );
