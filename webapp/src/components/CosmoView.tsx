@@ -142,20 +142,43 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, typing]);
 
-  const handleAiGenerate = async (userText: string): Promise<string> => {
+  const handleAiGenerate = (userText: string): string => {
     const prompt = extractAiPrompt(userText);
-    const resp = await fetch(`/api/ai-image?prompt=${encodeURIComponent(prompt)}&width=1024&height=1024`);
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
-    return data.imageData;
+    return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+  };
+
+  /** Resolve image URL to base64 for minting storage */
+  const resolveImageData = async (imageUrl: string): Promise<string> => {
+    if (imageUrl.startsWith('data:')) return imageUrl;
+    // Try server proxy (Vercel)
+    try {
+      const prompt = extractAiPrompt(imageUrl);
+      const resp = await fetch(`/api/ai-image?prompt=${encodeURIComponent(prompt)}&width=1024&height=1024`);
+      if (resp.ok) { const d = await resp.json(); if (d.imageData) return d.imageData; }
+    } catch { /* fallback */ }
+    // Try client fetch (CORS permitting)
+    try {
+      const resp = await fetch(imageUrl);
+      if (resp.ok) {
+        const blob = await resp.blob();
+        return await new Promise<string>((res, rej) => {
+          const r = new FileReader();
+          r.onloadend = () => res(r.result as string);
+          r.onerror = rej;
+          r.readAsDataURL(blob);
+        });
+      }
+    } catch { /* fallback */ }
+    return imageUrl;
   };
 
   const handleMintAi = async (_msgId: string, imageData: string, prompt: string) => {
     if (!wallet || !unlocked || !mintTitle.trim()) return;
     setMintError('');
     try {
+      const resolved = await resolveImageData(imageData);
       const price = mintPrice.trim() ? parseFloat(mintPrice) : null;
-      const wart = await mintWart(mintTitle, `AI generated: ${prompt}`, imageData, price);
+      const wart = await mintWart(mintTitle, `AI generated: ${prompt}`, resolved, price);
       const alias = wallet.alias || shortAddress(wallet.address);
       const chatEngine = CosmoChatEngine.load();
       chatEngine.createPost(wallet.address, alias, `${mintTitle} — AI generated artwork`, undefined, 'image', undefined, wart.id);
@@ -193,29 +216,21 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     const { response, suggestion, isAiRequest } = getResponse(text);
 
     if (isAiRequest) {
-      // Generate AI image
+      // Generate AI image — use Pollinations URL directly (no CORS needed for <img>)
       const prompt = extractAiPrompt(text);
-      handleAiGenerate(text).then(imageData => {
+      const imageUrl = handleAiGenerate(text);
+      setTimeout(() => {
         const cosmoMsg: Message = {
           id: `cosmo-${Date.now()}`,
           role: 'cosmo',
           text: `Voici votre oeuvre "${prompt}" ! Vous pouvez la mint comme Strangrz NFT pour la vendre et la poster dans le feed.`,
           timestamp: Date.now(),
-          aiImage: imageData,
+          aiImage: imageUrl,
           aiPrompt: prompt,
         };
         setMessages(prev => [...prev, cosmoMsg]);
         setTyping(false);
-      }).catch(() => {
-        const cosmoMsg: Message = {
-          id: `cosmo-${Date.now()}`,
-          role: 'cosmo',
-          text: 'Désolé, la génération a échoué. Réessayez avec un autre prompt !',
-          timestamp: Date.now(),
-        };
-        setMessages(prev => [...prev, cosmoMsg]);
-        setTyping(false);
-      });
+      }, 500);
     } else {
       setTimeout(() => {
         const cosmoMsg: Message = {

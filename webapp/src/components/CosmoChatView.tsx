@@ -239,22 +239,40 @@ export default function CosmoChatView() {
   };
 
   // ─── AI Image Generator ────────────────────────────────
-  const handleAiGenerate = async () => {
+  const handleAiGenerate = () => {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     setAiError('');
-    setAiImageData('');
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+    setAiImageData(url);
+  };
 
+  /** Convert Pollinations URL to base64: try server proxy, then client fetch */
+  const resolveImageData = async (imageUrl: string): Promise<string> => {
+    if (imageUrl.startsWith('data:')) return imageUrl;
+    // Try server-side proxy (works on Vercel)
     try {
       const resp = await fetch(`/api/ai-image?prompt=${encodeURIComponent(aiPrompt)}&width=1024&height=1024`);
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
-      setAiImageData(data.imageData);
-    } catch (e: unknown) {
-      setAiError(e instanceof Error ? e.message : 'Failed to generate image. Try again.');
-    } finally {
-      setAiGenerating(false);
-    }
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.imageData) return data.imageData;
+      }
+    } catch { /* fallback below */ }
+    // Client-side fetch (works if Pollinations sends CORS headers)
+    try {
+      const resp = await fetch(imageUrl);
+      if (resp.ok) {
+        const blob = await resp.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch { /* fallback below */ }
+    // Last resort: use the URL directly (external reference)
+    return imageUrl;
   };
 
   const handleAiMintAndPost = async () => {
@@ -262,8 +280,9 @@ export default function CosmoChatView() {
     setAiMinting(true);
     setAiError('');
     try {
+      const imageData = await resolveImageData(aiImageData);
       const price = aiPrice.trim() ? parseFloat(aiPrice) : null;
-      const wart = await mintWart(aiTitle, `AI generated: ${aiPrompt}`, aiImageData, price);
+      const wart = await mintWart(aiTitle, `AI generated: ${aiPrompt}`, imageData, price);
       // Post to Wall
       const chatEngine = CosmoChatEngine.load();
       chatEngine.createPost(wallet.address, alias, `${aiTitle} — AI generated artwork`, undefined, 'image', undefined, wart.id);
@@ -656,9 +675,16 @@ export default function CosmoChatView() {
                 <div className="animate-pulse text-body-sm opacity-50">Creating your artwork...</div>
               </div>
             )}
-            {aiImageData && !aiGenerating && (
+            {aiImageData && (
               <div className="mt-3 space-y-3">
-                <img src={aiImageData} alt="AI generated" className="w-full object-contain border border-current/10" />
+                <img
+                  src={aiImageData}
+                  alt="AI generated"
+                  className="w-full object-contain border border-current/10"
+                  onLoad={() => setAiGenerating(false)}
+                  onError={() => { setAiError('Image generation failed. Try a different prompt.'); setAiGenerating(false); setAiImageData(''); }}
+                  style={aiGenerating ? { display: 'none' } : undefined}
+                />
                 <input className="warp-input text-base" placeholder="Title for your Strangrz *" value={aiTitle} onChange={e => setAiTitle(e.target.value)} maxLength={100} />
                 <input className="warp-input text-base" placeholder={`Price in ${'\u2B23'} STRNGRZ (optional, leave empty = not for sale)`} value={aiPrice} onChange={e => setAiPrice(e.target.value.replace(/[^0-9.]/g, ''))} />
                 <button className="warp-button w-full py-2 text-base" onClick={handleAiMintAndPost} disabled={aiMinting || !aiTitle.trim()}>
