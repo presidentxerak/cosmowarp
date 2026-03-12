@@ -4,6 +4,7 @@ import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
 import { shortAddress } from '../engine/crypto';
 import type { Wart } from '../engine/warts';
+import HexAvatar from './HexAvatar';
 
 export default function SignetsView() {
   const { wallet, unlocked, marketplace, toggleWartBookmark } = useWallet();
@@ -31,6 +32,16 @@ export default function SignetsView() {
   const handleRemoveWart = (wartId: string) => {
     if (!wallet) return;
     toggleWartBookmark(wartId);
+  };
+
+  const navigateToWart = (wartId: string) => {
+    sessionStorage.setItem('strangrz_open_wart', wartId);
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'gallery' }));
+  };
+
+  const navigateToPost = (postId: string) => {
+    sessionStorage.setItem('strangrz_open_post', postId);
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wall' }));
   };
 
   if (!wallet || !unlocked) {
@@ -71,7 +82,7 @@ export default function SignetsView() {
             <>
               <p className="text-label opacity-40 px-1">{'\u2B22'} Artworks ({bookmarkedWarts.length})</p>
               {bookmarkedWarts.map((wart: Wart) => (
-                <div key={wart.id} className="glass-panel p-3">
+                <div key={wart.id} className="glass-panel p-3 cursor-pointer hover:border-current/10 transition-all" onClick={() => navigateToWart(wart.id)}>
                   <div className="flex items-start gap-3">
                     {wart.imageData && (
                       <img src={wart.imageData} alt={wart.title || ''} className="w-16 h-16 object-cover shrink-0 border border-current/10" />
@@ -84,7 +95,7 @@ export default function SignetsView() {
                       {wart.description && <p className="text-body-sm opacity-40 mt-1 line-clamp-2">{wart.description}</p>}
                     </div>
                     <button
-                      onClick={() => handleRemoveWart(wart.id)}
+                      onClick={e => { e.stopPropagation(); handleRemoveWart(wart.id); }}
                       className="shrink-0 p-1.5 opacity-80 hover:opacity-80 cursor-pointer transition-colors"
                       title="Remove signet"
                     >
@@ -103,10 +114,10 @@ export default function SignetsView() {
             <>
               {bookmarkedWarts.length > 0 && <p className="text-label opacity-40 px-1 mt-2">Wall Posts ({bookmarks.length})</p>}
               {bookmarks.map(post => (
-                <div key={post.id} className="glass-panel p-3">
+                <div key={post.id} className="glass-panel p-3 cursor-pointer hover:border-current/10 transition-all" onClick={() => navigateToPost(post.id)}>
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-current/5 flex items-center justify-center text-body-sm opacity-80 shrink-0" style={{ clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)' }}>
-                      {shortAddress(post.author).slice(0, 2)}
+                    <div className="shrink-0">
+                      <HexAvatar address={post.author} size={32} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -121,7 +132,7 @@ export default function SignetsView() {
                       )}
                     </div>
                     <button
-                      onClick={() => handleRemove(post.id)}
+                      onClick={e => { e.stopPropagation(); handleRemove(post.id); }}
                       className="shrink-0 p-1.5 opacity-80 hover:opacity-80 cursor-pointer transition-colors"
                       title="Remove signet"
                     >
