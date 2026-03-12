@@ -68,7 +68,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
     },
   },
   {
-    keywords: ['ethereum', 'eth', 'erc-721', 'erc721', 'metamask', 'gas', 'multi-chain', 'multichain'],
+    keywords: ['ethereum', 'eth', 'erc-721', 'erc721', 'metamask', 'gas', 'multi-chain', 'multichain', 'walletconnect', 'evm', 'chain', 'blockchain ethereum', 'minter ethereum', 'mint ethereum'],
     response: {
       answer: "Strangrz supporte le minting multi-chain ! Tu peux mint sur StrangrzChain (CW-721, gratuit, sans gas) ou sur Ethereum (ERC-721, nécessite MetaMask + gas fees). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Vobjct Safe. Pour Ethereum : connecte ton wallet MetaMask, choisis 'Ethereum' dans le sélecteur de blockchain lors du mint, et confirme la transaction. Les royalties et la provenance sont garanties sur les deux chaînes via le système Vobjct.",
       navigateTo: 'warts',
@@ -373,6 +373,7 @@ const FAQ_ICONS: Record<string, ReactNode> = {
   'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
   'Vobjct & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+  'Ethereum & Multi-Chain': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L4 12l8 5 8-5L12 2z" /><path d="M4 12l8 10 8-10-8 5-8-5z" /></svg>,
 };
 
 const FAQ_SECTIONS = [
@@ -399,9 +400,12 @@ const FAQ_SECTIONS = [
     icon: 'Marketplace (Strangrz)',
     items: [
       { q: `Qu'est-ce qu'une Strangrz ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (STCERT) sur le protocole Strangrz.` },
-      { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo). Le tout limité à 50 Mo.` },
+      { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo), et Cards. Le tout limité à 50 Mo.` },
       { q: `Qu'est-ce que le STCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
       { q: `Les Strangrz sont-elles stockées on-chain ?`, a: `Oui ! Avec StrangrzMesh, les objets sont compressés via StrangrzCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
+      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (CW-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees via MetaMask). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Vobjct Safe.` },
+      { q: `Comment minter sur Ethereum ?`, a: `Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain, connecte ton wallet MetaMask depuis l'onglet Portefeuille → Ethereum, et confirme la transaction. Les royalties et la provenance sont garanties via le système Vobjct.` },
+      { q: `Quelle est la différence entre StrangrzChain et Ethereum ?`, a: `StrangrzChain (CW-721) : zéro gas, minting instantané, StrangrzCode on-chain backup. Ethereum (ERC-721) : standard ERC-721 sur le mainnet, gas fees requis, compatible MetaMask/WalletConnect. Les deux chaînes offrent la même protection Vobjct et certification STCERT.` },
     ],
   },
   {
@@ -456,6 +460,18 @@ const FAQ_SECTIONS = [
       { q: `J'ai oublié mon mot de passe, que faire ?`, a: `Si tu utilises un CosmoID, le mot de passe est irréversible (PBKDF2 600K itérations). Tu peux te déconnecter via « Mot de passe oublié ? » sur l'écran de verrouillage, puis créer un nouveau compte. Si tu as un Recovery Kit, tu peux restaurer ton portefeuille.` },
       { q: `Comment supprimer mon compte ?`, a: `Va dans Paramètres → Supprimer le profil. Ton solde est réintégré au pool d'airdrop. Toutes les données locales sont effacées définitivement (portefeuille, profil, données sociales).` },
       { q: `Comment copier l'adresse d'un utilisateur ?`, a: `Visite son profil (clique sur son nom dans le Mur ou la Marketplace), puis clique sur l'adresse affichée sous le pseudo. Elle sera copiée dans ton presse-papiers. Une icône ✓ confirme la copie.` },
+    ],
+  },
+  {
+    title: 'Ethereum & Multi-Chain',
+    icon: 'Ethereum & Multi-Chain',
+    items: [
+      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Strangrz supporte le minting multi-chain. Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (CW-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Les deux offrent la même protection Vobjct et certification STCERT.` },
+      { q: `Comment minter sur Ethereum ?`, a: `(1) Va dans Portefeuille → Ethereum et connecte ton wallet MetaMask ou WalletConnect. (2) Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain. (3) Remplis les infos de ton œuvre et confirme la transaction MetaMask. Gas fees requis.` },
+      { q: `Quelle blockchain choisir ?`, a: `StrangrzChain : idéal pour débuter, zéro frais, minting instantané, backup on-chain via StrangrzCode. Ethereum : pour toucher l'écosystème ERC-721 mondial, compatible OpenSea et tous les wallets ETH. Les deux chaînes garantissent royalties et provenance via Vobjct.` },
+      { q: `Comment connecter MetaMask ?`, a: `Va dans l'onglet Portefeuille → Ethereum, puis clique sur « Connect ». Sélectionne MetaMask ou WalletConnect. Une fois connecté, ton adresse ETH et ton solde s'affichent. Tu peux alors minter et acheter des Strangrz sur Ethereum.` },
+      { q: `Les royalties fonctionnent-elles sur Ethereum ?`, a: `Oui ! Le système Vobjct gère les royalties de manière cross-chain. Que ton œuvre soit sur StrangrzChain ou Ethereum, le créateur reçoit ses royalties (5 % par défaut) à chaque revente. La provenance est vérifiable sur les deux chaînes.` },
+      { q: `Mes Strangrz ETH sont-elles protégées ?`, a: `Absolument. Chaque Strangrz mintée sur Ethereum reçoit le même niveau de protection : certificat STCERT, Vobjct Manifest, Vobjct Safe monitoring, et routes de stockage multi-couches. Le système d'adaptateurs Vobjct (EVMAdapter pour ERC-721) assure la compatibilité cross-chain.` },
     ],
   },
 ];

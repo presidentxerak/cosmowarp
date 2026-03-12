@@ -266,11 +266,11 @@ export default function MarketplaceView() {
       return;
     }
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    let mType: 'image' | 'audio' | 'video' | 'svg' = 'image';
+    let mType: 'image' | 'audio' | 'video' | 'svg' | 'cards' = mediaType;
     if (['mp3', 'wav'].includes(ext)) mType = 'audio';
     else if (['mp4', 'mov'].includes(ext)) mType = 'video';
     else if (['svg'].includes(ext)) mType = 'svg';
-    else if (['gif', 'jpeg', 'jpg', 'png'].includes(ext)) mType = 'image';
+    else if (mediaType !== 'cards') mType = 'image';
 
     setUploadProgress(0);
     setUploadStatus(`Lecture de ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)...`);
@@ -347,7 +347,7 @@ export default function MarketplaceView() {
         : 'Inscription sur le protocole Strangrz...');
       setUploadProgress(70);
 
-      const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined);
+      const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined, mintChain);
 
       // Step 5: Done
       setUploadProgress(100);
@@ -1286,7 +1286,7 @@ export default function MarketplaceView() {
                 wallet.alias || shortAddress(wallet.address),
                 content,
                 wart.imageData,
-                wart.mediaType === 'svg' ? 'image' : wart.mediaType,
+                wart.mediaType === 'svg' || wart.mediaType === 'cards' ? 'image' : wart.mediaType,
                 undefined,
                 wart.id
               );
@@ -1625,6 +1625,7 @@ export default function MarketplaceView() {
                   {tab === 'art' && 'Art visuel — images, illustrations et oeuvres graphiques.'}
                   {tab === 'video' && 'Oeuvres vidéo certifiées.'}
                   {tab === 'music' && 'Oeuvres musicales certifiées.'}
+                  {tab === 'cards' && 'Trading cards — cartes à collectionner certifiées.'}
                   {tab === 'rwa' && 'Real World Assets — actifs du monde réel tokénisés.'}
                   {tab === 'phygital' && 'Oeuvres physiques authentifiées avec certificat digital.'}
                 </p>

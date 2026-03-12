@@ -132,6 +132,7 @@ export class VobjctEngine {
       audio: 'audio/mpeg',
       video: 'video/mp4',
       svg: 'image/svg+xml',
+      cards: 'image/png',
     };
 
     // Determine object type

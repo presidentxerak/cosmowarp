@@ -93,7 +93,7 @@ interface WalletContextType {
   marketplace: Wart[];
   myCollection: Wart[];
   myCreated: Wart[];
-  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null, mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards', audioCover?: string) => Promise<Wart>;
+  mintWart: (title: string, description: string, imageData: string, price: number | null, royaltyPercent?: number, editionType?: 'unique' | 'limited' | 'unlimited', maxEditions?: number | null, durationHours?: number | null, mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards', audioCover?: string, mintChain?: 'strangrz' | 'ethereum') => Promise<Wart>;
   buyWart: (wartId: string) => Promise<{ success: boolean; error?: string }>;
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
@@ -707,10 +707,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     durationHours: number | null = null,
     mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' = 'image',
     audioCover?: string,
+    mintChain?: 'strangrz' | 'ethereum',
   ): Promise<Wart> => {
     if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');
     const engine = getWartEngine();
-    const wart = await engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours, mediaType, audioCover, wallet.privateKey);
+    const wart = await engine.mint(wallet.address, title, description, imageData, price, royaltyPercent, editionType, maxEditions, durationHours, mediaType, audioCover, wallet.privateKey, mintChain);
 
     // Record mint transaction (no sendWarps — mint is free, just record in feed)
     const tx: Transaction = {
