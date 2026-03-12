@@ -17,7 +17,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['mine', 'mining', 'miner', 'minage'],
-    response: 'Le minage sur Strangrz utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Strangrz (Ω). La récompense diminue progressivement selon le nombre d\'or.',
+    response: 'Le minage sur Strangrz utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Strangrz (⬣). La récompense diminue progressivement selon le nombre d\'or.',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
@@ -55,7 +55,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics'],
-    response: 'Le Strangrz Coin (symbole : STRNGRZ / Ω) est le token natif de Strangrz avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
+    response: 'Le Strangrz Coin (symbole : STRNGRZ / ⬣) est le token natif de Strangrz avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {

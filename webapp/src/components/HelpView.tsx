@@ -28,7 +28,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['balance', 'solde', 'warp', 'warps', 'zero', '0', 'argent', 'money'],
     response: {
-      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Strangrz (Ω). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
+      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Strangrz (⬣). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Miner',
     },
@@ -103,7 +103,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['tip', 'tips', 'pourboire', 'like', 'aimer', 'rewarp', 'retweet', 'share', 'partager'],
     response: {
-      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Strangrz (Ω) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReStrangrz (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReStrangrzs, vues et favoris. C'est comme X, mais avec une âme.",
+      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Strangrz (⬣) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReStrangrz (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReStrangrzs, vues et favoris. C'est comme X, mais avec une âme.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -157,7 +157,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['gas', 'fee', 'fees', 'free', 'gratuit', 'cost', 'coût', 'cout', 'price', 'zero', 'frais'],
     response: {
-      answer: "Frais de gas ? On ne fait pas ça ici. Les transactions StrangrzMesh sont 100 % GRATUITES. Zéro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les récompenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de débit (100 TX/min) au lieu d'exclure les gens par les prix. (3) StrangrzCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go à coût zéro. Ethereum facture 0,50 à 100 $ par TX. Nous, c'est 0 Ω. De rien.",
+      answer: "Frais de gas ? On ne fait pas ça ici. Les transactions StrangrzMesh sont 100 % GRATUITES. Zéro. Nada. Comment ? Trois raisons : (1) Les validateurs gagnent via les récompenses de staking, pas via les frais utilisateurs. (2) L'anti-spam utilise la limitation de débit (100 TX/min) au lieu d'exclure les gens par les prix. (3) StrangrzCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go à coût zéro. Ethereum facture 0,50 à 100 $ par TX. Nous, c'est 0 ⬣. De rien.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },
@@ -175,7 +175,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['on-chain nft', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
     response: {
-      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur StrangrzCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 Ω. GRATUIT.",
+      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur StrangrzCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 ⬣. GRATUIT.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },
@@ -184,7 +184,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['whitepaper', 'paper', 'documentation', 'docs', 'concept', 'how', 'comment', 'why', 'pourquoi', 'tokenomics', 'supply'],
     response: {
-      answer: "Le Strangrz Protocole, c'est le parchemin sacré de Strangrz ! 7 sections couvrant l'essentiel : comment ça marche, les certificats STCERT, le Strangrz (Ω), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
+      answer: "Le Strangrz Protocole, c'est le parchemin sacré de Strangrz ! 7 sections couvrant l'essentiel : comment ça marche, les certificats STCERT, le Strangrz (⬣), les niveaux, la sécurité et la roadmap. Tout est expliqué simplement pour que tu comprennes comment certifier et échanger tes objets rares en toute confiance.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc',
     },
@@ -272,7 +272,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
     response: {
-      answer: "Strangrz intègre une passerelle de paiement fiat complète ! Tu peux acheter des Strangrz (Ω) ou des Strangrz directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
+      answer: "Strangrz intègre une passerelle de paiement fiat complète ! Tu peux acheter des Strangrz (⬣) ou des Strangrz directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Paiement',
     },
@@ -290,7 +290,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['barre sociale', 'social bar', 'coeur', 'heart', 'signet', 'bookmark', 'partager', 'share', 'repost', 'recosmo', 'hexagone', 'pourboire tip'],
     response: {
-      answer: "La barre sociale est présente partout — sous les posts du Mur, les cartes de la Marketplace, et les profils utilisateurs. Elle contient : ❤️ Tip (avec le compteur en Strangrz affiché sous forme X⬣), ↻ ReStrangrz (repost), ↑ Partager, et 🔖 Signet (bookmark). L'icône hexagone (⬣) représente la monnaie Strangrz. Quand tu tip un post, tu envoies 1Ω au créateur — c'est un « like » qui a de la vraie valeur !",
+      answer: "La barre sociale est présente partout — sous les posts du Mur, les cartes de la Marketplace, et les profils utilisateurs. Elle contient : ❤️ Tip (avec le compteur en Strangrz affiché sous forme X⬣), ↻ ReStrangrz (repost), ↑ Partager, et 🔖 Signet (bookmark). L'icône hexagone (⬣) représente la monnaie Strangrz. Quand tu tip un post, tu envoies 1⬣ au créateur — c'est un « like » qui a de la vraie valeur !",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -317,7 +317,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['cosmoid', 'cosmo id', 'identifiant', 'login', 'connexion', 'se connecter', 'sign in', 'sign up', 'inscription'],
     response: {
-      answer: "CosmoID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit un airdrop de 1 000 Ω pour démarrer. Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
+      answer: "CosmoID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit un airdrop de 1 000 ⬣ pour démarrer. Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille',
     },
@@ -417,8 +417,8 @@ const FAQ_SECTIONS = [
     title: 'StrangrzMesh & StrangrzCode',
     icon: 'StrangrzMesh & StrangrzCode',
     items: [
-      { q: `Qu'est-ce que StrangrzMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 Ω.` },
-      { q: `Quelles sont les 7 couches ?`, a: `GRID (<10Ω), HELIX (10-100Ω), GLYPH (100-1KΩ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.` },
+      { q: `Qu'est-ce que StrangrzMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 ⬣.` },
+      { q: `Quelles sont les 7 couches ?`, a: `GRID (<10⬣), HELIX (10-100⬣), GLYPH (100-1K⬣ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.` },
       { q: `Pourquoi les transactions sont-elles gratuites ?`, a: `Les validateurs gagnent via les récompenses de staking, pas via les frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. StrangrzCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go.` },
       { q: `Qu'est-ce que StrangrzCode SVG ?`, a: `Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.` },
       { q: `Les Strangrz sont-elles vraiment stockées on-chain ?`, a: `Oui ! StrangrzMesh stocke les objets en tant que StrangrzCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },

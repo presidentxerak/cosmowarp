@@ -226,7 +226,7 @@ export default function WalletView() {
         {authTab === 'signup' ? (
           <div className="max-w-xs mx-auto space-y-3">
             <p className="text-base opacity-50 mb-1">
-              Create your wallet and receive 1,000 {'\u03A9'} airdrop.
+              Create your wallet and receive 1,000 {'\u2B23'} airdrop.
             </p>
 
             <div className="p-3 bg-current/5 border border-current/10 text-left">
@@ -483,7 +483,7 @@ export default function WalletView() {
         </div>
 
         <div className="text-body-sm opacity-50 mb-5">
-          <span className="opacity-80 font-bold">+{wallet.balance.toLocaleString()} {'\u03A9'}</span> airdrop received
+          <span className="opacity-80 font-bold">+{wallet.balance.toLocaleString()} {'\u2B23'}</span> airdrop received
         </div>
 
         <button className="warp-button w-full py-3 text-base" onClick={() => setShowWelcome(false)}>
@@ -507,7 +507,7 @@ export default function WalletView() {
         </div>
         <p className="text-base opacity-50 mb-1">Welcome back</p>
         <h2 className="text-title-md font-bold opacity-100 mb-1 font-title">{wallet.alias ? `@${wallet.alias}` : shortAddress(wallet.address)}</h2>
-        <p className="text-title-sm font-bold opacity-100/40 mb-5">{wallet.balance.toLocaleString()} {'\u03A9'}</p>
+        <p className="text-title-sm font-bold opacity-100/40 mb-5">{wallet.balance.toLocaleString()} {'\u2B23'}</p>
         <div className="max-w-xs mx-auto space-y-3">
           <input className="warp-input text-center" type="password" placeholder="Enter your password" value={unlockPassword}
             onChange={e => { setUnlockPassword(e.target.value); setUnlockError(''); }}
@@ -580,7 +580,7 @@ export default function WalletView() {
     setSending(true);
     try {
       const res = await send(sendTo.trim(), amt, sendMemo || undefined);
-      if (res.success) { setSendResult({ success: true, message: `Sent ${amt} \u03A9 via StrangrzMesh DAG!` }); setSendTo(''); setSendAmount(''); setSendMemo(''); }
+      if (res.success) { setSendResult({ success: true, message: `Sent ${amt} \u2B23 via StrangrzMesh DAG!` }); setSendTo(''); setSendAmount(''); setSendMemo(''); }
       else setSendResult({ success: false, message: res.error || 'Transaction failed' });
     } catch (err) { setSendResult({ success: false, message: err instanceof Error ? err.message : 'Transaction failed' }); }
     finally { setSending(false); }
@@ -642,7 +642,7 @@ export default function WalletView() {
             </div>
             <p className="text-body-sm opacity-50 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Strangrz Balance'}</p>
             <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1 animate-float">
-              {wallet.balance.toLocaleString()} <span className="text-title-lg">{'\u03A9'}</span>
+              {wallet.balance.toLocaleString()} <span className="text-title-lg">{'\u2B23'}</span>
             </div>
             <p className="text-label opacity-40">STRANGRZ ENERGY UNITS</p>
             <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
@@ -885,7 +885,7 @@ export default function WalletView() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
                 <div><span className="opacity-40">Total Supply:</span><span className="opacity-80 ml-1">{supplyInfo.total.toLocaleString()}</span></div>
                 <div><span className="opacity-40">Circulating:</span><span className="opacity-80 ml-1">{supplyInfo.circulating.toLocaleString()}</span></div>
-                <div><span className="opacity-40">Mining Reward:</span><span className="opacity-80 ml-1">{supplyInfo.currentReward.toFixed(2)} {'\u03A9'}</span></div>
+                <div><span className="opacity-40">Mining Reward:</span><span className="opacity-80 ml-1">{supplyInfo.currentReward.toFixed(2)} {'\u2B23'}</span></div>
                 <div><span className="opacity-40">Epoch:</span><span className="opacity-80 ml-1">{supplyInfo.currentEpoch}</span></div>
                 <div><span className="opacity-40">Mined:</span><span className="opacity-80 ml-1">{supplyInfo.percentMined.toFixed(2)}%</span></div>
                 <div><span className="opacity-40">Burned:</span><span className="opacity-70 ml-1">{supplyInfo.burned.toLocaleString()}</span></div>
@@ -941,7 +941,7 @@ export default function WalletView() {
                       </div>
                     </div>
                     <span className={`font-bold shrink-0 ${tx.type === 'send' || tx.type === 'wart_buy' ? 'opacity-80' : 'opacity-80'}`}>
-                      {tx.type === 'send' || tx.type === 'wart_buy' ? '-' : '+'}{tx.amount} {'\u03A9'}
+                      {tx.type === 'send' || tx.type === 'wart_buy' ? '-' : '+'}{tx.amount} {'\u2B23'}
                     </span>
                   </div>
                 ))}
@@ -960,7 +960,7 @@ export default function WalletView() {
               Envoyer des Strangrz
             </h2>
             <p className="text-body-sm opacity-40 mb-4">
-              Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
+              Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u2B23'}</span>
               <span className="opacity-30 ml-2">Ed25519 signed + DAG validated</span>
             </p>
             <div className="space-y-3 max-w-md mx-auto">
@@ -969,7 +969,7 @@ export default function WalletView() {
                 <input className="warp-input" placeholder="CW..." value={sendTo} onChange={e => setSendTo(e.target.value)} />
               </div>
               <div>
-                <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u03A9'})</label>
+                <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u2B23'})</label>
                 <div className="flex gap-2">
                   <input className="warp-input" type="number" placeholder="0" min="0" step="0.1" value={sendAmount} onChange={e => setSendAmount(e.target.value)} />
                   <button className="warp-button text-body-sm shrink-0" onClick={() => setSendAmount(wallet.balance.toString())}>MAX</button>
@@ -998,7 +998,7 @@ export default function WalletView() {
             <p className="text-label opacity-40 mb-2">QUICK AMOUNTS</p>
             <div className="flex gap-2 flex-wrap">
               {[10, 25, 50, 100].map(a => (
-                <button key={a} className="warp-button text-body-sm" onClick={() => setSendAmount(a.toString())} disabled={a > wallet.balance}>{a} {'\u03A9'}</button>
+                <button key={a} className="warp-button text-body-sm" onClick={() => setSendAmount(a.toString())} disabled={a > wallet.balance}>{a} {'\u2B23'}</button>
               ))}
             </div>
           </div>

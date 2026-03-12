@@ -429,7 +429,7 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u2B23`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,
@@ -603,7 +603,7 @@ export async function loginCosmoID(
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u2B23`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,
@@ -958,7 +958,7 @@ export async function unlockCreatorTokens(wallet: WarpWallet, amount: number): P
       timestamp: Date.now(),
       signature: 'creator_unlock',
       type: 'genesis',
-      memo: `Creator tokens unlocked: ${amount} \u03A9`,
+      memo: `Creator tokens unlocked: ${amount} \u2B23`,
     };
     wallet.transactions.unshift(tx);
     addGlobalTx(tx);

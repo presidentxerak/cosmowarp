@@ -288,7 +288,7 @@ function EventsTab() {
 });
 
 cosmo.on('transaction_received', (event) => {
-  console.log(\`Received \${event.data.amount} \u03A9 from \${event.address}\`);
+  console.log(\`Received \${event.data.amount} \u2B23 from \${event.address}\`);
 });`} />
     </div>
   );

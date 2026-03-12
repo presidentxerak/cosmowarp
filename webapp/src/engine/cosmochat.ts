@@ -7,7 +7,7 @@ export interface ChatPost {
   authorAlias: string;
   content: string;
   mediaData?: string;
-  mediaType?: 'image' | 'audio' | 'video';
+  mediaType?: 'image' | 'audio' | 'video' | 'cards';
   audioCover?: string;
   timestamp: number;
   tips: Record<string, boolean>;
@@ -100,7 +100,7 @@ export class CosmoChatEngine {
 
   // ─── Posts ─────────────────────────────────────────────
 
-  createPost(author: string, authorAlias: string, content: string, mediaData?: string, mediaType?: 'image' | 'audio' | 'video', audioCover?: string, wartLink?: string): ChatPost {
+  createPost(author: string, authorAlias: string, content: string, mediaData?: string, mediaType?: 'image' | 'audio' | 'video' | 'cards', audioCover?: string, wartLink?: string): ChatPost {
     const post: ChatPost = {
       id: genId(),
       author,

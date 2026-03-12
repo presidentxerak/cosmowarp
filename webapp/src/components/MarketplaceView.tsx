@@ -50,7 +50,7 @@ function useBlobUrl(dataUrl: string | undefined): string {
   }, [dataUrl]);
   return blobUrl;
 }
-type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'top-collections' | 'create' | 'detail';
+type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'cards' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'top-collections' | 'create' | 'detail';
 type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
 type SalesMarketFilter = '1st' | '2nd';
 
@@ -73,7 +73,7 @@ export default function MarketplaceView() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageData, setImageData] = useState('');
-  const [mediaType, setMediaType] = useState<'image' | 'audio' | 'video' | 'svg'>('image');
+  const [mediaType, setMediaType] = useState<'image' | 'audio' | 'video' | 'svg' | 'cards'>('image');
   const [audioCover, setAudioCover] = useState('');
   const [price, setPrice] = useState('');
   const [royalty, setRoyalty] = useState('5');
@@ -534,7 +534,7 @@ export default function MarketplaceView() {
       return (
         <div className={`bg-current/5 flex items-center justify-center ${className}`}>
           <span className="text-2xl opacity-30">
-            {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}
+            {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : wart.mediaType === 'cards' ? '\uD83C\uDCCF' : '\u25C8'}
           </span>
         </div>
       );
@@ -645,7 +645,7 @@ export default function MarketplaceView() {
         <div className="flex items-center justify-between mt-2">
           {wart.listed && wart.price !== null ? (
             <div>
-              <span className="text-base font-bold opacity-80">{wart.price} {'\u03A9'}</span>
+              <span className="text-base font-bold opacity-80">{wart.price} {'\u2B23'}</span>
               {wart.priceFiat && wart.fiatCurrency && (
                 <span className="text-[10px] opacity-50 text-current ml-1">
                   ({getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)})
@@ -687,7 +687,7 @@ export default function MarketplaceView() {
               onClick={e => { e.stopPropagation(); handleBuy(wart); }}
               disabled={buying || wallet.balance < wart.price}
             >
-              {wart.price} {'\u03A9'}
+              {wart.price} {'\u2B23'}
             </button>
             {wart.priceFiat && wart.fiatCurrency && (
               <button
@@ -763,7 +763,7 @@ export default function MarketplaceView() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] opacity-50 text-current block mb-1">PRICE IN {'\u03A9'} (empty = not for sale)</label>
+                  <label className="text-[10px] opacity-50 text-current block mb-1">PRICE IN {'\u2B23'} (empty = not for sale)</label>
                   <input
                     className="warp-input"
                     type="number"
@@ -1113,7 +1113,7 @@ export default function MarketplaceView() {
                 {wart.listed && wart.price !== null && (
                   <div className="glass-panel p-3 mb-3 text-center">
                     <p className="text-[10px] opacity-40">CURRENT PRICE</p>
-                    <p className="text-2xl font-bold opacity-80">{wart.price} {'\u03A9'}</p>
+                    <p className="text-2xl font-bold opacity-80">{wart.price} {'\u2B23'}</p>
                     {wart.priceFiat && wart.fiatCurrency && (
                       <p className="text-base opacity-50 text-current">
                         {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)} {wart.fiatCurrency}
@@ -1143,7 +1143,7 @@ export default function MarketplaceView() {
                       onClick={() => handleBuy(wart)}
                       disabled={buying || wallet.balance < wart.price}
                     >
-                      {buying ? 'Processing...' : `Buy with ${wart.price} \u03A9`}
+                      {buying ? 'Processing...' : `Buy with ${wart.price} \u2B23`}
                     </button>
                     {wart.priceFiat && wart.fiatCurrency && (
                       <button
@@ -1200,7 +1200,7 @@ export default function MarketplaceView() {
                             className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'crypto' ? 'bg-current/5 opacity-80 border border-current/10' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
                             onClick={() => setPricingMode('crypto')}
                           >
-                            {'\u03A9'} Crypto
+                            {'\u2B23'} Crypto
                           </button>
                           <button
                             className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'fiat' ? 'bg-current/10 opacity-80 border border-current/15' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
@@ -1215,7 +1215,7 @@ export default function MarketplaceView() {
                             <input
                               className="warp-input flex-1 text-base"
                               type="number"
-                              placeholder="Price in \u03A9"
+                              placeholder="Price in \u2B23"
                               value={listPrice}
                               onChange={e => setListPrice(e.target.value)}
                             />
@@ -1255,7 +1255,7 @@ export default function MarketplaceView() {
                           </div>
                         )}
                         <p className="text-[10px] opacity-40">
-                          {pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Strangrz (\u03A9)'}
+                          {pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Strangrz (\u2B23)'}
                         </p>
                       </div>
                     )}
@@ -1355,7 +1355,7 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <span className="font-bold opacity-80 shrink-0">
-                    {h.price > 0 ? `${h.price} \u03A9` : 'Gift'}
+                    {h.price > 0 ? `${h.price} \u2B23` : 'Gift'}
                   </span>
                 </div>
               ))}
@@ -1388,6 +1388,7 @@ export default function MarketplaceView() {
     if (type === 'art') return warts.filter(w => w.mediaType === 'image' || w.mediaType === 'svg');
     if (type === 'video') return warts.filter(w => w.mediaType === 'video');
     if (type === 'music') return warts.filter(w => w.mediaType === 'audio');
+    if (type === 'cards') return warts.filter(w => w.mediaType === 'cards');
     return warts;
   };
 
@@ -1398,6 +1399,7 @@ export default function MarketplaceView() {
     else if (tab === 'art') base = filterByMedia(allWarts, 'art');
     else if (tab === 'video') base = filterByMedia(allWarts, 'video');
     else if (tab === 'music') base = filterByMedia(allWarts, 'music');
+    else if (tab === 'cards') base = filterByMedia(allWarts, 'cards');
     else if (tab === 'rwa') base = rwaWarts;
     else if (tab === 'phygital') base = phygitalWarts;
     else return [];
@@ -1413,7 +1415,7 @@ export default function MarketplaceView() {
     return filtered;
   };
 
-  const showEditionFilters = ['all', 'art', 'video', 'music', 'rwa', 'phygital'].includes(tab);
+  const showEditionFilters = ['all', 'art', 'video', 'music', 'cards', 'rwa', 'phygital'].includes(tab);
 
   // ─── Tab Navigation ────────────────────────────────────
   const galleryTabs: { id: GalleryTab; label: string }[] = [
@@ -1423,6 +1425,7 @@ export default function MarketplaceView() {
     { id: 'music', label: 'Music' },
     { id: 'rwa', label: 'RWA' },
     { id: 'phygital', label: 'Phygital' },
+    { id: 'cards', label: 'Cards' },
     { id: 'pfp', label: 'Collections PFP' },
     { id: 'top-creators', label: 'Top Creators' },
     { id: 'top-collectors', label: 'Top Collectors' },
@@ -1680,7 +1683,7 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u03A9'}</p>
+                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u2B23'}</p>
                     <p className="text-[10px] opacity-40">total volume</p>
                   </div>
                 </div>
@@ -1717,7 +1720,7 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u03A9'}</p>
+                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u2B23'}</p>
                     <p className="text-[10px] opacity-40">total spent</p>
                   </div>
                 </div>
@@ -1762,7 +1765,7 @@ export default function MarketplaceView() {
                     <p className="text-[10px] opacity-30">{formatDateFR(sale.transfer.timestamp)}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u03A9'}</p>
+                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u2B23'}</p>
                     <p className="text-[10px] opacity-40">{sale.isFirstSale ? '1st market' : '2nd market'}</p>
                   </div>
                 </div>
@@ -1802,8 +1805,8 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u03A9'}</p>
-                    <p className="text-[10px] opacity-40">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u03A9` : 'Not listed'}</p>
+                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u2B23'}</p>
+                    <p className="text-[10px] opacity-40">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u2B23` : 'Not listed'}</p>
                   </div>
                 </div>
               ))}
@@ -1827,16 +1830,17 @@ export default function MarketplaceView() {
             {/* ─── Category Selection ──────────────────────── */}
             <div>
               <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Category</label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                 {[
                   { id: 'image', label: 'Art', icon: '\u25C8' },
                   { id: 'video', label: 'Video', icon: '\u25B6' },
                   { id: 'audio', label: 'Music', icon: '\u266B' },
                   { id: 'svg', label: 'RWA', icon: '\u2B22' },
+                  { id: 'cards', label: 'Cards', icon: '\uD83C\uDCCF' },
                 ].map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => setMediaType(cat.id as 'image' | 'audio' | 'video' | 'svg')}
+                    onClick={() => setMediaType(cat.id as 'image' | 'audio' | 'video' | 'svg' | 'cards')}
                     className={`py-2.5 px-2 text-[11px] font-medium transition-all cursor-pointer text-center ${
                       mediaType === cat.id
                         ? 'bg-current/10 border border-current/20 opacity-90'
@@ -1905,7 +1909,7 @@ export default function MarketplaceView() {
               )}
               {imageData ? (
                 <div className="flex flex-col items-center gap-3">
-                  {(mediaType === 'image' || mediaType === 'svg') && (
+                  {(mediaType === 'image' || mediaType === 'svg' || mediaType === 'cards') && (
                     <div className="w-full max-w-[280px] aspect-square overflow-hidden bg-current/5 border border-current/10">
                       <img src={imageData} alt="Preview" className="w-full h-full object-cover" />
                     </div>
@@ -2018,7 +2022,7 @@ export default function MarketplaceView() {
             {/* ─── Price & Royalty (side by side) ───────── */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Price in {'\u03A9'}</label>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Price in {'\u2B23'}</label>
                 <input
                   className="warp-input w-full"
                   type="number"

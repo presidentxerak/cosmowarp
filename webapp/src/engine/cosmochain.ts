@@ -26,9 +26,9 @@
  *
  * ─── Architecture ──────────────────────────────────────────
  *
- *   Shard 0 (GRID)    → Micro-transactions (<10 Ω)
- *   Shard 1 (HELIX)   → Standard transfers (10-100 Ω)
- *   Shard 2 (GLYPH)   → Large transfers (100-1000 Ω) + NFT ops
+ *   Shard 0 (GRID)    → Micro-transactions (<10 ⬣)
+ *   Shard 1 (HELIX)   → Standard transfers (10-100 ⬣)
+ *   Shard 2 (GLYPH)   → Large transfers (100-1000 ⬣) + NFT ops
  *   Shard 3 (COSMO)   → System ops (governance, staking)
  *   Shard 4 (CHRONOS) → Time-locked transactions
  *   Shard 5 (NEXUS)   → Cross-shard bridges & atomic swaps
@@ -346,7 +346,7 @@ export class StrangrzChain {
       publicKey: '',
       shard: ShardId.LUMINA,
       type: 'genesis',
-      memo: `StrangrzChain Genesis — ${amount} Ω created`,
+      memo: `StrangrzChain Genesis — ${amount} ⬣ created`,
       nonce: 0,
       gasCost: 0,
       status: 'finalized',
@@ -801,7 +801,7 @@ export class StrangrzChain {
       privateKey: params.privateKey,
       publicKey: params.publicKey,
       type: 'mine',
-      memo: `StrangrzChain Mining Reward: ${params.reward} Ω`,
+      memo: `StrangrzChain Mining Reward: ${params.reward} ⬣`,
     });
   }
 
@@ -820,7 +820,7 @@ export class StrangrzChain {
       privateKey: params.privateKey,
       publicKey: params.publicKey,
       type: 'stake',
-      memo: `Staked ${params.amount} Ω`,
+      memo: `Staked ${params.amount} ⬣`,
     });
 
     if (result.validation.valid) {

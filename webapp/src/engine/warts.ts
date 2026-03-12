@@ -67,7 +67,7 @@ export interface Wart {
   title: string;
   description: string;
   imageData: string;             // data URL (base64 image/gif/video/audio/svg)
-  mediaType?: 'image' | 'audio' | 'video' | 'svg';  // media type
+  mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';  // media type
   audioCover?: string;           // cover image for audio Warts
   creator: string;               // CW address of original creator (immutable)
   owner: string;                 // CW address of current owner
@@ -341,7 +341,7 @@ export class WartEngine {
     editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
     maxEditions: number | null = null,
     durationHours: number | null = null,
-    mediaType: 'image' | 'audio' | 'video' | 'svg' = 'image',
+    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' = 'image',
     audioCover?: string,
     privateKey?: string,
     mintChain?: 'strangrz' | 'ethereum',

@@ -310,7 +310,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
             {getCreatorName(wart.creator)}
           </p>
         </div>
-        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
+        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
         {/* Social bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
           <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>

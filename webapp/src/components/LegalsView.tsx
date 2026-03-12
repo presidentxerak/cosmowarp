@@ -19,7 +19,7 @@ export default function LegalsView() {
                 transactions, or personal information.
               </p>
               <p>
-                Les tokens Strangrz (Ω) et les actifs numériques sont des jetons cryptographiques expérimentaux. Their value
+                Les tokens Strangrz (⬣) et les actifs numériques sont des jetons cryptographiques expérimentaux. Their value
                 is not guaranteed and may fluctuate. Strangrz Foundation makes no promises regarding
                 the monetary value of these assets.
               </p>

@@ -109,7 +109,7 @@ export default function MineView() {
         setHistory(loadMiningHistory());
 
         if (levelUp) {
-          setLevelUpMsg(`${levelUp.levelDef.name}: ${levelUp.levelDef.title} (+${levelUp.airdropBonus} \u03A9 bonus)`);
+          setLevelUpMsg(`${levelUp.levelDef.name}: ${levelUp.levelDef.title} (+${levelUp.airdropBonus} \u2B23 bonus)`);
         }
 
         setPhase('result');
@@ -165,7 +165,7 @@ export default function MineView() {
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2696'} Distribution équitable</p>
-                <p>Le mining est le seul moyen de créer de nouveaux {'\u03A9'}. La Resonance Decay (décroissance dorée) garantit une distribution progressive des 58M tokens minables.</p>
+                <p>Le mining est le seul moyen de créer de nouveaux {'\u2B23'}. La Resonance Decay (décroissance dorée) garantit une distribution progressive des 58M tokens minables.</p>
               </div>
               <div className="bg-current/5 p-3">
                 <p className="font-bold opacity-60 mb-1">{'\u2713'} Certification des oeuvres</p>
@@ -234,7 +234,7 @@ export default function MineView() {
           </div>
           <div className="bg-current/5 p-2">
             <p className="text-label opacity-40">RÉCOMPENSE</p>
-            <p className="text-base font-bold opacity-80">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u03A9'}</p>
+            <p className="text-base font-bold opacity-80">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u2B23'}</p>
           </div>
           <div className="bg-current/5 p-2">
             <p className="text-label opacity-40">MULTIPLICATEUR</p>
@@ -336,7 +336,7 @@ export default function MineView() {
             <div>
               <p className="text-[10px] opacity-40 uppercase">Récompense estimée</p>
               <p className="text-base font-bold opacity-80">
-                ~{((supplyInfo?.currentReward || 50) * selectedEnergy.multiplier * wallet.rewardMultiplier).toFixed(2)} {'\u03A9'}
+                ~{((supplyInfo?.currentReward || 50) * selectedEnergy.multiplier * wallet.rewardMultiplier).toFixed(2)} {'\u2B23'}
               </p>
             </div>
             <div className="text-right">
@@ -441,7 +441,7 @@ export default function MineView() {
             <p className="text-3xl mb-2">{'\u03C6'}</p>
             <h3 className="text-title-sm font-bold opacity-100 font-title">Resonance Bloc miné !</h3>
             <div className="text-3xl font-bold opacity-100 mt-2">
-              +{lastReward} {'\u03A9'}
+              +{lastReward} {'\u2B23'}
             </div>
             <p className="text-body-sm opacity-40 mt-1">
               Énergie {selectedEnergy.label} — Multiplicateur x{selectedEnergy.multiplier}
@@ -524,7 +524,7 @@ export default function MineView() {
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="opacity-40">{formatTime(entry.timeTaken)}</span>
                   <span className="opacity-40">{formatHashrate(entry.hashrate)}</span>
-                  <span className="opacity-80 font-bold">+{entry.reward} {'\u03A9'}</span>
+                  <span className="opacity-80 font-bold">+{entry.reward} {'\u2B23'}</span>
                 </div>
               </div>
             ))}

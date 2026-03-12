@@ -7,7 +7,7 @@ const NAV: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: "Vue d\u2019ensemble", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg> },
   { id: 'how', label: 'Comment ça marche', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg> },
   { id: 'certificates', label: 'Certificats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg> },
-  { id: 'tokenomics', label: 'Strangrz (Ω)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg> },
+  { id: 'tokenomics', label: 'Strangrz (⬣)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg> },
   { id: 'hierarchy', label: 'Niveaux', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> },
   { id: 'security', label: 'Sécurité', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg> },
   { id: 'roadmap', label: 'Feuille de route', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> },
@@ -118,7 +118,7 @@ function OverviewSection() {
         {[
           ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
           ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Strangrz génère un certificat STCERT infalsifiable (CW-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte numérique et signature cryptographique.'],
-          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Strangrz certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Strangrz (Ω).'],
+          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Strangrz certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Strangrz (⬣).'],
           ['4', 'Collectionnez en confiance', 'Chaque Strangrz a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 p-3 rounded-none bg-current/5">
@@ -136,7 +136,7 @@ function OverviewSection() {
         {[
           ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Strangrz, vérifier un certificat : tout est gratuit.'],
           ['✓', 'Infalsifiable', 'Les certificats STCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
-          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Strangrz (Ω). Pas besoin d\u2019exchange crypto."],
+          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Strangrz (⬣). Pas besoin d\u2019exchange crypto."],
           ['✓', 'Décentralisé', "Vos données vous appartiennent. Pas d\u2019intermédiaire, pas de banque."],
           ['✓', 'Hors ligne', "L\u2019app fonctionne même sans internet grâce au mode PWA."],
         ].map(([icon, title, desc]) => (
@@ -175,7 +175,7 @@ function HowItWorksSection() {
       </P>
       <div className="grid grid-cols-3 gap-2 mb-4">
         <Stat label="Couches" value="7" />
-        <Stat label="Frais" value="0 Ω" />
+        <Stat label="Frais" value="0 ⬣" />
         <Stat label="Confirmation" value="~15s" />
       </div>
 
@@ -307,15 +307,15 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (Ω)" subtitle="La monnaie de l'écosystème Strangrz" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (⬣)" subtitle="La monnaie de l'écosystème Strangrz" />
       <P>
-        Le <span className="opacity-80 font-bold">Strangrz (Ω)</span> est la monnaie native de Strangrz.
+        Le <span className="opacity-80 font-bold">Strangrz (⬣)</span> est la monnaie native de Strangrz.
         Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
         Aucun Strangrz supplémentaire ne sera jamais créé.
       </P>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <Stat label="Offre totale" value="69M Ω" />
+        <Stat label="Offre totale" value="69M ⬣" />
         <Stat label="Minage" value="60%" />
         <Stat label="Fondation" value="20%" />
         <Stat label="Communauté" value="20%" />

@@ -78,7 +78,7 @@ export default function TopBar({ onProfileClick, onNavigate }: TopBarProps) {
             type: 'wart',
             id: wart.id,
             title: wart.title,
-            subtitle: `Strangrz · ${wart.price !== null ? wart.price + ' \u03A9' : 'Not for sale'}`,
+            subtitle: `Strangrz · ${wart.price !== null ? wart.price + ' \u2B23' : 'Not for sale'}`,
             address: wart.creator,
             imageData: wart.imageData,
           });

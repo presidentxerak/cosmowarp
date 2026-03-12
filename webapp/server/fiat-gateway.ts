@@ -251,8 +251,8 @@ const server = createServer(async (req, res) => {
                 currency: currency.toLowerCase(),
                 unit_amount: Math.round(amount * 100), // Stripe uses cents
                 product_data: {
-                  name: wartId ? `Strangrz #${wartId}` : `${warpAmount} Warps (Ω)`,
-                  description: `Strangrz purchase — ${warpAmount} Ω`,
+                  name: wartId ? `Strangrz #${wartId}` : `${warpAmount} Warps (⬣)`,
+                  description: `Strangrz purchase — ${warpAmount} ⬣`,
                 },
               },
               quantity: 1,
@@ -337,10 +337,10 @@ const server = createServer(async (req, res) => {
                   p_address: record.buyerAddress,
                   p_amount: record.warpAmount,
                   p_tx_id: txId + '_credit',
-                  p_memo: `Fiat purchase: ${record.warpAmount} \u03A9`,
+                  p_memo: `Fiat purchase: ${record.warpAmount} \u2B23`,
                 });
                 if (credited) {
-                  console.log(`[FiatGateway] Credited ${record.warpAmount} \u03A9 to ${record.buyerAddress}`);
+                  console.log(`[FiatGateway] Credited ${record.warpAmount} \u2B23 to ${record.buyerAddress}`);
                 } else {
                   console.error(`[FiatGateway] Failed to credit ${record.buyerAddress}`);
                 }

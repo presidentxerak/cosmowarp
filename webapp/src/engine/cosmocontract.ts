@@ -119,7 +119,7 @@ export interface RoyaltySplit {
 export interface LicenseTerms {
   type: 'license';
   licenseType: 'personal' | 'commercial' | 'exclusive' | 'print';
-  price: number;                   // In Warps (Ω)
+  price: number;                   // In Warps (⬣)
   priceFiat?: FiatPrice;           // Optional fiat equivalent
   duration: number | null;         // Milliseconds, null = perpetual
   territory: string;               // 'worldwide' or specific
@@ -417,7 +417,7 @@ export class ContractEngine {
       type: 'bid',
       timestamp: Date.now(),
       actor: bidder,
-      details: `Bid ${amount} Ω`,
+      details: `Bid ${amount} ⬣`,
     });
 
     contract.updatedAt = Date.now();
@@ -449,7 +449,7 @@ export class ContractEngine {
         type: 'reserve_not_met',
         timestamp: Date.now(),
         actor: 'system',
-        details: `Reserve price ${terms.reservePrice} Ω not met (highest bid: ${terms.currentBid} Ω)`,
+        details: `Reserve price ${terms.reservePrice} ⬣ not met (highest bid: ${terms.currentBid} ⬣)`,
       });
       this.save();
       return null;
@@ -461,7 +461,7 @@ export class ContractEngine {
       type: 'settled',
       timestamp: Date.now(),
       actor: 'system',
-      details: `Auction won by ${terms.currentBidder} for ${terms.currentBid} Ω`,
+      details: `Auction won by ${terms.currentBidder} for ${terms.currentBid} ⬣`,
     });
     contract.updatedAt = Date.now();
     this.save();

@@ -138,7 +138,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
 
           {/* Balance & Level */}
           <div className="flex gap-4 mt-2 items-center">
-            <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u03A9'}</span>
+            <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u2B23'}</span>
             <span className="text-body-sm opacity-40">|</span>
             <span className="text-base font-bold opacity-80">Lv.{wallet.level || 1}</span>
             <span className="text-label opacity-40">{wallet.levelName}</span>
@@ -295,7 +295,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                     </div>
                   )}
                   <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
+                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
                 </div>
               ))}
             </div>

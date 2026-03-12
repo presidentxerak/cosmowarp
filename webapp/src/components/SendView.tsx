@@ -35,7 +35,7 @@ export default function SendView() {
     try {
       const res = await send(to.trim(), amt, memo || undefined);
       if (res.success) {
-        setResult({ success: true, message: `${amt} \u03A9 envoyés via StrangrzMesh DAG !` });
+        setResult({ success: true, message: `${amt} \u2B23 envoyés via StrangrzMesh DAG !` });
         setTo('');
         setAmount('');
         setMemo('');
@@ -55,7 +55,7 @@ export default function SendView() {
       <div className="glass-panel p-5">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u2197'} Envoyer des Strangrz</h2>
         <p className="text-body-sm opacity-40 mb-4">
-          Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
+          Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u2B23'}</span>
           <span className="opacity-30 ml-2">Ed25519 signed + DAG validated</span>
         </p>
 
@@ -71,7 +71,7 @@ export default function SendView() {
           </div>
 
           <div>
-            <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u03A9'})</label>
+            <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u2B23'})</label>
             <div className="flex gap-2">
               <input
                 className="warp-input"
@@ -139,7 +139,7 @@ export default function SendView() {
               onClick={() => setAmount(a.toString())}
               disabled={a > wallet.balance}
             >
-              {a} {'\u03A9'}
+              {a} {'\u2B23'}
             </button>
           ))}
         </div>

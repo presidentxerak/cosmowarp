@@ -115,7 +115,7 @@ export class VobjctEngine {
     title: string;
     description: string;
     imageData: string;
-    mediaType: 'image' | 'audio' | 'video' | 'svg';
+    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
     creator: string;
     creatorPublicKey: string;
     creatorPrivateKey?: string;

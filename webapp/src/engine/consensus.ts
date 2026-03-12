@@ -48,7 +48,7 @@ export interface Validator {
   id: string;                      // Address of the validator
   publicKey: string;
   privateKey?: string;             // Private key for signing votes (only for local validator)
-  stake: number;                   // Staked Ω (weight in consensus)
+  stake: number;                   // Staked ⬣ (weight in consensus)
   layerAffinities: number[];       // Affinity score per layer [0, 1]
   reputation: number;              // Trust score [0, 1]
   validationsCount: number;

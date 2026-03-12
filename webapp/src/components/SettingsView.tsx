@@ -110,7 +110,7 @@ export default function SettingsView() {
             </div>
             <div className="flex justify-between items-center">
               <span className="opacity-40">Balance</span>
-              <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u03A9'}</span>
+              <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u2B23'}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="opacity-40">Auth</span>
@@ -324,7 +324,7 @@ export default function SettingsView() {
             <div className="flex items-center justify-between pt-2 border-t border-current/10">
               <div>
                 <p className="text-body-sm opacity-90">Supprimer le profil</p>
-                <p className="text-label opacity-40">Supprime définitivement votre profil. Vos {wallet.balance.toLocaleString()} {'\u03A9'} seront réintégrés dans la supply.</p>
+                <p className="text-label opacity-40">Supprime définitivement votre profil. Vos {wallet.balance.toLocaleString()} {'\u2B23'} seront réintégrés dans la supply.</p>
               </div>
               <button
                 onClick={() => {
@@ -415,7 +415,7 @@ export default function SettingsView() {
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Max Supply</span>
-            <span className="opacity-70">69,000,000 {'\u03A9'}</span>
+            <span className="opacity-70">69,000,000 {'\u2B23'}</span>
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Encryption</span>

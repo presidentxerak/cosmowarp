@@ -139,7 +139,7 @@ export default function FeedView() {
                   <span className={`text-base font-bold ${
                     tx.type === 'send' && isMe(tx.from) ? 'opacity-80' : 'opacity-80'
                   }`}>
-                    {tx.type === 'send' && isMe(tx.from) ? '-' : '+'}{tx.amount} {'\u03A9'}
+                    {tx.type === 'send' && isMe(tx.from) ? '-' : '+'}{tx.amount} {'\u2B23'}
                   </span>
                 </div>
               </div>

@@ -67,7 +67,7 @@ export default function FondationView() {
             <h3 className="text-base font-bold opacity-80 mb-2">Écosystème</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <div className="flex items-center gap-2">
-                <span className="opacity-80">{'Ω'}</span>
+                <span className="opacity-80">{'⬣'}</span>
                 <span><span className="opacity-90">Strangrz</span> - Token natif, supply fixe 69M</span>
               </div>
               <div className="flex items-center gap-2">

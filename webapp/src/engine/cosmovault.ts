@@ -46,7 +46,7 @@ export interface VaultEntry {
   creator: string;                 // Creator address
   owner: string;                   // Current owner address
   encryptedMedia: EncryptedPayload; // AES-256-GCM encrypted media data
-  mediaType: 'image' | 'audio' | 'video' | 'svg';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' | 'cards';
   mediaSizeBytes: number;          // Original media size
   createdAt: number;
   addedToVaultAt: number;
@@ -69,7 +69,7 @@ export interface VaultManifestEntry {
   fingerprint: string;
   certId: string;
   title: string;
-  mediaType: 'image' | 'audio' | 'video' | 'svg';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
   mediaSizeBytes: number;
   createdAt: number;
   recoveryStatus: 'local' | 'onchain' | 'hybrid' | 'peer';
@@ -89,7 +89,7 @@ export interface RecoveryKitEntry {
   fingerprint: string;
   certId: string;
   title: string;
-  mediaType: 'image' | 'audio' | 'video' | 'svg';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
   encryptedMedia: EncryptedPayload;  // Double-encrypted: vault key + recovery password
   metadata: Record<string, string>;
 }
@@ -186,7 +186,7 @@ export class CosmoVault {
     creator: string;
     owner: string;
     mediaData: string;          // Raw media (data URL or base64)
-    mediaType: 'image' | 'audio' | 'video' | 'svg';
+    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' | 'cards';
     onChainSVG?: string;
     onChainTxId?: string;
   }): Promise<VaultEntry> {

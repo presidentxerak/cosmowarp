@@ -5,8 +5,8 @@
  *
  * ─── Architecture ────────────────────────────────────────────
  *
- * 1. PRICE DISPLAY — Shows artwork prices in both Ω and fiat
- * 2. BUY FLOW — User pays in fiat → system credits Ω → transfers artwork
+ * 1. PRICE DISPLAY — Shows artwork prices in both ⬣ and fiat
+ * 2. BUY FLOW — User pays in fiat → system credits ⬣ → transfers artwork
  * 3. SELL FLOW — User lists in fiat → buyer pays → seller receives fiat
  * 4. EXCHANGE RATE — Configurable rates with real-time tracking
  *
@@ -39,7 +39,7 @@ export type FiatCurrency = 'EUR' | 'USD' | 'GBP' | 'JPY' | 'CHF';
 
 export interface ExchangeRate {
   currency: FiatCurrency;
-  warpsPerUnit: number;           // How many Ω per 1 unit of fiat
+  warpsPerUnit: number;           // How many ⬣ per 1 unit of fiat
   lastUpdated: number;
   source: 'manual' | 'api' | 'market';
 }
@@ -79,7 +79,7 @@ export type PaymentMethod =
   | 'apple_pay'       // Apple Pay
   | 'google_pay'      // Google Pay
   | 'bank_transfer'   // Generic bank transfer
-  | 'internal';       // Internal Ω transfer (no fiat)
+  | 'internal';       // Internal ⬣ transfer (no fiat)
 
 export interface FiatListing {
   wartId: string;
@@ -222,12 +222,12 @@ export class FiatGateway {
   }
 
   /**
-   * Format a price in both Ω and fiat for display.
+   * Format a price in both ⬣ and fiat for display.
    */
   formatDualPrice(warps: number, currency: FiatCurrency = this._preferredCurrency): string {
     const fiat = this.warpsToFiat(warps, currency);
     const symbol = getCurrencySymbol(currency);
-    return `${warps.toLocaleString()} Ω (${symbol}${fiat.toFixed(2)})`;
+    return `${warps.toLocaleString()} ⬣ (${symbol}${fiat.toFixed(2)})`;
   }
 
   /**
@@ -423,7 +423,7 @@ export class FiatGateway {
   }
 
   /**
-   * Create a fiat sell/withdrawal (user converts Ω to fiat).
+   * Create a fiat sell/withdrawal (user converts ⬣ to fiat).
    *
    * Flow: pending → processing → completed
    */

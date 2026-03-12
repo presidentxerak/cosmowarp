@@ -34,9 +34,9 @@ import type { StrangrzChain } from './cosmochain';
 // ─── Fractal Layers ──────────────────────────────────────
 
 export const MeshLayer = {
-  GRID:    0,  // Micro-transactions (< 10 Ω)
-  HELIX:   1,  // Standard transfers (10-100 Ω)
-  GLYPH:   2,  // Large transfers (100-1000 Ω)
+  GRID:    0,  // Micro-transactions (< 10 ⬣)
+  HELIX:   1,  // Standard transfers (10-100 ⬣)
+  GLYPH:   2,  // Large transfers (100-1000 ⬣)
   COSMO:   3,  // System operations (governance, staking)
   CHRONOS: 4,  // Time-locked transactions
   NEXUS:   5,  // Cross-layer bridges
@@ -148,7 +148,7 @@ export class StrangrzMesh {
       parentIds: [],
       layer: MeshLayer.LUMINA,
       type: 'genesis',
-      memo: `StrangrzMesh Genesis — ${amount} Ω created`,
+      memo: `StrangrzMesh Genesis — ${amount} ⬣ created`,
       resonanceScore: 1.0, // Genesis is fully confirmed
       confirmations: 0,
       meshDepth: 0,

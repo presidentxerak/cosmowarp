@@ -176,7 +176,7 @@ function TrackCard({ wart, onClick }: { wart: Wart; onClick: () => void }) {
         </div>
         {wart.price !== null && (
           <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 font-bold">
-            {wart.price} {'\u03A9'}
+            {wart.price} {'\u2B23'}
           </div>
         )}
       </div>
@@ -303,14 +303,14 @@ export default function MusicView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-label opacity-40">PRIX</p>
-                  <p className="text-title-sm font-bold opacity-90">{selectedTrack.price} {'\u03A9'}</p>
+                  <p className="text-title-sm font-bold opacity-90">{selectedTrack.price} {'\u2B23'}</p>
                 </div>
                 <button
                   className="warp-button px-6 py-2.5"
                   onClick={() => handleBuy(selectedTrack)}
                   disabled={buying || wallet.balance < (selectedTrack.price || 0)}
                 >
-                  {buying ? 'Achat en cours...' : `Acheter ${selectedTrack.price} \u03A9`}
+                  {buying ? 'Achat en cours...' : `Acheter ${selectedTrack.price} \u2B23`}
                 </button>
               </div>
             </div>
@@ -334,7 +334,7 @@ export default function MusicView() {
               {selectedTrack.history.map((h, i) => (
                 <div key={i} className="flex justify-between opacity-40">
                   <span>{shortAddress(h.from)} → {shortAddress(h.to)}</span>
-                  <span>{h.price} {'\u03A9'}</span>
+                  <span>{h.price} {'\u2B23'}</span>
                 </div>
               ))}
             </div>
