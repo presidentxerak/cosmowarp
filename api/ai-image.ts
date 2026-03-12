@@ -3,7 +3,7 @@
  * GET /api/ai-image?prompt=...&width=1024&height=1024
  *
  * Provider chain:
- *   1. Together.ai FLUX Schnell (free, needs TOGETHER_API_KEY)
+ *   1. Hugging Face Inference API — FLUX.1 Schnell (free token, no CC)
  *   2. Pollinations.ai (free, no key)
  *
  * Returns { imageData: "data:image/...;base64,..." }
@@ -21,36 +21,34 @@ async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 600
   }
 }
 
-// ─── Provider 1: Together.ai FLUX Schnell (free tier, high quality) ───
-async function tryTogetherAi(prompt: string, width: number, height: number): Promise<string | null> {
-  const apiKey = process.env.TOGETHER_API_KEY;
-  if (!apiKey) return null;
+// ─── Provider 1: Hugging Face Inference API — FLUX.1 Schnell (free) ───
+async function tryHuggingFace(prompt: string): Promise<string | null> {
+  const token = process.env.HF_API_TOKEN;
+  if (!token) return null;
 
   try {
-    const resp = await fetchWithTimeout('https://api.together.xyz/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+    const resp = await fetchWithTimeout(
+      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inputs: prompt }),
       },
-      body: JSON.stringify({
-        model: 'black-forest-labs/FLUX.1-schnell-Free',
-        prompt,
-        width,
-        height,
-        steps: 4,
-        n: 1,
-        response_format: 'b64_json',
-      }),
-    }, 60000);
+      90000,
+    );
 
     if (!resp.ok) return null;
 
-    const json = await resp.json();
-    const b64 = json?.data?.[0]?.b64_json;
-    if (!b64) return null;
+    const contentType = resp.headers.get('content-type') || 'image/jpeg';
+    if (!contentType.startsWith('image/')) return null;
 
-    return `data:image/png;base64,${b64}`;
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    if (buffer.length < 1000) return null; // too small = error response
+
+    return `data:${contentType};base64,${buffer.toString('base64')}`;
   } catch {
     return null;
   }
@@ -93,14 +91,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const height = Math.min(Number(req.query.height) || 1024, 1024);
 
   // Try providers in order
-  const providers = [tryTogetherAi, tryPollinations];
-  for (const provider of providers) {
-    const result = await provider(prompt, width, height);
-    if (result) {
-      res.setHeader('Cache-Control', 'no-store');
-      return res.status(200).json({ imageData: result });
-    }
+  const hfResult = await tryHuggingFace(prompt);
+  if (hfResult) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ imageData: hfResult });
   }
 
-  return res.status(502).json({ error: 'All image generation providers failed. Please try again.' });
+  const pollResult = await tryPollinations(prompt, width, height);
+  if (pollResult) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ imageData: pollResult });
+  }
+
+  return res.status(502).json({ error: 'Image generation failed. Check HF_API_TOKEN is set or try again.' });
 }
