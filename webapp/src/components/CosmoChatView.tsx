@@ -23,7 +23,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -54,6 +54,9 @@ export default function CosmoChatView() {
 
   // Share modal
   const [sharePost, setSharePost] = useState<ChatPost | null>(null);
+
+  // Artwork picker
+  const [showArtPicker, setShowArtPicker] = useState(false);
 
   // Media upload state (must be before early return)
   const [mediaError, setMediaError] = useState('');
@@ -472,6 +475,45 @@ export default function CosmoChatView() {
     );
   };
 
+  // ─── Artwork Picker Modal ─────────────────────────────
+  const ArtworkPickerModal = () => {
+    if (!showArtPicker) return null;
+    const allWarts = [...(myCreated || []), ...(myCollection || [])].filter(
+      (w, i, arr) => arr.findIndex(x => x.id === w.id) === i
+    );
+    return (
+      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowArtPicker(false)}>
+        <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <h3 className="text-base font-bold opacity-90 mb-3">Select an artwork to post</h3>
+          {allWarts.length === 0 ? (
+            <p className="text-body-sm opacity-40 text-center py-6">No artworks found in your profile.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {allWarts.map(w => (
+                <div
+                  key={w.id}
+                  className="cursor-pointer border border-current/10 hover:border-current/30 transition-all overflow-hidden"
+                  onClick={() => {
+                    setComposeMedia(w.imageData);
+                    setComposeMediaType('image');
+                    setComposeWartLink(w.id);
+                    setShowArtPicker(false);
+                  }}
+                >
+                  <img src={w.imageData} alt={w.title || ''} className="w-full aspect-square object-cover" />
+                  {w.title && <p className="text-label opacity-60 p-1 truncate">{w.title}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+          <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowArtPicker(false)}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // ─── Channel Detail ────────────────────────────────────
   if (selectedChannel) {
     const ch = selectedChannel;
@@ -547,6 +589,7 @@ export default function CosmoChatView() {
   return (
     <div className="space-y-4">
       <ShareModal />
+      <ArtworkPickerModal />
 
       {/* Sub-tabs */}
       <div className="flex gap-1 overflow-x-auto border-b border-current/10 px-2 pt-2">
@@ -607,6 +650,9 @@ export default function CosmoChatView() {
                     <input ref={fileRef} type="file" accept=".gif,.jpeg,.jpg,.png,.mp3,.mp4,.mov" className="hidden" onChange={handleMediaUpload} />
                     <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => fileRef.current?.click()}>
                       {'\u2B06'} Media
+                    </button>
+                    <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => setShowArtPicker(true)}>
+                      {'\u2B22'} Artwork
                     </button>
                     <input
                       className="warp-input text-label py-1 px-2 w-36"

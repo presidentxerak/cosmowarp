@@ -9,7 +9,7 @@ import * as sync from '../lib/supabase-sync';
 import { fetchSocialProfile, fetchProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
 import HexAvatar from './HexAvatar';
 
-type Tab = 'posts' | 'created' | 'collection';
+type Tab = 'posts' | 'created' | 'collection' | 'media';
 
 export default function UserProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, warts } = useWallet();
@@ -267,8 +267,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
 
   const isMe = wallet?.address === targetAddress;
 
+  const mediaWarts = [...created, ...collection].filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
   const tabList: { id: Tab; label: string; count: number }[] = [
     { id: 'posts', label: 'Posts', count: posts.length },
+    { id: 'media', label: 'Media', count: mediaWarts.length },
     { id: 'created', label: 'Created', count: created.length },
     { id: 'collection', label: 'Collection', count: collection.length },
   ];
@@ -534,10 +536,13 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   </div>
                   <p className="text-base opacity-70 whitespace-pre-wrap">{post.content}</p>
                   {post.mediaData && post.mediaType === 'image' && (
-                    <img src={post.mediaData} alt="" className="mt-2 w-full max-h-80 object-contain" />
+                    <img src={post.mediaData} alt="" className="mt-2 w-auto max-w-full" />
                   )}
                   {post.mediaData && post.mediaType === 'video' && (
-                    <video controls src={post.mediaData} className="mt-2 w-full max-h-80 object-contain bg-black" />
+                    <video controls src={post.mediaData} className="mt-2 w-full bg-black" />
+                  )}
+                  {post.mediaData && post.mediaType === 'audio' && (
+                    <audio controls src={post.mediaData} className="mt-2 w-full h-10" />
                   )}
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
                     <span className="opacity-40 text-body-sm">{post.tipCount > 0 ? `Tip ${post.tipCount}\u2B23` : '0 tips'}</span>
@@ -558,6 +563,20 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {created.map(wart => (
+                <WartCard key={wart.id} wart={wart} />
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === 'media' && (
+          mediaWarts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="opacity-40 text-base">No media</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {mediaWarts.map(wart => (
                 <WartCard key={wart.id} wart={wart} />
               ))}
             </div>

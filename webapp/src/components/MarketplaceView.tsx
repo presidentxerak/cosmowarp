@@ -57,7 +57,7 @@ type SalesMarketFilter = '1st' | '2nd';
 export default function MarketplaceView() {
   const {
     wallet, unlocked, marketplace, myCollection, myCreated,
-    mintWart, buyWart, listWart, delistWart, transferWart,
+    mintWart, buyWart, listWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
     listWartFiat, buyWartFiat, getWartFiatPrice,
   } = useWallet();
@@ -90,6 +90,7 @@ export default function MarketplaceView() {
 
   // Comment
   const [commentText, setCommentText] = useState('');
+  const commentInputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Blob URL for create form video/audio preview
@@ -666,17 +667,29 @@ export default function MarketplaceView() {
         </div>
         {/* Social bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
-          {/* Like */}
-          <button className={`flex items-center gap-1 cursor-pointer transition-all ${wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-40 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
+          {/* Tip 1 STRNGRZ */}
+          <button
+            className={`flex items-center gap-1 cursor-pointer transition-all ${wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-40 hover:opacity-80'}`}
+            onClick={e => { e.stopPropagation(); if (!wart.likes?.includes(wallet.address) && wart.creator !== wallet.address) { send(wart.creator, 1, `Tip for ${wart.title}`); } toggleWartLike(wart.id); }}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length}</span>}
+            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length}{'\u2B23'}</span>}
           </button>
           {/* Share to Wall */}
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" title="Share to Wall" onClick={e => { e.stopPropagation(); const chatEngine = CosmoChatEngine.load(); const creatorName = getCreatorName(wart.creator); chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, wart.imageData, wart.mediaType === 'svg' || wart.mediaType === 'cards' ? 'image' : wart.mediaType, undefined, wart.id); }}>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" title="Share to Wall" onClick={e => {
+            e.stopPropagation();
+            const chatEngine = CosmoChatEngine.load();
+            const creatorName = getCreatorName(wart.creator);
+            chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, wart.imageData, wart.mediaType === 'svg' || wart.mediaType === 'cards' ? 'image' : wart.mediaType, undefined, wart.id);
+          }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
-          {/* Comments count */}
-          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedWart(wart); setTab('detail'); }}>
+          {/* Comment — go to detail + focus input */}
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => {
+            e.stopPropagation();
+            openDetail(wart);
+            setTimeout(() => commentInputRef.current?.focus(), 300);
+          }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             {wart.comments?.length > 0 && <span className="text-[10px]">{wart.comments.length}</span>}
           </button>
@@ -1311,6 +1324,7 @@ export default function MarketplaceView() {
           <h3 className="text-base font-bold opacity-70 mb-3">Comments ({(wart.comments || []).length})</h3>
           <div className="flex gap-2 mb-4">
             <input
+              ref={commentInputRef}
               className="warp-input flex-1 text-base"
               placeholder="Add a comment..."
               value={commentText}
