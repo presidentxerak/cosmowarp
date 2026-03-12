@@ -81,7 +81,7 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
                 className={`relative flex flex-col items-center gap-1 px-2 flex-1 transition-all cursor-pointer ${
                   isActive ? 'opacity-100' : 'opacity-60 hover:opacity-90'
                 }`}
-                style={{ marginTop: '-5px', paddingTop: '0px', paddingBottom: '10px' }}
+                style={{ paddingTop: '0px', paddingBottom: '10px' }}
                 aria-label={tab.label}
               >
                 <div className="relative" style={{ marginTop: '-5px' }}>
