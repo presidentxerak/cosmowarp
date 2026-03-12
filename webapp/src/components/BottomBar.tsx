@@ -66,8 +66,8 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel">
-      <div className="flex items-center justify-around max-w-lg mx-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="flex items-center justify-around max-w-lg mx-auto h-full">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const badgeCount = 'badge' in tab && tab.badge ? getBadgeCount(tab.id) : 0;

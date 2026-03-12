@@ -299,6 +299,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             refreshWartsState(w.address);
           }
         });
+
+        // Pull ALL listed warts from Supabase (marketplace — includes other users' artworks)
+        sync.pullWarts({ listed: true }).then(listedWarts => {
+          if (listedWarts && listedWarts.length > 0) {
+            mergeCloudWarts(listedWarts);
+            refreshWartsState(w.address);
+          }
+        });
+
+        // Pull ALL warts from Supabase (full gallery — all artworks across all users)
+        sync.pullWarts().then(allWarts => {
+          if (allWarts && allWarts.length > 0) {
+            mergeCloudWarts(allWarts);
+            refreshWartsState(w.address);
+          }
+        });
       }
     }
     setGlobalTxs(getGlobalTransactions());
@@ -326,7 +342,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         case 'wart_new':
         case 'wart_update':
         case 'wart_delete':
-          refreshWartsState(addr);
+          // Pull latest warts from cloud (includes artworks from other devices/users)
+          sync.pullWarts().then(allWarts => {
+            if (allWarts && allWarts.length > 0) {
+              mergeCloudWarts(allWarts);
+            }
+            refreshWartsState(addr);
+          });
           break;
         case 'transaction_new': {
           setGlobalTxs(getGlobalTransactions());
@@ -431,6 +453,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         refreshWartsState(w.address);
       }
     }
+
+    // Pull ALL warts from Supabase (full gallery — all artworks across all users)
+    sync.pullWarts().then(allWarts => {
+      if (allWarts && allWarts.length > 0) {
+        mergeCloudWarts(allWarts);
+        refreshWartsState(w.address);
+      }
+    });
+
     sync.syncProfile(w);
     for (const tx of w.transactions) sync.syncTransaction(tx);
 
@@ -954,6 +985,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const refreshWarts = useCallback(() => {
     refreshWartsState(wallet?.address);
+    // Also pull latest warts from cloud for cross-device sync
+    if (isBackendAvailable()) {
+      sync.pullWarts().then(allWarts => {
+        if (allWarts && allWarts.length > 0) {
+          mergeCloudWarts(allWarts);
+          refreshWartsState(wallet?.address);
+        }
+      });
+    }
   }, [wallet]);
 
   // ─── Vault Operations ──────────────────────────────────
