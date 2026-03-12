@@ -23,7 +23,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send, myCreated, myCollection, marketplace, mintWart } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection, marketplace } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -57,16 +57,6 @@ export default function CosmoChatView() {
 
   // Artwork picker
   const [showArtPicker, setShowArtPicker] = useState(false);
-
-  // AI Image Generator
-  const [showAiGen, setShowAiGen] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiImageData, setAiImageData] = useState('');
-  const [aiTitle, setAiTitle] = useState('');
-  const [aiPrice, setAiPrice] = useState('');
-  const [aiMinting, setAiMinting] = useState(false);
-  const [aiError, setAiError] = useState('');
 
   // Media upload state (must be before early return)
   const [mediaError, setMediaError] = useState('');
@@ -236,68 +226,6 @@ export default function CosmoChatView() {
   const handleJoinChannel = (ch: ChatChannel) => {
     engine.joinChannel(ch.id, wallet.address);
     refresh();
-  };
-
-  // ─── AI Image Generator ────────────────────────────────
-  const handleAiGenerate = () => {
-    if (!aiPrompt.trim()) return;
-    setAiGenerating(true);
-    setAiError('');
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-    setAiImageData(url);
-  };
-
-  /** Convert Pollinations URL to base64: try server proxy, then client fetch */
-  const resolveImageData = async (imageUrl: string): Promise<string> => {
-    if (imageUrl.startsWith('data:')) return imageUrl;
-    // Try server-side proxy (works on Vercel)
-    try {
-      const resp = await fetch(`/api/ai-image?prompt=${encodeURIComponent(aiPrompt)}&width=1024&height=1024`);
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.imageData) return data.imageData;
-      }
-    } catch { /* fallback below */ }
-    // Client-side fetch (works if Pollinations sends CORS headers)
-    try {
-      const resp = await fetch(imageUrl);
-      if (resp.ok) {
-        const blob = await resp.blob();
-        return await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      }
-    } catch { /* fallback below */ }
-    // Last resort: use the URL directly (external reference)
-    return imageUrl;
-  };
-
-  const handleAiMintAndPost = async () => {
-    if (!aiImageData || !aiTitle.trim()) return;
-    setAiMinting(true);
-    setAiError('');
-    try {
-      const imageData = await resolveImageData(aiImageData);
-      const price = aiPrice.trim() ? parseFloat(aiPrice) : null;
-      const wart = await mintWart(aiTitle, `AI generated: ${aiPrompt}`, imageData, price);
-      // Post to Wall
-      const chatEngine = CosmoChatEngine.load();
-      chatEngine.createPost(wallet.address, alias, `${aiTitle} — AI generated artwork`, undefined, 'image', undefined, wart.id);
-      refresh();
-      // Reset
-      setShowAiGen(false);
-      setAiPrompt('');
-      setAiImageData('');
-      setAiTitle('');
-      setAiPrice('');
-    } catch (e: unknown) {
-      setAiError(e instanceof Error ? e.message : 'Minting failed');
-    } finally {
-      setAiMinting(false);
-    }
   };
 
   // ─── Media Renderer ────────────────────────────────────
@@ -652,53 +580,6 @@ export default function CosmoChatView() {
         </div>
       )}
 
-      {/* AI Generator modal */}
-      {showAiGen && (
-        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => { if (!aiGenerating && !aiMinting) setShowAiGen(false); }}>
-          <div className="glass-panel p-5 max-w-md w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="text-base font-bold opacity-90 mb-3">{'\u2B22'} AI Strangrz Generator</h3>
-            <div className="space-y-3">
-              <textarea
-                className="warp-input min-h-[60px] resize-y text-base"
-                placeholder="Describe your artwork... (e.g. cosmic nebula with hexagonal patterns)"
-                value={aiPrompt}
-                onChange={e => setAiPrompt(e.target.value)}
-                maxLength={500}
-                disabled={aiGenerating}
-              />
-              <button className="warp-button w-full py-2 text-base" onClick={handleAiGenerate} disabled={aiGenerating || !aiPrompt.trim()}>
-                {aiGenerating ? 'Generating...' : 'Generate Image'}
-              </button>
-            </div>
-            {aiGenerating && (
-              <div className="mt-3 flex items-center justify-center py-8">
-                <div className="animate-pulse text-body-sm opacity-50">Creating your artwork...</div>
-              </div>
-            )}
-            {aiImageData && (
-              <div className="mt-3 space-y-3">
-                <img
-                  src={aiImageData}
-                  alt="AI generated"
-                  className="w-full object-contain border border-current/10"
-                  onLoad={() => setAiGenerating(false)}
-                  onError={() => { setAiError('Image generation failed. Try a different prompt.'); setAiGenerating(false); setAiImageData(''); }}
-                  style={aiGenerating ? { display: 'none' } : undefined}
-                />
-                <input className="warp-input text-base" placeholder="Title for your Strangrz *" value={aiTitle} onChange={e => setAiTitle(e.target.value)} maxLength={100} />
-                <input className="warp-input text-base" placeholder={`Price in ${'\u2B23'} STRNGRZ (optional, leave empty = not for sale)`} value={aiPrice} onChange={e => setAiPrice(e.target.value.replace(/[^0-9.]/g, ''))} />
-                <button className="warp-button w-full py-2 text-base" onClick={handleAiMintAndPost} disabled={aiMinting || !aiTitle.trim()}>
-                  {aiMinting ? 'Minting...' : 'Mint & Post to Wall'}
-                </button>
-                <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={handleAiGenerate} disabled={aiGenerating}>{'\u21BB'} Regenerate</button>
-              </div>
-            )}
-            {aiError && <p className="text-body-sm opacity-70 mt-2 p-2 bg-current/5 border border-current/15">{aiError}</p>}
-            <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowAiGen(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
       {/* Sub-tabs */}
       <div className="flex gap-1 overflow-x-auto border-b border-current/10 px-2 pt-2">
         {tabList.map(t => (
@@ -776,9 +657,6 @@ export default function CosmoChatView() {
                     </button>
                     <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => setShowArtPicker(true)}>
                       {'\u2B22'} Artwork
-                    </button>
-                    <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => setShowAiGen(true)}>
-                      {'\u2728'} AI Create
                     </button>
                     <input
                       className="warp-input text-label py-1 px-2 w-36"

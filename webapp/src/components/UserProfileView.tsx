@@ -38,13 +38,6 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const [isRestricted, setIsRestricted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const addr = sessionStorage.getItem('strangrz_view_user');
-    if (!addr) return;
-    setTargetAddress(addr);
-    refresh(addr);
-  }, []);
-
   // Refresh created/collection when warts from context change (media rehydrated)
   useEffect(() => {
     if (!targetAddress) return;
@@ -151,6 +144,15 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     setCreated(warts.filter(w => w.creator === addr));
     setCollection(warts.filter(w => w.owner === addr));
   };
+
+  // Load target user on mount
+  useEffect(() => {
+    const addr = sessionStorage.getItem('strangrz_view_user');
+    if (!addr) return;
+    setTargetAddress(addr);
+    refresh(addr);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFollow = () => {
     if (!wallet || !targetAddress) return;

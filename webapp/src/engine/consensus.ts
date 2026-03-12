@@ -536,8 +536,7 @@ export class ResonanceConsensus {
     const totalStake = this.getTotalStake();
     if (totalStake === 0) return;
 
-    // Compute weighted resonance from all votes
-    let totalResonance = 0;
+    // Compute weighted approval from all votes
     let approveWeight = 0;
     let totalWeight = 0;
 
@@ -550,7 +549,6 @@ export class ResonanceConsensus {
 
       if (vote.approve) {
         approveWeight += weight;
-        totalResonance += vote.resonanceContribution;
       }
     }
 

@@ -349,7 +349,7 @@ export class BlockIntegrityVerifier {
     const allAlerts: TamperAlert[] = [];
     let blocksVerified = 0;
     let beaconsVerified = 0;
-    let txVerified = 0;
+    const txVerified = 0;
 
     // Verify each shard's chain
     for (let shard = 0; shard < params.shardCount; shard++) {

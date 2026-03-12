@@ -7,7 +7,7 @@
  * and falls back to an in-memory store so the app remains functional.
  */
 
-let memoryStore: Record<string, string> = {};
+const memoryStore: Record<string, string> = {};
 let storageAvailable: boolean | null = null;
 
 function isAvailable(): boolean {
