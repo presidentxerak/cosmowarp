@@ -239,7 +239,7 @@ export default function CosmoChatView() {
   };
 
   // ─── AI Image Generator ────────────────────────────────
-  const handleAiGenerate = () => {
+  const handleAiGenerate = async () => {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     setAiError('');
@@ -247,30 +247,24 @@ export default function CosmoChatView() {
 
     const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
 
-    // Use <img> to load (bypasses CORS), then canvas to extract base64
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { setAiError('Canvas not supported'); setAiGenerating(false); return; }
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
-        setAiImageData(dataUrl);
-      } catch {
-        // Canvas tainted — fallback: store the URL directly as a reference
-        setAiImageData(url);
-      }
-      setAiGenerating(false);
-    };
-    img.onerror = () => {
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const blob = await resp.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAiImageData(reader.result as string);
+        setAiGenerating(false);
+      };
+      reader.onerror = () => {
+        setAiError('Failed to read image data. Try again.');
+        setAiGenerating(false);
+      };
+      reader.readAsDataURL(blob);
+    } catch {
       setAiError('Failed to generate image. Try again.');
       setAiGenerating(false);
-    };
-    img.src = url;
+    }
   };
 
   const handleAiMintAndPost = async () => {

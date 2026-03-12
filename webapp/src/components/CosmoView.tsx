@@ -142,29 +142,18 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, typing]);
 
-  const handleAiGenerate = (userText: string): Promise<string> => {
+  const handleAiGenerate = async (userText: string): Promise<string> => {
     const prompt = extractAiPrompt(userText);
     const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
 
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const blob = await resp.blob();
     return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('Canvas not supported')); return; }
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL('image/png'));
-        } catch {
-          // Canvas tainted — use URL directly
-          resolve(url);
-        }
-      };
-      img.onerror = () => reject(new Error('Failed to generate image'));
-      img.src = url;
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read image data'));
+      reader.readAsDataURL(blob);
     });
   };
 
