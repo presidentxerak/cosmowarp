@@ -614,7 +614,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             playsInline
             poster=""
           >
-            <source src={`${import.meta.env.BASE_URL}cosmorare-landing-hero-random-${heroVideoNum}.mp4`} type="video/mp4" />
+            <source src={`${import.meta.env.BASE_URL}strangrz-landing-hero-random-${heroVideoNum}.mp4`} type="video/mp4" />
           </video>
         </div>
 

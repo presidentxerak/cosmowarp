@@ -56,7 +56,7 @@ export default function SignetsView() {
           {bookmarks.map(post => (
             <div key={post.id} className="glass-panel p-3">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-current/5 flex items-center justify-center text-body-sm opacity-80 shrink-0">
+                <div className="w-8 h-8 bg-current/5 flex items-center justify-center text-body-sm opacity-80 shrink-0" style={{ clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)' }}>
                   {shortAddress(post.author).slice(0, 2)}
                 </div>
                 <div className="flex-1 min-w-0">

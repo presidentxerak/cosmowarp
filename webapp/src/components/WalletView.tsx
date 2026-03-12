@@ -10,7 +10,7 @@ import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
 import HexAvatar from './HexAvatar';
 
-type WalletTab = 'overview' | 'send' | 'mine' | 'payment';
+type WalletTab = 'overview' | 'send' | 'mine' | 'payment' | 'ethereum';
 type AuthTab = 'signup' | 'signin';
 type SignInMethod = 'cosmoid' | 'cosmolink' | 'file';
 
@@ -599,12 +599,14 @@ export default function WalletView() {
     send: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>,
     mine: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
     payment: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
+    ethereum: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L4 12l8 5 8-5L12 2z" /><path d="M4 12l8 10 8-10-8 5-8-5z" /></svg>,
   };
   const subTabs: { id: WalletTab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'send', label: 'Send' },
     { id: 'mine', label: 'Mine' },
     { id: 'payment', label: 'Strangrz Coin' },
+    { id: 'ethereum', label: 'Ethereum' },
   ];
 
   return (
@@ -930,10 +932,10 @@ export default function WalletView() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="opacity-70 truncate">
-                        {tx.memo || (tx.type === 'genesis' || tx.type === 'airdrop' ? 'Airdrop' :
+                        {(tx.memo || (tx.type === 'genesis' || tx.type === 'airdrop' ? 'Airdrop' :
                           tx.type === 'mine' ? 'Mining Reward' : tx.type === 'level_up' ? 'Level Up Bonus' :
                           tx.type === 'streak_reward' ? 'Streak Reward' : tx.type === 'send' ? `To ${shortAddress(tx.to)}` :
-                          `From ${shortAddress(tx.from)}`)}
+                          `From ${shortAddress(tx.from)}`)).replace(/Cosmorare/gi, 'Strangrz')}
                       </p>
                       <div className="flex gap-2 text-label opacity-40">
                         {tx.layer !== undefined && <span className="opacity-80/60">{LAYER_NAMES[tx.layer]}</span>}
@@ -1010,6 +1012,77 @@ export default function WalletView() {
 
       {/* ─── Payment Tab ─────────────────────────────────── */}
       {walletTab === 'payment' && <FiatGatewayView />}
+
+      {/* ─── Ethereum Tab ──────────────────────────────────── */}
+      {walletTab === 'ethereum' && (
+        <div className="space-y-4">
+          {/* ETH Balance Card */}
+          <div className="glass-panel p-5 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="w-16 h-16 flex items-center justify-center bg-current/5 border border-current/10" style={{ clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)' }}>
+                <span className="text-2xl opacity-70">{'\u039E'}</span>
+              </div>
+            </div>
+            <p className="text-body-sm opacity-50 mb-1">Ethereum Balance</p>
+            <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1">
+              0.00 <span className="text-title-lg">ETH</span>
+            </div>
+            <p className="text-label opacity-40">ERC-721 COMPATIBLE</p>
+          </div>
+
+          {/* Connection Status */}
+          <div className="glass-panel p-4">
+            <h3 className="text-base font-bold opacity-70 mb-3">Wallet Connection</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-current/5 border border-current/10">
+                <div className="flex items-center gap-3">
+                  <span className="text-lg opacity-60">{'\u26A0'}</span>
+                  <div>
+                    <p className="text-body-sm opacity-70">No wallet connected</p>
+                    <p className="text-label opacity-40">Connect MetaMask or WalletConnect</p>
+                  </div>
+                </div>
+                <button className="px-4 py-2 bg-current/10 border border-current/20 text-body-sm opacity-70 hover:opacity-90 cursor-pointer transition-all">
+                  Connect
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Multi-chain Info */}
+          <div className="glass-panel p-4">
+            <h3 className="text-base font-bold opacity-70 mb-3">Multi-Chain Minting</h3>
+            <div className="space-y-3 text-body-sm">
+              <div className="flex items-start gap-3 p-3 bg-current/5 border border-current/10">
+                <span className="text-lg shrink-0">{'\u2B22'}</span>
+                <div>
+                  <p className="opacity-70 font-bold mb-0.5">Strangrz Chain (CW-721)</p>
+                  <p className="opacity-40">Zero gas fees. Instant minting. Protected by Vobjct system with STCERT certificates and StrangrzCode on-chain backup.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-current/5 border border-current/10">
+                <span className="text-lg shrink-0">{'\u039E'}</span>
+                <div>
+                  <p className="opacity-70 font-bold mb-0.5">Ethereum (ERC-721)</p>
+                  <p className="opacity-40">Standard ERC-721 NFTs on Ethereum mainnet. Gas fees apply. Full Vobjct protection and cross-chain verification via the adapter system.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ETH NFTs */}
+          <div className="glass-panel p-4">
+            <h3 className="text-base font-bold opacity-70 mb-3">Ethereum NFTs</h3>
+            <p className="text-body-sm opacity-40 text-center py-6">No Ethereum NFTs yet. Mint your first artwork on Ethereum from the Gallery.</p>
+          </div>
+
+          {/* ETH Transactions */}
+          <div className="glass-panel p-4">
+            <h3 className="text-base font-bold opacity-70 mb-3">Ethereum Transactions</h3>
+            <p className="text-body-sm opacity-40 text-center py-4">No Ethereum transactions yet</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

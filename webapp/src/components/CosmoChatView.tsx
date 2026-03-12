@@ -423,7 +423,7 @@ export default function CosmoChatView() {
             ) : (
               post.comments.map(c => (
                 <div key={c.id} className="flex gap-2">
-                  <div className="w-6 h-6 bg-current/5 border border-current/10 flex items-center justify-center text-label opacity-80 font-bold shrink-0 mt-0.5">
+                  <div className="w-6 h-6 bg-current/5 border border-current/10 flex items-center justify-center text-label opacity-80 font-bold shrink-0 mt-0.5" style={{ clipPath: 'polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)' }}>
                     {c.authorAlias.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
