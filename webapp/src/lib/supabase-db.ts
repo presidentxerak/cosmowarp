@@ -36,6 +36,19 @@ export async function upsertProfile(wallet: WarpWallet): Promise<boolean> {
   return !error;
 }
 
+/** Check if an alias is already taken in the cloud (case-insensitive) */
+export async function isAliasTakenCloud(alias: string, excludeAddress?: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { data, error } = await supabase!
+    .from('profiles')
+    .select('address')
+    .ilike('alias', alias.trim())
+    .limit(1);
+  if (error || !data || data.length === 0) return false;
+  if (excludeAddress && data.length === 1 && data[0].address === excludeAddress) return false;
+  return true;
+}
+
 export async function fetchProfile(address: string): Promise<WarpWallet | null> {
   if (!isBackendAvailable()) return null;
   const { data, error } = await supabase!

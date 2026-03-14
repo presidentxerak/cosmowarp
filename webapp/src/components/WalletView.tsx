@@ -5,6 +5,8 @@ import { shortAddress } from '../engine/crypto';
 import { LAYER_NAMES } from '../engine/strangrmesh';
 import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 import { setup2FA, enable2FA, disable2FA, is2FAEnabled } from '../engine/totp';
+import { SocialEngine } from '../engine/social';
+import { isAliasTakenCloud } from '../lib/supabase-db';
 import MineView from './MineView';
 import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
@@ -91,6 +93,17 @@ export default function WalletView() {
     setCreating(true);
     setCreateError('');
     try {
+      // Check alias uniqueness (local + cloud)
+      const social = SocialEngine.load();
+      if (social.isAliasTaken(alias.trim())) {
+        setCreateError('This username is already taken');
+        return;
+      }
+      const takenCloud = await isAliasTakenCloud(alias.trim());
+      if (takenCloud) {
+        setCreateError('This username is already taken');
+        return;
+      }
       const result = await cosmoIDLogin(alias.trim(), password);
       if (result.success) {
         setShowWelcome(true);
