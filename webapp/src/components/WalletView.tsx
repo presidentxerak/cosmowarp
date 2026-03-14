@@ -353,7 +353,7 @@ export default function WalletView() {
                 <p className="text-label opacity-40">StrangrzLink is an encrypted transfer code you can share via any messaging app.</p>
                 <textarea
                   className="warp-input text-center text-body-sm min-h-[80px] resize-none"
-                  placeholder="Paste CWLINK-... code here"
+                  placeholder="Paste STZLINK-... code here"
                   value={strangrzLinkInput}
                   onChange={e => { setStrangrzLinkInput(e.target.value); setStrangrzLinkError(''); }}
                 />
@@ -859,7 +859,7 @@ export default function WalletView() {
                 .json
               </button>
             </div>
-            <p className="text-label opacity-30">Sign in with the same username + password on any device. Or use StrangrzLink for quick transfer.</p>
+            <p className="text-label opacity-50">Sign in with the same username + password on any device. Or use StrangrzLink for quick transfer.</p>
           </div>
 
           {/* Level Progress */}

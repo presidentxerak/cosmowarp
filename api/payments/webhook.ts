@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const txId = session.metadata?.cosmorare_tx_id;
+      const txId = session.metadata?.strangrz_tx_id;
       const buyerAddress = session.metadata?.buyer_address;
       const warpAmount = parseFloat(session.metadata?.warp_amount || '0');
 

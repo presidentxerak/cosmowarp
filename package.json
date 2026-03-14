@@ -1,7 +1,7 @@
 {
-  "name": "cosmorare",
+  "name": "strangrz",
   "version": "3.0.0",
-  "description": "Cosmorare Protocol - Certification d'objets rares avec CosmoASM",
+  "description": "Strangrz Protocol - Certification d'objets rares avec CosmoASM",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +12,7 @@
     "cosmoasm": "ts-node src/asm/cli.ts"
   },
   "keywords": [
-    "cosmorare",
+    "strangrz",
     "cosmoasm",
     "certification",
     "rare",

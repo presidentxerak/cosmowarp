@@ -21,7 +21,7 @@ const rates = new Map(
 );
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-  const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');

@@ -9,7 +9,7 @@ import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -47,17 +47,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             currency: currency.toLowerCase(),
             unit_amount: Math.round(amount * 100),
             product_data: {
-              name: wartId ? `Cosmorare #${wartId}` : `${warpAmount} STZ (\u03A9)`,
-              description: `Cosmorare purchase \u2014 ${warpAmount} \u03A9`,
+              name: wartId ? `Strangrz #${wartId}` : `${warpAmount} STZ (⬣)`,
+              description: `Strangrz purchase — ${warpAmount} ⬣`,
             },
           },
           quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-success?tx=${txId}`,
-        cancel_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-cancel?tx=${txId}`,
+        success_url: `${req.headers.origin || 'https://strangrz.com'}/payment-success?tx=${txId}`,
+        cancel_url: `${req.headers.origin || 'https://strangrz.com'}/payment-cancel?tx=${txId}`,
         metadata: {
-          cosmorare_tx_id: txId,
+          strangrz_tx_id: txId,
           buyer_address: buyerAddress,
           seller_address: sellerAddress || '',
           warp_amount: warpAmount.toString(),

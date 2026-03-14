@@ -5,7 +5,7 @@
  * wallet data. Users can share this via any messaging app (iMessage, WhatsApp,
  * Telegram, etc.) and import it on another device with their password.
  *
- * Format: CWLINK-<base64url(AES-256-GCM encrypted compact wallet JSON)>
+ * Format: STZLINK-<base64url(AES-256-GCM encrypted compact wallet JSON)>
  *
  * Security: The StrangrzLink is encrypted with the user's password using
  * AES-256-GCM + PBKDF2 (100K iterations). Even if intercepted, it's
@@ -15,7 +15,8 @@
 import { encryptData, decryptData, type EncryptedPayload } from './crypto';
 import type { WalletExport } from './wallet';
 
-const LINK_PREFIX = 'CWLINK-';
+const LINK_PREFIX = 'STZLINK-';
+const LEGACY_CWLINK_PREFIX = 'CWLINK-'; // Backward compat
 const LINK_SECRET_PREFIX = 'STRANGRZLINK_TRANSFER:';
 const LEGACY_LINK_SECRET_PREFIX = 'COSMOLINK_TRANSFER:';
 
@@ -61,12 +62,16 @@ export async function parseStrangrzLink(
   password: string
 ): Promise<WalletExport> {
   const trimmed = link.trim();
-  if (!trimmed.startsWith(LINK_PREFIX)) {
+  // Support both new STZLINK- and legacy CWLINK- prefix
+  let activePrefix = LINK_PREFIX;
+  if (trimmed.startsWith(LEGACY_CWLINK_PREFIX)) {
+    activePrefix = LEGACY_CWLINK_PREFIX;
+  } else if (!trimmed.startsWith(LINK_PREFIX)) {
     throw new Error('Invalid StrangrzLink format');
   }
 
   // Decode base64url
-  const b64 = trimmed.slice(LINK_PREFIX.length)
+  const b64 = trimmed.slice(activePrefix.length)
     .replace(/-/g, '+')
     .replace(/_/g, '/');
 
@@ -121,5 +126,6 @@ export async function parseStrangrzLink(
  * Check if a string looks like a StrangrzLink.
  */
 export function isStrangrzLink(text: string): boolean {
-  return text.trim().startsWith(LINK_PREFIX) && text.trim().length > LINK_PREFIX.length + 10;
+  const t = text.trim();
+  return (t.startsWith(LINK_PREFIX) || t.startsWith(LEGACY_CWLINK_PREFIX)) && t.length > LINK_PREFIX.length + 10;
 }

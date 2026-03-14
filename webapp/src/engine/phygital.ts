@@ -350,7 +350,7 @@ export function generateSignaturePDF(data: SignatureData): void {
     }
   };
 
-  logoImg.src = '/cosmowarp-logo-black.svg';
+  logoImg.src = '/strangrz-logo-black.svg';
 }
 
 function escapeXml(str: string): string {

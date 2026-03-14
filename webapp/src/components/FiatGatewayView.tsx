@@ -136,11 +136,11 @@ export default function FiatGatewayView() {
         <p className="text-body-sm opacity-40 mt-1">
           Passerelle fiat/crypto pour acheter et vendre des Strangrz ({'\u2B23'}) en monnaie traditionnelle.
         </p>
-        <div className="text-[11px] opacity-30 mt-2 space-y-0.5 max-w-md mx-auto text-left">
+        <div className="text-[11px] opacity-50 mt-2 space-y-0.5 max-w-md mx-auto text-left">
           <p><span className="opacity-60 font-bold">Comment ça marche :</span> Strangrz Coin est la passerelle officielle qui permet de convertir votre monnaie fiat (EUR, USD, GBP...) en tokens {'\u2B23'} et inversement.</p>
           <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Strangrz. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Strangrz certifiées. Les frais de transaction (2.5%) financent le développement et la maintenance du protocole.</p>
         </div>
-        <p className="text-label opacity-30 mt-2">SIMULATION — Paiement réel via Stripe/PayPal en production</p>
+        <p className="text-label opacity-50 mt-2">Paiement sécurisé via Stripe — Carte, PayPal, SEPA</p>
         <div className="flex justify-center gap-3 mt-3">
           <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'⬣'}</span>
           <span className="text-base opacity-40">|</span>

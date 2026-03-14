@@ -549,7 +549,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
   const [heroVideoNum] = useState(() => Math.floor(Math.random() * 3) + 1);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const logoSrc = import.meta.env.BASE_URL + 'cosmowarp-logo-white.svg';
+  const logoSrc = import.meta.env.BASE_URL + 'strangrz-logo-white.svg';
 
   // Parallax scroll tracking
   useEffect(() => {

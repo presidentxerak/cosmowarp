@@ -9,7 +9,7 @@ import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const allowedOrigin = process.env.CORS_ORIGIN || 'https://cosmorare.com';
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         amount: Math.round((fiatAmount - fees.total) * 100),
         currency: currency.toLowerCase(),
         destination: sellerAddress,
-        metadata: { cosmorare_tx_id: txId },
+        metadata: { strangrz_tx_id: txId },
       });
 
       return res.json({
