@@ -463,6 +463,43 @@ const FAQ_SECTIONS = [
     ],
   },
   {
+    title: 'Prix, Comparatif & Impact',
+    icon: 'Ethereum & Multi-Chain',
+    items: [
+      {
+        q: 'Pourquoi un prix minimum de 100 ⬣ / 0.01 ETH pour les oeuvres ?',
+        a: `Strangrz n'est pas une plateforme gratuite de publication. Le prix minimum garantit :\n\n• La valorisation du travail des artistes — une oeuvre a de la valeur\n• Un filtre anti-spam — pas de flood d'oeuvres générées en masse\n• Un écosystème économique durable — les créateurs, collectionneurs et validateurs participent à une vraie économie\n• Des royalties significatives — 5% de 100 ⬣ = 5 ⬣ à chaque revente\n\nL'art gratuit dévalue la création. Strangrz protège les artistes en imposant un plancher qui donne du sens à chaque oeuvre certifiée.`,
+      },
+      {
+        q: 'Tableau comparatif : Strangrz vs Ethereum vs Tezos vs Solana',
+        a: `| Critère | Strangrz (CW-721) | Ethereum (ERC-721) | Tezos (FA2) | Solana (Metaplex) |
+|---|---|---|---|---|
+| Frais de mint | 0 ⬣ (gratuit) | 2-100 $ (gas) | ~0.50 $ | ~0.01 $ |
+| Prix min. vente | 100 ⬣ | 0.01 ETH | Aucun | Aucun |
+| Vitesse de bloc | 1.5s (7 shards) | ~12s | ~15s | ~0.4s |
+| TPS théorique | ~7 000 | ~15 | ~40 | ~4 000 |
+| Consensus | DAG 7 couches | Proof of Stake | Liquid PoS | Proof of History |
+| Énergie/TX | ~0.001 Wh | ~0.03 Wh | ~0.002 Wh | ~0.002 Wh |
+| Énergie annuelle | < 1 MWh | ~2 600 MWh | ~60 MWh | ~2 000 MWh |
+| Empreinte CO₂/TX | ~0 g | ~20 g | ~1 g | ~1 g |
+| Stockage on-chain | Oui (StrangrzCode SVG) | Non (IPFS/Arweave) | Non (IPFS) | Non (Arweave) |
+| Certificat natif | STCERT (SHA-256+Ed25519) | Aucun (métadonnées JSON) | Aucun | Aucun |
+| Protection Vobjct | Oui (monitoring + repair) | Non | Non | Non |
+| Royalties | Garanties (Vobjct) | Non garanties | Oui (on-chain) | Partiellement |
+| Wallet requis | Aucun (CosmoID) | MetaMask | Temple | Phantom |
+| Paiement fiat | Oui (CB, PayPal, SEPA) | Non natif | Non natif | Non natif |`,
+      },
+      {
+        q: 'Quel est l\'impact écologique de Strangrz ?',
+        a: `Strangrz est l'une des solutions les plus éco-responsables pour l'art numérique :\n\n• Pas de Proof of Work — zéro minage énergivore\n• Architecture DAG légère — chaque transaction ne valide que 2 transactions précédentes\n• Stockage local + cloud — pas de réseau mondial de nœuds à alimenter 24/7\n• Compression StrangrzCode — réduit les données stockées de 5 à 30x\n• Gas à 0 — aucun calcul compétitif pour inclure une transaction\n\nComparaison : minter une oeuvre sur Strangrz consomme environ 0.001 Wh (l'équivalent d'allumer une LED pendant 1 seconde). Sur Ethereum pré-merge, c'était l'équivalent de 2 jours de consommation d'un foyer. Même après le passage en PoS, Ethereum reste 30x plus énergivore par transaction que Strangrz.`,
+      },
+      {
+        q: 'Pourquoi l\'art ne doit pas être gratuit ?',
+        a: `Le modèle "gratuit" a détruit la valeur de la création numérique pendant 20 ans :\n\n• Les artistes sur les plateformes gratuites gagnent en moyenne 0.003 $ par stream/vue\n• 90% des NFT gratuits ou à bas prix n'ont jamais été revendus\n• Les marketplaces sans prix minimum sont envahies par les bots et le spam\n\nStrangrz impose un prix minimum de 100 ⬣ pour chaque oeuvre parce que :\n\n1. La création a de la valeur — un prix plancher respecte le travail de l'artiste\n2. Les collectionneurs investissent — un achat à 100 ⬣ crée un engagement réel\n3. L'écosystème vit — les royalties (5%) et le marché secondaire génèrent une économie circulaire\n4. Anti-spam — le coût d'entrée décourage la pollution du marketplace\n5. Durabilité — un écosystème où la création a un prix est un écosystème qui survit`,
+      },
+    ],
+  },
+  {
     title: 'Ethereum & Multi-Chain',
     icon: 'Ethereum & Multi-Chain',
     items: [

@@ -350,6 +350,7 @@ export class WartEngine {
   ): Promise<Wart> {
     if (!title.trim()) throw new Error('Title required');
     if (!imageData) throw new Error('Media required');
+    if (price !== null && price < 100) throw new Error('Minimum price is 100 \u2B23');
     if (royaltyPercent < 0 || royaltyPercent > 50) throw new Error('Royalty must be 0-50%');
     if (editionType === 'limited' && (maxEditions === null || maxEditions < 1)) {
       throw new Error('Limited editions require a max count');
@@ -556,7 +557,7 @@ export class WartEngine {
   list(wartId: string, price: number, ownerAddress: string): boolean {
     const wart = this.warts.get(wartId);
     if (!wart || wart.owner !== ownerAddress) return false;
-    if (price <= 0) return false;
+    if (price < 100) return false;
     wart.price = price;
     wart.listed = true;
     this.save();

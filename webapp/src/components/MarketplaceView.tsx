@@ -426,7 +426,11 @@ export default function MarketplaceView() {
       setFiatPriceInput('');
     } else {
       const p = parseFloat(listPrice);
-      if (isNaN(p) || p <= 0) return;
+      if (isNaN(p) || p < 100) {
+        setListSuccess('Prix minimum : 100 \u2B23');
+        setTimeout(() => setListSuccess(''), 3000);
+        return;
+      }
       ok = listWart(wart.id, p);
       setListPrice('');
     }

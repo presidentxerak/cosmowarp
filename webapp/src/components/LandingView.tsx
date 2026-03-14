@@ -78,6 +78,27 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     goldenRatio: 'Ratio d\'or (minage)',
     layers: 'Couches du réseau',
     offlineOnline: 'Offline + Online',
+    whyNotFree: 'Pourquoi l\'art n\'est pas gratuit sur Strangrz',
+    whyNotFreeDesc: 'Un écosystème durable pour les créateurs et les collectionneurs',
+    whyArg1Title: 'Valoriser la création',
+    whyArg1Desc: 'Prix minimum de 100 ⬣ par oeuvre. Chaque création mérite un prix qui respecte le travail de l\'artiste.',
+    whyArg2Title: 'Économie circulaire',
+    whyArg2Desc: 'Royalties de 5% à chaque revente sur le marché secondaire. Les artistes gagnent à vie sur leur oeuvre.',
+    whyArg3Title: 'Anti-spam, pro-qualité',
+    whyArg3Desc: 'Le prix plancher filtre le bruit et garantit un marketplace de qualité pour les collectionneurs.',
+    whyArg4Title: 'Impact écologique minimal',
+    whyArg4Desc: '~0.001 Wh par transaction. 30x moins énergivore qu\'Ethereum. Zéro gas, zéro gaspillage.',
+    whyCompare: 'Comparatif',
+    whyCompareStrangrz: 'Strangrz',
+    whyCompareEth: 'Ethereum',
+    whyCompareTezos: 'Tezos',
+    whyCompareSolana: 'Solana',
+    whyMintCost: 'Frais de mint',
+    whyMinPrice: 'Prix min. vente',
+    whyEnergy: 'Énergie/TX',
+    whyCo2: 'CO₂/TX',
+    whyOnChain: 'Stockage on-chain',
+    whyFiat: 'Paiement fiat',
     ctaTitle: 'Prêt à certifier vos trésors ?',
     ctaDesc: 'Créez votre compte en 10 secondes. Pas d\'email, pas de tiers. Juste vous et le protocole.',
     ctaSignUp: 'Sign Up — Créer un compte',
@@ -162,6 +183,27 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     goldenRatio: 'Golden Ratio (mining)',
     layers: 'Network Layers',
     offlineOnline: 'Offline + Online',
+    whyNotFree: 'Why art isn\'t free on Strangrz',
+    whyNotFreeDesc: 'A sustainable ecosystem for creators and collectors',
+    whyArg1Title: 'Value creation',
+    whyArg1Desc: 'Minimum price of 100 ⬣ per work. Every creation deserves a price that respects the artist\'s work.',
+    whyArg2Title: 'Circular economy',
+    whyArg2Desc: '5% royalties on every secondary market resale. Artists earn for life on their work.',
+    whyArg3Title: 'Anti-spam, pro-quality',
+    whyArg3Desc: 'The price floor filters noise and guarantees a quality marketplace for collectors.',
+    whyArg4Title: 'Minimal ecological impact',
+    whyArg4Desc: '~0.001 Wh per transaction. 30x less energy than Ethereum. Zero gas, zero waste.',
+    whyCompare: 'Comparison',
+    whyCompareStrangrz: 'Strangrz',
+    whyCompareEth: 'Ethereum',
+    whyCompareTezos: 'Tezos',
+    whyCompareSolana: 'Solana',
+    whyMintCost: 'Mint cost',
+    whyMinPrice: 'Min. sale price',
+    whyEnergy: 'Energy/TX',
+    whyCo2: 'CO₂/TX',
+    whyOnChain: 'On-chain storage',
+    whyFiat: 'Fiat payment',
     ctaTitle: 'Ready to certify your treasures?',
     ctaDesc: 'Create your account in 10 seconds. No email, no middleman. Just you and the protocol.',
     ctaSignUp: 'Sign Up — Create Account',
@@ -246,6 +288,27 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     goldenRatio: '黄金比（マイニング）',
     layers: 'ネットワークレイヤー',
     offlineOnline: 'オフライン + オンライン',
+    whyNotFree: 'Strangrzでアートが無料でない理由',
+    whyNotFreeDesc: 'クリエイターとコレクターのための持続可能なエコシステム',
+    whyArg1Title: '創作の価値化',
+    whyArg1Desc: '作品あたり最低価格100 ⬣。すべての創作はアーティストの仕事を尊重する価格に値します。',
+    whyArg2Title: '循環経済',
+    whyArg2Desc: '二次市場の再販ごとに5%のロイヤリティ。アーティストは作品から生涯収入を得ます。',
+    whyArg3Title: 'アンチスパム、プロクオリティ',
+    whyArg3Desc: '価格フロアがノイズをフィルタリングし、コレクターに質の高いマーケットプレイスを保証。',
+    whyArg4Title: '最小限の環境負荷',
+    whyArg4Desc: 'トランザクションあたり〜0.001 Wh。Ethereumより30倍省エネ。ゼロガス、ゼロ無駄。',
+    whyCompare: '比較',
+    whyCompareStrangrz: 'Strangrz',
+    whyCompareEth: 'Ethereum',
+    whyCompareTezos: 'Tezos',
+    whyCompareSolana: 'Solana',
+    whyMintCost: 'ミントコスト',
+    whyMinPrice: '最低販売価格',
+    whyEnergy: 'エネルギー/TX',
+    whyCo2: 'CO₂/TX',
+    whyOnChain: 'オンチェーンストレージ',
+    whyFiat: '法定通貨決済',
     ctaTitle: '宝物を認証する準備はできましたか？',
     ctaDesc: '10秒でアカウント作成。メール不要、仲介者不要。あなたとプロトコルだけ。',
     ctaSignUp: 'サインアップ — アカウント作成',
@@ -936,6 +999,74 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               </div>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/* ─── Why Art Isn't Free ─────────────────────────── */}
+      <section id="why-not-free" className="py-20 sm:py-32 px-4 sm:px-8" style={{ background: 'rgba(255,255,255,0.01)' }}>
+        <div className="max-w-5xl mx-auto">
+          <Reveal>
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-4xl font-bold font-title mb-3">{t('whyNotFree')}</h2>
+              <p className="text-sm sm:text-base opacity-40">{t('whyNotFreeDesc')}</p>
+            </div>
+          </Reveal>
+
+          {/* 4 argument cards */}
+          <div className="grid sm:grid-cols-2 gap-4 mb-12">
+            {[
+              { icon: '\u2B23', title: t('whyArg1Title'), desc: t('whyArg1Desc') },
+              { icon: '\u221E', title: t('whyArg2Title'), desc: t('whyArg2Desc') },
+              { icon: '\u2716', title: t('whyArg3Title'), desc: t('whyArg3Desc') },
+              { icon: '\u2618', title: t('whyArg4Title'), desc: t('whyArg4Desc') },
+            ].map((card, i) => (
+              <Reveal key={card.title} delay={i * 0.1}>
+                <div
+                  className="p-6 landing-card group"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <span className="text-2xl opacity-40 block mb-2">{card.icon}</span>
+                  <h3 className="text-base font-bold opacity-90 mb-1">{card.title}</h3>
+                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Comparison table */}
+          <Reveal delay={0.2}>
+            <div className="overflow-x-auto">
+              <h3 className="text-lg font-bold opacity-70 mb-4 text-center">{t('whyCompare')}</h3>
+              <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <th className="text-left py-3 px-3 opacity-40 font-medium"></th>
+                    <th className="py-3 px-3 opacity-90 font-bold">{t('whyCompareStrangrz')}</th>
+                    <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareEth')}</th>
+                    <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareTezos')}</th>
+                    <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareSolana')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: t('whyMintCost'), vals: ['0 \u2B23', '2-100 $', '~0.50 $', '~0.01 $'] },
+                    { label: t('whyMinPrice'), vals: ['100 \u2B23', '0.01 ETH', '\u2014', '\u2014'] },
+                    { label: t('whyEnergy'), vals: ['~0.001 Wh', '~0.03 Wh', '~0.002 Wh', '~0.002 Wh'] },
+                    { label: t('whyCo2'), vals: ['~0 g', '~20 g', '~1 g', '~1 g'] },
+                    { label: t('whyOnChain'), vals: ['\u2713', '\u2717', '\u2717', '\u2717'] },
+                    { label: t('whyFiat'), vals: ['\u2713', '\u2717', '\u2717', '\u2717'] },
+                  ].map((row, i) => (
+                    <tr key={row.label} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                      <td className="py-2.5 px-3 opacity-50 font-medium">{row.label}</td>
+                      {row.vals.map((v, j) => (
+                        <td key={j} className={`py-2.5 px-3 text-center ${j === 0 ? 'opacity-90 font-bold' : 'opacity-40'}`}>{v}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
         </div>
       </section>
 
