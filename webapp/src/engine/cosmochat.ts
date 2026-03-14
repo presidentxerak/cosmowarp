@@ -375,6 +375,7 @@ export class CosmoChatEngine {
       if (!localIds.has(cp.id)) {
         this.posts.push({
           ...cp,
+          mediaType: cp.mediaType as ChatPost['mediaType'],
           tips: {},
           rewarps: [],
           comments: [],
