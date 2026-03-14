@@ -712,7 +712,7 @@ export default function MarketplaceView() {
               onClick={e => { e.stopPropagation(); handleBuy(wart); }}
               disabled={buying || wallet.balance < wart.price}
             >
-              {wart.price} {'\u2B23'}
+              Collect {wart.price} {'\u2B23'}
             </button>
             {wart.priceFiat && wart.fiatCurrency && (
               <button
@@ -1168,7 +1168,7 @@ export default function MarketplaceView() {
                       onClick={() => handleBuy(wart)}
                       disabled={buying || wallet.balance < wart.price}
                     >
-                      {buying ? 'Processing...' : `Buy with ${wart.price} \u2B23`}
+                      {buying ? 'Processing...' : `Collect ${wart.price} \u2B23`}
                     </button>
                     {wart.priceFiat && wart.fiatCurrency && (
                       <button

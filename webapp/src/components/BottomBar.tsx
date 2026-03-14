@@ -84,7 +84,7 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
                 style={{ paddingTop: '0px', paddingBottom: '10px' }}
                 aria-label={tab.label}
               >
-                <div className="relative" style={{ marginTop: '-5px' }}>
+                <div className="relative" style={{ marginTop: '0px' }}>
                   {wallet ? (
                     <HexAvatar address={wallet.address} size={32} />
                   ) : (

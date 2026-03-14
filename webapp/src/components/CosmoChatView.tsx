@@ -23,7 +23,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send, myCreated, myCollection, marketplace } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection, marketplace, buyWart } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -313,6 +313,22 @@ export default function CosmoChatView() {
           <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Strangrz: {post.wartLink}</p>
         )}
         <MediaContent post={post} />
+
+        {/* Collect button (if post links to a listed wart) */}
+        {(() => {
+          const linkedWart = post.wartLink ? [...myCreated, ...myCollection, ...marketplace].find(w => w.id === post.wartLink) : null;
+          if (linkedWart && linkedWart.listed && linkedWart.price !== null && linkedWart.owner !== wallet.address) {
+            return (
+              <button
+                className="warp-button w-full text-body-sm py-2 mt-2"
+                onClick={e => { e.stopPropagation(); buyWart(linkedWart.id); }}
+              >
+                Collect {linkedWart.price} {'\u2B23'}
+              </button>
+            );
+          }
+          return null;
+        })()}
 
         {/* Action bar (icon-only) */}
         <div className="flex items-center justify-between mt-3 pt-2 border-t border-current/10">
