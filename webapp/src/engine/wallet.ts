@@ -387,7 +387,7 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
     await registry.initAdmin(keyPair.address);
   }
 
-  // Process airdrop (1000 CW)
+  // Process airdrop (1000 STZ)
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
 
   const totalInitialBalance = airdropAmount;
@@ -968,7 +968,7 @@ export async function unlockCreatorTokens(wallet: WarpWallet, amount: number): P
     getRegistry().addSecurityEvent({
       type: 'creator_unlock',
       address: wallet.address,
-      details: `Unlocked ${amount} CW from creator lock`,
+      details: `Unlocked ${amount} STZ from creator lock`,
       severity: 'info',
     });
   }

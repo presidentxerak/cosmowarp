@@ -3,19 +3,19 @@
  * Used by: api/rates.ts, api/payments/create.ts, api/payouts/create.ts
  */
 
-// ─── Exchange Rates (Warps per 1 unit of fiat) ────────────
-// Anchor: 1 CW = €0.01 | Forex-aligned rates (EUR base)
+// ─── Exchange Rates (STZ per 1 unit of fiat) ─────────────
+// Anchor: 1 STZ = €0.10 | Forex-aligned rates (EUR base)
 // EUR/USD≈1.10 | GBP/USD≈1.29 | USD/JPY≈150 | USD/CHF≈0.89
 export const DEFAULT_RATES: Record<string, number> = {
-  EUR: 100,    // Anchor: 1€ = 100 CW
-  USD: 91,     // $1 = 91 CW  (100/1.10)
-  GBP: 117,    // £1 = 117 CW (91×1.29)
-  JPY: 0.61,   // ¥1 = 0.61 CW (91/150)
-  CHF: 103,    // CHF1 = 103 CW (91/0.89)
+  EUR: 10,      // Anchor: 1€ = 10 STZ
+  USD: 9.1,     // $1 = 9.1 STZ  (10/1.10)
+  GBP: 11.7,    // £1 = 11.7 STZ (9.1×1.29)
+  JPY: 0.061,   // ¥1 = 0.061 STZ (9.1/150)
+  CHF: 10.3,    // CHF1 = 10.3 STZ (9.1/0.89)
 };
 
 // ─── ETH Reference ──────────────────────────────────────────
-// 1 ETH = ETH_USD × USD_RATE = 2500 × 91 = 227,500 CW
+// 1 ETH = ETH_USD × USD_RATE = 2500 × 9.1 = 22,750 STZ
 export const ETH_REFERENCE_PRICE_USD = 2500;
 export const ETH_VOLATILITY_BAND = 0.20; // ±20% clamp
 

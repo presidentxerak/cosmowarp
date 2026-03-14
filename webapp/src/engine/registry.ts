@@ -169,7 +169,7 @@ export class AdminRegistry {
       this.addSecurityEvent({
         type: 'large_transfer',
         address: entry.from,
-        details: `Large transfer: ${entry.amount} CW to ${entry.to}`,
+        details: `Large transfer: ${entry.amount} STZ to ${entry.to}`,
         severity: 'warning',
       });
     }

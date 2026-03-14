@@ -128,43 +128,43 @@ const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> 
 };
 
 /**
- * ─── Strangrz Coin (CW) Valuation Model ────────────────────
+ * ─── Strangrz (STZ) Valuation Model ────────────────────────
  *
- * Anchor: 1 CW = €0.01 (1 euro cent)
+ * Anchor: 1 STZ = €0.10 (10 centimes d'euro)
  *
- * Supply: 69,000,000 CW → Market cap at full supply = €690,000
- * Circulating at launch (~11M via airdrops+mining): ~€110,000
+ * Supply: 69,000,000 STZ → Market cap at full supply = €6,900,000
+ * Circulating at launch (~11M via airdrops+mining): ~€1,100,000
  *
- * Utility check at €0.01/CW:
- *   Airdrop (1,000 CW)  = €10    — onboarding incentive ✓
- *   Min listing (100 CW) = €1    — accessible NFT floor  ✓
- *   Mining reward (50 CW) = €0.50 — motivating            ✓
- *   Streak (10,000 CW)   = €100  — yearly loyalty reward  ✓
- *   Tip (1-10 CW)        = €0.01-0.10 — micro-tip         ✓
+ * Utility check at €0.10/STZ:
+ *   Airdrop (1,000 STZ)  = €100   — onboarding incentive ✓
+ *   Min listing (100 STZ) = €10   — accessible NFT floor  ✓
+ *   Mining reward (50 STZ) = €5   — motivating            ✓
+ *   Streak (10,000 STZ)   = €1000 — yearly loyalty reward ✓
+ *   Tip (1-10 STZ)        = €0.10-1.00 — micro-tip       ✓
  *
  * Fiat rates derived from real forex (anchor = EUR):
- *   EUR/USD ≈ 1.10 → 1 USD = 100/1.10 = 91 CW
- *   GBP/USD ≈ 1.29 → 1 GBP = 91 × 1.29 = 117 CW
- *   USD/JPY ≈ 150  → 1 JPY = 91/150 = 0.61 CW
- *   USD/CHF ≈ 0.89 → 1 CHF = 91/0.89 = 103 CW
+ *   EUR/USD ≈ 1.10 → 1 USD = 10/1.10 = 9.1 STZ
+ *   GBP/USD ≈ 1.29 → 1 GBP = 9.1 × 1.29 = 11.7 STZ
+ *   USD/JPY ≈ 150  → 1 JPY = 9.1/150 = 0.061 STZ
+ *   USD/CHF ≈ 0.89 → 1 CHF = 9.1/0.89 = 10.3 STZ
  *
  * ETH conversion (dynamic):
- *   ETH/USD ≈ $2,500 → 1 ETH = 91 × 2,500 = 227,500 CW
+ *   ETH/USD ≈ $2,500 → 1 ETH = 9.1 × 2,500 = 22,750 STZ
  *   Updated via configurable reference price with ±20% volatility band
  */
 
-// Reference ETH price in USD for CW conversion
+// Reference ETH price in USD for STZ conversion
 const ETH_REFERENCE_PRICE_USD = 2500;
 // Volatility band: rates auto-clamp within ±20% of reference
 const ETH_VOLATILITY_BAND = 0.20;
 
-// Default exchange rates (forex-aligned, anchor = 1 CW = €0.01)
+// Default exchange rates (forex-aligned, anchor = 1 STZ = €0.10)
 const DEFAULT_RATES: ExchangeRate[] = [
-  { currency: 'EUR', warpsPerUnit: 100, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'USD', warpsPerUnit: 91, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'GBP', warpsPerUnit: 117, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'JPY', warpsPerUnit: 0.61, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'CHF', warpsPerUnit: 103, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'EUR', warpsPerUnit: 10, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'USD', warpsPerUnit: 9.1, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'GBP', warpsPerUnit: 11.7, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'JPY', warpsPerUnit: 0.061, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'CHF', warpsPerUnit: 10.3, lastUpdated: Date.now(), source: 'manual' },
 ];
 
 // ─── Fiat Gateway Engine ─────────────────────────────────
@@ -239,7 +239,7 @@ export class FiatGateway {
 
   private _ethPriceUsd: number = ETH_REFERENCE_PRICE_USD;
 
-  /** Current ETH price in USD (for CW↔ETH conversion) */
+  /** Current ETH price in USD (for STZ↔ETH conversion) */
   get ethPriceUsd(): number { return this._ethPriceUsd; }
 
   /**
@@ -253,26 +253,26 @@ export class FiatGateway {
     storage.setItem('strangrz_eth_price', String(this._ethPriceUsd));
   }
 
-  /** How many CW per 1 ETH (dynamic based on current ETH price) */
+  /** How many STZ per 1 ETH (dynamic based on current ETH price) */
   get warpsPerEth(): number {
     const usdRate = this.rates.get('USD');
     if (!usdRate) return 0;
     return Math.round(usdRate.warpsPerUnit * this._ethPriceUsd);
   }
 
-  /** Convert CW to ETH */
+  /** Convert STZ to ETH */
   warpsToEth(warps: number): number {
     const wpe = this.warpsPerEth;
     if (wpe <= 0) return 0;
     return Math.round(warps / wpe * 1e8) / 1e8; // 8 decimal precision like ETH
   }
 
-  /** Convert ETH to CW */
+  /** Convert ETH to STZ */
   ethToWarps(eth: number): number {
     return Math.round(eth * this.warpsPerEth * 100) / 100;
   }
 
-  /** Format price showing CW, fiat, and ETH */
+  /** Format price showing STZ, fiat, and ETH */
   formatTriplePrice(warps: number, currency: FiatCurrency = this._preferredCurrency): string {
     const fiat = this.warpsToFiat(warps, currency);
     const eth = this.warpsToEth(warps);

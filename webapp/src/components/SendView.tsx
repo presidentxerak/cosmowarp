@@ -64,7 +64,7 @@ export default function SendView() {
             <label className="text-label opacity-50 block mb-1">ADRESSE DU DESTINATAIRE</label>
             <input
               className="warp-input"
-              placeholder="CW..."
+              placeholder="STZ..."
               value={to}
               onChange={e => setTo(e.target.value)}
             />

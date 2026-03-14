@@ -474,8 +474,8 @@ export default function MarketplaceView() {
   const handleTransfer = async (wart: Wart) => {
     const addr = transferTo.trim();
     if (!addr) return;
-    if (!addr.startsWith('CW') || addr.length < 10) {
-      setTransferError('Invalid address — must start with CW');
+    if (!addr.startsWith('STZ') || addr.length < 10) {
+      setTransferError('Invalid address — must start with STZ');
       return;
     }
     if (addr === wallet.address) {
@@ -1542,7 +1542,7 @@ export default function MarketplaceView() {
             <label className="text-[10px] opacity-50 block mb-1.5">RECIPIENT WALLET ADDRESS</label>
             <input
               className="warp-input w-full text-base"
-              placeholder="CW..."
+              placeholder="STZ..."
               value={transferTo}
               onChange={e => { setTransferTo(e.target.value); setTransferError(''); }}
             />

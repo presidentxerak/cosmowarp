@@ -48,7 +48,7 @@ export async function doubleSha256(data: string): Promise<string> {
 export interface CosmoKeyPair {
   publicKey: string;   // hex-encoded Ed25519 public key
   privateKey: string;  // hex-encoded Ed25519 private key (PKCS8)
-  address: string;     // CW + first 40 chars of SHA-256(publicKey)
+  address: string;     // STZ + first 40 chars of SHA-256(publicKey)
 }
 
 export async function generateKeyPair(): Promise<CosmoKeyPair> {
@@ -64,9 +64,9 @@ export async function generateKeyPair(): Promise<CosmoKeyPair> {
   const pubHex = bufToHex(publicKeyRaw);
   const privHex = bufToHex(privateKeyPkcs8);
 
-  // Address = CW + SHA-256(publicKey)[0:40]
+  // Address = STZ + SHA-256(publicKey)[0:40]
   const addressHash = await sha256(pubHex);
-  const address = 'CW' + addressHash.slice(0, 40);
+  const address = 'STZ' + addressHash.slice(0, 40);
 
   return {
     publicKey: pubHex,
@@ -220,7 +220,7 @@ export function shortAddress(address: string): string {
 }
 
 export function isValidAddress(address: string): boolean {
-  return /^CW[a-f0-9]{40}$/.test(address);
+  return /^STZ[a-f0-9]{40}$/.test(address);
 }
 
 // ─── Random bytes ────────────────────────────────────────
@@ -326,7 +326,7 @@ export async function generateKeyPairFromSeed(
   const privHex = bufToHex(pkcs8Export);
 
   const addressHash = await sha256(pubHex);
-  const address = 'CW' + addressHash.slice(0, 40);
+  const address = 'STZ' + addressHash.slice(0, 40);
 
   return { publicKey: pubHex, privateKey: privHex, address };
 }

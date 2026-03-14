@@ -3,11 +3,11 @@ import { storage } from './storage';
 /**
  * Strangrz Tokenomics — Supply Management & Resonance Decay
  *
- * Total Supply: 69,000,000 CW (Strangrz)
- * Creator Lock: 1,000,000 CW (unlockable by admin)
- * Airdrop: 1,000 CW per new account
+ * Total Supply: 69,000,000 STZ (Strangrz)
+ * Creator Lock: 1,000,000 STZ (unlockable by admin)
+ * Airdrop: 1,000 STZ per new account
  * Mining: Resonance Decay (better than halving)
- * Streak Rewards: 10,000 CW for 365-day daily TX streak
+ * Streak Rewards: 10,000 STZ for 365-day daily TX streak
  *
  * RESONANCE DECAY (replaces Bitcoin halving):
  * Instead of abrupt 50% cuts every N blocks, mining rewards decay
@@ -38,14 +38,14 @@ export const DECAY_CONSTANT = 5_000_000;       // Controls decay speed
 // ─── Supply State ────────────────────────────────────────
 
 export interface SupplyState {
-  totalMinted: number;          // Total CW ever created (including genesis, airdrops, mining)
-  totalMined: number;           // Total CW from mining only
-  totalAirdropped: number;      // Total CW from airdrops
+  totalMinted: number;          // Total STZ ever created (including genesis, airdrops, mining)
+  totalMined: number;           // Total STZ from mining only
+  totalAirdropped: number;      // Total STZ from airdrops
   creatorLocked: number;        // Currently locked for creator
   creatorUnlocked: number;      // Amount creator has unlocked
   creatorAddress: string;       // Admin address
   circulatingSupply: number;    // Currently in circulation
-  burnedSupply: number;         // Burned/destroyed CW
+  burnedSupply: number;         // Burned/destroyed STZ
   currentMiningReward: number;  // Current reward per mine
   currentEpoch: number;         // Resonance Decay epoch
   airdropPoolRemaining: number; // Remaining airdrop pool
@@ -59,12 +59,12 @@ export interface SupplyState {
  * Calculate current mining reward using Resonance Decay.
  * reward = BASE * φ^(-totalMined / DECAY_CONSTANT)
  *
- * At 0 mined: reward = 50 CW
- * At 5M mined: reward = 50 / φ ≈ 30.9 CW
- * At 10M mined: reward = 50 / φ² ≈ 19.1 CW
- * At 20M mined: reward = 50 / φ⁴ ≈ 7.3 CW
- * At 40M mined: reward = 50 / φ⁸ ≈ 1.1 CW
- * At 58M mined: reward ≈ 0.2 CW (minimum floor = 0.1)
+ * At 0 mined: reward = 50 STZ
+ * At 5M mined: reward = 50 / φ ≈ 30.9 STZ
+ * At 10M mined: reward = 50 / φ² ≈ 19.1 STZ
+ * At 20M mined: reward = 50 / φ⁴ ≈ 7.3 STZ
+ * At 40M mined: reward = 50 / φ⁸ ≈ 1.1 STZ
+ * At 58M mined: reward ≈ 0.2 STZ (minimum floor = 0.1)
  */
 export function calculateMiningReward(totalMined: number): number {
   if (totalMined >= MINING_POOL) return 0; // Pool exhausted
@@ -72,7 +72,7 @@ export function calculateMiningReward(totalMined: number): number {
   const decayFactor = Math.pow(GOLDEN_RATIO, -(totalMined / DECAY_CONSTANT));
   const reward = BASE_MINING_REWARD * decayFactor;
 
-  // Floor: minimum 0.1 CW per mine (tiny but never zero)
+  // Floor: minimum 0.1 STZ per mine (tiny but never zero)
   return Math.max(0.1, Math.round(reward * 100) / 100);
 }
 
@@ -316,7 +316,7 @@ export class TokenomicsEngine {
 
   // ─── Burn ────────────────────────────────────────────
 
-  /** Burn CW (remove from circulation) */
+  /** Burn STZ (remove from circulation) */
   burn(amount: number): void {
     this.state.burnedSupply += amount;
     this.state.circulatingSupply -= amount;

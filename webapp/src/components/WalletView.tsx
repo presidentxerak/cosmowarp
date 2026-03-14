@@ -581,8 +581,8 @@ export default function WalletView() {
   // ─── Send handler ──────────────────────────────────────
   const handleSend = async () => {
     const addr = sendTo.trim();
-    if (!addr.startsWith('CW') || addr.length < 10) {
-      setSendResult({ success: false, message: 'Invalid address — must start with CW' }); return;
+    if (!addr.startsWith('STZ') || addr.length < 10) {
+      setSendResult({ success: false, message: 'Invalid address — must start with STZ' }); return;
     }
     if (addr === wallet.address) {
       setSendResult({ success: false, message: 'Cannot send to yourself' }); return;
@@ -981,7 +981,7 @@ export default function WalletView() {
             <div className="space-y-3 max-w-md mx-auto">
               <div>
                 <label className="text-label opacity-50 block mb-1">RECIPIENT ADDRESS</label>
-                <input className="warp-input" placeholder="CW..." value={sendTo} onChange={e => setSendTo(e.target.value)} />
+                <input className="warp-input" placeholder="STZ..." value={sendTo} onChange={e => setSendTo(e.target.value)} />
               </div>
               <div>
                 <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u2B23'})</label>

@@ -69,8 +69,8 @@ export interface Wart {
   imageData: string;             // data URL (base64 image/gif/video/audio/svg)
   mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';  // media type
   audioCover?: string;           // cover image for audio Warts
-  creator: string;               // CW address of original creator (immutable)
-  owner: string;                 // CW address of current owner
+  creator: string;               // STZ address of original creator (immutable)
+  owner: string;                 // STZ address of current owner
   price: number | null;          // Price in Warp (null = not for sale)
   listed: boolean;               // Currently on marketplace
   createdAt: number;

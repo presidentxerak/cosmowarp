@@ -47,7 +47,7 @@ export default function AdminView() {
       return;
     }
     const success = await unlockCreator(amount);
-    setUnlockResult(success ? `Unlocked ${amount} CW successfully!` : 'Failed to unlock tokens.');
+    setUnlockResult(success ? `Unlocked ${amount} STZ successfully!` : 'Failed to unlock tokens.');
     if (success) setUnlockAmount('');
     setTimeout(() => setUnlockResult(null), 4000);
   };
@@ -134,7 +134,7 @@ export default function AdminView() {
       <div className="glass-panel p-4">
         <h3 className="text-base font-bold opacity-70 mb-3">Creator Token Unlock</h3>
         <p className="text-body-sm opacity-40 mb-3">
-          Locked: <span className="opacity-60">{supplyInfo?.creatorLocked.toLocaleString() || 0} CW</span>
+          Locked: <span className="opacity-60">{supplyInfo?.creatorLocked.toLocaleString() || 0} STZ</span>
         </p>
         <div className="flex gap-2">
           <input
@@ -181,7 +181,7 @@ export default function AdminView() {
               </div>
               <div>
                 <span className="opacity-40">24h Volume:</span>
-                <span className="opacity-80 ml-1">{adminDashboard.volume24h.toLocaleString()} CW</span>
+                <span className="opacity-80 ml-1">{adminDashboard.volume24h.toLocaleString()} STZ</span>
               </div>
               <div>
                 <span className="opacity-40">Critical Events:</span>

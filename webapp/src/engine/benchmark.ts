@@ -76,7 +76,7 @@ function generateSampleTransaction(index: number): string {
 function generateSampleState(): string {
   const state: Record<string, unknown> = {};
   for (let i = 0; i < 50; i++) {
-    const addr = `CW${i.toString(16).padStart(40, '0')}`;
+    const addr = `STZ${i.toString(16).padStart(40, '0')}`;
     state[addr] = {
       balance: Math.floor(Math.random() * 100000),
       nonce: Math.floor(Math.random() * 100),
@@ -96,7 +96,7 @@ function generateSampleMetadata(): string {
     maxTxPerBlock: 1000,
     consensus: 'resonance',
     validators: Array.from({ length: 20 }, (_, i) => ({
-      id: `CW${i.toString(16).padStart(40, '0')}`,
+      id: `STZ${i.toString(16).padStart(40, '0')}`,
       stake: Math.floor(Math.random() * 10000),
       reputation: Math.random(),
       affinities: Array.from({ length: 7 }, () => Math.random()),

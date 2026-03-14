@@ -89,7 +89,7 @@ const GLOBAL_DICTIONARY: Map<string, string> = new Map([
   ['§y', 'type'],
   ['§z', 'zero'],
   // Common address prefixes
-  ['§CW', 'CW'],
+  ['§STZ', 'STZ'],
   ['§GN', 'COSMO_GENESIS'],
   ['§MN', 'COSMO_MINE'],
   // Common values
