@@ -17,7 +17,10 @@ function lazyRetry<T extends { default: React.ComponentType<any> }>(
       if (!reloaded) {
         sessionStorage.setItem('chunk_reload', '1');
         window.location.reload();
+        // Return a never-resolving promise to prevent double-render during reload
+        return new Promise<T>(() => {});
       }
+      // Already reloaded once — retry factory without reload loop
       return factory();
     })
   );

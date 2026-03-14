@@ -307,8 +307,6 @@ export class CosmoVM {
         // Initialise le warp : reset énergie, set layer
         this.currentLayer = inst.layer;
         this.registers.set(RegisterId.OMEGA, 0);
-        this.state = VMState.WARPED;
-        // Après init, repasse en RUNNING
         this.state = VMState.RUNNING;
         this.pc++;
         break;
@@ -325,7 +323,12 @@ export class CosmoVM {
         // Porte conditionnelle : saute si registre != 0
         const val = this.registers.get(inst.reg1);
         if (val !== 0) {
-          this.pc = inst.immediate ?? (this.pc + 1);
+          const target = inst.immediate ?? (this.pc + 1);
+          if (target < 0 || target >= this.program!.instructions.length) {
+            this.state = VMState.ERROR;
+            break;
+          }
+          this.pc = target;
         } else {
           this.pc++;
         }

@@ -49,27 +49,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log(`[Webhook] Payment completed: ${txId} — ${warpAmount} Ω → ${buyerAddress}`);
 
       // Credit buyer's balance atomically via Supabase RPC
-      if (SUPABASE_URL && SUPABASE_SERVICE_KEY && buyerAddress && warpAmount > 0) {
-        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      if (SUPABASE_URL && SUPABASE_SERVICE_KEY && txId && buyerAddress && warpAmount > 0) {
+        try {
+          const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-        // Update fiat transaction status
-        await supabase.from('fiat_transactions').update({
-          status: 'completed',
-          processor_ref: session.id,
-          updated_at: Date.now(),
-        }).eq('tx_id', txId);
+          // Update fiat transaction status
+          const { error: updateError } = await supabase.from('fiat_transactions').update({
+            status: 'completed',
+            processor_ref: session.id,
+            updated_at: Date.now(),
+          }).eq('tx_id', txId);
 
-        // Atomic credit via RPC (prevents race conditions)
-        const memo = `Fiat purchase: ${warpAmount} \u03A9 (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`;
-        const { data: credited } = await supabase.rpc('credit_warps', {
-          p_address: buyerAddress,
-          p_amount: warpAmount,
-          p_tx_id: `${txId}_credit`,
-          p_memo: memo,
-        });
+          if (updateError) {
+            console.error(`[Webhook] Failed to update tx ${txId}:`, updateError.message);
+          }
 
-        if (!credited) {
-          console.error(`[Webhook] Failed to credit ${warpAmount} \u03A9 to ${buyerAddress}`);
+          // Atomic credit via RPC (prevents race conditions)
+          const memo = `Fiat purchase: ${warpAmount} ⬣ (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`;
+          const { data: credited, error: creditError } = await supabase.rpc('credit_warps', {
+            p_address: buyerAddress,
+            p_amount: warpAmount,
+            p_tx_id: `${txId}_credit`,
+            p_memo: memo,
+          });
+
+          if (creditError) {
+            console.error(`[Webhook] RPC error crediting ${warpAmount} ⬣ to ${buyerAddress}:`, creditError.message);
+          } else if (!credited) {
+            console.error(`[Webhook] Failed to credit ${warpAmount} ⬣ to ${buyerAddress}`);
+          }
+        } catch (supaErr) {
+          console.error(`[Webhook] Supabase error for tx ${txId}:`, supaErr instanceof Error ? supaErr.message : supaErr);
         }
       }
     }

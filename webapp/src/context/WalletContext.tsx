@@ -298,7 +298,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(cloudData.warts);
             refreshWartsState(w.address);
           }
-        });
+        }).catch(() => { /* Sync failed — continue in offline mode */ });
 
         // Pull ALL listed warts from Supabase (marketplace — includes other users' artworks)
         sync.pullWarts({ listed: true }).then(listedWarts => {
@@ -306,7 +306,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(listedWarts);
             refreshWartsState(w.address);
           }
-        });
+        }).catch(() => { /* Pull failed — use local data */ });
 
         // Pull ALL warts from Supabase (full gallery — all artworks across all users)
         sync.pullWarts().then(allWarts => {
@@ -314,7 +314,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(allWarts);
             refreshWartsState(w.address);
           }
-        });
+        }).catch(() => { /* Pull failed — use local data */ });
       }
     }
     setGlobalTxs(getGlobalTransactions());

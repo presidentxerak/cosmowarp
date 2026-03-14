@@ -36,7 +36,7 @@ if (walletRaw) {
       w.balance = 1_000;
       // Remove the admin grant transaction and fix airdrop amount
       if (Array.isArray(w.transactions)) {
-        w.transactions = w.transactions.filter((tx: { type?: string }) => tx.type !== 'genesis' || !tx);
+        w.transactions = w.transactions.filter((tx: { type?: string }) => tx && tx.type !== 'genesis');
         w.transactions = w.transactions.map((tx: { type?: string; amount?: number }) => {
           if (tx.type === 'airdrop' && tx.amount && tx.amount > 1_000) {
             return { ...tx, amount: 1_000 };
@@ -52,6 +52,7 @@ if (walletRaw) {
 // Migrate IndexedDB: cosmorare_media → strangrz_media
 if (typeof indexedDB !== 'undefined') {
   const oldDbReq = indexedDB.open('cosmorare_media', 1);
+  oldDbReq.onerror = () => { /* Old DB doesn't exist — nothing to migrate */ };
   oldDbReq.onsuccess = () => {
     const oldDb = oldDbReq.result;
     try {
@@ -59,10 +60,13 @@ if (typeof indexedDB !== 'undefined') {
       const store = tx.objectStore('media');
       const getAll = store.getAll();
       const getAllKeys = store.getAllKeys();
+      getAll.onerror = () => { oldDb.close(); };
+      getAllKeys.onerror = () => { oldDb.close(); };
       getAll.onsuccess = () => {
         getAllKeys.onsuccess = () => {
-          if (getAll.result.length === 0) { oldDb.close(); return; }
+          if (getAll.result.length === 0 || getAllKeys.result.length === 0) { oldDb.close(); return; }
           const newDbReq = indexedDB.open('strangrz_media', 1);
+          newDbReq.onerror = () => { oldDb.close(); };
           newDbReq.onupgradeneeded = () => {
             const db = newDbReq.result;
             if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
@@ -79,6 +83,7 @@ if (typeof indexedDB !== 'undefined') {
               oldDb.close();
               indexedDB.deleteDatabase('cosmorare_media');
             };
+            writeTx.onerror = () => { newDb.close(); oldDb.close(); };
           };
         };
       };

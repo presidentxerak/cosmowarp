@@ -457,9 +457,8 @@ export class FiatGateway {
     this.transactions.push(tx);
     this.saveTransactions();
 
-    // Call Vercel serverless API (same origin)
-    const gatewayUrl = typeof window !== 'undefined' ? '' : null;
-    if (gatewayUrl !== null) {
+    // Call Vercel serverless API (same origin, client-side only)
+    if (typeof window !== 'undefined') {
       try {
         tx.status = 'processing';
         this.saveTransactions();
@@ -538,9 +537,8 @@ export class FiatGateway {
 
     this.transactions.push(tx);
 
-    // Call Vercel serverless API (same origin)
-    const payoutGateway = typeof window !== 'undefined' ? '' : null;
-    if (payoutGateway !== null) {
+    // Call Vercel serverless API (same origin, client-side only)
+    if (typeof window !== 'undefined') {
       try {
         tx.status = 'processing';
         this.saveTransactions();
