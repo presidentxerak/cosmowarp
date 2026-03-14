@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             currency: currency.toLowerCase(),
             unit_amount: Math.round(amount * 100),
             product_data: {
-              name: wartId ? `Cosmorare #${wartId}` : `${warpAmount} Warps (\u03A9)`,
+              name: wartId ? `Cosmorare #${wartId}` : `${warpAmount} STZ (\u03A9)`,
               description: `Cosmorare purchase \u2014 ${warpAmount} \u03A9`,
             },
           },

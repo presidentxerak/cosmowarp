@@ -706,7 +706,7 @@ export async function sendWarps(
 ): Promise<{ success: boolean; error?: string; tx?: Transaction; levelUp?: LevelUpResult }> {
   if (!wallet.privateKey) return { success: false, error: 'Wallet is locked' };
   if (amount <= 0) return { success: false, error: 'Amount must be positive' };
-  if (amount > wallet.balance) return { success: false, error: 'Insufficient Warps' };
+  if (amount > wallet.balance) return { success: false, error: 'Insufficient STZ' };
   if (toAddress === wallet.address) return { success: false, error: 'Cannot send to yourself' };
   if (!isValidAddress(toAddress)) return { success: false, error: 'Invalid address format' };
 
@@ -826,7 +826,7 @@ export async function sendWarps(
   }
 }
 
-// ─── Mine Warps (Real Proof-of-Work) ─────────────────────
+// ─── Mine STZ (Real Proof-of-Work) ─────────────────────
 
 import { type MiningProof, verifyProof } from './miner';
 

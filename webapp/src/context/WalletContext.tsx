@@ -787,7 +787,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wart) return { success: false, error: 'Strangrz not found' };
     if (!wart.listed || wart.price === null) return { success: false, error: 'Not for sale' };
     if (wart.owner === wallet.address) return { success: false, error: 'You already own this' };
-    if (wallet.balance < wart.price) return { success: false, error: 'Insufficient Warps' };
+    if (wallet.balance < wart.price) return { success: false, error: 'Insufficient STZ' };
 
     const seller = wart.owner;
     const creator = wart.creator;

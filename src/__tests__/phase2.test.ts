@@ -68,7 +68,7 @@ describe('Tokenomics Constants', () => {
 // ─── Resonance Decay ────────────────────────────────────
 
 describe('Resonance Decay', () => {
-  test('base reward at 0 mined is 50 CW', () => {
+  test('base reward at 0 mined is 50 STZ', () => {
     expect(calculateMiningReward(0)).toBe(BASE_MINING_REWARD);
   });
 
@@ -176,7 +176,7 @@ describe('Streak System', () => {
     expect(checkStreakReward(streak)).toBe(false);
   });
 
-  test('streak reward amount is 10000 CW', () => {
+  test('streak reward amount is 10000 STZ', () => {
     expect(STREAK_REWARD).toBe(10_000);
   });
 
@@ -190,7 +190,7 @@ describe('Streak System', () => {
 describe('TokenomicsEngine', () => {
   beforeEach(() => storage.clear());
 
-  test('airdrop gives 1000 CW', () => {
+  test('airdrop gives 1000 STZ', () => {
     const engine = new TokenomicsEngine('CWcreator');
     const amount = engine.processAirdrop('CWnew');
     expect(amount).toBe(1000);
@@ -384,17 +384,17 @@ describe('Security - NonceTracker', () => {
 });
 
 describe('Security - AmountLimits', () => {
-  test('new account has 100 CW single tx limit', () => {
+  test('new account has 100 STZ single tx limit', () => {
     const limits = getAmountLimits(Date.now());
     expect(limits.maxSingleTx).toBe(100);
   });
 
-  test('24h old account has 1000 CW limit', () => {
+  test('24h old account has 1000 STZ limit', () => {
     const limits = getAmountLimits(Date.now() - 25 * 3600000);
     expect(limits.maxSingleTx).toBe(1000);
   });
 
-  test('30d old account has 100000 CW limit', () => {
+  test('30d old account has 100000 STZ limit', () => {
     const limits = getAmountLimits(Date.now() - 31 * 24 * 3600000);
     expect(limits.maxSingleTx).toBe(100000);
   });
@@ -481,14 +481,14 @@ describe('Cosmorare SDK', () => {
   test('createWallet generates valid address', async () => {
     const sdk = new CosmorareSDK();
     const wallet = await sdk.createWallet('TestUser');
-    expect(wallet.address).toMatch(/^CW/);
+    expect(wallet.address).toMatch(/^STZ/);
     expect(wallet.publicKey).toBeTruthy();
     expect(wallet.alias).toBe('TestUser');
   });
 
   test('validateAddress checks format', () => {
     const sdk = new CosmorareSDK();
-    expect(sdk.validateAddress('CW' + 'a'.repeat(40))).toBe(true);
+    expect(sdk.validateAddress('STZ' + 'a'.repeat(40))).toBe(true);
     expect(sdk.validateAddress('invalid')).toBe(false);
   });
 

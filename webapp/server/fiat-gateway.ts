@@ -251,7 +251,7 @@ const server = createServer(async (req, res) => {
                 currency: currency.toLowerCase(),
                 unit_amount: Math.round(amount * 100), // Stripe uses cents
                 product_data: {
-                  name: wartId ? `Strangrz #${wartId}` : `${warpAmount} Warps (⬣)`,
+                  name: wartId ? `Strangrz #${wartId}` : `${warpAmount} STZ (⬣)`,
                   description: `Strangrz purchase — ${warpAmount} ⬣`,
                 },
               },

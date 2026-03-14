@@ -119,7 +119,7 @@ export interface RoyaltySplit {
 export interface LicenseTerms {
   type: 'license';
   licenseType: 'personal' | 'commercial' | 'exclusive' | 'print';
-  price: number;                   // In Warps (⬣)
+  price: number;                   // In STZ (⬣)
   priceFiat?: FiatPrice;           // Optional fiat equivalent
   duration: number | null;         // Milliseconds, null = perpetual
   territory: string;               // 'worldwide' or specific

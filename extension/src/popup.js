@@ -69,9 +69,9 @@ async function generateKeyPair() {
   const pubHex = bufToHex(pubRaw);
   const privHex = bufToHex(privPkcs8);
 
-  // Address = CW + SHA-256(publicKey)[0:40] — matches webapp format
+  // Address = STZ + SHA-256(publicKey)[0:40] — matches webapp format
   const addressHash = await sha256(pubHex);
-  const address = 'CW' + addressHash.slice(0, 40);
+  const address = 'STZ' + addressHash.slice(0, 40);
 
   return { address, publicKey: pubHex, privateKey: privHex };
 }
@@ -200,7 +200,7 @@ function getLevel(totalTx) {
 }
 
 function isValidAddress(addr) {
-  return /^CW[a-f0-9]{40}$/.test(addr);
+  return /^STZ[a-f0-9]{40}$/.test(addr);
 }
 
 // ─── Wallet State ───────────────────────────────────────
@@ -279,9 +279,9 @@ async function sendWarps(toAddress, amount, memo) {
   if (!wallet) return { success: false, error: 'No wallet' };
   if (!unlockedPrivateKey) return { success: false, error: 'Wallet is locked — unlock first' };
   if (amount <= 0) return { success: false, error: 'Amount must be positive' };
-  if (amount > wallet.balance) return { success: false, error: 'Insufficient Warps' };
+  if (amount > wallet.balance) return { success: false, error: 'Insufficient STZ' };
   if (toAddress === wallet.address) return { success: false, error: 'Cannot send to yourself' };
-  if (!isValidAddress(toAddress)) return { success: false, error: 'Invalid address (must be CW + 40 hex chars)' };
+  if (!isValidAddress(toAddress)) return { success: false, error: 'Invalid address (must be STZ + 40 hex chars)' };
 
   // Sign the transaction
   const txData = `${wallet.address}:${toAddress}:${amount}:${Date.now()}`;
@@ -434,8 +434,8 @@ function renderInfo() {
   const reward = calculateMiningReward(totalMined);
   const items = [
     ['Total Supply', TOTAL_SUPPLY.toLocaleString()],
-    ['Airdrop', AIRDROP_AMOUNT.toLocaleString() + ' CW'],
-    ['Mining Reward', reward.toFixed(2) + ' CW'],
+    ['Airdrop', AIRDROP_AMOUNT.toLocaleString() + ' STZ'],
+    ['Mining Reward', reward.toFixed(2) + ' STZ'],
     ['Decay System', 'Resonance Decay (\u03C6)'],
   ];
   const container = document.getElementById('info-supply');
