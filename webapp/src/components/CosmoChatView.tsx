@@ -69,10 +69,13 @@ export default function CosmoChatView() {
 
   useEffect(() => { refresh(); }, [tab]);
 
-  // Sync channels & posts from cloud on mount
+  // Sync channels & posts from cloud on mount, rehydrate media from IndexedDB
   useEffect(() => {
     const e = CosmoChatEngine.load();
-    e.fullSync().then(() => refresh()).catch(() => {});
+    e.rehydratePostMedia().then(() => {
+      setPosts(e.getTimeline());
+      return e.fullSync();
+    }).then(() => refresh()).catch(() => {});
   }, []);
 
   // Open post from deep link (e.g. from Signets)
@@ -128,7 +131,7 @@ export default function CosmoChatView() {
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setMediaError('File must be under 5MB'); setTimeout(() => setMediaError(''), 3000); return; }
+    if (file.size > 50 * 1024 * 1024) { setMediaError('File must be under 50MB'); setTimeout(() => setMediaError(''), 3000); return; }
     setMediaError('');
 
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
@@ -242,10 +245,10 @@ export default function CosmoChatView() {
     let mediaSrc = post.mediaData;
     let mediaType = post.mediaType;
     if (!mediaSrc && post.wartLink) {
-      const wart = marketplace.find(w => w.id === post.wartLink);
+      const wart = [...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
       if (wart) {
         mediaSrc = wart.imageData;
-        mediaType = mediaType || 'image';
+        mediaType = mediaType || (wart.mediaType === 'svg' ? 'image' : wart.mediaType) || 'image';
       }
     }
     if (!mediaSrc) return null;

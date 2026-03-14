@@ -1,4 +1,5 @@
 import { storage } from './storage';
+import { storeMedia, retrieveMedia } from './mediadb';
 import { upsertChannel, fetchAllChannels, upsertPost, fetchAllPosts } from '../lib/supabase-db';
 
 // ─── Types ─────────────────────────────────────────────
@@ -88,7 +89,12 @@ export class CosmoChatEngine {
   }
 
   private savePosts() {
-    storage.setItem(STORAGE_POSTS, JSON.stringify(this.posts.slice(0, 500)));
+    // Strip large mediaData from localStorage (stored in IndexedDB instead)
+    const slim = this.posts.slice(0, 500).map(p => ({
+      ...p,
+      mediaData: p.mediaData && p.mediaData.length > 5000 ? undefined : p.mediaData,
+    }));
+    storage.setItem(STORAGE_POSTS, JSON.stringify(slim));
   }
 
   private saveChannels() {
@@ -122,8 +128,27 @@ export class CosmoChatEngine {
       isRewarp: false,
     };
     this.posts.unshift(post);
+    // Store large media in IndexedDB
+    if (mediaData && mediaData.length > 5000) {
+      storeMedia(`post_${post.id}`, mediaData, audioCover).catch(() => {});
+    }
     this.savePosts();
     return post;
+  }
+
+  /** Rehydrate media from IndexedDB for posts that have mediaType but no mediaData */
+  async rehydratePostMedia(): Promise<void> {
+    for (const post of this.posts) {
+      if (post.mediaType && !post.mediaData) {
+        try {
+          const media = await retrieveMedia(`post_${post.id}`);
+          if (media) {
+            post.mediaData = media.imageData;
+            if (media.audioCover) post.audioCover = media.audioCover;
+          }
+        } catch { /* skip */ }
+      }
+    }
   }
 
   deletePost(postId: string, author: string): boolean {
