@@ -591,7 +591,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Logo + name */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 cursor-pointer group">
             <img src={logoSrc} alt="Strangrz" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
-            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title uppercase">Hoodlrz</span>
+            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title uppercase">Strangrz</span>
           </button>
 
           {/* Desktop nav */}
@@ -703,7 +703,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             className="text-3xl sm:text-5xl lg:text-6xl font-bold font-title mb-2 tracking-wide uppercase"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
-            Hoodlrz
+            Strangrz
           </h1>
           <p className="text-base sm:text-lg opacity-30 mb-4 tracking-[0.2em]">
             ストレンジャーズ
