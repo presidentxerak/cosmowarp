@@ -726,12 +726,22 @@ export default function MarketplaceView() {
           </div>
         )}
         {wart.owner === wallet.address && (
-          <button
-            className="w-full mt-2 py-1.5 text-[11px] opacity-40 border border-current/10 hover:opacity-70 hover:bg-current/5 transition-all cursor-pointer"
-            onClick={e => { e.stopPropagation(); setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}
-          >
-            Transfer
-          </button>
+          <div className="flex gap-1 mt-2">
+            {!wart.listed && (
+              <button
+                className="flex-1 py-1.5 text-[11px] opacity-60 border border-current/10 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
+                onClick={e => { e.stopPropagation(); openDetail(wart); }}
+              >
+                List
+              </button>
+            )}
+            <button
+              className={`${!wart.listed ? 'flex-1' : 'w-full'} py-1.5 text-[11px] opacity-40 border border-current/10 hover:opacity-70 hover:bg-current/5 transition-all cursor-pointer`}
+              onClick={e => { e.stopPropagation(); setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}
+            >
+              Transfer
+            </button>
+          </div>
         )}
       </div>
     );

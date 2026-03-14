@@ -314,20 +314,22 @@ export default function CosmoChatView() {
         )}
         <MediaContent post={post} />
 
-        {/* Collect button (if post links to a listed wart) */}
+        {/* Collect button (if post links to a wart with a price) */}
         {(() => {
-          const linkedWart = post.wartLink ? [...myCreated, ...myCollection, ...marketplace].find(w => w.id === post.wartLink) : null;
-          if (linkedWart && linkedWart.listed && linkedWart.price !== null && linkedWart.owner !== wallet.address) {
-            return (
-              <button
-                className="warp-button w-full text-body-sm py-2 mt-2"
-                onClick={e => { e.stopPropagation(); buyWart(linkedWart.id); }}
-              >
-                Collect {linkedWart.price} {'\u2B23'}
-              </button>
-            );
-          }
-          return null;
+          if (!post.wartLink) return null;
+          const linkedWart = [...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
+          if (!linkedWart || linkedWart.price === null) return null;
+          const isOwner = linkedWart.owner === wallet.address;
+          if (isOwner) return null;
+          return (
+            <button
+              className="warp-button w-full text-body-sm py-2 mt-2"
+              onClick={e => { e.stopPropagation(); buyWart(linkedWart.id); }}
+              disabled={wallet.balance < linkedWart.price}
+            >
+              Collect {linkedWart.price} {'\u2B23'}
+            </button>
+          );
         })()}
 
         {/* Action bar (icon-only) */}
