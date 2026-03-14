@@ -72,23 +72,22 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
           const isActive = activeTab === tab.id;
           const badgeCount = 'badge' in tab && tab.badge ? getBadgeCount(tab.id) : 0;
 
-          // Profile tab — HexAvatar that overflows 5px above the bar
+          // Profile tab — same layout as other tabs
           if ('isProfile' in tab && tab.isProfile) {
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex flex-col items-center gap-1 px-2 flex-1 transition-all cursor-pointer ${
+                className={`relative flex flex-col items-center gap-1 py-2.5 px-2 flex-1 transition-all cursor-pointer ${
                   isActive ? 'opacity-100' : 'opacity-60 hover:opacity-90'
                 }`}
-                style={{ paddingTop: '0px', paddingBottom: '10px' }}
                 aria-label={tab.label}
               >
-                <div className="relative" style={{ marginTop: '0px' }}>
+                <div className="relative">
                   {wallet ? (
-                    <HexAvatar address={wallet.address} size={32} />
+                    <HexAvatar address={wallet.address} size={24} />
                   ) : (
-                    <svg width="32" height="32" viewBox="0 0 40 40">
+                    <svg width="24" height="24" viewBox="0 0 40 40">
                       <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#111111" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
                       <text x="20" y="24" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="14">?</text>
                     </svg>
