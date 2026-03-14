@@ -69,6 +69,12 @@ export default function CosmoChatView() {
 
   useEffect(() => { refresh(); }, [tab]);
 
+  // Sync channels & posts from cloud on mount
+  useEffect(() => {
+    const e = CosmoChatEngine.load();
+    e.fullSync().then(() => refresh()).catch(() => {});
+  }, []);
+
   // Open post from deep link (e.g. from Signets)
   useEffect(() => {
     const postId = sessionStorage.getItem('strangrz_open_post');
@@ -161,6 +167,7 @@ export default function CosmoChatView() {
     setComposeText(''); setComposeMedia(''); setComposeMediaType('');
     setComposeAudioCover(''); setComposeWartLink('');
     refresh();
+    engine.syncPostsToCloud().catch(() => {});
     setPosting(false);
   };
 
@@ -214,6 +221,7 @@ export default function CosmoChatView() {
     setNewChannelName(''); setNewChannelDesc('');
     setShowCreateChannel(false);
     refresh();
+    engine.syncChannelsToCloud().catch(() => {});
   };
 
   const handleSendChannelMsg = () => {
@@ -252,8 +260,20 @@ export default function CosmoChatView() {
       );
     }
     if (mediaType === 'video') {
+      // Convert base64 to blob URL for reliable video playback
+      let videoSrc = mediaSrc;
+      if (mediaSrc.startsWith('data:')) {
+        try {
+          const [header, b64] = mediaSrc.split(',');
+          const mime = header.match(/data:(.*?);/)?.[1] || 'video/mp4';
+          const binary = atob(b64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          videoSrc = URL.createObjectURL(new Blob([bytes], { type: mime }));
+        } catch { /* fallback to data URL */ }
+      }
       return (
-        <video controls className="mt-2 w-full max-h-[500px] bg-black object-contain" src={mediaSrc} />
+        <video controls playsInline preload="auto" className="mt-2 w-full max-h-[500px] bg-black object-contain" src={videoSrc} />
       );
     }
     return (

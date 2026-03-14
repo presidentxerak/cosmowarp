@@ -287,7 +287,7 @@ export default function PFPCollectionView() {
               <label className="text-label opacity-50 block mb-2">BLOCKCHAIN</label>
               <div className="grid grid-cols-2 gap-2">
                 {([
-                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'CW-721 \u00B7 0 gas', icon: '\u2B22' },
+                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'SZ-721 \u00B7 0 gas', icon: '\u2B22' },
                   { id: 'ethereum' as const, label: 'Ethereum', sub: 'ERC-721 \u00B7 Gas fees', icon: '\u039E' },
                 ]).map(ch => (
                   <button
@@ -307,7 +307,7 @@ export default function PFPCollectionView() {
               </div>
               <p className="text-[10px] opacity-30 mt-1.5">
                 {mintChain === 'strangrz'
-                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Vobjct Safe inclus.'
+                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Strangrz Safe inclus.'
                   : 'Mint sur Ethereum via ERC-721. N\u00E9cessite MetaMask. Gas fees requis.'}
               </p>
             </div>

@@ -1,21 +1,21 @@
 /**
- * Vobjct — Main Module
+ * Strangrz — Main Module
  *
- * Integrates Vobjct manifests, Safe monitoring, chain adapters,
+ * Integrates Strangrz manifests, Safe monitoring, chain adapters,
  * and storage layer into the Strangrz application.
  */
 
 import { storage } from '../storage';
 import { sha256 } from '../crypto';
-import type { VobjctManifest, StorageRoute, RecoveryRoute } from './schema';
+import type { StrangrzManifest, StorageRoute, RecoveryRoute } from './schema';
 import { validateManifest, getTrustSignals, isSafeProtected, getActiveStorageRoutes } from './schema';
 import { buildManifest, verifyManifest, type ManifestBuildInput, type VerificationResult } from './manifest';
-import { VobjctSafeEngine, getSafeBadges, type VobjctSafeConfig, type RouteCheckResult } from './safe';
+import { StrangrzSafeEngine, getSafeBadges, type StrangrzSafeConfig, type RouteCheckResult } from './safe';
 import { StrangrzAdapter, EVMAdapter, registerAdapter, type ChainAdapter } from './adapters';
-import { VobjctStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
+import { StrangrzStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
 
 // Re-exports
-export type { VobjctManifest, StorageRoute, RecoveryRoute, VobjctSafeConfig, ManifestBuildInput, VerificationResult, RouteCheckResult };
+export type { StrangrzManifest, StorageRoute, RecoveryRoute, StrangrzSafeConfig, ManifestBuildInput, VerificationResult, RouteCheckResult };
 export { validateManifest, getTrustSignals, isSafeProtected, getSafeBadges, getActiveStorageRoutes };
 export { buildManifest, verifyManifest };
 export type { ChainAdapter };
@@ -24,17 +24,17 @@ export type { ChainAdapter };
 
 const VOBJCT_STORAGE_KEY = 'strangrz_vobjcts';
 
-// ─── Main Vobjct Engine ─────────────────────────────────────
+// ─── Main Strangrz Engine ─────────────────────────────────────
 
-export class VobjctEngine {
-  private manifests: Map<string, VobjctManifest> = new Map();
-  private safeEngine: VobjctSafeEngine;
-  private storageLayer: VobjctStorageLayer;
+export class StrangrzEngine {
+  private manifests: Map<string, StrangrzManifest> = new Map();
+  private safeEngine: StrangrzSafeEngine;
+  private storageLayer: StrangrzStorageLayer;
   private adapter: StrangrzAdapter | null = null;
 
   constructor() {
-    this.safeEngine = new VobjctSafeEngine();
-    this.storageLayer = new VobjctStorageLayer();
+    this.safeEngine = new StrangrzSafeEngine();
+    this.storageLayer = new StrangrzStorageLayer();
     this.loadManifests();
   }
 
@@ -42,7 +42,7 @@ export class VobjctEngine {
     const raw = storage.getItem(VOBJCT_STORAGE_KEY);
     if (!raw) return;
     try {
-      const data: Record<string, VobjctManifest> = JSON.parse(raw);
+      const data: Record<string, StrangrzManifest> = JSON.parse(raw);
       for (const [id, manifest] of Object.entries(data)) {
         this.manifests.set(id, manifest);
       }
@@ -50,7 +50,7 @@ export class VobjctEngine {
   }
 
   private saveManifests(): void {
-    const data: Record<string, VobjctManifest> = {};
+    const data: Record<string, StrangrzManifest> = {};
     for (const [id, manifest] of this.manifests) {
       data[id] = manifest;
     }
@@ -60,7 +60,7 @@ export class VobjctEngine {
   // ─── Initialization ─────────────────────────────────────
 
   /**
-   * Initialize the Vobjct engine with the Strangrz adapter and storage providers.
+   * Initialize the Strangrz engine with the Strangrz adapter and storage providers.
    */
   initStrangrz(
     wartLookup: (id: string) => { owner: string; certId?: string; onChainTxId?: string } | null,
@@ -107,7 +107,7 @@ export class VobjctEngine {
   // ─── Manifest CRUD ──────────────────────────────────────
 
   /**
-   * Create a Vobjct manifest for a Wart (artwork).
+   * Create a Strangrz manifest for a Wart (artwork).
    * Called automatically during the mint process.
    */
   async createForWart(params: {
@@ -126,7 +126,7 @@ export class VobjctEngine {
     maxEditions: number | null;
     royaltyPercent: number;
     storageRoutes?: StorageRoute[];
-  }): Promise<VobjctManifest> {
+  }): Promise<StrangrzManifest> {
     const mimeMap: Record<string, string> = {
       image: 'image/png',
       audio: 'audio/mpeg',
@@ -168,7 +168,7 @@ export class VobjctEngine {
       namespaceSlug: 'strangrz',
       chainFamily: 'strangrz',
       chainName: 'strangrzchain',
-      tokenStandard: 'CW-721',
+      tokenStandard: 'SZ-721',
       contractRef: params.certId || 'strangrz_protocol',
       tokenRef: params.wartId,
       ownerRef: params.creator,
@@ -205,21 +205,21 @@ export class VobjctEngine {
     this.manifests.set(params.wartId, manifest);
     this.saveManifests();
 
-    // Create Safe for this Vobjct
+    // Create Safe for this Strangrz
     this.safeEngine.createSafe(params.wartId, params.creator);
 
     return manifest;
   }
 
   /**
-   * Get a Vobjct manifest by wart ID.
+   * Get a Strangrz manifest by wart ID.
    */
-  getManifest(wartId: string): VobjctManifest | null {
+  getManifest(wartId: string): StrangrzManifest | null {
     return this.manifests.get(wartId) || null;
   }
 
   /**
-   * Verify a Vobjct manifest's integrity, optionally checking against the actual data.
+   * Verify a Strangrz manifest's integrity, optionally checking against the actual data.
    */
   async verify(wartId: string, canonicalData?: string): Promise<VerificationResult | null> {
     const manifest = this.manifests.get(wartId);
@@ -243,19 +243,19 @@ export class VobjctEngine {
 
   // ─── Safe Operations ────────────────────────────────────
 
-  getSafe(wartId: string): VobjctSafeConfig | null {
+  getSafe(wartId: string): StrangrzSafeConfig | null {
     return this.safeEngine.getSafe(wartId);
   }
 
-  getSafeEngine(): VobjctSafeEngine {
+  getSafeEngine(): StrangrzSafeEngine {
     return this.safeEngine;
   }
 
   /**
-   * Run a full health check on a Vobjct.
+   * Run a full health check on a Strangrz.
    */
   async runHealthCheck(wartId: string): Promise<{
-    manifest: VobjctManifest;
+    manifest: StrangrzManifest;
     routeChecks: RouteCheckResult[];
     evaluation: ReturnType<typeof import('./safe').evaluateHealth> | null;
   } | null> {
@@ -298,7 +298,7 @@ export class VobjctEngine {
   }
 
   /**
-   * Check if a Vobjct is Safe protected.
+   * Check if a Strangrz is Safe protected.
    */
   isProtected(wartId: string): boolean {
     const manifest = this.manifests.get(wartId);
@@ -307,7 +307,7 @@ export class VobjctEngine {
 
   // ─── Storage Layer Access ───────────────────────────────
 
-  getStorageLayer(): VobjctStorageLayer {
+  getStorageLayer(): StrangrzStorageLayer {
     return this.storageLayer;
   }
 
@@ -316,12 +316,12 @@ export class VobjctEngine {
   /**
    * Get all manifests.
    */
-  getAllManifests(): Array<{ wartId: string; manifest: VobjctManifest }> {
+  getAllManifests(): Array<{ wartId: string; manifest: StrangrzManifest }> {
     return Array.from(this.manifests.entries()).map(([wartId, manifest]) => ({ wartId, manifest }));
   }
 
   /**
-   * Get health summary across all protected Vobjcts.
+   * Get health summary across all protected Strangrzs.
    */
   getHealthSummary() {
     return this.safeEngine.getHealthSummary();
@@ -337,11 +337,11 @@ export class VobjctEngine {
 
 // ─── Singleton ──────────────────────────────────────────────
 
-let vobjctInstance: VobjctEngine | null = null;
+let vobjctInstance: StrangrzEngine | null = null;
 
-export function getVobjctEngine(): VobjctEngine {
+export function getStrangrzEngine(): StrangrzEngine {
   if (!vobjctInstance) {
-    vobjctInstance = new VobjctEngine();
+    vobjctInstance = new StrangrzEngine();
   }
   return vobjctInstance;
 }

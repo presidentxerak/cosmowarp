@@ -1,4 +1,5 @@
 import { storage } from './storage';
+import { upsertChannel, fetchAllChannels, upsertPost, fetchAllPosts } from '../lib/supabase-db';
 
 // ─── Types ─────────────────────────────────────────────
 export interface ChatPost {
@@ -323,5 +324,73 @@ export class CosmoChatEngine {
   getThread(user: string, other: string): DirectThread | null {
     const threadId = [user, other].sort().join('_');
     return this.dms.find(t => t.id === threadId) || null;
+  }
+
+  // ─── Cloud Sync ────────────────────────────────────────
+
+  async syncChannelsToCloud(): Promise<void> {
+    for (const ch of this.channels) {
+      await upsertChannel({
+        id: ch.id, name: ch.name, description: ch.description,
+        createdBy: ch.createdBy, createdByAlias: ch.createdByAlias,
+        members: ch.members, createdAt: ch.createdAt, isPublic: ch.isPublic,
+      });
+    }
+  }
+
+  async syncChannelsFromCloud(): Promise<void> {
+    const cloudChannels = await fetchAllChannels();
+    const localIds = new Set(this.channels.map(c => c.id));
+    for (const cc of cloudChannels) {
+      if (!localIds.has(cc.id)) {
+        this.channels.push({
+          ...cc,
+          messages: [],
+        });
+      } else {
+        // Merge members
+        const local = this.channels.find(c => c.id === cc.id)!;
+        const allMembers = new Set([...local.members, ...cc.members]);
+        local.members = [...allMembers];
+      }
+    }
+    this.saveChannels();
+  }
+
+  async syncPostsToCloud(): Promise<void> {
+    for (const post of this.posts.slice(0, 50)) {
+      await upsertPost({
+        id: post.id, author: post.author, authorAlias: post.authorAlias,
+        content: post.content, mediaType: post.mediaType,
+        wartLink: post.wartLink, timestamp: post.timestamp,
+        tipCount: post.tipCount, rewarpCount: post.rewarpCount, views: post.views,
+      });
+    }
+  }
+
+  async syncPostsFromCloud(): Promise<void> {
+    const cloudPosts = await fetchAllPosts();
+    const localIds = new Set(this.posts.map(p => p.id));
+    for (const cp of cloudPosts) {
+      if (!localIds.has(cp.id)) {
+        this.posts.push({
+          ...cp,
+          tips: {},
+          rewarps: [],
+          comments: [],
+          bookmarkedBy: [],
+          isRewarp: false,
+        });
+      }
+    }
+    this.posts.sort((a, b) => b.timestamp - a.timestamp);
+    this.savePosts();
+  }
+
+  async fullSync(): Promise<void> {
+    await this.syncChannelsFromCloud();
+    await this.syncPostsFromCloud();
+    await this.syncChannelsToCloud();
+    await this.syncPostsToCloud();
   }
 }

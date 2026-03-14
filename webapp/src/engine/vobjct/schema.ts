@@ -1,8 +1,8 @@
 /**
- * Vobjct — Core Schema & Types
+ * Strangrz — Core Schema & Types
  *
  * Chain-agnostic asset integrity and resilience standard.
- * Defines the canonical Vobjct manifest structure for token-bound
+ * Defines the canonical Strangrz manifest structure for token-bound
  * digital assets with integrity verification, storage routing,
  * recovery paths, rights management, and mutation policy.
  *
@@ -57,7 +57,7 @@ export interface AssetDescriptor {
 
 // ─── Metadata ───────────────────────────────────────────────
 
-export interface VobjctMetadata {
+export interface StrangrzMetadata {
   name: string;
   description: string;
   external_url?: string;
@@ -67,7 +67,7 @@ export interface VobjctMetadata {
 
 // ─── Rights ─────────────────────────────────────────────────
 
-export interface VobjctRights {
+export interface StrangrzRights {
   display: RightsLevel;
   commercial_use: RightsLevel;
   derivatives: RightsLevel;
@@ -78,7 +78,7 @@ export interface VobjctRights {
 
 // ─── Policy ─────────────────────────────────────────────────
 
-export interface VobjctPolicy {
+export interface StrangrzPolicy {
   mutability: MutabilityPolicy;
   restoration_allowed: boolean;
   migration_allowed: boolean;
@@ -88,7 +88,7 @@ export interface VobjctPolicy {
 
 // ─── Integrity ──────────────────────────────────────────────
 
-export interface VobjctIntegrity {
+export interface StrangrzIntegrity {
   manifest_sha256: string;
   canonical_asset_sha256: string;
   preview_asset_sha256?: string;
@@ -116,7 +116,7 @@ export interface RecoveryRoute {
 
 // ─── Signature ──────────────────────────────────────────────
 
-export interface VobjctSignature {
+export interface StrangrzSignature {
   role: SignatureRole;
   algorithm: SignatureAlgorithm;
   public_key: string;
@@ -126,7 +126,7 @@ export interface VobjctSignature {
 
 // ─── Timestamps ─────────────────────────────────────────────
 
-export interface VobjctTimestamps {
+export interface StrangrzTimestamps {
   created_at: string;
   last_verified_at?: string;
   last_repaired_at?: string;
@@ -135,35 +135,35 @@ export interface VobjctTimestamps {
 
 // ─── Collection/Namespace ───────────────────────────────────
 
-export interface VobjctNamespace {
+export interface StrangrzNamespace {
   name: string;
   slug: string;
   issuer?: string;
 }
 
-// ─── Full Vobjct Manifest ───────────────────────────────────
+// ─── Full Strangrz Manifest ───────────────────────────────────
 
-export interface VobjctManifest {
+export interface StrangrzManifest {
   vobjct_version: '1.0.0';
   object_id: string;
   object_type: ObjectType;
-  collection_or_namespace: VobjctNamespace;
+  collection_or_namespace: StrangrzNamespace;
   token_binding: TokenBinding;
   canonical_asset: AssetDescriptor;
   preview_asset?: AssetDescriptor;
-  metadata: VobjctMetadata;
-  rights: VobjctRights;
-  policy: VobjctPolicy;
-  integrity: VobjctIntegrity;
+  metadata: StrangrzMetadata;
+  rights: StrangrzRights;
+  policy: StrangrzPolicy;
+  integrity: StrangrzIntegrity;
   storage_routes: StorageRoute[];
   recovery_routes: RecoveryRoute[];
-  signatures: VobjctSignature[];
-  timestamps: VobjctTimestamps;
+  signatures: StrangrzSignature[];
+  timestamps: StrangrzTimestamps;
 }
 
 // ─── Schema Validation ──────────────────────────────────────
 
-const REQUIRED_FIELDS: (keyof VobjctManifest)[] = [
+const REQUIRED_FIELDS: (keyof StrangrzManifest)[] = [
   'vobjct_version', 'object_id', 'object_type', 'collection_or_namespace',
   'token_binding', 'canonical_asset', 'metadata', 'rights', 'policy',
   'integrity', 'storage_routes', 'recovery_routes', 'signatures', 'timestamps',
@@ -175,7 +175,7 @@ export interface ValidationResult {
   warnings: string[];
 }
 
-export function validateManifest(manifest: Partial<VobjctManifest>): ValidationResult {
+export function validateManifest(manifest: Partial<StrangrzManifest>): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -228,17 +228,17 @@ export function validateManifest(manifest: Partial<VobjctManifest>): ValidationR
 
 // ─── Helpers ────────────────────────────────────────────────
 
-export function getActiveStorageRoutes(manifest: VobjctManifest): StorageRoute[] {
+export function getActiveStorageRoutes(manifest: StrangrzManifest): StorageRoute[] {
   return manifest.storage_routes
     .filter(r => r.status !== 'unavailable')
     .sort((a, b) => a.priority - b.priority);
 }
 
-export function getActiveRecoveryRoutes(manifest: VobjctManifest): RecoveryRoute[] {
+export function getActiveRecoveryRoutes(manifest: StrangrzManifest): RecoveryRoute[] {
   return manifest.recovery_routes.filter(r => r.status !== 'unavailable');
 }
 
-export function getTrustSignals(manifest: VobjctManifest): string[] {
+export function getTrustSignals(manifest: StrangrzManifest): string[] {
   const signals: string[] = [];
 
   if (manifest.integrity.status === 'verified') signals.push('Integrity Verified');
@@ -250,7 +250,7 @@ export function getTrustSignals(manifest: VobjctManifest): string[] {
   return signals;
 }
 
-export function isSafeProtected(manifest: VobjctManifest): boolean {
+export function isSafeProtected(manifest: StrangrzManifest): boolean {
   return manifest.recovery_routes.length > 0 &&
     manifest.storage_routes.filter(r => r.status === 'active').length >= 2;
 }

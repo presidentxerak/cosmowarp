@@ -1,5 +1,5 @@
 /**
- * Vobjct — Chain Adapter Architecture
+ * Strangrz — Chain Adapter Architecture
  *
  * Provides a chain-agnostic interface for resolving token bindings,
  * ownership, and metadata across different blockchain ecosystems.
@@ -39,12 +39,12 @@ export interface ChainAdapter {
 
 /**
  * Concrete adapter for the Strangrz protocol.
- * Maps Warts (digital artworks) to Vobjct token bindings.
+ * Maps Warts (digital artworks) to Strangrz token bindings.
  */
 export class StrangrzAdapter implements ChainAdapter {
   readonly chainFamily: ChainFamily = 'strangrz';
   readonly chainName = 'strangrzchain';
-  readonly tokenStandard = 'CW-721';
+  readonly tokenStandard = 'SZ-721';
 
   private getWart: (id: string) => { owner: string; certId?: string; onChainTxId?: string } | null;
 

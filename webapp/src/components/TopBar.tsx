@@ -41,7 +41,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
       return;
     }
 
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
     const matched: SearchResult[] = [];
 
     try {
@@ -49,9 +49,8 @@ export default function TopBar({ onNavigate }: TopBarProps) {
       const allProfiles = social.getAllProfiles();
       for (const user of allProfiles) {
         if (
-          user.alias.toLowerCase().includes(q) ||
-          user.address.toLowerCase().includes(q) ||
-          (user.bio && user.bio.toLowerCase().includes(q))
+          user.alias.toLowerCase().startsWith(q) ||
+          user.address.toLowerCase().startsWith(q)
         ) {
           matched.push({
             type: 'user',
@@ -61,16 +60,15 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             address: user.address,
           });
         }
-        if (matched.length >= 5) break;
+        if (matched.filter(m => m.type === 'user').length >= 8) break;
       }
     } catch { /* no social data yet */ }
 
     if (warts) {
       for (const wart of warts) {
         if (
-          wart.title.toLowerCase().includes(q) ||
-          wart.description.toLowerCase().includes(q) ||
-          wart.creator.toLowerCase().includes(q)
+          wart.title.toLowerCase().startsWith(q) ||
+          wart.title.toLowerCase().includes(q)
         ) {
           matched.push({
             type: 'wart',
@@ -81,7 +79,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             imageData: wart.imageData,
           });
         }
-        if (matched.length >= 10) break;
+        if (matched.filter(m => m.type === 'wart').length >= 8) break;
       }
     }
 
@@ -144,40 +142,62 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             )}
           </div>
 
-          {/* Search results dropdown */}
+          {/* Search results dropdown — two columns: artists | artworks */}
           {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 glass-panel z-[60] max-h-72 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 glass-panel z-[60] max-h-80 overflow-y-auto">
               {results.length === 0 ? (
                 <div className="px-4 py-4 text-base opacity-40 text-center">
                   No results for "{searchQuery}"
                 </div>
               ) : (
-                results.map((result) => (
-                  <button
-                    key={`${result.type}-${result.id}`}
-                    onClick={() => handleSelect(result)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer text-left border-b border-current/5 last:border-0"
-                  >
-                    {result.type === 'user' && result.address ? (
-                      <HexAvatar address={result.address} size={36} />
-                    ) : result.imageData ? (
-                      <div className="w-9 h-9 overflow-hidden shrink-0">
-                        <img src={result.imageData} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-9 h-9 bg-current/5 flex items-center justify-center shrink-0">
-                        <span className="opacity-30">{'\u25C8'}</span>
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-base truncate">{result.title}</p>
-                      <p className="text-body-sm opacity-40 truncate">{result.subtitle}</p>
-                    </div>
-                    <span className="text-label px-2 py-0.5 shrink-0 opacity-50">
-                      {result.type === 'user' ? 'User' : 'Strangrz'}
-                    </span>
-                  </button>
-                ))
+                <div className="grid grid-cols-2 divide-x divide-current/5">
+                  {/* Left column: Artists */}
+                  <div>
+                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Artists</p>
+                    {results.filter(r => r.type === 'user').length === 0 ? (
+                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                    ) : results.filter(r => r.type === 'user').map((result) => (
+                      <button
+                        key={`${result.type}-${result.id}`}
+                        onClick={() => handleSelect(result)}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 transition-colors cursor-pointer text-left"
+                      >
+                        {result.address && <HexAvatar address={result.address} size={28} />}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-body-sm truncate">{result.title}</p>
+                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {/* Right column: Artworks */}
+                  <div>
+                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Strangrz</p>
+                    {results.filter(r => r.type === 'wart').length === 0 ? (
+                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                    ) : results.filter(r => r.type === 'wart').map((result) => (
+                      <button
+                        key={`${result.type}-${result.id}`}
+                        onClick={() => handleSelect(result)}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 transition-colors cursor-pointer text-left"
+                      >
+                        {result.imageData ? (
+                          <div className="w-7 h-7 overflow-hidden shrink-0">
+                            <img src={result.imageData} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-7 h-7 bg-current/5 flex items-center justify-center shrink-0">
+                            <span className="opacity-30">{'\u25C8'}</span>
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-body-sm truncate">{result.title}</p>
+                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           )}

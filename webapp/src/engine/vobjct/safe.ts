@@ -1,17 +1,17 @@
 /**
- * Vobjct Safe — Active Preservation & Repair Engine
+ * Strangrz Safe — Active Preservation & Repair Engine
  *
  * State machine for health monitoring, storage continuity checks,
  * route degradation detection, and authorized repair actions.
  *
- * CRITICAL RULE: Vobjct Safe NEVER alters the canonical asset.
+ * CRITICAL RULE: Strangrz Safe NEVER alters the canonical asset.
  * It may only restore/reinforce recoverability routes, mirrors,
  * validation states, and storage continuity according to policy.
  */
 
 // crypto used for future integrity checks
 import { storage } from '../storage';
-import type { VobjctManifest, StorageRoute, RecoveryRoute } from './schema';
+import type { StrangrzManifest, StorageRoute, RecoveryRoute } from './schema';
 
 // ─── Safe Health States ─────────────────────────────────────
 
@@ -28,7 +28,7 @@ export type SafeMode = 'active' | 'passive' | 'disabled';
 
 // ─── Safe Config ────────────────────────────────────────────
 
-export interface VobjctSafeConfig {
+export interface StrangrzSafeConfig {
   safe_version: '1.0.0';
   mode: SafeMode;
   health_status: SafeHealthState;
@@ -111,11 +111,11 @@ export function canTransition(from: SafeHealthState, to: SafeHealthState): boole
 }
 
 export function transition(
-  config: VobjctSafeConfig,
+  config: StrangrzSafeConfig,
   newState: SafeHealthState,
   description: string,
   action?: RepairAction,
-): VobjctSafeConfig {
+): StrangrzSafeConfig {
   if (!canTransition(config.health_status, newState)) {
     // Log the blocked transition
     config.incident_log.push({
@@ -162,8 +162,8 @@ export interface HealthEvaluation {
 }
 
 export function evaluateHealth(
-  _manifest: VobjctManifest,
-  safeConfig: VobjctSafeConfig,
+  _manifest: StrangrzManifest,
+  safeConfig: StrangrzSafeConfig,
   routeChecks: RouteCheckResult[],
 ): HealthEvaluation {
   const activeRoutes = routeChecks.filter(r => r.available);
@@ -223,8 +223,8 @@ export function evaluateHealth(
 
 const SAFE_STORAGE_KEY = 'strangrz_vobjct_safe';
 
-export class VobjctSafeEngine {
-  private configs: Map<string, VobjctSafeConfig> = new Map();
+export class StrangrzSafeEngine {
+  private configs: Map<string, StrangrzSafeConfig> = new Map();
 
   constructor() {
     this.load();
@@ -234,7 +234,7 @@ export class VobjctSafeEngine {
     const raw = storage.getItem(SAFE_STORAGE_KEY);
     if (!raw) return;
     try {
-      const data: Record<string, VobjctSafeConfig> = JSON.parse(raw);
+      const data: Record<string, StrangrzSafeConfig> = JSON.parse(raw);
       for (const [id, config] of Object.entries(data)) {
         this.configs.set(id, config);
       }
@@ -242,7 +242,7 @@ export class VobjctSafeEngine {
   }
 
   private save(): void {
-    const data: Record<string, VobjctSafeConfig> = {};
+    const data: Record<string, StrangrzSafeConfig> = {};
     for (const [id, config] of this.configs) {
       data[id] = config;
     }
@@ -250,10 +250,10 @@ export class VobjctSafeEngine {
   }
 
   /**
-   * Create a Safe config for a Vobjct.
+   * Create a Safe config for a Strangrz.
    */
-  createSafe(objectId: string, creatorAddress: string): VobjctSafeConfig {
-    const config: VobjctSafeConfig = {
+  createSafe(objectId: string, creatorAddress: string): StrangrzSafeConfig {
+    const config: StrangrzSafeConfig = {
       safe_version: '1.0.0',
       mode: 'active',
       health_status: 'healthy',
@@ -289,16 +289,16 @@ export class VobjctSafeEngine {
     return config;
   }
 
-  getSafe(objectId: string): VobjctSafeConfig | null {
+  getSafe(objectId: string): StrangrzSafeConfig | null {
     return this.configs.get(objectId) || null;
   }
 
   /**
-   * Run health check for a Vobjct.
+   * Run health check for a Strangrz.
    */
   async runHealthCheck(
     objectId: string,
-    manifest: VobjctManifest,
+    manifest: StrangrzManifest,
     routeChecks: RouteCheckResult[],
   ): Promise<HealthEvaluation | null> {
     const config = this.configs.get(objectId);
@@ -384,7 +384,7 @@ export class VobjctSafeEngine {
   /**
    * Get all Safe configs with their health states.
    */
-  getAllSafes(): Array<{ objectId: string; config: VobjctSafeConfig }> {
+  getAllSafes(): Array<{ objectId: string; config: StrangrzSafeConfig }> {
     return Array.from(this.configs.entries()).map(([objectId, config]) => ({ objectId, config }));
   }
 
@@ -434,7 +434,7 @@ function generateIncidentId(): string {
 /**
  * Get trust badges for UI display.
  */
-export function getSafeBadges(config: VobjctSafeConfig | null): string[] {
+export function getSafeBadges(config: StrangrzSafeConfig | null): string[] {
   if (!config) return [];
   const badges: string[] = [];
 

@@ -250,7 +250,7 @@ export async function decryptPrivateKey(
   return decryptData(payload, 'COSMOWARP_WALLET_KEY:' + password);
 }
 
-// ─── CosmoID: Deterministic Key Derivation ─────────────
+// ─── StrangrzID: Deterministic Key Derivation ─────────────
 
 /**
  * Derive a 32-byte Ed25519 seed from username + password.
@@ -262,7 +262,7 @@ export async function deriveWalletSeed(
   password: string
 ): Promise<Uint8Array> {
   const normalizedUser = username.toLowerCase().trim();
-  const salt = `Cosmorare-CosmoID-v1:${normalizedUser}`;
+  const salt = `Cosmorare-StrangrzID-v1:${normalizedUser}`;
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
     strToBuf(password),

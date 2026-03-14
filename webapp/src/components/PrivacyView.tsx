@@ -63,12 +63,12 @@ export default function PrivacyView() {
             <h3 className="text-base font-bold opacity-80 mb-2">Anonymity</h3>
             <div className="space-y-2 text-body-sm opacity-50">
               <p>
-                Strangrz uses pseudonymous identities through CosmoID. Your identity on the
+                Strangrz uses pseudonymous identities through StrangrzID. Your identity on the
                 network is represented by a cryptographic address, not by personal information.
               </p>
               <p>
                 Posts on the Wall, Strangrz transactions, and all network activity are associated
-                with your CosmoID address, maintaining your anonymity.
+                with your StrangrzID address, maintaining your anonymity.
               </p>
             </div>
           </section>

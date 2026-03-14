@@ -5,7 +5,7 @@
  *
  * ─── How It Works ────────────────────────────────────────────
  *
- * 1. DETERMINISTIC VAULT KEY — Derived from CosmoID (username + password)
+ * 1. DETERMINISTIC VAULT KEY — Derived from StrangrzID (username + password)
  *    via PBKDF2 (600K rounds). Same credentials = same vault on any device.
  *
  * 2. ENCRYPTED ARTWORK STORAGE — Each artwork is:
@@ -15,7 +15,7 @@
  *    d) Optionally encoded as StrangrzCode SVG for on-chain backup
  *
  * 3. RECOVERY MODES:
- *    - CosmoID Recovery: Same username + password → same vault key → decrypt all
+ *    - StrangrzID Recovery: Same username + password → same vault key → decrypt all
  *    - Recovery Kit: Encrypted JSON bundle (downloadable, works offline)
  *    - On-Chain Recovery: StrangrzCode SVG stored in StrangrzChain blocks
  *    - Peer Recovery: Request encrypted fragments from connected peers
@@ -114,7 +114,7 @@ const VAULT_SALT = 'CosmoVault-AES-v2';
 // ─── Vault Key Derivation ────────────────────────────────
 
 /**
- * Derive the vault encryption key from CosmoID credentials.
+ * Derive the vault encryption key from StrangrzID credentials.
  * Uses a different salt than wallet key derivation for domain separation.
  */
 async function deriveVaultSecret(username: string, password: string): Promise<string> {
@@ -150,7 +150,7 @@ export class CosmoVault {
   // ─── Initialization ─────────────────────────────────
 
   /**
-   * Initialize vault with CosmoID credentials.
+   * Initialize vault with StrangrzID credentials.
    * Must be called before encrypt/decrypt operations.
    */
   async init(username: string, password: string): Promise<void> {
@@ -158,7 +158,7 @@ export class CosmoVault {
   }
 
   /**
-   * Initialize vault with a raw secret (for wallet-based init without CosmoID).
+   * Initialize vault with a raw secret (for wallet-based init without StrangrzID).
    */
   initWithSecret(secret: string): void {
     this.vaultSecret = `${VAULT_SALT}:${secret}`;

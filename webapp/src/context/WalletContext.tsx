@@ -4,13 +4,13 @@ import {
   getGlobalTransactions, getMeshStats, getSupplyBreakdown,
   getProgressToNextLevel, unlockAdminRegistry, getAdminDashboard,
   unlockCreatorTokens, unlockWalletKey, walletNeedsMigration,
-  migrateWallet, exportWallet, importWallet, loginCosmoID, clearWallet, deleteProfile,
+  migrateWallet, exportWallet, importWallet, loginStrangrzID, clearWallet, deleteProfile,
   saveWallet,
   type WarpWallet, type Transaction, type SupplyBreakdown,
   type RegistryDashboard, type LevelUpResult, type WalletExport,
 } from '../engine/wallet';
 import type { MiningProof } from '../engine/miner';
-import { generateCosmoLink, parseCosmoLink } from '../engine/cosmolink';
+import { generateStrangrzLink, parseStrangrzLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/strangrmesh';
 import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
 import { storage } from '../engine/storage';
@@ -68,7 +68,7 @@ interface WalletContextType {
   levelProgress: number;
   lastLevelUp: LevelUpResult | null;
   initWallet: (password: string, alias?: string) => Promise<void>;
-  cosmoIDLogin: (username: string, password: string) => Promise<{ success: boolean; error?: string; isNew?: boolean; needs2FA?: boolean }>;
+  strangrzIDLogin: (username: string, password: string) => Promise<{ success: boolean; error?: string; isNew?: boolean; needs2FA?: boolean }>;
   verify2FACode: (code: string) => Promise<{ success: boolean; error?: string }>;
   pending2FA: boolean;
   showRecoveryReminder: boolean;
@@ -80,8 +80,8 @@ interface WalletContextType {
   migrate: (password: string) => Promise<boolean>;
   doExportWallet: () => WalletExport | null;
   doImportWallet: (data: WalletExport, password: string) => Promise<boolean>;
-  doGenerateCosmoLink: (password: string) => Promise<string | null>;
-  doImportCosmoLink: (link: string, password: string) => Promise<boolean>;
+  doGenerateStrangrzLink: (password: string) => Promise<string | null>;
+  doImportStrangrzLink: (link: string, password: string) => Promise<boolean>;
   send: (to: string, amount: number, memo?: string) => Promise<{ success: boolean; error?: string; levelUp?: LevelUpResult }>;
   mine: (proof: MiningProof) => Promise<{ tx: Transaction; levelUp?: LevelUpResult }>;
   refreshTxs: () => void;
@@ -417,7 +417,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // Ensure social profile exists with correct alias
     SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
 
-    // Initialize vault with CosmoID credentials
+    // Initialize vault with StrangrzID credentials
     const engine = getWartEngine();
     await engine.initVault(username, password);
     refreshWartsState(w.address);
@@ -489,11 +489,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // ─── CosmoID Login ───────────────────────────────────────
-  const doCosmoIDLogin = useCallback(async (username: string, password: string): Promise<{ success: boolean; error?: string; isNew?: boolean; needs2FA?: boolean }> => {
+  // ─── StrangrzID Login ───────────────────────────────────────
+  const doStrangrzIDLogin = useCallback(async (username: string, password: string): Promise<{ success: boolean; error?: string; isNew?: boolean; needs2FA?: boolean }> => {
     try {
       const existingBefore = loadWallet();
-      const w = await loginCosmoID(username, password);
+      const w = await loginStrangrzID(username, password);
       const isNew = !existingBefore;
 
       // Check if 2FA is enabled for this address
@@ -637,20 +637,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // ─── CosmoLink ─────────────────────────────────────────
-  const doGenerateCosmoLink = useCallback(async (password: string): Promise<string | null> => {
+  // ─── StrangrzLink ─────────────────────────────────────────
+  const doGenerateStrangrzLink = useCallback(async (password: string): Promise<string | null> => {
     if (!wallet) return null;
     try {
       const data = exportWallet(wallet);
-      return await generateCosmoLink(data, password);
+      return await generateStrangrzLink(data, password);
     } catch {
       return null;
     }
   }, [wallet]);
 
-  const doImportCosmoLink = useCallback(async (link: string, password: string): Promise<boolean> => {
+  const doImportStrangrzLink = useCallback(async (link: string, password: string): Promise<boolean> => {
     try {
-      const data = await parseCosmoLink(link, password);
+      const data = await parseStrangrzLink(link, password);
       const w = await importWallet(data, password);
       setWallet({ ...w });
       setUnlocked(true);
@@ -1087,11 +1087,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     <WalletContext.Provider value={{
       wallet, unlocked, needsMigration, globalTxs, meshStats, supplyInfo,
       adminDashboard, levelProgress, lastLevelUp,
-      initWallet, cosmoIDLogin: doCosmoIDLogin, verify2FACode: doVerify2FACode,
+      initWallet, strangrzIDLogin: doStrangrzIDLogin, verify2FACode: doVerify2FACode,
       pending2FA, showRecoveryReminder, dismissRecoveryReminder: doDismissRecoveryReminder,
       unlock: doUnlock, lock: doLock, signOut: doSignOut, deleteAccount: doDeleteAccount, migrate: doMigrate,
       doExportWallet, doImportWallet,
-      doGenerateCosmoLink, doImportCosmoLink,
+      doGenerateStrangrzLink, doImportStrangrzLink,
       send, mine, refreshTxs, refreshStats, unlockAdmin, unlockCreator,
       warts, marketplace, myCollection, myCreated,
       mintWart, buyWart, listWart, delistWart, transferWart,

@@ -10,7 +10,7 @@ import HexAvatar from './HexAvatar';
 type Tab = 'warts' | 'collected' | 'posts' | 'followers' | 'following';
 
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { wallet, unlocked, lock, signOut, myCreated, myCollection } = useWallet();
+  const { wallet, unlocked, lock, signOut, myCreated, myCollection, toggleWartLike, toggleWartBookmark } = useWallet();
   const [tab, setTab] = useState<Tab>('warts');
   const [posts, setPosts] = useState<ChatPost[]>([]);
   const [bio, setBio] = useState('');
@@ -318,6 +318,17 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   )}
                   <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
                   <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+                  <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-current/10">
+                    <button className={`opacity-${wart.likes?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                    <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                    </button>
+                    <button className={`opacity-${wart.bookmarks?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -346,6 +357,17 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   )}
                   <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
                   <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
+                  <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-current/10">
+                    <button className={`opacity-${wart.likes?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                    <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                    </button>
+                    <button className={`opacity-${wart.bookmarks?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

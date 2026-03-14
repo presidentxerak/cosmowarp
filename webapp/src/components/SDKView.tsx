@@ -26,7 +26,7 @@ export default function SDKView() {
           </div>
         </div>
         <p className="text-base opacity-50">
-          Build apps, extensions, and integrations on the Strangrz multi-chain ecosystem (Strangrz CW-721 + Ethereum ERC-721).
+          Build apps, extensions, and integrations on the Strangrz multi-chain ecosystem (Strangrz SZ-721 + Ethereum ERC-721).
           The SDK provides wallet creation, cryptographic utilities, mining calculators,
           and an event system.
         </p>
@@ -102,7 +102,7 @@ function OverviewTab() {
       <h3 className="text-title-sm font-bold opacity-80 mb-3">Getting Started</h3>
       <p className="text-base opacity-50 mb-4">
         The Strangrz SDK is a JavaScript/TypeScript library for building multi-chain applications
-        on the Strangrz ecosystem, with native support for CW-721 (Strangrz) and ERC-721 (Ethereum) token standards.
+        on the Strangrz ecosystem, with native support for SZ-721 (Strangrz) and ERC-721 (Ethereum) token standards.
       </p>
 
       <CodeBlock title="Installation" code={`import { StrangrzSDK } from 'strangrz-sdk';

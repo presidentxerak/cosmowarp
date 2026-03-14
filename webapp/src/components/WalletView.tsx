@@ -14,16 +14,16 @@ import HexAvatar from './HexAvatar';
 
 type WalletTab = 'overview' | 'send' | 'mine' | 'payment' | 'ethereum';
 type AuthTab = 'signup' | 'signin';
-type SignInMethod = 'cosmoid' | 'cosmolink' | 'file';
+type SignInMethod = 'strangrzid' | 'strangrzlink' | 'file';
 
 export default function WalletView() {
   const {
     wallet, unlocked, needsMigration,
     meshStats, supplyInfo, levelProgress,
-    cosmoIDLogin, verify2FACode, pending2FA,
+    strangrzIDLogin, verify2FACode, pending2FA,
     showRecoveryReminder, dismissRecoveryReminder,
     unlock, lock, signOut, migrate, send,
-    doExportWallet, doImportWallet, doImportCosmoLink,
+    doExportWallet, doImportWallet, doImportStrangrzLink,
     generateRecoveryKit,
   } = useWallet();
 
@@ -42,15 +42,15 @@ export default function WalletView() {
   const [importError, setImportError] = useState('');
   const [importData, setImportData] = useState<string | null>(null);
   const [authTab, setAuthTab] = useState<AuthTab>('signup');
-  const [signInMethod, setSignInMethod] = useState<SignInMethod>('cosmoid');
+  const [signInMethod, setSignInMethod] = useState<SignInMethod>('strangrzid');
   const [showWelcome, setShowWelcome] = useState(false);
 
-  // CosmoLink import state
-  const [cosmoLinkInput, setCosmoLinkInput] = useState('');
-  const [cosmoLinkPassword, setCosmoLinkPassword] = useState('');
-  const [cosmoLinkError, setCosmoLinkError] = useState('');
+  // StrangrzLink import state
+  const [strangrzLinkInput, setStrangrzLinkInput] = useState('');
+  const [strangrzLinkPassword, setStrangrzLinkPassword] = useState('');
+  const [strangrzLinkError, setStrangrzLinkError] = useState('');
 
-  // Sign In CosmoID state
+  // Sign In StrangrzID state
   const [signInUsername, setSignInUsername] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
   const [signInError, setSignInError] = useState('');
@@ -85,9 +85,9 @@ export default function WalletView() {
     <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
   );
 
-  // ─── CosmoID Sign Up handler ────────────────────────────
+  // ─── StrangrzID Sign Up handler ────────────────────────────
   const handleSignUp = async () => {
-    if (!alias.trim()) { setCreateError('Username is required for CosmoID'); return; }
+    if (!alias.trim()) { setCreateError('Username is required for StrangrzID'); return; }
     if (password.length < 6) { setCreateError('Password must be at least 6 characters'); return; }
     if (password !== passwordConfirm) { setCreateError('Passwords do not match'); return; }
     setCreating(true);
@@ -104,7 +104,7 @@ export default function WalletView() {
         setCreateError('This username is already taken');
         return;
       }
-      const result = await cosmoIDLogin(alias.trim(), password);
+      const result = await strangrzIDLogin(alias.trim(), password);
       if (result.success) {
         setShowWelcome(true);
       } else {
@@ -115,14 +115,14 @@ export default function WalletView() {
     }
   };
 
-  // ─── CosmoID Sign In handler ────────────────────────────
-  const handleCosmoIDSignIn = async () => {
+  // ─── StrangrzID Sign In handler ────────────────────────────
+  const handleStrangrzIDSignIn = async () => {
     if (!signInUsername.trim()) { setSignInError('Username is required'); return; }
     if (signInPassword.length < 6) { setSignInError('Password must be at least 6 characters'); return; }
     setSigningIn(true);
     setSignInError('');
     try {
-      const result = await cosmoIDLogin(signInUsername.trim(), signInPassword);
+      const result = await strangrzIDLogin(signInUsername.trim(), signInPassword);
       if (!result.success) {
         setSignInError(result.error || 'Sign in failed');
       }
@@ -149,16 +149,16 @@ export default function WalletView() {
     }
   };
 
-  // ─── CosmoLink Import handler ────────────────────────────
-  const handleCosmoLinkImport = async () => {
-    if (!cosmoLinkInput.trim()) { setCosmoLinkError('Paste your CosmoLink code'); return; }
-    if (!cosmoLinkPassword) { setCosmoLinkError('Password is required'); return; }
-    setCosmoLinkError('');
+  // ─── StrangrzLink Import handler ────────────────────────────
+  const handleStrangrzLinkImport = async () => {
+    if (!strangrzLinkInput.trim()) { setStrangrzLinkError('Paste your StrangrzLink code'); return; }
+    if (!strangrzLinkPassword) { setStrangrzLinkError('Password is required'); return; }
+    setStrangrzLinkError('');
     try {
-      const ok = await doImportCosmoLink(cosmoLinkInput.trim(), cosmoLinkPassword);
-      if (!ok) setCosmoLinkError('Invalid CosmoLink or wrong password');
+      const ok = await doImportStrangrzLink(strangrzLinkInput.trim(), strangrzLinkPassword);
+      if (!ok) setStrangrzLinkError('Invalid StrangrzLink or wrong password');
     } catch {
-      setCosmoLinkError('Failed to import CosmoLink');
+      setStrangrzLinkError('Failed to import StrangrzLink');
     }
   };
 
@@ -243,7 +243,7 @@ export default function WalletView() {
             </p>
 
             <div className="p-3 bg-current/5 border border-current/10 text-left">
-              <p className="text-label opacity-80 font-bold mb-1">CosmoID</p>
+              <p className="text-label opacity-80 font-bold mb-1">StrangrzID</p>
               <p className="text-label opacity-50">Same username + password = same wallet on any device. No backup file needed.</p>
             </div>
 
@@ -293,8 +293,8 @@ export default function WalletView() {
             {/* Sign In method selector */}
             <div className="flex gap-1 mb-2">
               {([
-                { id: 'cosmoid' as SignInMethod, label: 'CosmoID', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg> },
-                { id: 'cosmolink' as SignInMethod, label: 'CosmoLink', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg> },
+                { id: 'strangrzid' as SignInMethod, label: 'StrangrzID', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg> },
+                { id: 'strangrzlink' as SignInMethod, label: 'StrangrzLink', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg> },
                 { id: 'file' as SignInMethod, label: 'File', icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> },
               ]).map(m => (
                 <button
@@ -311,10 +311,10 @@ export default function WalletView() {
               ))}
             </div>
 
-            {/* ─── CosmoID Sign In ────────────────────────── */}
-            {signInMethod === 'cosmoid' && (
+            {/* ─── StrangrzID Sign In ────────────────────────── */}
+            {signInMethod === 'strangrzid' && (
               <div className="space-y-3">
-                <p className="text-base opacity-50">Sign in with your CosmoID credentials.</p>
+                <p className="text-base opacity-50">Sign in with your StrangrzID credentials.</p>
                 <p className="text-label opacity-40">Same username + password = same wallet, any device.</p>
                 <input
                   className="warp-input text-center"
@@ -328,12 +328,12 @@ export default function WalletView() {
                   placeholder="Password"
                   value={signInPassword}
                   onChange={e => { setSignInPassword(e.target.value); setSignInError(''); }}
-                  onKeyDown={e => { if (e.key === 'Enter') handleCosmoIDSignIn(); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleStrangrzIDSignIn(); }}
                 />
                 {signInError && <p className="text-body-sm opacity-70">{signInError}</p>}
                 <button
                   className="warp-button w-full py-3 text-base"
-                  onClick={handleCosmoIDSignIn}
+                  onClick={handleStrangrzIDSignIn}
                   disabled={!signInUsername.trim() || !signInPassword || signingIn}
                 >
                   {signingIn ? (
@@ -346,30 +346,30 @@ export default function WalletView() {
               </div>
             )}
 
-            {/* ─── CosmoLink Import ──────────────────────── */}
-            {signInMethod === 'cosmolink' && (
+            {/* ─── StrangrzLink Import ──────────────────────── */}
+            {signInMethod === 'strangrzlink' && (
               <div className="space-y-3">
-                <p className="text-base opacity-50">Paste a CosmoLink code from another device.</p>
-                <p className="text-label opacity-40">CosmoLink is an encrypted transfer code you can share via any messaging app.</p>
+                <p className="text-base opacity-50">Paste a StrangrzLink code from another device.</p>
+                <p className="text-label opacity-40">StrangrzLink is an encrypted transfer code you can share via any messaging app.</p>
                 <textarea
                   className="warp-input text-center text-body-sm min-h-[80px] resize-none"
                   placeholder="Paste CWLINK-... code here"
-                  value={cosmoLinkInput}
-                  onChange={e => { setCosmoLinkInput(e.target.value); setCosmoLinkError(''); }}
+                  value={strangrzLinkInput}
+                  onChange={e => { setStrangrzLinkInput(e.target.value); setStrangrzLinkError(''); }}
                 />
                 <input
                   className="warp-input text-center"
                   type="password"
                   placeholder="Your wallet password"
-                  value={cosmoLinkPassword}
-                  onChange={e => { setCosmoLinkPassword(e.target.value); setCosmoLinkError(''); }}
-                  onKeyDown={e => { if (e.key === 'Enter') handleCosmoLinkImport(); }}
+                  value={strangrzLinkPassword}
+                  onChange={e => { setStrangrzLinkPassword(e.target.value); setStrangrzLinkError(''); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleStrangrzLinkImport(); }}
                 />
-                {cosmoLinkError && <p className="text-body-sm opacity-70">{cosmoLinkError}</p>}
+                {strangrzLinkError && <p className="text-body-sm opacity-70">{strangrzLinkError}</p>}
                 <button
                   className="warp-button w-full py-3 text-base"
-                  onClick={handleCosmoLinkImport}
-                  disabled={!cosmoLinkInput.trim() || !cosmoLinkPassword}
+                  onClick={handleStrangrzLinkImport}
+                  disabled={!strangrzLinkInput.trim() || !strangrzLinkPassword}
                 >
                   <span className="flex items-center justify-center gap-1.5">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
@@ -461,7 +461,7 @@ export default function WalletView() {
     );
   }
 
-  // ─── Welcome screen (after CosmoID signup) ──────────────
+  // ─── Welcome screen (after StrangrzID signup) ──────────────
   if (showWelcome && unlocked) {
     return (
       <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
@@ -475,7 +475,7 @@ export default function WalletView() {
           <div className="flex items-start gap-3">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-80 shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12" /></svg>
             <div>
-              <p className="text-body-sm opacity-90 font-bold">CosmoID Active</p>
+              <p className="text-body-sm opacity-90 font-bold">StrangrzID Active</p>
               <p className="text-label opacity-50">Your wallet is linked to your username + password. Sign in with the same credentials on any device to access the same wallet.</p>
             </div>
           </div>
@@ -490,7 +490,7 @@ export default function WalletView() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-80 shrink-0 mt-0.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
             <div>
               <p className="text-body-sm opacity-90 font-bold">Quick device transfer</p>
-              <p className="text-label opacity-50">Need to transfer your local data? Generate a CosmoLink in Settings and paste it on your other device.</p>
+              <p className="text-label opacity-50">Need to transfer your local data? Generate a StrangrzLink in Settings and paste it on your other device.</p>
             </div>
           </div>
         </div>
@@ -540,10 +540,10 @@ export default function WalletView() {
           {showForgotPassword && (
             <div className="p-3 bg-current/5 border border-current/10 text-left space-y-2">
               <p className="text-label opacity-60">
-                Votre wallet est lié à votre <strong>username + mot de passe</strong> (CosmoID). Il n'y a pas de serveur qui stocke votre mot de passe — il sert à dériver votre clé privée.
+                Votre wallet est lié à votre <strong>username + mot de passe</strong> (StrangrzID). Il n'y a pas de serveur qui stocke votre mot de passe — il sert à dériver votre clé privée.
               </p>
               <p className="text-label opacity-60">
-                Si vous vous souvenez de vos identifiants CosmoID, déconnectez-vous puis reconnectez-vous avec le même username et mot de passe.
+                Si vous vous souvenez de vos identifiants StrangrzID, déconnectez-vous puis reconnectez-vous avec le même username et mot de passe.
               </p>
               <p className="text-label opacity-60">
                 Si vous avez un fichier de récupération (.json), déconnectez-vous puis importez-le via <strong>Sign In &gt; File</strong>.
@@ -664,7 +664,7 @@ export default function WalletView() {
               {wallet.isAdmin && <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-60 border border-current/10">ADMIN</span>}
               <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10 flex items-center gap-1">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-                CosmoID
+                StrangrzID
               </span>
               <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10 flex items-center gap-1">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
@@ -852,14 +852,14 @@ export default function WalletView() {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-label opacity-40">SYNC & BACKUP</p>
-                <p className="text-body-sm opacity-50">CosmoID + CosmoLink available in Settings</p>
+                <p className="text-body-sm opacity-50">StrangrzID + StrangrzLink available in Settings</p>
               </div>
               <button onClick={handleExport} className="text-label px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                 .json
               </button>
             </div>
-            <p className="text-label opacity-30">Sign in with the same username + password on any device. Or use CosmoLink for quick transfer.</p>
+            <p className="text-label opacity-30">Sign in with the same username + password on any device. Or use StrangrzLink for quick transfer.</p>
           </div>
 
           {/* Level Progress */}
@@ -1069,15 +1069,15 @@ export default function WalletView() {
               <div className="flex items-start gap-3 p-3 bg-current/5 border border-current/10">
                 <span className="text-lg shrink-0">{'\u2B22'}</span>
                 <div>
-                  <p className="opacity-70 font-bold mb-0.5">Strangrz Chain (CW-721)</p>
-                  <p className="opacity-40">Zero gas fees. Instant minting. Protected by Vobjct system with STCERT certificates and StrangrzCode on-chain backup.</p>
+                  <p className="opacity-70 font-bold mb-0.5">Strangrz Chain (SZ-721)</p>
+                  <p className="opacity-40">Zero gas fees. Instant minting. Protected by Strangrz system with STCERT certificates and StrangrzCode on-chain backup.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-current/5 border border-current/10">
                 <span className="text-lg shrink-0">{'\u039E'}</span>
                 <div>
                   <p className="opacity-70 font-bold mb-0.5">Ethereum (ERC-721)</p>
-                  <p className="opacity-40">Standard ERC-721 NFTs on Ethereum mainnet. Gas fees apply. Full Vobjct protection and cross-chain verification via the adapter system.</p>
+                  <p className="opacity-40">Standard ERC-721 NFTs on Ethereum mainnet. Gas fees apply. Full Strangrz protection and cross-chain verification via the adapter system.</p>
                 </div>
               </div>
             </div>

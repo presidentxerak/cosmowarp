@@ -1,5 +1,5 @@
 /**
- * Vobjct — Storage Abstraction Layer
+ * Strangrz — Storage Abstraction Layer
  *
  * Modular storage architecture supporting multiple providers:
  * - Supabase Storage (HTTPS)
@@ -199,7 +199,7 @@ export class HTTPSMirrorProvider implements StorageProvider {
 
 // ─── Storage Layer Orchestrator ─────────────────────────────
 
-export class VobjctStorageLayer {
+export class StrangrzStorageLayer {
   private providers = new Map<StorageNetwork, StorageProvider>();
 
   registerProvider(provider: StorageProvider): void {

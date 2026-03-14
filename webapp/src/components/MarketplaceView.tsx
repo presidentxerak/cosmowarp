@@ -7,7 +7,7 @@ import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
-import { getVobjctEngine } from '../engine/vobjct';
+import { getStrangrzEngine } from '../engine/vobjct';
 import HexAvatar from './HexAvatar';
 
 import PFPCollectionView from './PFPCollectionView';
@@ -70,6 +70,27 @@ export default function MarketplaceView() {
     }
     return 'all';
   });
+
+  // Listen for Create button clicks from TopBar when already on gallery
+  useEffect(() => {
+    const handleStorage = () => {
+      const stored = sessionStorage.getItem('strangrz_gallery_tab');
+      if (stored) {
+        sessionStorage.removeItem('strangrz_gallery_tab');
+        setTab(stored as GalleryTab);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    // Also poll for same-window sessionStorage changes
+    const interval = setInterval(() => {
+      const stored = sessionStorage.getItem('strangrz_gallery_tab');
+      if (stored) {
+        sessionStorage.removeItem('strangrz_gallery_tab');
+        setTab(stored as GalleryTab);
+      }
+    }, 200);
+    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
+  }, []);
   const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
   const [editionFilter, setEditionFilter] = useState<EditionFilter>('all');
   const [salesMarketFilter, setSalesMarketFilter] = useState<SalesMarketFilter>('1st');
@@ -360,7 +381,7 @@ export default function MarketplaceView() {
       // Step 5: Done
       setUploadProgress(100);
       setUploadStatus('');
-      setCreateSuccess(`"${wart.title}" certifié avec succès sur ${mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (CW-721)'} (Édition #${wart.editionNumber}) !`);
+      setCreateSuccess(`"${wart.title}" certifié avec succès sur ${mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (SZ-721)'} (Édition #${wart.editionNumber}) !`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
       setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
       setMediaType('image'); setAudioCover('');
@@ -763,7 +784,8 @@ export default function MarketplaceView() {
     return (
       <div className="space-y-4 px-[10px] sm:px-0">
         <button
-          className="text-body-sm opacity-50 text-current hover:opacity-90 cursor-pointer"
+          className="sticky top-16 z-40 text-body-sm opacity-50 text-current hover:opacity-90 cursor-pointer py-2"
+          style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}
           onClick={() => { setTab('all'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
         >
           {'\u2190'} Back to Gallery
@@ -886,7 +908,7 @@ export default function MarketplaceView() {
                   </div>
                   <div>
                     <span className="opacity-40">Chain:</span>
-                    <span className="opacity-80 ml-1">{wart.mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (CW-721)'}</span>
+                    <span className="opacity-80 ml-1">{wart.mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (SZ-721)'}</span>
                   </div>
                   <div>
                     <span className="opacity-40">Sales:</span>
@@ -962,15 +984,15 @@ export default function MarketplaceView() {
                   </div>
                 )}
 
-                {/* Vobjct Trust Signals */}
+                {/* Strangrz Trust Signals */}
                 {wart.vobjctProtected && (() => {
-                  const vobjct = getVobjctEngine();
+                  const vobjct = getStrangrzEngine();
                   const badges = vobjct.getTrustBadges(wart.id);
                   const manifest = vobjct.getManifest(wart.id);
                   return (
                     <div className="glass-panel p-3 mb-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-body-sm font-bold opacity-70">{'\u26E8'} Vobjct Safe</h4>
+                        <h4 className="text-body-sm font-bold opacity-70">{'\u26E8'} Strangrz Safe</h4>
                         <span className="text-[9px] opacity-50">v{manifest?.vobjct_version || '1.0.0'}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -1892,7 +1914,7 @@ export default function MarketplaceView() {
               <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Blockchain</label>
               <div className="grid grid-cols-2 gap-2">
                 {([
-                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'CW-721 \u00B7 0 gas', icon: '\u2B22' },
+                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'SZ-721 \u00B7 0 gas', icon: '\u2B22' },
                   { id: 'ethereum' as const, label: 'Ethereum', sub: 'ERC-721 \u00B7 Gas fees', icon: '\u039E' },
                 ]).map(ch => (
                   <button
@@ -1912,7 +1934,7 @@ export default function MarketplaceView() {
               </div>
               <p className="text-[10px] opacity-30 mt-1.5">
                 {mintChain === 'strangrz'
-                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Vobjct Safe inclus.'
+                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Strangrz Safe inclus.'
                   : 'Mint sur Ethereum via ERC-721. N\u00E9cessite un wallet Ethereum connect\u00E9 (MetaMask). Gas fees requis.'}
               </p>
             </div>

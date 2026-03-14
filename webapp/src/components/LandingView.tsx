@@ -12,7 +12,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     signIn: 'Se connecter',
     signUp: 'S\'inscrire',
     heroSubtitle: 'Protocole multi-chaîne de certification pour oeuvres rares',
-    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur Strangrz (CW-721) et Ethereum (ERC-721).',
+    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur Strangrz (SZ-721) et Ethereum (ERC-721).',
     mySpace: 'Mon Espace',
     createAccount: 'Créer un compte',
     learnMore: 'En savoir plus',
@@ -21,7 +21,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     conceptDesc2: 'Contrairement aux blockchains classiques qui chaînent des blocs de manière linéaire, Strangrz utilise un graphe acyclique orienté (DAG) avec 7 couches de validation parallèles, permettant un débit massif sans le goulot d\'étranglement de la confirmation séquentielle.',
     conceptDesc3: 'Là où les systèmes fiat dépendent d\'intermédiaires centralisés (banques, processeurs de paiement), Strangrz fonctionne comme un maillage pair-à-pair où chaque transaction valide deux transactions précédentes, créant un réseau de confiance auto-renforçant.',
     certify: 'Certifier',
-    certifyDesc: 'Chaque oeuvre reçoit un certificat STCERT multi-chaîne (CW-721 + ERC-721) : empreinte SHA-256, signature Ed25519 du créateur, horodatage. Infalsifiable et vérifiable par tous.',
+    certifyDesc: 'Chaque oeuvre reçoit un certificat STCERT multi-chaîne (SZ-721 + ERC-721) : empreinte SHA-256, signature Ed25519 du créateur, horodatage. Infalsifiable et vérifiable par tous.',
     publishTitle: 'Publier',
     publishDesc: 'Publiez vos créations — art numérique, photo, musique, objets physiques. Votre certificat prouve que vous en êtes l\'auteur et le premier propriétaire.',
     exchange: 'Échanger',
@@ -33,7 +33,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step2: 'Uploadez votre oeuvre',
     step2Desc: 'Photo, vidéo, illustration, musique, objet 3D — tout format est accepté. Ajoutez un titre, une description et un prix.',
     step3: 'Certification automatique',
-    step3Desc: 'Strangrz calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat STCERT est créé instantanément sur Strangrz (CW-721) et Ethereum (ERC-721).',
+    step3Desc: 'Strangrz calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat STCERT est créé instantanément sur Strangrz (SZ-721) et Ethereum (ERC-721).',
     step4: 'Mise en vente',
     step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Strangrz (⬣) ou via la passerelle de paiement en euros.',
     publishWork: 'Publier une oeuvre',
@@ -72,8 +72,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cryptoDesc: 'Signatures Ed25519, hachage SHA-256, chiffrement AES-GCM. Les mêmes standards que Signal et Tor.',
     tokenomics: 'Tokenomics équitable',
     tokenomicsDesc: 'Le token Strangrz (⬣) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
-    vobjct: 'Vobjct Safe — Résilience',
-    vobjctDesc: 'Chaque oeuvre est protégée par un manifeste Vobjct : intégrité SHA-256, routes de stockage multi-réseau (on-chain, IPFS, cloud), monitoring actif, et réparation automatique. Vos actifs numériques sont vérifiables, récupérables et permanents.',
+    vobjct: 'Strangrz Safe — Résilience',
+    vobjctDesc: 'Chaque oeuvre est protégée par un manifeste Strangrz : intégrité SHA-256, routes de stockage multi-réseau (on-chain, IPFS, cloud), monitoring actif, et réparation automatique. Vos actifs numériques sont vérifiables, récupérables et permanents.',
     totalSupply: 'Supply totale',
     goldenRatio: 'Ratio d\'or (minage)',
     layers: 'Couches du réseau',
@@ -117,7 +117,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     signIn: 'Sign In',
     signUp: 'Sign Up',
     heroSubtitle: 'Multi-chain certification protocol for rare works',
-    heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on Strangrz (CW-721) and Ethereum (ERC-721).',
+    heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on Strangrz (SZ-721) and Ethereum (ERC-721).',
     mySpace: 'My Space',
     createAccount: 'Create Account',
     learnMore: 'Learn More',
@@ -126,7 +126,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     conceptDesc2: 'Unlike traditional blockchains that chain blocks linearly, Strangrz uses a directed acyclic graph (DAG) with 7 parallel validation layers, enabling massive throughput without the bottleneck of sequential confirmation.',
     conceptDesc3: 'Where fiat systems depend on centralized intermediaries (banks, payment processors), Strangrz operates as a peer-to-peer mesh where each transaction validates two previous transactions, creating a self-reinforcing trust network.',
     certify: 'Certify',
-    certifyDesc: 'Each work receives a multi-chain STCERT certificate (CW-721 + ERC-721): SHA-256 fingerprint, Ed25519 signature from the creator, timestamp. Tamper-proof and verifiable by all.',
+    certifyDesc: 'Each work receives a multi-chain STCERT certificate (SZ-721 + ERC-721): SHA-256 fingerprint, Ed25519 signature from the creator, timestamp. Tamper-proof and verifiable by all.',
     publishTitle: 'Publish',
     publishDesc: 'Publish your creations — digital art, photos, music, physical objects. Your certificate proves you are the author and first owner.',
     exchange: 'Exchange',
@@ -138,7 +138,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step2: 'Upload your work',
     step2Desc: 'Photo, video, illustration, music, 3D object — all formats are accepted. Add a title, description and price.',
     step3: 'Automatic certification',
-    step3Desc: 'Strangrz computes the SHA-256 fingerprint of the file and signs it with your private key. The STCERT certificate is minted instantly on Strangrz (CW-721) and Ethereum (ERC-721).',
+    step3Desc: 'Strangrz computes the SHA-256 fingerprint of the file and signs it with your private key. The STCERT certificate is minted instantly on Strangrz (SZ-721) and Ethereum (ERC-721).',
     step4: 'Listed for sale',
     step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Strangrz (⬣) or via the integrated euro payment gateway.',
     publishWork: 'Publish a work',
@@ -177,8 +177,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cryptoDesc: 'Ed25519 signatures, SHA-256 hashing, AES-GCM encryption. The same standards as Signal and Tor.',
     tokenomics: 'Fair Tokenomics',
     tokenomicsDesc: 'The Strangrz (⬣) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
-    vobjct: 'Vobjct Safe — Resilience',
-    vobjctDesc: 'Every artwork is protected by a Vobjct manifest: SHA-256 integrity, multi-network storage routes (on-chain, IPFS, cloud), active monitoring, and automated repair. Your digital assets are verifiable, recoverable, and permanent.',
+    vobjct: 'Strangrz Safe — Resilience',
+    vobjctDesc: 'Every artwork is protected by a Strangrz manifest: SHA-256 integrity, multi-network storage routes (on-chain, IPFS, cloud), active monitoring, and automated repair. Your digital assets are verifiable, recoverable, and permanent.',
     totalSupply: 'Total Supply',
     goldenRatio: 'Golden Ratio (mining)',
     layers: 'Network Layers',
@@ -222,7 +222,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     signIn: 'ログイン',
     signUp: 'サインアップ',
     heroSubtitle: 'レアワークのためのマルチチェーン認証プロトコル',
-    heroDesc: 'デジタルおよび物理的作品を公開、認証、収集。各オブジェクトはStrangrz（CW-721）とEthereum（ERC-721）上で改ざん不可能な真正性証明書を受け取ります。',
+    heroDesc: 'デジタルおよび物理的作品を公開、認証、収集。各オブジェクトはStrangrz（SZ-721）とEthereum（ERC-721）上で改ざん不可能な真正性証明書を受け取ります。',
     mySpace: 'マイスペース',
     createAccount: 'アカウント作成',
     learnMore: '詳しく見る',
@@ -231,7 +231,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     conceptDesc2: 'ブロックを直線的に連鎖させる従来のブロックチェーンとは異なり、Strangrzは7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）を使用し、順次確認のボトルネックなしに大量のスループットを実現します。',
     conceptDesc3: '法定通貨システムが中央集権的な仲介者に依存するのに対し、Strangrzは各トランザクションが2つの前のトランザクションを検証するピアツーピアメッシュとして機能し、自己強化型の信頼ネットワークを作成します。',
     certify: '認証',
-    certifyDesc: '各作品はマルチチェーンSTCERT証明書（CW-721 + ERC-721）を受け取ります：SHA-256フィンガープリント、クリエイターのEd25519署名、タイムスタンプ。改ざん不可能で全員が検証可能。',
+    certifyDesc: '各作品はマルチチェーンSTCERT証明書（SZ-721 + ERC-721）を受け取ります：SHA-256フィンガープリント、クリエイターのEd25519署名、タイムスタンプ。改ざん不可能で全員が検証可能。',
     publishTitle: '公開',
     publishDesc: '作品を公開 — デジタルアート、写真、音楽、物理オブジェクト。証明書はあなたが著者であり最初の所有者であることを証明します。',
     exchange: '交換',
@@ -243,7 +243,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step2: '作品をアップロード',
     step2Desc: '写真、動画、イラスト、音楽、3Dオブジェクト — すべてのフォーマットに対応。タイトル、説明、価格を追加。',
     step3: '自動認証',
-    step3Desc: 'StrangrzがファイルのSHA-256フィンガープリントを計算し、秘密鍵で署名します。STCERT証明書がStrangrz（CW-721）とEthereum（ERC-721）上に即座に作成されます。',
+    step3Desc: 'StrangrzがファイルのSHA-256フィンガープリントを計算し、秘密鍵で署名します。STCERT証明書がStrangrz（SZ-721）とEthereum（ERC-721）上に即座に作成されます。',
     step4: '販売開始',
     step4Desc: '作品がマーケットプレイスに表示されます。コレクターはStrangrz（⬣）または統合ユーロ決済ゲートウェイで購入できます。',
     publishWork: '作品を公開',
@@ -282,8 +282,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     cryptoDesc: 'Ed25519署名、SHA-256ハッシュ、AES-GCM暗号化。SignalやTorと同じ標準。',
     tokenomics: '公平なトケノミクス',
     tokenomicsDesc: 'Strangrz（⬣）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
-    vobjct: 'Vobjct Safe — レジリエンス',
-    vobjctDesc: 'すべての作品はVobjctマニフェストで保護：SHA-256整合性、マルチネットワークストレージルート（オンチェーン、IPFS、クラウド）、アクティブモニタリング、自動修復。デジタル資産は検証可能、回復可能、永続的。',
+    vobjct: 'Strangrz Safe — レジリエンス',
+    vobjctDesc: 'すべての作品はStrangrzマニフェストで保護：SHA-256整合性、マルチネットワークストレージルート（オンチェーン、IPFS、クラウド）、アクティブモニタリング、自動修復。デジタル資産は検証可能、回復可能、永続的。',
     totalSupply: '総供給量',
     goldenRatio: '黄金比（マイニング）',
     layers: 'ネットワークレイヤー',
@@ -588,10 +588,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 h-16">
-          {/* Logo + name in katakana */}
+          {/* Logo + name */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 cursor-pointer group">
             <img src={logoSrc} alt="Strangrz" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
-            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title">ストレンジャーズ</span>
+            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title uppercase">Hoodlrz</span>
           </button>
 
           {/* Desktop nav */}
@@ -700,13 +700,13 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))' }}
           />
           <h1
-            className="text-3xl sm:text-5xl lg:text-6xl font-bold font-title mb-4 tracking-wide"
+            className="text-3xl sm:text-5xl lg:text-6xl font-bold font-title mb-2 tracking-wide uppercase"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
-            {'ストレンジャーズ'}
+            Hoodlrz
           </h1>
-          <p className="text-lg sm:text-xl opacity-50 mb-2 tracking-[0.3em] uppercase">
-            STRANGRZ
+          <p className="text-base sm:text-lg opacity-30 mb-4 tracking-[0.2em]">
+            ストレンジャーズ
           </p>
           <p className="text-base sm:text-lg opacity-70 font-bold mb-3">
             {t('heroSubtitle')}

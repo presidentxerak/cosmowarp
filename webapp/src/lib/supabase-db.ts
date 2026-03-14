@@ -559,5 +559,98 @@ export async function atomicPurchaseWart(params: {
   return data === true;
 }
 
+// ─── Channels & Posts (Global Sync) ─────────────────────────
+
+export async function upsertChannel(channel: {
+  id: string; name: string; description: string; createdBy: string;
+  createdByAlias: string; members: string[]; createdAt: number; isPublic: boolean;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('chat_channels').upsert({
+    id: channel.id,
+    name: channel.name,
+    description: channel.description,
+    created_by: channel.createdBy,
+    created_by_alias: channel.createdByAlias,
+    members: channel.members,
+    created_at: channel.createdAt,
+    is_public: channel.isPublic,
+    updated_at: Date.now(),
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertChannel:', error.message);
+  return !error;
+}
+
+export async function fetchAllChannels(): Promise<Array<{
+  id: string; name: string; description: string; createdBy: string;
+  createdByAlias: string; members: string[]; createdAt: number; isPublic: boolean;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('chat_channels')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error || !data) return [];
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    name: row.name as string,
+    description: (row.description as string) || '',
+    createdBy: row.created_by as string,
+    createdByAlias: (row.created_by_alias as string) || '',
+    members: (row.members as string[]) || [],
+    createdAt: Number(row.created_at),
+    isPublic: row.is_public !== false,
+  }));
+}
+
+export async function upsertPost(post: {
+  id: string; author: string; authorAlias: string; content: string;
+  mediaType?: string; wartLink?: string; timestamp: number;
+  tipCount: number; rewarpCount: number; views: number;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('chat_posts').upsert({
+    id: post.id,
+    author: post.author,
+    author_alias: post.authorAlias,
+    content: post.content,
+    media_type: post.mediaType || null,
+    wart_link: post.wartLink || null,
+    timestamp: post.timestamp,
+    tip_count: post.tipCount,
+    rewarp_count: post.rewarpCount,
+    views: post.views,
+    updated_at: Date.now(),
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertPost:', error.message);
+  return !error;
+}
+
+export async function fetchAllPosts(): Promise<Array<{
+  id: string; author: string; authorAlias: string; content: string;
+  mediaType?: string; wartLink?: string; timestamp: number;
+  tipCount: number; rewarpCount: number; views: number;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('chat_posts')
+    .select('*')
+    .order('timestamp', { ascending: false })
+    .limit(200);
+  if (error || !data) return [];
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    author: row.author as string,
+    authorAlias: (row.author_alias as string) || '',
+    content: (row.content as string) || '',
+    mediaType: (row.media_type as string) || undefined,
+    wartLink: (row.wart_link as string) || undefined,
+    timestamp: Number(row.timestamp),
+    tipCount: Number(row.tip_count) || 0,
+    rewarpCount: Number(row.rewarp_count) || 0,
+    views: Number(row.views) || 0,
+  }));
+}
+
 // ─── Export rowToWart for sync layer ─────────────────────────
 export { rowToWart };

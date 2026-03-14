@@ -30,7 +30,7 @@ import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from '
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
 import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
 import { storeMedia, retrieveAllMedia, deleteMedia } from './mediadb';
-import { getVobjctEngine } from './vobjct';
+import { getStrangrzEngine } from './vobjct';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -102,9 +102,9 @@ export interface Wart {
   // ─── Contract Reference ──────────────────────────────
   royaltyContractId?: string;      // CosmoContract ID for royalties
   activeContractIds?: string[];    // Other active contracts
-  // ─── Vobjct Integration ─────────────────────────────
-  vobjctId?: string;               // Vobjct manifest object ID
-  vobjctProtected?: boolean;       // Whether Vobjct Safe is active
+  // ─── Strangrz Integration ─────────────────────────────
+  vobjctId?: string;               // Strangrz manifest object ID
+  vobjctProtected?: boolean;       // Whether Strangrz Safe is active
   // ─── Multi-Chain Minting ──────────────────────────────
   mintChain?: 'strangrz' | 'ethereum';  // Which chain was used for minting
 }
@@ -435,9 +435,9 @@ export class WartEngine {
       title: title.trim(),
     });
 
-    // 6. Create Vobjct manifest & Safe protection
+    // 6. Create Strangrz manifest & Safe protection
     try {
-      const vobjctEngine = getVobjctEngine();
+      const vobjctEngine = getStrangrzEngine();
       const manifest = await vobjctEngine.createForWart({
         wartId: id,
         title: title.trim(),
@@ -456,7 +456,7 @@ export class WartEngine {
       wart.vobjctId = manifest.object_id;
       wart.vobjctProtected = true;
       this.save();
-    } catch { /* Vobjct creation non-critical */ }
+    } catch { /* Strangrz creation non-critical */ }
 
     return wart;
   }
@@ -831,7 +831,7 @@ export class WartEngine {
   }
 
   /**
-   * Initialize the vault with CosmoID credentials.
+   * Initialize the vault with StrangrzID credentials.
    */
   async initVault(username: string, password: string): Promise<void> {
     await this.vault.init(username, password);

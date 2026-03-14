@@ -514,7 +514,7 @@ export async function importWallet(data: WalletExport, password: string): Promis
   return wallet;
 }
 
-// ─── CosmoID: Deterministic Wallet (username + password) ─
+// ─── StrangrzID: Deterministic Wallet (username + password) ─
 
 /**
  * Create or recover a wallet deterministically from username + password.
@@ -524,7 +524,7 @@ export async function importWallet(data: WalletExport, password: string): Promis
  * - If no wallet exists → create a new one (with airdrop)
  * - If a DIFFERENT wallet exists → throw (user must clear first)
  */
-export async function loginCosmoID(
+export async function loginStrangrzID(
   username: string,
   password: string
 ): Promise<WarpWallet> {

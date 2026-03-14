@@ -62,7 +62,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
-      answer: "Les Strangrz, ce sont les objets rares certifiés — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat STCERT infalsifiable (SHA-256 + Ed25519). Tu choisis ta blockchain au moment du mint : StrangrzChain (CW-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Dans les deux cas, Vobjct Safe protège ton œuvre et garantit la provenance. Tu peux uploader images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
+      answer: "Les Strangrz, ce sont les objets rares certifiés — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat STCERT infalsifiable (SHA-256 + Ed25519). Tu choisis ta blockchain au moment du mint : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Dans les deux cas, Strangrz Safe protège ton œuvre et garantit la provenance. Tu peux uploader images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -70,7 +70,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['ethereum', 'eth', 'erc-721', 'erc721', 'metamask', 'gas', 'multi-chain', 'multichain', 'walletconnect', 'evm', 'chain', 'blockchain ethereum', 'minter ethereum', 'mint ethereum'],
     response: {
-      answer: "Strangrz supporte le minting multi-chain ! Tu peux mint sur StrangrzChain (CW-721, gratuit, sans gas) ou sur Ethereum (ERC-721, nécessite MetaMask + gas fees). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Vobjct Safe. Pour Ethereum : connecte ton wallet MetaMask, choisis 'Ethereum' dans le sélecteur de blockchain lors du mint, et confirme la transaction. Les royalties et la provenance sont garanties sur les deux chaînes via le système Vobjct.",
+      answer: "Strangrz supporte le minting multi-chain ! Tu peux mint sur StrangrzChain (SZ-721, gratuit, sans gas) ou sur Ethereum (ERC-721, nécessite MetaMask + gas fees). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Strangrz Safe. Pour Ethereum : connecte ton wallet MetaMask, choisis 'Ethereum' dans le sélecteur de blockchain lors du mint, et confirme la transaction. Les royalties et la provenance sont garanties sur les deux chaînes via le système Strangrz.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace → Create',
     },
@@ -243,11 +243,11 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Portefeuille → Aperçu',
     },
   },
-  // Vobjct & Asset Protection
+  // Strangrz & Asset Protection
   {
     keywords: ['vobjct', 'safe', 'protection', 'intégrité', 'integrite', 'integrity', 'manifest', 'manifeste', 'resilience', 'résilience', 'persistance', 'persistence', 'storage route', 'route de stockage', 'recovery route', 'route de récupération'],
     response: {
-      answer: "Vobjct, c'est le bouclier cosmique de tes Strangrz ! Chaque objet certifié reçoit un Vobjct Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Vobjct Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. Vobjct supporte aussi le multi-chain : tes objets peuvent être mintés sur StrangrzChain (CW-721) ou Ethereum (ERC-721), avec la même protection et provenance garanties sur les deux chaînes. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
+      answer: "Strangrz, c'est le bouclier cosmique de tes Strangrz ! Chaque objet certifié reçoit un Strangrz Manifest — un passeport numérique qui contient : l'empreinte SHA-256 du média original, les routes de stockage (Supabase, IndexedDB, on-chain), les routes de récupération, les droits, la politique de mutation, et des signatures Ed25519. Strangrz Safe surveille en permanence la santé de tes objets : si une route tombe, il alerte et peut tenter une réparation automatique. Strangrz supporte aussi le multi-chain : tes objets peuvent être mintés sur StrangrzChain (SZ-721) ou Ethereum (ERC-721), avec la même protection et provenance garanties sur les deux chaînes. C'est comme avoir un coffre-fort cosmique avec alarme et serrurier intégré.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace → Détail',
     },
@@ -255,7 +255,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['stockage', 'storage', 'où sont stockés', 'where stored', 'persistant', 'persistent', 'perte', 'perdu ordinateur', 'lost computer', 'hack', 'hacké', 'vol', 'stolen'],
     response: {
-      answer: "Tes Strangrz sont protégées par un système de stockage multi-couches grâce à Vobjct : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud. (3) On-chain — stockage permanent dans StrangrzMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé CosmoID. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Vobjct Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
+      answer: "Tes Strangrz sont protégées par un système de stockage multi-couches grâce à Strangrz : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud. (3) On-chain — stockage permanent dans StrangrzMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé StrangrzID. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Strangrz Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -263,7 +263,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['2fa', 'two factor', 'deux facteurs', 'authenticator', 'totp', 'google auth', 'authy', 'otp'],
     response: {
-      answer: "La 2FA (authentification à deux facteurs) ajoute une couche de sécurité cosmique à ton CosmoID ! Va dans Portefeuille → Aperçu et active la 2FA. Tu scanneras un QR code avec ton app d'authentification (Google Authenticator, Authy, 1Password...). Ensuite, à chaque connexion, tu devras entrer un code à 6 chiffres en plus de ton mot de passe. Tu reçois aussi 8 codes de secours — garde-les précieusement au cas où tu perds ton téléphone.",
+      answer: "La 2FA (authentification à deux facteurs) ajoute une couche de sécurité cosmique à ton StrangrzID ! Va dans Portefeuille → Aperçu et active la 2FA. Tu scanneras un QR code avec ton app d'authentification (Google Authenticator, Authy, 1Password...). Ensuite, à chaque connexion, tu devras entrer un code à 6 chiffres en plus de ton mot de passe. Tu reçois aussi 8 codes de secours — garde-les précieusement au cas où tu perds ton téléphone.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille → Aperçu',
     },
@@ -308,16 +308,16 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['oublié', 'forgot', 'password', 'mot de passe', 'perdu mot de passe', 'lost password', 'connexion impossible'],
     response: {
-      answer: "Mot de passe oublié ? Si tu utilises un CosmoID, ton portefeuille est dérivé de ton nom d'utilisateur + mot de passe. Sans le mot de passe exact, il est mathématiquement impossible de retrouver ta clé privée (PBKDF2 avec 600 000 itérations). Tu peux cependant te déconnecter dans l'écran de verrouillage via le bouton « Mot de passe oublié ? », et créer un nouveau compte. Si tu as sauvegardé ta clé de récupération (Recovery Kit), tu peux aussi importer ton portefeuille existant.",
+      answer: "Mot de passe oublié ? Si tu utilises un StrangrzID, ton portefeuille est dérivé de ton nom d'utilisateur + mot de passe. Sans le mot de passe exact, il est mathématiquement impossible de retrouver ta clé privée (PBKDF2 avec 600 000 itérations). Tu peux cependant te déconnecter dans l'écran de verrouillage via le bouton « Mot de passe oublié ? », et créer un nouveau compte. Si tu as sauvegardé ta clé de récupération (Recovery Kit), tu peux aussi importer ton portefeuille existant.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille',
     },
   },
-  // CosmoID
+  // StrangrzID
   {
-    keywords: ['cosmoid', 'cosmo id', 'identifiant', 'login', 'connexion', 'se connecter', 'sign in', 'sign up', 'inscription'],
+    keywords: ['strangrzid', 'cosmo id', 'identifiant', 'login', 'connexion', 'se connecter', 'sign in', 'sign up', 'inscription'],
     response: {
-      answer: "CosmoID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit un airdrop de 1 000 ⬣ pour démarrer. Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
+      answer: "StrangrzID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit un airdrop de 1 000 ⬣ pour démarrer. Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille',
     },
@@ -371,7 +371,7 @@ const FAQ_ICONS: Record<string, ReactNode> = {
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
   'StrangrzMesh & StrangrzCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
   'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
-  'Vobjct & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
+  'Strangrz & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
   'Ethereum & Multi-Chain': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L4 12l8 5 8-5L12 2z" /><path d="M4 12l8 10 8-10-8 5-8-5z" /></svg>,
 };
@@ -403,9 +403,9 @@ const FAQ_SECTIONS = [
       { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo), et Cards. Le tout limité à 50 Mo.` },
       { q: `Qu'est-ce que le STCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
       { q: `Les Strangrz sont-elles stockées on-chain ?`, a: `Oui ! Avec StrangrzMesh, les objets sont compressés via StrangrzCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
-      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (CW-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees via MetaMask). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Vobjct Safe.` },
-      { q: `Comment minter sur Ethereum ?`, a: `Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain, connecte ton wallet MetaMask depuis l'onglet Portefeuille → Ethereum, et confirme la transaction. Les royalties et la provenance sont garanties via le système Vobjct.` },
-      { q: `Quelle est la différence entre StrangrzChain et Ethereum ?`, a: `StrangrzChain (CW-721) : zéro gas, minting instantané, StrangrzCode on-chain backup. Ethereum (ERC-721) : standard ERC-721 sur le mainnet, gas fees requis, compatible MetaMask/WalletConnect. Les deux chaînes offrent la même protection Vobjct et certification STCERT.` },
+      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees via MetaMask). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Strangrz Safe.` },
+      { q: `Comment minter sur Ethereum ?`, a: `Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain, connecte ton wallet MetaMask depuis l'onglet Portefeuille → Ethereum, et confirme la transaction. Les royalties et la provenance sont garanties via le système Strangrz.` },
+      { q: `Quelle est la différence entre StrangrzChain et Ethereum ?`, a: `StrangrzChain (SZ-721) : zéro gas, minting instantané, StrangrzCode on-chain backup. Ethereum (ERC-721) : standard ERC-721 sur le mainnet, gas fees requis, compatible MetaMask/WalletConnect. Les deux chaînes offrent la même protection Strangrz et certification STCERT.` },
     ],
   },
   {
@@ -438,26 +438,26 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    title: 'Vobjct & Protection des actifs',
-    icon: 'Vobjct & Protection des actifs',
+    title: 'Strangrz & Protection des actifs',
+    icon: 'Strangrz & Protection des actifs',
     items: [
-      { q: `Qu'est-ce que Vobjct ?`, a: `Vobjct est le standard d'intégrité et de résilience des actifs numériques de Strangrz. Chaque objet certifié reçoit un « Vobjct Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
-      { q: `Qu'est-ce que Vobjct Safe ?`, a: `Vobjct Safe est le système de surveillance et réparation automatique. Il vérifie régulièrement que les routes de stockage sont actives (Supabase, IndexedDB, on-chain). Si une route tombe, Safe passe l'objet en état « warning » puis « degraded » et peut lancer des réparations automatiques (re-upload, ajout de miroir). Un journal d'incidents trace chaque action.` },
-      { q: `Où sont stockées mes Strangrz ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) StrangrzMesh on-chain pour le stockage permanent. Vobjct Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
-      { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même CosmoID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via StrangrzCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
-      { q: `Quels sont les droits gérés par Vobjct ?`, a: `Chaque manifest définit : droits d'affichage (allowed/forbidden), usage commercial (personal_only/commercial), dérivés (forbidden/allowed), licence version, et termes personnalisés. Ces droits sont embarqués dans le manifest et signés cryptographiquement.` },
+      { q: `Qu'est-ce que Strangrz ?`, a: `Strangrz est le standard d'intégrité et de résilience des actifs numériques de Strangrz. Chaque objet certifié reçoit un « Strangrz Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
+      { q: `Qu'est-ce que Strangrz Safe ?`, a: `Strangrz Safe est le système de surveillance et réparation automatique. Il vérifie régulièrement que les routes de stockage sont actives (Supabase, IndexedDB, on-chain). Si une route tombe, Safe passe l'objet en état « warning » puis « degraded » et peut lancer des réparations automatiques (re-upload, ajout de miroir). Un journal d'incidents trace chaque action.` },
+      { q: `Où sont stockées mes Strangrz ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) StrangrzMesh on-chain pour le stockage permanent. Strangrz Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
+      { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même StrangrzID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via StrangrzCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
+      { q: `Quels sont les droits gérés par Strangrz ?`, a: `Chaque manifest définit : droits d'affichage (allowed/forbidden), usage commercial (personal_only/commercial), dérivés (forbidden/allowed), licence version, et termes personnalisés. Ces droits sont embarqués dans le manifest et signés cryptographiquement.` },
     ],
   },
   {
     title: 'Sécurité',
     icon: 'Sécurité',
     items: [
-      { q: `Strangrz est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré. En plus, Vobjct Safe surveille l'intégrité de chaque objet certifié en continu.` },
-      { q: `Qu'est-ce que la 2FA sur Strangrz ?`, a: `Authentification à deux facteurs (TOTP RFC 6238) pour ton CosmoID. Active-la dans Portefeuille → Aperçu. Compatible avec Google Authenticator, Authy, 1Password. Tu reçois 8 codes de secours en cas de perte de téléphone.` },
+      { q: `Strangrz est-il sécurisé ?`, a: `7 couches de sécurité : signatures Ed25519, limitation de débit, suivi des nonces, limites de montant, détection de patterns, intégrité d'état, registre admin chiffré. En plus, Strangrz Safe surveille l'intégrité de chaque objet certifié en continu.` },
+      { q: `Qu'est-ce que la 2FA sur Strangrz ?`, a: `Authentification à deux facteurs (TOTP RFC 6238) pour ton StrangrzID. Active-la dans Portefeuille → Aperçu. Compatible avec Google Authenticator, Authy, 1Password. Tu reçois 8 codes de secours en cas de perte de téléphone.` },
       { q: `Qu'est-ce que le Recovery Kit ?`, a: `Un bundle JSON chiffré contenant tous tes objets de vault, double-chiffré (clé vault + mot de passe de récupération). Téléchargeable dans Portefeuille → Aperçu. Il est auto-généré à la création du wallet et un rappel apparaît tous les 7 jours.` },
       { q: `Est-ce que ça fonctionne hors ligne ?`, a: `Oui ! Le service worker met l'app en cache pour une utilisation hors ligne. Elle se met aussi à jour automatiquement quand une nouvelle version est disponible.` },
-      { q: `Où sont stockées mes données ?`, a: `Stockage multi-couches via Vobjct : IndexedDB local (échelle Go), Supabase Cloud, et StrangrzMesh on-chain. CosmoVault chiffre les médias en AES-256-GCM. Vobjct Safe garantit la redondance avec au moins 2 routes actives par objet.` },
-      { q: `J'ai oublié mon mot de passe, que faire ?`, a: `Si tu utilises un CosmoID, le mot de passe est irréversible (PBKDF2 600K itérations). Tu peux te déconnecter via « Mot de passe oublié ? » sur l'écran de verrouillage, puis créer un nouveau compte. Si tu as un Recovery Kit, tu peux restaurer ton portefeuille.` },
+      { q: `Où sont stockées mes données ?`, a: `Stockage multi-couches via Strangrz : IndexedDB local (échelle Go), Supabase Cloud, et StrangrzMesh on-chain. CosmoVault chiffre les médias en AES-256-GCM. Strangrz Safe garantit la redondance avec au moins 2 routes actives par objet.` },
+      { q: `J'ai oublié mon mot de passe, que faire ?`, a: `Si tu utilises un StrangrzID, le mot de passe est irréversible (PBKDF2 600K itérations). Tu peux te déconnecter via « Mot de passe oublié ? » sur l'écran de verrouillage, puis créer un nouveau compte. Si tu as un Recovery Kit, tu peux restaurer ton portefeuille.` },
       { q: `Comment supprimer mon compte ?`, a: `Va dans Paramètres → Supprimer le profil. Ton solde est réintégré au pool d'airdrop. Toutes les données locales sont effacées définitivement (portefeuille, profil, données sociales).` },
       { q: `Comment copier l'adresse d'un utilisateur ?`, a: `Visite son profil (clique sur son nom dans le Mur ou la Marketplace), puis clique sur l'adresse affichée sous le pseudo. Elle sera copiée dans ton presse-papiers. Une icône ✓ confirme la copie.` },
     ],
@@ -472,7 +472,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'Tableau comparatif : Strangrz vs Ethereum vs Tezos vs Solana',
-        a: `| Critère | Strangrz (CW-721) | Ethereum (ERC-721) | Tezos (FA2) | Solana (Metaplex) |
+        a: `| Critère | Strangrz (SZ-721) | Ethereum (ERC-721) | Tezos (FA2) | Solana (Metaplex) |
 |---|---|---|---|---|
 | Frais de mint | 0 ⬣ (gratuit) | 2-100 $ (gas) | ~0.50 $ | ~0.01 $ |
 | Prix min. vente | 100 ⬣ | 0.01 ETH | Aucun | Aucun |
@@ -484,9 +484,9 @@ const FAQ_SECTIONS = [
 | Empreinte CO₂/TX | ~0 g | ~20 g | ~1 g | ~1 g |
 | Stockage on-chain | Oui (StrangrzCode SVG) | Non (IPFS/Arweave) | Non (IPFS) | Non (Arweave) |
 | Certificat natif | STCERT (SHA-256+Ed25519) | Aucun (métadonnées JSON) | Aucun | Aucun |
-| Protection Vobjct | Oui (monitoring + repair) | Non | Non | Non |
-| Royalties | Garanties (Vobjct) | Non garanties | Oui (on-chain) | Partiellement |
-| Wallet requis | Aucun (CosmoID) | MetaMask | Temple | Phantom |
+| Protection Strangrz | Oui (monitoring + repair) | Non | Non | Non |
+| Royalties | Garanties (Strangrz) | Non garanties | Oui (on-chain) | Partiellement |
+| Wallet requis | Aucun (StrangrzID) | MetaMask | Temple | Phantom |
 | Paiement fiat | Oui (CB, PayPal, SEPA) | Non natif | Non natif | Non natif |`,
       },
       {
@@ -503,12 +503,12 @@ const FAQ_SECTIONS = [
     title: 'Ethereum & Multi-Chain',
     icon: 'Ethereum & Multi-Chain',
     items: [
-      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Strangrz supporte le minting multi-chain. Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (CW-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Les deux offrent la même protection Vobjct et certification STCERT.` },
+      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Strangrz supporte le minting multi-chain. Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Les deux offrent la même protection Strangrz et certification STCERT.` },
       { q: `Comment minter sur Ethereum ?`, a: `(1) Va dans Portefeuille → Ethereum et connecte ton wallet MetaMask ou WalletConnect. (2) Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain. (3) Remplis les infos de ton œuvre et confirme la transaction MetaMask. Gas fees requis.` },
-      { q: `Quelle blockchain choisir ?`, a: `StrangrzChain : idéal pour débuter, zéro frais, minting instantané, backup on-chain via StrangrzCode. Ethereum : pour toucher l'écosystème ERC-721 mondial, compatible OpenSea et tous les wallets ETH. Les deux chaînes garantissent royalties et provenance via Vobjct.` },
+      { q: `Quelle blockchain choisir ?`, a: `StrangrzChain : idéal pour débuter, zéro frais, minting instantané, backup on-chain via StrangrzCode. Ethereum : pour toucher l'écosystème ERC-721 mondial, compatible OpenSea et tous les wallets ETH. Les deux chaînes garantissent royalties et provenance via Strangrz.` },
       { q: `Comment connecter MetaMask ?`, a: `Va dans l'onglet Portefeuille → Ethereum, puis clique sur « Connect ». Sélectionne MetaMask ou WalletConnect. Une fois connecté, ton adresse ETH et ton solde s'affichent. Tu peux alors minter et acheter des Strangrz sur Ethereum.` },
-      { q: `Les royalties fonctionnent-elles sur Ethereum ?`, a: `Oui ! Le système Vobjct gère les royalties de manière cross-chain. Que ton œuvre soit sur StrangrzChain ou Ethereum, le créateur reçoit ses royalties (5 % par défaut) à chaque revente. La provenance est vérifiable sur les deux chaînes.` },
-      { q: `Mes Strangrz ETH sont-elles protégées ?`, a: `Absolument. Chaque Strangrz mintée sur Ethereum reçoit le même niveau de protection : certificat STCERT, Vobjct Manifest, Vobjct Safe monitoring, et routes de stockage multi-couches. Le système d'adaptateurs Vobjct (EVMAdapter pour ERC-721) assure la compatibilité cross-chain.` },
+      { q: `Les royalties fonctionnent-elles sur Ethereum ?`, a: `Oui ! Le système Strangrz gère les royalties de manière cross-chain. Que ton œuvre soit sur StrangrzChain ou Ethereum, le créateur reçoit ses royalties (5 % par défaut) à chaque revente. La provenance est vérifiable sur les deux chaînes.` },
+      { q: `Mes Strangrz ETH sont-elles protégées ?`, a: `Absolument. Chaque Strangrz mintée sur Ethereum reçoit le même niveau de protection : certificat STCERT, Strangrz Manifest, Strangrz Safe monitoring, et routes de stockage multi-couches. Le système d'adaptateurs Strangrz (EVMAdapter pour ERC-721) assure la compatibilité cross-chain.` },
     ],
   },
 ];
@@ -683,7 +683,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               </button>
             </div>
             <div className="flex gap-2 mt-2 flex-wrap">
-              {['Comment miner ?', "C'est quoi Vobjct ?", "Pourquoi c'est gratuit ?", 'Comment certifier un objet ?', 'Sécurité & 2FA'].map(q => (
+              {['Comment miner ?', "C'est quoi Strangrz ?", "Pourquoi c'est gratuit ?", 'Comment certifier un objet ?', 'Sécurité & 2FA'].map(q => (
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}

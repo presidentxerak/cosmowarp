@@ -25,7 +25,7 @@ const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 export interface TOTPConfig {
   /** Base32-encoded secret */
   secret: string;
-  /** CosmoID username */
+  /** StrangrzID username */
   username: string;
   /** Whether 2FA is fully enabled (user has verified a code) */
   enabled: boolean;

@@ -15,12 +15,12 @@ interface SettingsViewProps {
 }
 
 export default function SettingsView({ onNavigate }: SettingsViewProps) {
-  const { wallet, unlocked, lock, signOut, deleteAccount, doExportWallet, doGenerateCosmoLink } = useWallet();
+  const { wallet, unlocked, lock, signOut, deleteAccount, doExportWallet, doGenerateStrangrzLink } = useWallet();
   const [activeSettingsTab, setActiveSettingsTab] = useState<SettingsTab>('settings');
   const { theme, toggleTheme } = useTheme();
   const [cleared, setCleared] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [cosmoLink, setCosmoLink] = useState<string | null>(null);
+  const [strangrzLink, setStrangrzLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [linkPassword, setLinkPassword] = useState('');
   const [linkError, setLinkError] = useState('');
@@ -39,7 +39,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
     URL.revokeObjectURL(url);
   };
 
-  const handleGenerateCosmoLink = async () => {
+  const handleGenerateStrangrzLink = async () => {
     if (!linkPassword || linkPassword.length < 6) {
       setLinkError('Password must be at least 6 characters');
       return;
@@ -47,22 +47,22 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
     setLinkGenerating(true);
     setLinkError('');
     try {
-      const link = await doGenerateCosmoLink(linkPassword);
+      const link = await doGenerateStrangrzLink(linkPassword);
       if (link) {
-        setCosmoLink(link);
+        setStrangrzLink(link);
       } else {
-        setLinkError('Failed to generate CosmoLink');
+        setLinkError('Failed to generate StrangrzLink');
       }
     } catch {
-      setLinkError('Failed to generate CosmoLink');
+      setLinkError('Failed to generate StrangrzLink');
     } finally {
       setLinkGenerating(false);
     }
   };
 
-  const handleCopyCosmoLink = () => {
-    if (!cosmoLink) return;
-    navigator.clipboard.writeText(cosmoLink);
+  const handleCopyStrangrzLink = () => {
+    if (!strangrzLink) return;
+    navigator.clipboard.writeText(strangrzLink);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 3000);
   };
@@ -205,7 +205,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             </div>
             <div className="flex justify-between items-center">
               <span className="opacity-40">Auth</span>
-              <span className="opacity-80">CosmoID</span>
+              <span className="opacity-80">StrangrzID</span>
             </div>
           </div>
         </div>
@@ -247,20 +247,20 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
         </div>
       </div>
 
-      {/* ─── CosmoLink (Sync) ─────────────────────────────── */}
+      {/* ─── StrangrzLink (Sync) ─────────────────────────────── */}
       {wallet && unlocked && (
         <div className="glass-panel p-4">
           <h3 className="text-base font-bold opacity-70 mb-2 flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
-            CosmoLink
+            StrangrzLink
           </h3>
           <p className="text-label opacity-40 mb-3">
             Generate an encrypted code to transfer your wallet to another device. Copy it and paste it via any messaging app.
           </p>
 
-          {!cosmoLink ? (
+          {!strangrzLink ? (
             <div className="space-y-3">
               <input
                 className="warp-input text-center text-body-sm"
@@ -268,18 +268,18 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
                 placeholder="Enter your password to generate"
                 value={linkPassword}
                 onChange={e => { setLinkPassword(e.target.value); setLinkError(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') handleGenerateCosmoLink(); }}
+                onKeyDown={e => { if (e.key === 'Enter') handleGenerateStrangrzLink(); }}
               />
               {linkError && <p className="text-body-sm opacity-70">{linkError}</p>}
               <button
-                onClick={handleGenerateCosmoLink}
+                onClick={handleGenerateStrangrzLink}
                 className="warp-button w-full text-body-sm py-2"
                 disabled={!linkPassword || linkGenerating}
               >
                 {linkGenerating ? 'Generating...' : (
                   <span className="flex items-center justify-center gap-1.5">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                    Generate CosmoLink
+                    Generate StrangrzLink
                   </span>
                 )}
               </button>
@@ -287,12 +287,12 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           ) : (
             <div className="space-y-3">
               <div className="p-3 bg-current/5 border border-current/10">
-                <p className="text-label opacity-40 mb-1">YOUR COSMOLINK CODE</p>
-                <p className="text-label opacity-80 break-all font-mono leading-relaxed select-all">{cosmoLink}</p>
+                <p className="text-label opacity-40 mb-1">YOUR STRANGRZLINK CODE</p>
+                <p className="text-label opacity-80 break-all font-mono leading-relaxed select-all">{strangrzLink}</p>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={handleCopyCosmoLink}
+                  onClick={handleCopyStrangrzLink}
                   className="warp-button flex-1 text-body-sm py-2"
                 >
                   {linkCopied ? (
@@ -308,7 +308,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
                   )}
                 </button>
                 <button
-                  onClick={() => { setCosmoLink(null); setLinkPassword(''); }}
+                  onClick={() => { setStrangrzLink(null); setLinkPassword(''); }}
                   className="text-body-sm px-3 py-2 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer"
                 >
                   Close
@@ -316,7 +316,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
               </div>
               <div className="p-3 bg-current/5 border border-current/10 text-left">
                 <p className="text-label opacity-50">
-                  <span className="opacity-80 font-bold">How to use:</span> Copy this code and send it to yourself via any messaging app (iMessage, WhatsApp, Telegram, etc.). On the other device, choose "CosmoLink" when signing in and paste the code + your password.
+                  <span className="opacity-80 font-bold">How to use:</span> Copy this code and send it to yourself via any messaging app (iMessage, WhatsApp, Telegram, etc.). On the other device, choose "StrangrzLink" when signing in and paste the code + your password.
                 </p>
               </div>
             </div>
@@ -395,7 +395,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             <div className="flex items-center justify-between pt-2 border-t border-current/10">
               <div>
                 <p className="text-body-sm opacity-90">Sign Out</p>
-                <p className="text-label opacity-40">Remove wallet from this device. You can sign back in with your CosmoID.</p>
+                <p className="text-label opacity-40">Remove wallet from this device. You can sign back in with your StrangrzID.</p>
               </div>
               <button
                 onClick={handleSignOut}
@@ -514,7 +514,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           </div>
           <div className="flex justify-between">
             <span className="opacity-40">Auth</span>
-            <span className="opacity-70">CosmoID (PBKDF2 600K)</span>
+            <span className="opacity-70">StrangrzID (PBKDF2 600K)</span>
           </div>
         </div>
       </div>

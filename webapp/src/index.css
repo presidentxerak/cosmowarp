@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Hoodlrz';
+  src: url('/hoodlrz-font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-cosmic-900: #0a0a1a;
   --color-cosmic-800: #0d1030;
@@ -7,7 +15,7 @@
   --color-cosmic-600: #1a1d6b;
   --color-cosmic-500: #2a2d8b;
   --font-mono: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  --font-title: 'Chokokutai', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-title: 'Hoodlrz', 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
 @layer base {

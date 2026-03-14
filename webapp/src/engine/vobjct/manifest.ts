@@ -1,15 +1,15 @@
 /**
- * Vobjct — Manifest Generation Pipeline
+ * Strangrz — Manifest Generation Pipeline
  *
- * Creates, signs, and verifies Vobjct manifests from digital assets.
+ * Creates, signs, and verifies Strangrz manifests from digital assets.
  * Integrates with the Strangrz Wart system and any chain adapter.
  */
 
 import { sha256, signTransaction, verifySignature } from '../crypto';
 import type {
-  VobjctManifest, TokenBinding, AssetDescriptor, VobjctMetadata,
-  VobjctRights, VobjctPolicy, StorageRoute, RecoveryRoute,
-  VobjctSignature, ObjectType, VobjctIntegrity, ChainFamily,
+  StrangrzManifest, TokenBinding, AssetDescriptor, StrangrzMetadata,
+  StrangrzRights, StrangrzPolicy, StorageRoute, RecoveryRoute,
+  StrangrzSignature, ObjectType, StrangrzIntegrity, ChainFamily,
 } from './schema';
 
 // ─── Manifest Builder ───────────────────────────────────────
@@ -42,10 +42,10 @@ export interface ManifestBuildInput {
   attributes?: Array<{ trait_type: string; value: string | number }>;
 
   // Rights
-  rights?: Partial<VobjctRights>;
+  rights?: Partial<StrangrzRights>;
 
   // Policy
-  policy?: Partial<VobjctPolicy>;
+  policy?: Partial<StrangrzPolicy>;
 
   // Storage
   storageRoutes?: StorageRoute[];
@@ -59,10 +59,10 @@ export interface ManifestBuildInput {
 }
 
 /**
- * Build a complete Vobjct manifest from input data.
+ * Build a complete Strangrz manifest from input data.
  * Computes all hashes, generates signatures, and validates the result.
  */
-export async function buildManifest(input: ManifestBuildInput): Promise<VobjctManifest> {
+export async function buildManifest(input: ManifestBuildInput): Promise<StrangrzManifest> {
   const now = new Date().toISOString();
 
   // Compute asset hashes
@@ -98,7 +98,7 @@ export async function buildManifest(input: ManifestBuildInput): Promise<VobjctMa
   };
 
   // Metadata
-  const metadata: VobjctMetadata = {
+  const metadata: StrangrzMetadata = {
     name: input.name,
     description: input.description,
     external_url: input.externalUrl,
@@ -106,7 +106,7 @@ export async function buildManifest(input: ManifestBuildInput): Promise<VobjctMa
   };
 
   // Rights (defaults)
-  const rights: VobjctRights = {
+  const rights: StrangrzRights = {
     display: 'allowed',
     commercial_use: 'personal_only',
     derivatives: 'forbidden',
@@ -115,7 +115,7 @@ export async function buildManifest(input: ManifestBuildInput): Promise<VobjctMa
   };
 
   // Policy (defaults)
-  const policy: VobjctPolicy = {
+  const policy: StrangrzPolicy = {
     mutability: 'frozen',
     restoration_allowed: true,
     migration_allowed: true,
@@ -130,7 +130,7 @@ export async function buildManifest(input: ManifestBuildInput): Promise<VobjctMa
   const recoveryRoutes: RecoveryRoute[] = input.recoveryRoutes || [];
 
   // Signatures
-  const signatures: VobjctSignature[] = [];
+  const signatures: StrangrzSignature[] = [];
   if (input.creatorPrivateKey && input.creatorPublicKey) {
     try {
       const sig = await signTransaction(canonicalSha256, input.creatorPrivateKey);
@@ -145,7 +145,7 @@ export async function buildManifest(input: ManifestBuildInput): Promise<VobjctMa
   }
 
   // Build integrity (without manifest hash first)
-  const integrity: VobjctIntegrity = {
+  const integrity: StrangrzIntegrity = {
     manifest_sha256: '', // computed below
     canonical_asset_sha256: canonicalSha256,
     preview_asset_sha256: previewAsset?.sha256,
@@ -154,7 +154,7 @@ export async function buildManifest(input: ManifestBuildInput): Promise<VobjctMa
   };
 
   // Assemble manifest
-  const manifest: VobjctManifest = {
+  const manifest: StrangrzManifest = {
     vobjct_version: '1.0.0',
     object_id: input.objectId,
     object_type: input.objectType,
@@ -200,11 +200,11 @@ export interface VerificationResult {
 }
 
 /**
- * Verify a Vobjct manifest's integrity.
+ * Verify a Strangrz manifest's integrity.
  * Checks manifest hash, asset hashes, and signatures.
  */
 export async function verifyManifest(
-  manifest: VobjctManifest,
+  manifest: StrangrzManifest,
   canonicalData?: string,
   previewData?: string,
 ): Promise<VerificationResult> {
@@ -263,10 +263,10 @@ export async function verifyManifest(
 
 // ─── Manifest Serialization ─────────────────────────────────
 
-export function serializeManifest(manifest: VobjctManifest): string {
+export function serializeManifest(manifest: StrangrzManifest): string {
   return JSON.stringify(manifest, null, 2);
 }
 
-export function deserializeManifest(json: string): VobjctManifest {
-  return JSON.parse(json) as VobjctManifest;
+export function deserializeManifest(json: string): StrangrzManifest {
+  return JSON.parse(json) as StrangrzManifest;
 }

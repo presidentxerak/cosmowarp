@@ -381,7 +381,7 @@ export default function MessageView() {
               type="text"
               value={searchQuery}
               onChange={e => handleSearch(e.target.value)}
-              placeholder="Rechercher par pseudo ou CosmoID..."
+              placeholder="Rechercher par pseudo ou StrangrzID..."
               className="warp-input w-full py-2.5 pl-10"
               autoFocus
             />
