@@ -54,8 +54,8 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
     response: 'Strangrz (ストレンジャーズ) est une plateforme multi-chaîne de certification pour objets rares. Le Protocole Strangrz crée des certificats d\'authenticité infalsifiables (STCERT) en SZ-721 (Strangrz) et ERC-721 (Ethereum) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
   },
   {
-    keywords: ['token', 'warp', 'supply', 'tokenomics'],
-    response: 'Le Strangrz Coin (symbole : STRNGRZ / ⬣) est le token natif de Strangrz avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
+    keywords: ['token', 'warp', 'supply', 'tokenomics', 'stz', 'coin', 'monnaie', 'valeur', 'prix token', 'combien vaut', 'hexagone', '⬣'],
+    response: 'Le Strangrz (⬣), ticker STZ, est le token natif de Strangrz. Supply fixe : 69 millions. Valeur de référence : 1 STZ = 0,10 € (10 centimes). On le gagne par le minage (récompenses de 50 STZ/bloc qui diminuent via la Décroissance par Résonance basée sur le nombre d\'or φ), par airdrop (1 000 STZ pour chaque nouveau compte), ou par achat fiat (carte, PayPal, SEPA). Il sert à certifier des objets rares, tipper sur le Mur, acheter sur la Marketplace, et payer les royalties. Transactions : toujours gratuites, zéro gas !',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
