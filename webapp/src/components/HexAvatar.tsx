@@ -65,7 +65,7 @@ export default function HexAvatar({ address, size = 40, className = '', onClick,
       {/* Background fill */}
       <polygon
         points="20,2 36,11 36,29 20,38 4,29 4,11"
-        fill="#111111"
+        fill="currentColor" fillOpacity="0.1"
       />
 
       {/* Profile image (custom or default random icon) */}

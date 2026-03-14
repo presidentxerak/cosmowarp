@@ -52,19 +52,22 @@
   color: #ffffff;
 }
 
-/* Light mode — pure white bg, pure black text */
+/* Light mode — pure white bg, pure black text
+   Gray scale maps Tailwind semantic usage: gray-50 = lightest surface,
+   gray-950 = darkest text. In light mode, text is dark and surfaces are light,
+   so the scale is intentionally inverted from dark mode values. */
 [data-theme="light"] {
-  --color-gray-50: #000000;
-  --color-gray-100: #000000;
-  --color-gray-200: #111111;
-  --color-gray-300: #222222;
-  --color-gray-400: #444444;
-  --color-gray-500: #666666;
-  --color-gray-600: #999999;
-  --color-gray-700: #cccccc;
-  --color-gray-800: #e5e5e5;
-  --color-gray-900: #f5f5f5;
-  --color-gray-950: #fafafa;
+  --color-gray-50: #ffffff;
+  --color-gray-100: #fafafa;
+  --color-gray-200: #f5f5f5;
+  --color-gray-300: #e5e5e5;
+  --color-gray-400: #cccccc;
+  --color-gray-500: #999999;
+  --color-gray-600: #666666;
+  --color-gray-700: #444444;
+  --color-gray-800: #222222;
+  --color-gray-900: #111111;
+  --color-gray-950: #000000;
 
   /* Cosmic backgrounds become pure white */
   --color-cosmic-900: #ffffff;
@@ -235,7 +238,7 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 .warp-button:active { transform: scale(0.95); }
-.warp-button:disabled { opacity: 0.3; cursor: not-allowed; }
+.warp-button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 [data-theme="light"] .warp-button {
   background: rgba(0, 0, 0, 0.05);
@@ -256,11 +259,12 @@
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
-.warp-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.warp-input::placeholder { color: rgba(255, 255, 255, 0.5); }
 .warp-input:focus {
   outline: none;
-  border-bottom-color: rgba(255, 255, 255, 0.4);
+  border-bottom-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
 [data-theme="light"] .warp-input {
@@ -268,10 +272,11 @@
   border-bottom-color: rgba(0, 0, 0, 0.1);
   color: #000000;
 }
-[data-theme="light"] .warp-input::placeholder { color: rgba(0, 0, 0, 0.3); }
+[data-theme="light"] .warp-input::placeholder { color: rgba(0, 0, 0, 0.45); }
 [data-theme="light"] .warp-input:focus {
-  border-bottom-color: rgba(0, 0, 0, 0.4);
+  border-bottom-color: rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Page transitions ───────────────────────────────── */

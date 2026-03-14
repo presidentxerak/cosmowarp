@@ -206,8 +206,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
         {/* Create button — always visible */}
         <button
           onClick={() => { sessionStorage.setItem('strangrz_gallery_tab', 'create'); onNavigate('gallery'); }}
-          className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-body-sm font-medium cursor-pointer transition-all hover:opacity-80"
-          style={{ backgroundColor: '#e91e8c', color: '#fff' }}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-body-sm font-medium cursor-pointer transition-all hover:opacity-80 bg-pink-600 text-white"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19" />
