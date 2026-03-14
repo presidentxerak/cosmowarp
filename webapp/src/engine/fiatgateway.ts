@@ -127,13 +127,44 @@ const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> 
   internal: { percent: 0, fixed: 0 },
 };
 
-// Default exchange rates (configurable by admin)
+/**
+ * ─── Strangrz Coin (CW) Valuation Model ────────────────────
+ *
+ * Anchor: 1 CW = €0.01 (1 euro cent)
+ *
+ * Supply: 69,000,000 CW → Market cap at full supply = €690,000
+ * Circulating at launch (~11M via airdrops+mining): ~€110,000
+ *
+ * Utility check at €0.01/CW:
+ *   Airdrop (1,000 CW)  = €10    — onboarding incentive ✓
+ *   Min listing (100 CW) = €1    — accessible NFT floor  ✓
+ *   Mining reward (50 CW) = €0.50 — motivating            ✓
+ *   Streak (10,000 CW)   = €100  — yearly loyalty reward  ✓
+ *   Tip (1-10 CW)        = €0.01-0.10 — micro-tip         ✓
+ *
+ * Fiat rates derived from real forex (anchor = EUR):
+ *   EUR/USD ≈ 1.10 → 1 USD = 100/1.10 = 91 CW
+ *   GBP/USD ≈ 1.29 → 1 GBP = 91 × 1.29 = 117 CW
+ *   USD/JPY ≈ 150  → 1 JPY = 91/150 = 0.61 CW
+ *   USD/CHF ≈ 0.89 → 1 CHF = 91/0.89 = 103 CW
+ *
+ * ETH conversion (dynamic):
+ *   ETH/USD ≈ $2,500 → 1 ETH = 91 × 2,500 = 227,500 CW
+ *   Updated via configurable reference price with ±20% volatility band
+ */
+
+// Reference ETH price in USD for CW conversion
+const ETH_REFERENCE_PRICE_USD = 2500;
+// Volatility band: rates auto-clamp within ±20% of reference
+const ETH_VOLATILITY_BAND = 0.20;
+
+// Default exchange rates (forex-aligned, anchor = 1 CW = €0.01)
 const DEFAULT_RATES: ExchangeRate[] = [
   { currency: 'EUR', warpsPerUnit: 100, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'USD', warpsPerUnit: 92, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'GBP', warpsPerUnit: 115, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'JPY', warpsPerUnit: 0.62, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'CHF', warpsPerUnit: 105, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'USD', warpsPerUnit: 91, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'GBP', warpsPerUnit: 117, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'JPY', warpsPerUnit: 0.61, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'CHF', warpsPerUnit: 103, lastUpdated: Date.now(), source: 'manual' },
 ];
 
 // ─── Fiat Gateway Engine ─────────────────────────────────
@@ -148,6 +179,9 @@ export class FiatGateway {
     this.loadRates();
     this.loadTransactions();
     this.loadListings();
+    // Restore ETH price
+    const savedEth = storage.getItem('strangrz_eth_price');
+    if (savedEth) this._ethPriceUsd = parseFloat(savedEth) || ETH_REFERENCE_PRICE_USD;
   }
 
   // ─── Exchange Rates ──────────────────────────────────
@@ -199,6 +233,51 @@ export class FiatGateway {
   set preferredCurrency(currency: FiatCurrency) {
     this._preferredCurrency = currency;
     storage.setItem('strangrz_fiat_currency', currency);
+  }
+
+  // ─── ETH Conversion ─────────────────────────────────
+
+  private _ethPriceUsd: number = ETH_REFERENCE_PRICE_USD;
+
+  /** Current ETH price in USD (for CW↔ETH conversion) */
+  get ethPriceUsd(): number { return this._ethPriceUsd; }
+
+  /**
+   * Update ETH price. Clamped within ±20% volatility band of reference
+   * to prevent extreme rate swings.
+   */
+  setEthPrice(priceUsd: number): void {
+    const min = ETH_REFERENCE_PRICE_USD * (1 - ETH_VOLATILITY_BAND);
+    const max = ETH_REFERENCE_PRICE_USD * (1 + ETH_VOLATILITY_BAND);
+    this._ethPriceUsd = Math.min(max, Math.max(min, priceUsd));
+    storage.setItem('strangrz_eth_price', String(this._ethPriceUsd));
+  }
+
+  /** How many CW per 1 ETH (dynamic based on current ETH price) */
+  get warpsPerEth(): number {
+    const usdRate = this.rates.get('USD');
+    if (!usdRate) return 0;
+    return Math.round(usdRate.warpsPerUnit * this._ethPriceUsd);
+  }
+
+  /** Convert CW to ETH */
+  warpsToEth(warps: number): number {
+    const wpe = this.warpsPerEth;
+    if (wpe <= 0) return 0;
+    return Math.round(warps / wpe * 1e8) / 1e8; // 8 decimal precision like ETH
+  }
+
+  /** Convert ETH to CW */
+  ethToWarps(eth: number): number {
+    return Math.round(eth * this.warpsPerEth * 100) / 100;
+  }
+
+  /** Format price showing CW, fiat, and ETH */
+  formatTriplePrice(warps: number, currency: FiatCurrency = this._preferredCurrency): string {
+    const fiat = this.warpsToFiat(warps, currency);
+    const eth = this.warpsToEth(warps);
+    const symbol = getCurrencySymbol(currency);
+    return `${warps.toLocaleString()} ⬣ (${symbol}${fiat.toFixed(2)} / ${eth.toFixed(6)} ETH)`;
   }
 
   // ─── Price Conversion ────────────────────────────────
