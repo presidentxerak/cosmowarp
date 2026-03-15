@@ -155,7 +155,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} />
           </div>
 
-          <h2 className="text-title-md font-bold opacity-100 font-title">{alias}</h2>
+          <h2 className="text-title-lg font-bold opacity-100 font-title">{alias}</h2>
           <p className="text-[11px] opacity-40 font-mono mt-0.5">{wallet.address}</p>
 
           {/* Balance & Level */}

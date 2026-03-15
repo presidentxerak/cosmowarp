@@ -110,7 +110,7 @@ export default function CosmoChatView() {
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Wall</h2>
+          <h2 className="text-title-lg font-bold opacity-100 mb-1 font-title">Wall</h2>
           <p className="opacity-50 text-base">Create and unlock your wallet to access the Wall.</p>
           <p className="opacity-30 text-body-sm mt-1">Encrypted anonymous social network</p>
         </div>

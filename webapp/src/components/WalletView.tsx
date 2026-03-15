@@ -11,6 +11,7 @@ import MineView from './MineView';
 import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
 import HexAvatar from './HexAvatar';
+import InfoTooltip from './InfoTooltip';
 
 type WalletTab = 'overview' | 'send' | 'mine' | 'payment' | 'ethereum';
 type AuthTab = 'signup' | 'signin';
@@ -647,30 +648,18 @@ export default function WalletView() {
       {walletTab === 'overview' && (
         <>
           {/* Balance Card */}
-          <div className="glass-panel p-5 text-center animate-pulse-glow">
+          <div className="glass-panel p-6 text-center animate-pulse-glow">
             <div className="flex justify-center mb-3">
               <HexAvatar address={wallet.address} size={80} />
             </div>
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <span className={`text-title-sm ${levelDef.color}`}>{wallet.levelSymbol}</span>
-              <span className={`text-body-sm font-bold ${levelDef.color}`}>{wallet.levelTitle}</span>
-            </div>
-            <p className="text-body-sm opacity-50 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Strangrz Balance'}</p>
-            <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1 animate-float">
+            <p className="text-body-md opacity-60 mb-1">{wallet.alias ? `@${wallet.alias}` : 'Strangrz Balance'}</p>
+            <div className="text-title-xl sm:text-[3.5rem] font-bold opacity-100 mb-2 animate-float leading-tight">
               {wallet.balance.toLocaleString()} <span className="text-title-lg">{'\u2B23'}</span>
             </div>
-            <p className="text-label opacity-40">STRANGRZ ENERGY UNITS</p>
-            <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-              {wallet.isAdmin && <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-60 border border-current/10">ADMIN</span>}
-              <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10 flex items-center gap-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-                StrangrzID
-              </span>
-              <span className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-80 border border-current/10 flex items-center gap-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                ENCRYPTED
-              </span>
-              <button onClick={lock} className="text-label px-2 py-0.5 rounded-none bg-current/5 opacity-70 border border-current/15 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-1">
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <span className={`text-body-sm font-bold ${levelDef.color}`}>{wallet.levelSymbol} {wallet.levelTitle}</span>
+              <InfoTooltip text={`Lv.${wallet.level} — Reward x${wallet.rewardMultiplier} — Streak ${wallet.streakDays}j — ${wallet.xp} XP`} />
+              <button onClick={lock} className="text-label px-3 py-1 bg-current/5 opacity-60 border border-current/15 hover:opacity-90 transition-colors cursor-pointer flex items-center gap-1">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                 Lock
               </button>
@@ -863,62 +852,75 @@ export default function WalletView() {
           </div>
 
           {/* Level Progress */}
-          <div className="glass-panel p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-base font-bold opacity-70"><span className={levelDef.color}>{wallet.levelSymbol}</span> Level {wallet.level}: {wallet.levelName}</h3>
-              <span className="text-body-sm opacity-40">{wallet.xp} XP</span>
-            </div>
-            <div className="flex items-center gap-2 text-label opacity-40 mb-2">
-              <span>Reward: <span className="opacity-80">{wallet.rewardMultiplier}x</span></span>
-              <span>Streak: <span className="opacity-80">{wallet.streakDays} days</span></span>
+          <div className="glass-panel p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-title-sm font-bold font-title"><span className={levelDef.color}>{wallet.levelSymbol}</span> Lv.{wallet.level}</h3>
+              <InfoTooltip text={`${wallet.levelName} — Reward x${wallet.rewardMultiplier} — Streak ${wallet.streakDays}j — ${wallet.xp} XP`} align="right" />
             </div>
             {nextLevel ? (
               <div>
-                <div className="flex justify-between text-label opacity-40 mb-1">
-                  <span>Progress to {nextLevel.name}</span>
-                  <span>{levelProgress}%</span>
+                <div className="flex justify-between text-body-sm opacity-60 mb-2">
+                  <span>{nextLevel.name}</span>
+                  <span className="font-bold">{levelProgress}%</span>
                 </div>
-                <div className="w-full bg-current/5 rounded-none h-2">
-                  <div className="h-2 rounded-none transition-all duration-500" style={{ width: `${levelProgress}%`, background: 'currentColor', opacity: 0.3 }} />
+                <div className="w-full bg-current/5 h-3">
+                  <div className="h-3 transition-all duration-500" style={{ width: `${levelProgress}%`, background: 'currentColor', opacity: 0.25 }} />
                 </div>
               </div>
-            ) : <p className="text-label opacity-80">Maximum level reached!</p>}
+            ) : <p className="text-body-sm opacity-80">Maximum level reached!</p>}
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.transactions.length}</p><p className="text-label opacity-40">TXs</p></div>
-            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.transactions.filter(t => t.type === 'mine').length}</p><p className="text-label opacity-40">MINED</p></div>
-            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.transactions.filter(t => t.type === 'send').reduce((a, t) => a + t.amount, 0)}</p><p className="text-label opacity-40">SENT</p></div>
-            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-80">{wallet.streakDays}</p><p className="text-label opacity-40">STREAK</p></div>
+          {/* Stats Grid (simplified) */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.transactions.length}</p><p className="text-label opacity-50">TXs</p></div>
+            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.transactions.filter(t => t.type === 'mine').length}</p><p className="text-label opacity-50">MINED</p></div>
+            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.streakDays}</p><p className="text-label opacity-50">STREAK</p></div>
           </div>
 
-          {/* Tokenomics */}
+          {/* Tokenomics (simplified) */}
           {supplyInfo && (
-            <div className="glass-panel p-4">
-              <h3 className="text-base font-bold opacity-70 mb-3">Tokenomics</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
-                <div><span className="opacity-40">Total Supply:</span><span className="opacity-80 ml-1">{supplyInfo.total.toLocaleString()}</span></div>
-                <div><span className="opacity-40">Circulating:</span><span className="opacity-80 ml-1">{supplyInfo.circulating.toLocaleString()}</span></div>
-                <div><span className="opacity-40">Mining Reward:</span><span className="opacity-80 ml-1">{supplyInfo.currentReward.toFixed(2)} {'\u2B23'}</span></div>
-                <div><span className="opacity-40">Epoch:</span><span className="opacity-80 ml-1">{supplyInfo.currentEpoch}</span></div>
-                <div><span className="opacity-40">Mined:</span><span className="opacity-80 ml-1">{supplyInfo.percentMined.toFixed(2)}%</span></div>
-                <div><span className="opacity-40">Burned:</span><span className="opacity-70 ml-1">{supplyInfo.burned.toLocaleString()}</span></div>
+            <div className="glass-panel p-5">
+              <h3 className="text-title-sm font-bold font-title mb-3 flex items-center gap-2">
+                Tokenomics
+                <InfoTooltip text={`Epoch ${supplyInfo.currentEpoch} — Mined ${supplyInfo.percentMined.toFixed(2)}% — Burned ${supplyInfo.burned.toLocaleString()} ⬣`} />
+              </h3>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-current/5 p-3">
+                  <p className="text-label opacity-50">SUPPLY</p>
+                  <p className="text-body-lg font-bold opacity-90">{(supplyInfo.circulating / 1000).toFixed(0)}K</p>
+                </div>
+                <div className="bg-current/5 p-3">
+                  <p className="text-label opacity-50">REWARD</p>
+                  <p className="text-body-lg font-bold opacity-90">{supplyInfo.currentReward.toFixed(2)}</p>
+                </div>
+                <div className="bg-current/5 p-3">
+                  <p className="text-label opacity-50">MINED</p>
+                  <p className="text-body-lg font-bold opacity-90">{supplyInfo.percentMined.toFixed(1)}%</p>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Mesh Stats */}
+          {/* Mesh Stats (simplified) */}
           {meshStats && (
-            <div className="glass-panel p-4">
-              <h3 className="text-base font-bold opacity-70 mb-3">StrangrzMesh Status</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
-                <div><span className="opacity-40">DAG Nodes:</span><span className="opacity-80 ml-1">{meshStats.totalTransactions}</span></div>
-                <div><span className="opacity-40">Active Tips:</span><span className="opacity-80 ml-1">{meshStats.totalTips}</span></div>
-                <div><span className="opacity-40">Avg Resonance:</span><span className="opacity-80 ml-1">{(meshStats.avgResonance * 100).toFixed(1)}%</span></div>
-                <div><span className="opacity-40">Finalized:</span><span className="opacity-80 ml-1">{meshStats.finalizedCount}</span></div>
-                <div><span className="opacity-40">Max Depth:</span><span className="opacity-80 ml-1">{meshStats.maxDepth}</span></div>
-                <div><span className="opacity-40">TPS:</span><span className="opacity-80 ml-1">{meshStats.totalTps.toFixed(2)}</span></div>
+            <div className="glass-panel p-5">
+              <h3 className="text-title-sm font-bold font-title mb-3 flex items-center gap-2">
+                Mesh Status
+                <InfoTooltip text={`Resonance ${(meshStats.avgResonance * 100).toFixed(1)}% — Depth ${meshStats.maxDepth} — Finalized ${meshStats.finalizedCount}`} />
+              </h3>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-current/5 p-3">
+                  <p className="text-label opacity-50">NODES</p>
+                  <p className="text-body-lg font-bold opacity-90">{meshStats.totalTransactions}</p>
+                </div>
+                <div className="bg-current/5 p-3">
+                  <p className="text-label opacity-50">TIPS</p>
+                  <p className="text-body-lg font-bold opacity-90">{meshStats.totalTips}</p>
+                </div>
+                <div className="bg-current/5 p-3">
+                  <p className="text-label opacity-50">TPS</p>
+                  <p className="text-body-lg font-bold opacity-90">{meshStats.totalTps.toFixed(2)}</p>
+                </div>
               </div>
             </div>
           )}

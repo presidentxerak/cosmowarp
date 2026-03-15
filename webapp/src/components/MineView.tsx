@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
+import InfoTooltip from './InfoTooltip';
 import {
   mineBlock,
   loadDifficultyState,
@@ -42,7 +43,6 @@ export default function MineView() {
   const [history, setHistory] = useState<MiningHistoryEntry[]>([]);
   const [energyLevel, setEnergyLevel] = useState<EnergyLevel>('medium');
   const [certPayload, setCertPayload] = useState('');
-  const [showExplainer, setShowExplainer] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const stopMining = useCallback(() => {
@@ -140,180 +140,78 @@ export default function MineView() {
   return (
     <div className="space-y-4">
       {/* ─── Header: φ-Chain Resonance Mining ────────────── */}
-      <div className="glass-panel p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u03C6'} Resonance Mining</h2>
-            <p className="text-body-sm opacity-40">
-              {'\u03C6'}-Chain Proof-of-Work — algorithme unique à Strangrz. Difficulté grade Bitcoin, blocs de 10 min.
-            </p>
-          </div>
-          <button
-            onClick={() => setShowExplainer(!showExplainer)}
-            className="text-[11px] opacity-40 hover:opacity-70 cursor-pointer border border-current/10 px-2 py-1 shrink-0 transition-all"
-          >
-            {showExplainer ? 'Masquer' : 'Pourquoi miner ?'}
-          </button>
-        </div>
-
-        {showExplainer && (
-          <div className="mt-3 pt-3 border-t border-current/10 space-y-2 text-[11px] opacity-40">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="bg-current/5 p-3">
-                <p className="font-bold opacity-60 mb-1">{'\u26D3'} Sécurité du réseau</p>
-                <p>Chaque bloc miné renforce la chaîne de certification des Strangrz. Le {'\u03C6'}-mixing rend chaque preuve unique et impossible à raccourcir.</p>
-              </div>
-              <div className="bg-current/5 p-3">
-                <p className="font-bold opacity-60 mb-1">{'\u2696'} Distribution équitable</p>
-                <p>Le mining est le seul moyen de créer de nouveaux {'\u2B23'}. La Resonance Decay (décroissance dorée) garantit une distribution progressive des 58M tokens minables.</p>
-              </div>
-              <div className="bg-current/5 p-3">
-                <p className="font-bold opacity-60 mb-1">{'\u2713'} Certification des oeuvres</p>
-                <p>Chaque bloc peut référencer des Strangrz à certifier. Le mineur participe activement à l'authentification des oeuvres numériques de la galerie.</p>
-              </div>
-              <div className="bg-current/5 p-3">
-                <p className="font-bold opacity-60 mb-1">{'\u2B06'} Progression personnelle</p>
-                <p>Plus vous minez, plus votre niveau monte dans la hiérarchie. Chaque palier débloque des bonus de récompense et des privilèges exclusifs.</p>
-              </div>
-            </div>
-            <p className="opacity-50 text-center pt-1">
-              Contrairement à Bitcoin, le Resonance Mining utilise le ratio d'or ({'\u03C6'} = 1.618...) comme fondation cryptographique.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* ─── φ-Chain Pipeline Visualization ──────────────── */}
-      <div className="glass-panel p-4">
-        <p className="text-label opacity-50 mb-2">PIPELINE {'\u03C6'}-CHAIN</p>
-        <div className="flex items-center gap-1 text-[10px]">
-          <div className={`flex-1 p-2 text-center border transition-all ${
-            phase === 'mining' && progress ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
-          }`}>
-            <p className="font-bold">Phase 1</p>
-            <p className="opacity-70">SHA-256</p>
-            <p className="opacity-50 text-[9px]">Seed hash</p>
-          </div>
-          <span className="opacity-30 shrink-0">{'\u2192'}</span>
-          <div className={`flex-1 p-2 text-center border transition-all ${
-            phase === 'mining' && progress ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
-          }`}>
-            <p className="font-bold">Phase 2</p>
-            <p className="opacity-70">{'\u03C6'}-Resonance</p>
-            <p className="opacity-50 text-[9px]">Golden mixing</p>
-          </div>
-          <span className="opacity-30 shrink-0">{'\u2192'}</span>
-          <div className={`flex-1 p-2 text-center border transition-all ${
-            phase === 'mining' && progress ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
-          }`}>
-            <p className="font-bold">Phase 3</p>
-            <p className="opacity-70">SHA-256</p>
-            <p className="opacity-50 text-[9px]">Proof hash</p>
-          </div>
-          <span className="opacity-30 shrink-0">{'\u2192'}</span>
-          <div className={`flex-1 p-2 text-center border transition-all ${
-            phase === 'result' ? 'border-current/20 bg-current/10 opacity-80' : 'border-current/10 opacity-30'
-          }`}>
-            <p className="font-bold">{'\u2713'}</p>
-            <p className="opacity-70">Difficultét</p>
-            <p className="opacity-50 text-[9px]">{diffState.currentDifficulty} bits</p>
-          </div>
+      <div className="glass-panel p-5">
+        <div className="flex items-center gap-3">
+          <h2 className="text-title-lg font-bold font-title flex-1">{'\u03C6'} Resonance Mining</h2>
+          <InfoTooltip text="Proof-of-Work basé sur le ratio d'or (φ = 1.618). Minez pour créer des ⬣, certifier des oeuvres et monter en niveau. Difficulté grade Bitcoin, blocs de 10 min." align="right" />
         </div>
       </div>
 
-      {/* ─── Stats Dashboard ─────────────────────────────── */}
-      <div className="glass-panel p-4">
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center">
-          <div className="bg-current/5 p-2">
-            <p className="text-label opacity-40">DIFFICULTÉ</p>
-            <p className="text-base font-bold opacity-80">{diffState.currentDifficulty} bits</p>
-          </div>
-          <div className="bg-current/5 p-2">
-            <p className="text-label opacity-40">BLOC</p>
-            <p className="text-base font-bold opacity-80">#{diffState.blocksMined}</p>
-          </div>
-          <div className="bg-current/5 p-2">
-            <p className="text-label opacity-40">RÉCOMPENSE</p>
-            <p className="text-base font-bold opacity-80">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u2B23'}</p>
-          </div>
-          <div className="bg-current/5 p-2">
-            <p className="text-label opacity-40">MULTIPLICATEUR</p>
-            <p className="text-base font-bold opacity-80">{wallet.rewardMultiplier}x</p>
-          </div>
-          <div className="bg-current/5 p-2">
-            <p className="text-label opacity-40">ÉPOQUE</p>
-            <p className="text-base font-bold opacity-80">{supplyInfo?.currentEpoch || 0}</p>
-          </div>
-        </div>
+      {/* ─── Stats Dashboard (simplified) ──────────────── */}
 
-        {/* Difficulty visualization */}
-        <div className="mt-3">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-label opacity-50">CIBLE</p>
-            <p className="text-label opacity-30 font-mono">
-              {'0'.repeat(Math.floor(diffState.currentDifficulty / 4))}
-              <span className="opacity-40">{'f'.repeat(Math.max(0, 16 - Math.floor(diffState.currentDifficulty / 4)))}</span>
-              <span className="opacity-30">...</span>
-            </p>
+      <div className="glass-panel p-5">
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="bg-current/5 p-3">
+            <p className="text-label opacity-50 flex items-center justify-center gap-1">DIFFICULTÉ <InfoTooltip text={`${diffState.currentDifficulty} bits — ~${(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} hashes pour résoudre un bloc`} /></p>
+            <p className="text-body-lg font-bold opacity-90">{diffState.currentDifficulty} bits</p>
           </div>
-          <div className="w-full h-1.5 bg-current/5 overflow-hidden">
-            <div
-              className="h-full bg-current/30 transition-all duration-300"
-              style={{ width: `${(diffState.currentDifficulty / 64) * 100}%` }}
-            />
+          <div className="bg-current/5 p-3">
+            <p className="text-label opacity-50">RÉCOMPENSE</p>
+            <p className="text-body-lg font-bold opacity-90">{supplyInfo?.currentReward.toFixed(2) || '50.00'} {'\u2B23'}</p>
           </div>
-          <div className="flex justify-between text-label opacity-30 mt-0.5">
-            <span>16 bits (min)</span>
-            <span>64 bits (max)</span>
+          <div className="bg-current/5 p-3">
+            <p className="text-label opacity-50 flex items-center justify-center gap-1">BLOC <InfoTooltip text={`Époque ${supplyInfo?.currentEpoch || 0} — Multiplicateur x${wallet.rewardMultiplier}`} /></p>
+            <p className="text-body-lg font-bold opacity-90">#{diffState.blocksMined}</p>
           </div>
-          <p className="text-[10px] opacity-30 mt-1 text-center">
-            ~{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} hashes en moyenne pour résoudre un bloc
-          </p>
         </div>
       </div>
 
       {/* ─── Phase: Configuration ────────────────────────── */}
       {phase === 'config' && (
-        <div className="glass-panel p-5 space-y-4">
-          <h3 className="text-base font-bold opacity-70">Configuration du minage</h3>
+        <div className="glass-panel p-5 space-y-5">
+          <h3 className="text-title-md font-bold font-title flex items-center gap-2">
+            Configuration
+            <InfoTooltip text="Choisissez votre niveau d'énergie et optionnellement des Strangrz à certifier dans ce bloc." />
+          </h3>
 
           {/* Energy Level Selection */}
           <div>
-            <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Niveau d'énergie</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            <p className="text-label opacity-50 mb-2">ÉNERGIE</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {ENERGY_LEVELS.map(e => (
                 <button
                   key={e.id}
                   onClick={() => setEnergyLevel(e.id)}
-                  className={`py-3 px-2 text-[11px] font-medium transition-all cursor-pointer text-center ${
+                  className={`py-3 px-3 text-body-sm font-medium transition-all cursor-pointer text-center ${
                     energyLevel === e.id
-                      ? 'bg-current/10 border border-current/20 opacity-90'
-                      : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                      ? 'bg-current/10 border border-current/20 opacity-100'
+                      : 'border border-current/10 opacity-40 hover:opacity-70 hover:border-current/15'
                   }`}
                 >
-                  <div className="text-base mb-0.5">{e.icon}</div>
+                  <div className="text-body-lg mb-0.5">{e.icon}</div>
                   <div className="font-bold">{e.label}</div>
-                  <div className="text-[9px] opacity-60 mt-0.5">x{e.multiplier} reward</div>
+                  <div className="text-label opacity-60 mt-0.5">x{e.multiplier}</div>
                 </button>
               ))}
             </div>
-            <p className="text-[10px] opacity-30 mt-1.5">{selectedEnergy.desc}</p>
           </div>
 
-          {/* Certification Payload */}
+          {/* Certification Payload (simplified) */}
           <div>
-            <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Certification payload</label>
-            <p className="text-[10px] opacity-30 mb-2">Référencez des Strangrz à certifier dans ce bloc. Votre preuve de travail renforce leur authenticité.</p>
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-label opacity-50">CERTIFICATION</p>
+              <InfoTooltip text="Référencez des Strangrz à certifier dans ce bloc. Votre preuve de travail renforce leur authenticité." />
+            </div>
             <input
               type="text"
               placeholder="ID ou titre de Strangrz à certifier..."
               value={certPayload}
               onChange={e => setCertPayload(e.target.value.slice(0, 120))}
-              className="warp-input w-full text-body-sm py-2"
+              className="warp-input w-full"
               maxLength={120}
             />
             {recentStrangrz.length > 0 && (
-              <div className="flex gap-1 mt-1.5 flex-wrap">
+              <div className="flex gap-1.5 mt-2 flex-wrap">
                 {recentStrangrz.map(w => (
                   <button
                     key={w.id}
@@ -321,42 +219,33 @@ export default function MineView() {
                       const newVal = prev ? `${prev}, ${w.title}` : w.title;
                       return newVal.slice(0, 120);
                     })}
-                    className="text-[9px] opacity-30 hover:opacity-60 border border-current/10 px-1.5 py-0.5 cursor-pointer transition-all truncate max-w-[120px]"
+                    className="text-body-sm opacity-40 hover:opacity-70 border border-current/10 px-2 py-1 cursor-pointer transition-all truncate max-w-[140px]"
                   >
                     + {w.title}
                   </button>
                 ))}
               </div>
             )}
-            <p className="text-[10px] opacity-30 mt-0.5">{certPayload.length}/120</p>
           </div>
 
-          {/* Estimated Reward Preview */}
-          <div className="bg-current/5 border border-current/10 p-3 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] opacity-40 uppercase">Récompense estimée</p>
-              <p className="text-base font-bold opacity-80">
-                ~{((supplyInfo?.currentReward || 50) * selectedEnergy.multiplier * wallet.rewardMultiplier).toFixed(2)} {'\u2B23'}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] opacity-40 uppercase">Calcul</p>
-              <p className="text-[10px] opacity-50">
-                {supplyInfo?.currentReward.toFixed(2) || '50.00'} x {selectedEnergy.multiplier} x {wallet.rewardMultiplier}
-              </p>
-            </div>
+          {/* Estimated Reward */}
+          <div className="bg-current/5 border border-current/10 p-4 text-center">
+            <p className="text-label opacity-50 mb-1">RÉCOMPENSE ESTIMÉE</p>
+            <p className="text-title-md font-bold opacity-90">
+              ~{((supplyInfo?.currentReward || 50) * selectedEnergy.multiplier * wallet.rewardMultiplier).toFixed(2)} {'\u2B23'}
+            </p>
           </div>
 
           {/* Start Button */}
           <button
-            className="warp-button w-full py-3 text-base font-bold"
+            className="warp-button w-full py-4 font-bold"
             onClick={startMining}
           >
-            {'\u03C6'} Lancer le Resonance Mining
+            {'\u03C6'} Lancer le Mining
           </button>
 
           {error && (
-            <p className="text-body-sm opacity-70 text-center">{error}</p>
+            <p className="text-body-md opacity-70 text-center">{error}</p>
           )}
         </div>
       )}
@@ -364,69 +253,45 @@ export default function MineView() {
       {/* ─── Phase: Mining in Progress ───────────────────── */}
       {phase === 'mining' && (
         <div className="glass-panel p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold opacity-70">{'\u03C6'} Resonance Mining en cours...</h3>
-            <span className="text-[10px] opacity-40 bg-current/5 px-2 py-1">x{selectedEnergy.multiplier}</span>
-          </div>
+          <h3 className="text-title-md font-bold font-title">{'\u03C6'} Mining en cours...</h3>
 
-          {/* Live metrics */}
-          <div className="grid grid-cols-2 gap-2 text-body-sm">
-            <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">{'\u03C6'}-HASHRATE</p>
-              <p className="opacity-80 font-mono font-bold text-base">
+          {/* Live metrics — essentials only */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-current/5 p-3">
+              <p className="text-label opacity-50">HASHRATE</p>
+              <p className="text-body-lg font-mono font-bold opacity-90">
                 {formatHashrate(progress?.hashrate || 0)}
               </p>
             </div>
-            <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">{'\u03C6'}-CHAINS</p>
-              <p className="opacity-80 font-mono font-bold text-base">
-                {(progress?.hashesComputed || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">NONCE</p>
-              <p className="opacity-70 font-mono">
-                {(progress?.currentNonce || 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="bg-current/5 p-2.5">
-              <p className="opacity-40 text-label">TEMPS ÉCOULÉ</p>
-              <p className="opacity-70 font-mono">
+            <div className="bg-current/5 p-3">
+              <p className="text-label opacity-50">TEMPS</p>
+              <p className="text-body-lg font-mono font-bold opacity-90">
                 {formatTime(progress?.elapsed || 0)}
               </p>
             </div>
           </div>
 
-          {/* Best hash progress */}
+          {/* Progress bar */}
           {progress && (
             <div>
-              <div className="flex justify-between text-label mb-1">
-                <span className="opacity-40">MEILLEUR HASH ({progress.bestZeroBits}/{progress.targetBits} bits)</span>
-                <span className="opacity-40">{Math.round((progress.bestZeroBits / progress.targetBits) * 100)}%</span>
+              <div className="flex justify-between text-body-sm mb-1">
+                <span className="opacity-50">Progression</span>
+                <span className="opacity-70 font-bold">{Math.round((progress.bestZeroBits / progress.targetBits) * 100)}%</span>
               </div>
-              <div className="bg-current/5 p-2 font-mono text-label break-all">
-                <span className="opacity-80">
-                  {progress.bestHash.slice(0, Math.floor(progress.bestZeroBits / 4))}
-                </span>
-                <span className="opacity-40">
-                  {progress.bestHash.slice(Math.floor(progress.bestZeroBits / 4))}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-current/5 mt-1 overflow-hidden">
+              <div className="w-full h-3 bg-current/5 overflow-hidden">
                 <div
                   className="h-full bg-current/30 transition-all duration-200"
                   style={{ width: `${Math.min(100, (progress.bestZeroBits / progress.targetBits) * 100)}%` }}
                 />
               </div>
-              <p className="text-[10px] opacity-30 mt-1 text-center">
-                {'\u03C6'}-Chain : SHA-256 {'\u2192'} Golden Mixing {'\u2192'} SHA-256 {'\u2192'} test {diffState.currentDifficulty} bits
+              <p className="text-label opacity-40 mt-1 text-center">
+                {(progress.hashesComputed || 0).toLocaleString()} hashes — {progress.bestZeroBits}/{progress.targetBits} bits
               </p>
             </div>
           )}
 
-          {/* Stop button */}
           <button
-            className="w-full py-3 text-base font-medium bg-current/5 border border-current/15 opacity-70 hover:bg-current/10 transition-colors cursor-pointer"
+            className="warp-button w-full py-4 font-bold"
             onClick={stopMining}
           >
             {'\u25A0'} Arrêter le minage
@@ -437,72 +302,34 @@ export default function MineView() {
       {/* ─── Phase: Result ───────────────────────────────── */}
       {phase === 'result' && lastReward !== null && (
         <div className="glass-panel p-5 space-y-4">
-          <div className="text-center py-3">
-            <p className="text-3xl mb-2">{'\u03C6'}</p>
-            <h3 className="text-title-sm font-bold opacity-100 font-title">Resonance Bloc miné !</h3>
-            <div className="text-3xl font-bold opacity-100 mt-2">
+          <div className="text-center py-4">
+            <p className="text-title-xl mb-2">{'\u03C6'}</p>
+            <h3 className="text-title-lg font-bold font-title">Bloc miné !</h3>
+            <div className="text-title-xl font-bold mt-3">
               +{lastReward} {'\u2B23'}
             </div>
-            <p className="text-body-sm opacity-40 mt-1">
-              Énergie {selectedEnergy.label} — Multiplicateur x{selectedEnergy.multiplier}
-            </p>
             {levelUpMsg && (
-              <div className="mt-3 p-3 bg-current/5 border border-current/15">
-                <p className="opacity-70 font-bold text-body-sm">{'\u2605'} LEVEL UP! {levelUpMsg}</p>
+              <div className="mt-4 p-3 bg-current/5 border border-current/15">
+                <p className="text-body-md font-bold opacity-80">{'\u2605'} LEVEL UP! {levelUpMsg}</p>
               </div>
             )}
           </div>
 
-          {/* Block details */}
-          {lastHash && (
-            <div className="space-y-2">
-              <div>
-                <p className="text-label opacity-40 mb-1">{'\u03C6'}-PROOF HASH</p>
-                <div className="bg-current/5 p-2 font-mono text-label break-all">
-                  <span className="opacity-80">
-                    {lastHash.slice(0, Math.floor(diffState.currentDifficulty / 4))}
-                  </span>
-                  <span className="opacity-50">
-                    {lastHash.slice(Math.floor(diffState.currentDifficulty / 4))}
-                  </span>
-                </div>
-              </div>
-
-              {progress && (
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-current/5 p-2">
-                    <p className="text-label opacity-40">TEMPS</p>
-                    <p className="text-body-sm font-bold opacity-70">{formatTime(progress.elapsed)}</p>
-                  </div>
-                  <div className="bg-current/5 p-2">
-                    <p className="text-label opacity-40">{'\u03C6'}-HASHRATE</p>
-                    <p className="text-body-sm font-bold opacity-70">{formatHashrate(progress.hashrate)}</p>
-                  </div>
-                  <div className="bg-current/5 p-2">
-                    <p className="text-label opacity-40">{'\u03C6'}-CHAINS</p>
-                    <p className="text-body-sm font-bold opacity-70">{progress.hashesComputed.toLocaleString()}</p>
-                  </div>
-                </div>
-              )}
-
-              {certPayload && (
-                <div className="bg-current/5 p-2 text-center">
-                  <p className="text-label opacity-40 mb-0.5">STRANGRZ CERTIFIÉES</p>
-                  <p className="text-body-sm opacity-60 italic">"{certPayload}"</p>
-                </div>
-              )}
+          {/* Compact stats row */}
+          {progress && (
+            <div className="flex justify-center gap-6 text-body-sm opacity-60">
+              <span>{formatTime(progress.elapsed)}</span>
+              <span>{formatHashrate(progress.hashrate)}</span>
+              <span>{progress.hashesComputed.toLocaleString()} hashes</span>
             </div>
           )}
 
-          {/* Contribution feedback */}
-          <div className="bg-current/5 border border-current/10 p-3 text-[11px] opacity-40 text-center space-y-1">
-            <p>Ce bloc Resonance renforce la chaîne de certification Strangrz.</p>
-            <p>Preuve {'\u03C6'}-Chain : SHA-256 {'\u2192'} Golden Mixing ({'\u03C6'} = 1.618...) {'\u2192'} SHA-256</p>
-            {certPayload && <p>Les Strangrz référencées bénéficient d'une authentification renforcée.</p>}
-          </div>
+          {certPayload && (
+            <p className="text-body-sm opacity-50 text-center italic">Certifié : "{certPayload}"</p>
+          )}
 
           <button
-            className="warp-button w-full py-3 text-base font-bold"
+            className="warp-button w-full py-4 font-bold"
             onClick={resetToConfig}
           >
             {'\u03C6'} Miner un nouveau bloc
@@ -510,69 +337,24 @@ export default function MineView() {
         </div>
       )}
 
-      {/* ─── Mining History ─────────────────────────────── */}
+      {/* ─── Mining History (simplified) ────────────────── */}
       {history.length > 0 && (
-        <div className="glass-panel p-4">
-          <h3 className="text-base font-bold opacity-70 mb-2">{'\u25B7'} Historique Resonance</h3>
-          <div className="space-y-1 max-h-48 overflow-y-auto">
+        <div className="glass-panel p-5">
+          <h3 className="text-title-sm font-bold font-title mb-3 flex items-center gap-2">
+            Historique
+            <InfoTooltip text="Vos 10 derniers blocs minés avec temps, hashrate et récompense." />
+          </h3>
+          <div className="space-y-1 max-h-56 overflow-y-auto">
             {history.slice(0, 10).map((entry, i) => (
-              <div key={i} className="flex items-center justify-between text-label py-1.5 border-b border-current/10 last:border-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="opacity-30 shrink-0">#{diffState.blocksMined - i}</span>
-                  <span className="opacity-50 font-mono truncate">{entry.hash.slice(0, 12)}...</span>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="opacity-40">{formatTime(entry.timeTaken)}</span>
-                  <span className="opacity-40">{formatHashrate(entry.hashrate)}</span>
-                  <span className="opacity-80 font-bold">+{entry.reward} {'\u2B23'}</span>
-                </div>
+              <div key={i} className="flex items-center justify-between text-body-sm py-2 border-b border-current/10 last:border-0">
+                <span className="opacity-50">#{diffState.blocksMined - i}</span>
+                <span className="opacity-50">{formatTime(entry.timeTaken)}</span>
+                <span className="font-bold opacity-90">+{entry.reward} {'\u2B23'}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-
-      {/* ─── How φ-Chain Resonance Mining Works ──────────── */}
-      <div className="glass-panel p-4">
-        <h3 className="text-base font-bold opacity-70 mb-2">Comment fonctionne le {'\u03C6'}-Chain Resonance Mining</h3>
-        <div className="text-[11px] opacity-40 space-y-2">
-          <div className="bg-current/5 border border-current/10 p-2 mb-2 text-center">
-            <p className="font-bold opacity-60">Algorithme unique à Strangrz — difficulté comparable à Bitcoin mais fondé sur le nombre d'or ({'\u03C6'})</p>
-          </div>
-          <div className="flex gap-2">
-            <span className="opacity-60 font-bold shrink-0">1.</span>
-            <p><span className="font-bold opacity-60">Phase SEED :</span> Un en-tête de bloc est construit (hash précédent, timestamp, difficulté, hauteur, adresse, certification payload) et passé par <span className="opacity-80 font-mono">SHA-256</span> pour produire le seed hash.</p>
-          </div>
-          <div className="flex gap-2">
-            <span className="opacity-60 font-bold shrink-0">2.</span>
-            <p><span className="font-bold opacity-60">Phase RESONANCE ({'\u03C6'}) :</span> Le seed hash est transformé par le {'\u03C6'}-mixing : chaque octet est XOR avec une clé dérivée de l'angle d'or ({'\u2248'}137.5°), puis les octets sont permutés selon la spirale dorée, puis chaînés pour créer un effet d'avalanche. Cette transformation est déterministe mais non raccourcissable.</p>
-          </div>
-          <div className="flex gap-2">
-            <span className="opacity-60 font-bold shrink-0">3.</span>
-            <p><span className="font-bold opacity-60">Phase PROOF :</span> Les données résonantes passent par un second <span className="opacity-80 font-mono">SHA-256</span> pour produire le hash final. Ce hash doit avoir {diffState.currentDifficulty}+ zéros en tête ({'\u2248'}{(Math.pow(2, diffState.currentDifficulty)).toLocaleString()} essais en moyenne).</p>
-          </div>
-          <div className="flex gap-2">
-            <span className="opacity-60 font-bold shrink-0">4.</span>
-            <p><span className="font-bold opacity-60">Certification :</span> Les Strangrz référencées dans le payload sont liées cryptographiquement au bloc. La preuve de travail renforce leur authenticité — plus un objet est référencé dans des blocs, plus sa certification est solide.</p>
-          </div>
-          <div className="flex gap-2">
-            <span className="opacity-60 font-bold shrink-0">5.</span>
-            <p><span className="font-bold opacity-60">Ajustement :</span> La difficulté cible ~10 minutes par bloc. Ajustement tous les 10 blocs, cappé à x4 max par période. Récompense via Resonance Decay ({'\u03C6'}<sup>-n</sup>) — décroissance dorée continue, pas de halving brutal.</p>
-          </div>
-
-          <div className="mt-3 pt-2 border-t border-current/10 opacity-50">
-            <p className="font-bold mb-1">Différences avec Bitcoin :</p>
-            <div className="space-y-0.5">
-              <p>• Bitcoin : SHA-256(SHA-256(x)) — double hash identique</p>
-              <p>• Strangrz : SHA-256(x) {'\u2192'} {'\u03C6'}-Resonance Mix {'\u2192'} SHA-256(mixed) — transformation dorée intermédiaire</p>
-              <p>• Bitcoin : halving brutal tous les 210,000 blocs</p>
-              <p>• Strangrz : Resonance Decay continue ({'\u03C6'}<sup>-totalMined/5M</sup>) — courbe lisse et prévisible</p>
-              <p>• Bitcoin : blocs sans contexte applicatif</p>
-              <p>• Strangrz : chaque bloc peut certifier des oeuvres numériques</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

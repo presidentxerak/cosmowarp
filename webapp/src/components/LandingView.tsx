@@ -700,7 +700,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))' }}
           />
           <h1
-            className="text-3xl sm:text-5xl lg:text-6xl font-bold font-title mb-2 tracking-wide uppercase"
+            className="text-title-xl sm:text-[4rem] lg:text-[5rem] font-bold font-title mb-2 tracking-wide uppercase"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
             Strangrz
@@ -744,7 +744,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('concept')}</p>
-            <h2 className="text-2xl sm:text-4xl font-bold font-title text-center mb-6">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-6">
               {t('conceptTitle')}
             </h2>
           </Reveal>
@@ -791,7 +791,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             <Reveal>
               <div>
                 <p className="text-label tracking-[0.3em] opacity-30 mb-3">{t('forCreators')}</p>
-                <h2 className="text-2xl sm:text-4xl font-bold font-title mb-6">
+                <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-6">
                   {t('publishWorks')}
                 </h2>
                 <div className="space-y-6">
@@ -853,7 +853,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('forCollectors')}</p>
-            <h2 className="text-2xl sm:text-4xl font-bold font-title text-center mb-4">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('collectCertified')}
             </h2>
             <p className="text-sm sm:text-base opacity-40 text-center max-w-2xl mx-auto mb-12 leading-relaxed">
@@ -899,7 +899,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section className="relative py-20 sm:py-28 px-4 sm:px-8">
         <div className="max-w-4xl mx-auto">
           <Reveal>
-            <h2 className="text-2xl sm:text-3xl font-bold font-title text-center mb-10">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-10">
               {t('whatObjects')}
             </h2>
           </Reveal>
@@ -932,7 +932,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('technology')}</p>
-            <h2 className="text-2xl sm:text-4xl font-bold font-title text-center mb-12">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-12">
               {t('protocolTitle')}
             </h2>
           </Reveal>
@@ -1007,7 +1007,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-4xl font-bold font-title mb-3">{t('whyNotFree')}</h2>
+              <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-3">{t('whyNotFree')}</h2>
               <p className="text-sm sm:text-base opacity-40">{t('whyNotFreeDesc')}</p>
             </div>
           </Reveal>
@@ -1077,7 +1077,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         }} />
         <Reveal>
           <div className="relative text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-4xl font-bold font-title mb-4">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-4">
               {t('ctaTitle')}
             </h2>
             <p className="text-sm sm:text-base opacity-40 mb-8 leading-relaxed">
