@@ -1,7 +1,7 @@
 {
-  "name": "strangrz",
+  "name": "cosmowarp",
   "version": "3.0.0",
-  "description": "Strangrz Protocol - Certification d'objets rares avec CosmoASM",
+  "description": "CosmoWarp Protocol - Certification d'objets rares avec CosmoASM",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
