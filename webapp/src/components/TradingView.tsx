@@ -4,7 +4,6 @@ import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { SocialEngine } from '../engine/social';
-import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 
 // ─── Types ────────────────────────────────────────────────
@@ -24,7 +23,6 @@ export default function TradingView() {
   const [tab, setTab] = useState<TradingTab>('overview');
   const [sortBy, setSortBy] = useState<SortBy>('recent');
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
-  const [selectedWartId, setSelectedWartId] = useState<string | null>(null);
   const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -126,7 +124,7 @@ export default function TradingView() {
     setBuying(true);
     try {
       const result = await buyWart(wart.id);
-      setBuyResult(result);
+      setBuyResult({ success: result.success, message: result.error || 'Purchase complete!' });
     } catch (err) {
       setBuyResult({ success: false, message: 'Transaction failed' });
     }

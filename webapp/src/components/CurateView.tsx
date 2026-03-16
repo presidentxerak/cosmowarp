@@ -57,7 +57,7 @@ function saveArticles(articles: CuratorArticle[]): void {
 // ─── Component ────────────────────────────────────────────
 
 export default function CurateView({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { wallet, unlocked, marketplace, myCollection, myCreated } = useWallet();
+  const { wallet, marketplace, myCollection, myCreated } = useWallet();
   const [tab, setTab] = useState<CurateTab>('magazine');
   const [articles, setArticles] = useState<CuratorArticle[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<CuratorArticle | null>(null);
