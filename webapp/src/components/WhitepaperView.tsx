@@ -27,7 +27,7 @@ export default function WhitepaperView() {
           <div className="flex justify-center mb-4">
             <Logo className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
-          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">{'ストレンジャーズ'}</h1>
+          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">Strangrz</h1>
           <p className="text-base sm:text-base opacity-50 mb-1">Strangrz Protocole</p>
           <p className="text-body-sm opacity-40 max-w-md mx-auto">
             La plateforme de certification pour objets rares.

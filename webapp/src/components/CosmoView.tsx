@@ -47,11 +47,11 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz ストレンジャーズ. Je peux vous expliquer comment certifier un objet rare, miner des Strangrz, utiliser le paiement, ou générer une oeuvre d\'art AI.',
+    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz. Je peux vous expliquer comment certifier un objet rare, miner des Strangrz, utiliser le paiement, ou générer une oeuvre d\'art AI.',
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
-    response: 'Strangrz (ストレンジャーズ) est une plateforme multi-chaîne de certification pour objets rares. Le Protocole Strangrz crée des certificats d\'authenticité infalsifiables (STCERT) en SZ-721 (Strangrz) et ERC-721 (Ethereum) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
+    response: 'Strangrz est une plateforme multi-chaîne de certification pour objets rares. Le Protocole Strangrz crée des certificats d\'authenticité infalsifiables (STCERT) en SZ-721 (Strangrz) et ERC-721 (Ethereum) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics', 'stz', 'coin', 'monnaie', 'valeur', 'prix token', 'combien vaut', 'hexagone', '⬣'],
@@ -94,7 +94,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     {
       id: 'welcome',
       role: 'cosmo',
-      text: 'Bienvenue sur Strangrz ストレンジャーズ ! Je suis Doctor Strangrz, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
+      text: 'Bienvenue sur Strangrz ! Je suis Doctor Strangrz, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
       timestamp: Date.now(),
     },
   ]);

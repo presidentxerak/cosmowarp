@@ -220,7 +220,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'strangrz', 'cosmowarp', 'about'],
     response: {
-      answer: "Strangrz (ストレンジャーズ) est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux enchères avaient eu un bébé dans l'espace. Tu obtiens un réseau DAG transactionnel (StrangrzMesh — 7 couches parallèles, pas une seule chaîne lente), un réseau social chiffré (le Mur), une marketplace d'objets rares certifiés (les Strangrz), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout ça sécurisé par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'intermédiaires. Pas de banques. Pas de surveillance. Juste de l'échange de valeur cosmique pur.",
+      answer: "Strangrz est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux enchères avaient eu un bébé dans l'espace. Tu obtiens un réseau DAG transactionnel (StrangrzMesh — 7 couches parallèles, pas une seule chaîne lente), un réseau social chiffré (le Mur), une marketplace d'objets rares certifiés (les Strangrz), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout ça sécurisé par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'intermédiaires. Pas de banques. Pas de surveillance. Juste de l'échange de valeur cosmique pur.",
       navigateTo: 'landing',
       tabLabel: 'Accueil',
     },
@@ -594,7 +594,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
     {
       id: 'welcome',
       role: 'cosmo',
-      text: `Salut ! Je suis Doctor Strangrz, ton oracle et guide dans l'univers Strangrz (ストレンジャーズ). Pose-moi n'importe quelle question — portefeuilles, minage, Strangrz, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
+      text: `Salut ! Je suis Doctor Strangrz, ton oracle et guide dans l'univers Strangrz. Pose-moi n'importe quelle question — portefeuilles, minage, Strangrz, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
     },
   ]);
   const [input, setInput] = useState('');

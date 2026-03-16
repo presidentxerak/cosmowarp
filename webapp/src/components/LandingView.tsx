@@ -11,7 +11,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     protocol: 'Protocole',
     signIn: 'Se connecter',
     signUp: 'S\'inscrire',
-    heroSubtitle: 'Protocole multi-chaîne de certification pour oeuvres rares',
+    heroSubtitle: 'Protocole et marketplace multi-chaîne de certification pour œuvres rares',
     heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur Strangrz (SZ-721) et Ethereum (ERC-721).',
     mySpace: 'Mon Espace',
     createAccount: 'Créer un compte',
@@ -114,7 +114,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     ctaDesc: 'Créez votre compte en 10 secondes. Pas d\'email, pas de tiers. Juste vous et le protocole.',
     ctaSignUp: 'Sign Up — Créer un compte',
     readWhitepaper: 'Lire le White Paper',
-    footer: 'Strangrz Foundation — Protocole multi-chaîne de certification pour oeuvres rares',
+    footer: 'Strangrz Foundation — Protocole et marketplace multi-chaîne de certification pour œuvres rares',
     whitePaper: 'White Paper',
     legal: 'Légal',
     privacy: 'Confidentialité',
@@ -127,7 +127,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     protocol: 'Protocol',
     signIn: 'Sign In',
     signUp: 'Sign Up',
-    heroSubtitle: 'Multi-chain certification protocol for rare works',
+    heroSubtitle: 'Multi-chain certification protocol and marketplace for rare works',
     heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on Strangrz (SZ-721) and Ethereum (ERC-721).',
     mySpace: 'My Space',
     createAccount: 'Create Account',
@@ -230,127 +230,11 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     ctaDesc: 'Create your account in 10 seconds. No email, no middleman. Just you and the protocol.',
     ctaSignUp: 'Sign Up — Create Account',
     readWhitepaper: 'Read the White Paper',
-    footer: 'Strangrz Foundation — Multi-chain certification protocol for rare works',
+    footer: 'Strangrz Foundation — Multi-chain certification protocol and marketplace for rare works',
     whitePaper: 'White Paper',
     legal: 'Legal',
     privacy: 'Privacy',
     help: 'Help',
-  },
-  ja: {
-    concept: 'コンセプト',
-    publish: '公開',
-    collect: 'コレクション',
-    protocol: 'プロトコル',
-    signIn: 'ログイン',
-    signUp: 'サインアップ',
-    heroSubtitle: 'レアワークのためのマルチチェーン認証プロトコル',
-    heroDesc: 'デジタルおよび物理的作品を公開、認証、収集。各オブジェクトはStrangrz（SZ-721）とEthereum（ERC-721）上で改ざん不可能な真正性証明書を受け取ります。',
-    mySpace: 'マイスペース',
-    createAccount: 'アカウント作成',
-    learnMore: '詳しく見る',
-    conceptTitle: 'Strangrzとは？',
-    conceptDesc: 'Strangrzはレアオブジェクトの認証プロトコルです。ポケモンカード、スニーカー、レコード、時計、デジタルアート：すべてのレアオブジェクトはSTCERTと呼ばれる暗号証明書による改ざん不可能な真正性証明書を受け取ります。',
-    conceptDesc2: 'ブロックを直線的に連鎖させる従来のブロックチェーンとは異なり、Strangrzは7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）を使用し、順次確認のボトルネックなしに大量のスループットを実現します。',
-    conceptDesc3: '法定通貨システムが中央集権的な仲介者に依存するのに対し、Strangrzは各トランザクションが2つの前のトランザクションを検証するピアツーピアメッシュとして機能し、自己強化型の信頼ネットワークを作成します。',
-    certify: '認証',
-    certifyDesc: '各作品はマルチチェーンSTCERT証明書（SZ-721 + ERC-721）を受け取ります：SHA-256フィンガープリント、クリエイターのEd25519署名、タイムスタンプ。改ざん不可能で全員が検証可能。',
-    publishTitle: '公開',
-    publishDesc: '作品を公開 — デジタルアート、写真、音楽、物理オブジェクト。証明書はあなたが著者であり最初の所有者であることを証明します。',
-    exchange: '交換',
-    exchangeDesc: '認証済み作品を安心して売買。証明書はオブジェクトに従い、その起源を証明します。Strangrz（⬣）またはユーロで支払い。',
-    forCreators: 'クリエイター向け',
-    publishWorks: '作品を公開する',
-    step1: 'プロフィール作成',
-    step1Desc: 'ユーザー名とパスワードだけで十分です。StrangrzがEd25519暗号鍵を生成します。メール不要。',
-    step2: '作品をアップロード',
-    step2Desc: '写真、動画、イラスト、音楽、3Dオブジェクト — すべてのフォーマットに対応。タイトル、説明、価格を追加。',
-    step3: '自動認証',
-    step3Desc: 'StrangrzがファイルのSHA-256フィンガープリントを計算し、秘密鍵で署名します。STCERT証明書がStrangrz（SZ-721）とEthereum（ERC-721）上に即座に作成されます。',
-    step4: '販売開始',
-    step4Desc: '作品がマーケットプレイスに表示されます。コレクターはStrangrz（⬣）または統合ユーロ決済ゲートウェイで購入できます。',
-    publishWork: '作品を公開',
-    forCollectors: 'コレクター向け',
-    collectCertified: '認証済み作品を収集',
-    collectDesc: 'マーケットプレイスを探索し、クリエイターを発見し、Strangrzプロトコルで認証された作品のコレクションを構築。',
-    explore: '探索',
-    exploreDesc: 'マーケットプレイスを閲覧し、世界中のクリエイターの作品を発見。',
-    buy: '購入',
-    buyDesc: 'Strangrz（⬣）またはユーロで統合決済ゲートウェイ経由で支払い。',
-    own: '所有',
-    ownDesc: '各購入でSTCERT証明書がウォレットに転送されます。あなたが検証済みの所有者です。',
-    resell: '再販',
-    resellDesc: 'いつでも作品を販売に出せます。証明書はオブジェクトに従い、所有権の連鎖を証明します。',
-    exploreMarketplace: 'マーケットプレイスを探索',
-    forCurators: 'キュレーター向け',
-    curateTitle: 'キュレーターになる',
-    curateDesc: '100作品を収集してキュレーターステータスを解除。エディトリアル記事を作成し、アーティストをハイライトし、アートマガジンのようにコレクションを共有。',
-    curateStep1: 'コレクト',
-    curateStep1Desc: '100の認証済み作品を購入してキュレーターステータスとゴールドバッジを解除。',
-    curateStep2: 'キュレート',
-    curateStep2Desc: '記事を書き、アーティストとコレクションをフィーチャー。あなたの芸術的ビジョンを共有。',
-    curateStep3: 'インフルエンス',
-    curateStep3Desc: 'あなたのセレクションがCurateマガジンに掲載。Strangrz宇宙のテイストメーカーに。',
-    tradingTitle: 'トレーディングフロア',
-    tradingDesc: 'STRNGRZ（⬣）で動くデジタルアートマーケットプレイス。価格、ボリューム、ランキングを表示し、OpenSeaのようにポートフォリオを管理。',
-    whatObjects: 'どんなオブジェクトを認証？',
-    digitalArt: 'デジタルアート',
-    digitalArtDesc: 'イラスト、3D、写真',
-    music: '音楽',
-    musicDesc: 'アルバム、シングル、リミックス',
-    cards: 'カード',
-    cardsDesc: 'ポケモン、マジック、遊戯王',
-    sneakers: 'スニーカー',
-    sneakersDesc: 'Nike、Adidas、Jordan',
-    watches: '時計',
-    watchesDesc: 'Rolex、Omega、Seiko',
-    vinyl: 'レコード',
-    vinylDesc: '限定プレス',
-    technology: 'テクノロジー',
-    protocolTitle: 'Strangrzプロトコル',
-    crcert: 'STCERT証明書',
-    crcertDesc: 'SHA-256コンテンツフィンガープリント + Ed25519クリエイター署名 + タイムスタンプ。偽造不可能、全員が検証可能。',
-    strangrmesh: 'StrangrzMesh — グラフネットワーク',
-    strangrmeshDesc: '7つの並列検証レイヤーを持つ有向非巡回グラフ（DAG）。各トランザクションが他の2つを検証。',
-    crypto: '最先端の暗号技術',
-    cryptoDesc: 'Ed25519署名、SHA-256ハッシュ、AES-GCM暗号化。SignalやTorと同じ標準。',
-    tokenomics: '公平なトケノミクス',
-    tokenomicsDesc: 'Strangrz（⬣）トークンの固定供給量は6900万。マイニング報酬は黄金比（φ）に従います。',
-    vobjct: 'Strangrz Safe — レジリエンス',
-    vobjctDesc: 'すべての作品はStrangrzマニフェストで保護：SHA-256整合性、マルチネットワークストレージルート（オンチェーン、IPFS、クラウド）、アクティブモニタリング、自動修復。デジタル資産は検証可能、回復可能、永続的。',
-    totalSupply: '総供給量',
-    goldenRatio: '黄金比（マイニング）',
-    layers: 'ネットワークレイヤー',
-    offlineOnline: 'オフライン + オンライン',
-    whyNotFree: 'Strangrzでアートが無料でない理由',
-    whyNotFreeDesc: 'クリエイターとコレクターのための持続可能なエコシステム',
-    whyArg1Title: '創作の価値化',
-    whyArg1Desc: '作品あたり最低価格100 ⬣。すべての創作はアーティストの仕事を尊重する価格に値します。',
-    whyArg2Title: '循環経済',
-    whyArg2Desc: '二次市場の再販ごとに5%のロイヤリティ。アーティストは作品から生涯収入を得ます。',
-    whyArg3Title: 'アンチスパム、プロクオリティ',
-    whyArg3Desc: '価格フロアがノイズをフィルタリングし、コレクターに質の高いマーケットプレイスを保証。',
-    whyArg4Title: '最小限の環境負荷',
-    whyArg4Desc: 'トランザクションあたり〜0.001 Wh。Ethereumより30倍省エネ。ゼロガス、ゼロ無駄。',
-    whyCompare: '比較',
-    whyCompareStrangrz: 'Strangrz',
-    whyCompareEth: 'Ethereum',
-    whyCompareTezos: 'Tezos',
-    whyCompareSolana: 'Solana',
-    whyMintCost: 'ミントコスト',
-    whyMinPrice: '最低販売価格',
-    whyEnergy: 'エネルギー/TX',
-    whyCo2: 'CO₂/TX',
-    whyOnChain: 'オンチェーンストレージ',
-    whyFiat: '法定通貨決済',
-    ctaTitle: '宝物を認証する準備はできましたか？',
-    ctaDesc: '10秒でアカウント作成。メール不要、仲介者不要。あなたとプロトコルだけ。',
-    ctaSignUp: 'サインアップ — アカウント作成',
-    readWhitepaper: 'ホワイトペーパーを読む',
-    footer: 'Strangrz Foundation — レアワークのためのマルチチェーン認証プロトコル',
-    whitePaper: 'ホワイトペーパー',
-    legal: '法的情報',
-    privacy: 'プライバシー',
-    help: 'ヘルプ',
   },
 };
 
@@ -739,7 +623,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             Strangrz
           </h1>
           <p className="text-base sm:text-lg opacity-30 mb-4 tracking-[0.2em]">
-            ストレンジャーズ
+            Protocole et marketplace multi-chaîne de certification pour œuvres rares
           </p>
           <p className="text-base sm:text-lg opacity-70 font-bold mb-3">
             {t('heroSubtitle')}
@@ -943,9 +827,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { step: '01', title: t('curateStep1'), desc: t('curateStep1Desc'), icon: '\u2B23' },
-              { step: '02', title: t('curateStep2'), desc: t('curateStep2Desc'), icon: '\u270E' },
-              { step: '03', title: t('curateStep3'), desc: t('curateStep3Desc'), icon: '\u2B50' },
+              { step: '01', title: t('curateStep1'), desc: t('curateStep1Desc'), icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><polygon points="14,2 26,8.5 26,19.5 14,26 2,19.5 2,8.5" /><path d="M14 10v8M10 14h8" /></svg> },
+              { step: '02', title: t('curateStep2'), desc: t('curateStep2Desc'), icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><path d="M18.5 3.5l6 6L10 24H4v-6L18.5 3.5z" /><path d="M15 7l6 6" /></svg> },
+              { step: '03', title: t('curateStep3'), desc: t('curateStep3Desc'), icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><polygon points="14 2 17.09 9.26 25 10.27 19.5 15.14 20.82 23.02 14 19.27 7.18 23.02 8.5 15.14 3 10.27 10.91 9.26" /></svg> },
             ].map((card, i) => (
               <Reveal key={card.step} delay={i * 0.1}>
                 <TiltCard
@@ -953,7 +837,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   style={{ background: 'rgba(212,175,55,0.03)', border: '1px solid rgba(212,175,55,0.1)' }}
                 >
                   <span className="text-[10px] tracking-[0.3em] opacity-20 block mb-3">{card.step}</span>
-                  <span className="text-2xl block mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="flex justify-center mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-2">{card.title}</h3>
                   <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
                 </TiltCard>
@@ -979,7 +863,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="trading" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">STRNGRZ {'\u2B23'}</p>
+            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3 flex items-center justify-center gap-2">STRNGRZ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8" /></svg></p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('tradingTitle')}
             </h2>
@@ -990,17 +874,17 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Live Listings', desc: 'Real-time marketplace', icon: '\u26A1' },
-              { label: 'Portfolio', desc: 'Track your P&L', icon: '\u{1F4CA}' },
-              { label: 'Rankings', desc: 'Collections & Artists', icon: '\u{1F3C6}' },
-              { label: 'Activity', desc: 'Sales & transfers', icon: '\u{1F504}' },
+              { label: 'Live Listings', desc: 'Real-time marketplace', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10" /></svg> },
+              { label: 'Portfolio', desc: 'Track your P&L', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg> },
+              { label: 'Rankings', desc: 'Collections & Artists', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg> },
+              { label: 'Activity', desc: 'Sales & transfers', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15" /></svg> },
             ].map((item, i) => (
               <Reveal key={item.label} delay={i * 0.05}>
                 <TiltCard
                   className="p-4 text-center landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="text-xl block mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
+                  <span className="flex justify-center mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
                   <p className="text-sm font-bold opacity-80">{item.label}</p>
                   <p className="text-[10px] opacity-30 mt-1">{item.desc}</p>
                 </TiltCard>
@@ -1142,17 +1026,17 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           {/* 4 argument cards */}
           <div className="grid sm:grid-cols-2 gap-4 mb-12">
             {[
-              { icon: '\u2B23', title: t('whyArg1Title'), desc: t('whyArg1Desc') },
-              { icon: '\u221E', title: t('whyArg2Title'), desc: t('whyArg2Desc') },
-              { icon: '\u2716', title: t('whyArg3Title'), desc: t('whyArg3Desc') },
-              { icon: '\u2618', title: t('whyArg4Title'), desc: t('whyArg4Desc') },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8" /><path d="M12 8v4M10 14h4" /></svg>, title: t('whyArg1Title'), desc: t('whyArg1Desc') },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-5.095-8 0-8zM5.822 8c5.096 0 5.096 8 0 8-5.096 0-5.096-8 0-8z" /><path d="M12 8c2.548 0 3.822 2 3.822 4s-1.274 4-3.822 4-3.822-2-3.822-4 1.274-4 3.822-4z" /></svg>, title: t('whyArg2Title'), desc: t('whyArg2Desc') },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /><path d="M9 12l2 2 4-4" /></svg>, title: t('whyArg3Title'), desc: t('whyArg3Desc') },
+              { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22c1.25-1.25 2.5-2 4-2 3 0 3 2 6 2s3-2 6-2c1.5 0 2.75.75 4 2" /><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" /><path d="M12 12v6" /></svg>, title: t('whyArg4Title'), desc: t('whyArg4Desc') },
             ].map((card, i) => (
               <Reveal key={card.title} delay={i * 0.1}>
                 <div
                   className="p-6 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="text-2xl opacity-40 block mb-2">{card.icon}</span>
+                  <span className="opacity-40 block mb-2">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-1">{card.title}</h3>
                   <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
                 </div>
