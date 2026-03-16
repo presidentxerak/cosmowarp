@@ -1,8 +1,8 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
-import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
-import type { Wart } from '../engine/warts';
+import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
+import type { Wart, LazyMintTemplate } from '../engine/warts';
 import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 import { SocialEngine } from '../engine/social';
@@ -62,6 +62,7 @@ export default function MarketplaceView() {
     mintWart, buyWart, listWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
     listWartFiat, buyWartFiat, getWartFiatPrice,
+    lazyListings, myLazyListings, createLazyListing, buyLazyMint, cancelLazyListing, refreshLazyListings,
   } = useWallet();
 
   const [tab, setTab] = useState<GalleryTab>(() => {
@@ -111,6 +112,7 @@ export default function MarketplaceView() {
   const [maxEditions, setMaxEditions] = useState('');
   const [durationHours, setDurationHours] = useState('');
   const [mintChain, setMintChain] = useState<'strangrz' | 'ethereum'>('strangrz');
+  const [lazyMintMode, setLazyMintMode] = useState(true); // Default: lazy mint (buyer pays all)
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
@@ -335,6 +337,10 @@ export default function MarketplaceView() {
     reader.readAsDataURL(file);
   };
 
+  // State for buying lazy mint listings
+  const [buyingLazy, setBuyingLazy] = useState(false);
+  const [buyLazyResult, setBuyLazyResult] = useState<{ success: boolean; message: string } | null>(null);
+
   const handleMint = async () => {
     if (!title.trim()) { setCreateError('Title required'); return; }
     if (!imageData) { setCreateError('Image required'); return; }
@@ -352,27 +358,73 @@ export default function MarketplaceView() {
     const durH = durationHours ? parseFloat(durationHours) : null;
     if (durH !== null && durH <= 0) { setCreateError('Duration must be positive'); return; }
 
+    // ─── Lazy Mint Mode: creator pays NOTHING ───
+    if (lazyMintMode) {
+      if (!priceVal || priceVal < 100) { setCreateError('Le lazy mint nécessite un prix (min 100 ⬣)'); return; }
+
+      setCreating(true);
+      setCreateError('');
+      setUploadProgress(0);
+
+      try {
+        setUploadStatus('Préparation du template...');
+        setUploadProgress(25);
+        await new Promise(r => setTimeout(r, 100));
+
+        setUploadStatus('Signature du créateur...');
+        setUploadProgress(50);
+        await new Promise(r => setTimeout(r, 100));
+
+        setUploadStatus('Publication du listing...');
+        setUploadProgress(75);
+
+        const template = await createLazyListing({
+          title, description, imageData, price: priceVal,
+          royaltyPercent: royaltyVal, editionType, maxEditions: maxEd,
+          durationHours: durH, mediaType, audioCover: audioCover || undefined,
+          mintChain,
+        });
+
+        setUploadProgress(100);
+        setUploadStatus('');
+        const fees = calculateBuyerTotal(priceVal);
+        setCreateSuccess(
+          `"${template.title}" publié en lazy mint ! ` +
+          `L'acheteur paiera ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ frais). ` +
+          `Vous recevrez ${fees.price} ⬣ à chaque vente.`
+        );
+        setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
+        setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
+        setMediaType('image'); setAudioCover('');
+        setTimeout(() => { setCreateSuccess(''); setUploadProgress(0); }, 8000);
+      } catch (err) {
+        setCreateError(err instanceof Error ? err.message : 'Échec de la publication');
+        setUploadProgress(0);
+        setUploadStatus('');
+      } finally {
+        setCreating(false);
+      }
+      return;
+    }
+
+    // ─── Standard Mint (legacy) ───
     setCreating(true);
     setCreateError('');
     setUploadProgress(0);
 
     try {
-      // Step 1: Fingerprinting
       setUploadStatus('Calcul de l\'empreinte SHA-256...');
       setUploadProgress(15);
-      await new Promise(r => setTimeout(r, 100)); // yield to UI
+      await new Promise(r => setTimeout(r, 100));
 
-      // Step 2: Certificate
       setUploadStatus('Génération du certificat d\'authenticité...');
       setUploadProgress(30);
       await new Promise(r => setTimeout(r, 100));
 
-      // Step 3: Signature
       setUploadStatus('Signature cryptographique Ed25519...');
       setUploadProgress(50);
       await new Promise(r => setTimeout(r, 100));
 
-      // Step 4: Mint
       setUploadStatus(mintChain === 'ethereum'
         ? 'Inscription ERC-721 sur Ethereum...'
         : 'Inscription sur le protocole Strangrz...');
@@ -380,7 +432,6 @@ export default function MarketplaceView() {
 
       const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined, mintChain);
 
-      // Step 5: Done
       setUploadProgress(100);
       setUploadStatus('');
       setCreateSuccess(`"${wart.title}" certifié avec succès sur ${mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (SZ-721)'} (Édition #${wart.editionNumber}) !`);
@@ -394,6 +445,26 @@ export default function MarketplaceView() {
       setUploadStatus('');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleBuyLazyMint = async (templateId: string) => {
+    setBuyingLazy(true);
+    setBuyLazyResult(null);
+    try {
+      const result = await buyLazyMint(templateId);
+      if (result.success && result.fees) {
+        setBuyLazyResult({
+          success: true,
+          message: `Acheté pour ${result.fees.total} ⬣ (${result.fees.price} ⬣ + ${result.fees.serviceFee} ⬣ frais de service)`,
+        });
+      } else {
+        setBuyLazyResult({ success: false, message: result.error || 'Échec de l\'achat' });
+      }
+    } catch (err) {
+      setBuyLazyResult({ success: false, message: err instanceof Error ? err.message : 'Erreur' });
+    } finally {
+      setBuyingLazy(false);
     }
   };
 
@@ -1676,24 +1747,92 @@ export default function MarketplaceView() {
                 </p>
               </div>
 
-              {warts.length === 0 ? (
+              {/* ─── Lazy Mint Listings ───────────────────── */}
+              {lazyListings.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-[10px] opacity-40 uppercase tracking-wider">{'\u2728'} Lazy Mint — L'acheteur paie tout</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {lazyListings.map(template => {
+                      const fees = calculateBuyerTotal(template.price);
+                      const isOwn = template.creator === wallet?.address;
+                      return (
+                        <div key={template.id} className="glass-panel p-0 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
+                          {template.imageData && (template.mediaType === 'image' || template.mediaType === 'svg' || template.mediaType === 'cards' || !template.mediaType) && (
+                            <div className="aspect-square overflow-hidden bg-current/5">
+                              <img src={template.imageData} alt={template.title} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-body-sm font-bold opacity-80 truncate">{template.title}</p>
+                              <span className="text-[9px] px-1.5 py-0.5 bg-current/10 border border-current/20 opacity-60">LAZY</span>
+                            </div>
+                            <p className="text-[10px] opacity-40 truncate">{shortAddress(template.creator)}</p>
+                            <div className="text-[10px] opacity-50 space-y-0.5">
+                              <p>Prix : <strong>{template.price} {'\u2B23'}</strong></p>
+                              <p>+ frais : <strong>{fees.serviceFee} {'\u2B23'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
+                              <p className="font-bold opacity-80">Total : {fees.total} {'\u2B23'}</p>
+                            </div>
+                            {template.editionType !== 'unique' && (
+                              <p className="text-[9px] opacity-40">
+                                {template.mintedEditions}/{template.maxEditions || '\u221E'} mint{'\u00E9'}(s)
+                              </p>
+                            )}
+                            {template.availableUntil && (
+                              <p className="text-[9px] opacity-40">{'\u23F1'} {formatTimeRemaining(template.availableUntil)}</p>
+                            )}
+                            {!isOwn && wallet && (
+                              <button
+                                className="warp-button w-full py-2 text-[11px] font-bold"
+                                onClick={() => handleBuyLazyMint(template.id)}
+                                disabled={buyingLazy || (wallet?.balance || 0) < fees.total}
+                              >
+                                {buyingLazy ? 'Achat...' : `Acheter ${fees.total} \u2B23`}
+                              </button>
+                            )}
+                            {isOwn && (
+                              <button
+                                className="w-full py-2 text-[10px] opacity-40 border border-current/10 hover:opacity-60 cursor-pointer"
+                                onClick={() => cancelLazyListing(template.id)}
+                              >
+                                Annuler le listing
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Buy Lazy Result Toast ─────────────────── */}
+              {buyLazyResult && (
+                <div className={`glass-panel p-3 text-center text-body-sm ${buyLazyResult.success ? 'opacity-80' : 'opacity-60'}`}>
+                  {buyLazyResult.success ? '\u2713' : '\u2717'} {buyLazyResult.message}
+                </div>
+              )}
+
+              {warts.length === 0 && lazyListings.length === 0 ? (
                 <div className="glass-panel p-8 text-center">
                   <p className="text-2xl mb-2">{'\u2742'}</p>
-                  <p className="opacity-50 text-base">Aucune Strangrz dans cette catégorie.</p>
+                  <p className="opacity-50 text-base">Aucune Strangrz dans cette cat{'\u00E9'}gorie.</p>
                   <button
                     className="warp-button text-body-sm mt-3 px-4 py-2"
                     onClick={() => setTab('create')}
                   >
-                    Créer une Strangrz
+                    Cr{'\u00E9'}er une Strangrz
                   </button>
                 </div>
-              ) : (
+              ) : warts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {warts.map(wart => (
                     <WartCard key={wart.id} wart={wart} showBuy />
                   ))}
                 </div>
-              )}
+              ) : null}
             </>
           );
         })()
@@ -1945,6 +2084,46 @@ export default function MarketplaceView() {
               </p>
             </div>
 
+            {/* ─── Mint Mode Toggle ─────────────────────── */}
+            <div>
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Mint Mode</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setLazyMintMode(true)}
+                  className={`p-3 text-center transition-all cursor-pointer ${
+                    lazyMintMode
+                      ? 'bg-current/10 border border-current/20 opacity-90'
+                      : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                  }`}
+                >
+                  <div className="text-base mb-1">{'\u2728'}</div>
+                  <div className="text-[11px] font-medium">Lazy Mint</div>
+                  <div className="text-[9px] opacity-60 mt-0.5">L'acheteur paie tout</div>
+                </button>
+                <button
+                  onClick={() => setLazyMintMode(false)}
+                  className={`p-3 text-center transition-all cursor-pointer ${
+                    !lazyMintMode
+                      ? 'bg-current/10 border border-current/20 opacity-90'
+                      : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                  }`}
+                >
+                  <div className="text-base mb-1">{'\u2B22'}</div>
+                  <div className="text-[11px] font-medium">Mint Direct</div>
+                  <div className="text-[9px] opacity-60 mt-0.5">Mint imm{'\u00E9'}diat classique</div>
+                </button>
+              </div>
+              {lazyMintMode && (
+                <div className="mt-2 p-3 border border-current/10 bg-current/5">
+                  <p className="text-[10px] opacity-60 leading-relaxed">
+                    <strong>Lazy Mint</strong> : Vous ne payez rien. Votre oeuvre est publi{'\u00E9'}e comme template.
+                    Le mint r{'\u00E9'}el ne se produit que lorsqu'un acheteur ach{'\u00E8'}te. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais de service.
+                    Vous recevez 100% du prix affich{'\u00E9'}.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* ─── Media Upload ─────────────────────────── */}
             <div>
               <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Media File</label>
@@ -2083,16 +2262,23 @@ export default function MarketplaceView() {
             {/* ─── Price & Royalty (side by side) ───────── */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Price in {'\u2B23'}</label>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">
+                  {lazyMintMode ? 'Prix de vente en \u2B23' : 'Price in \u2B23'}
+                </label>
                 <input
                   className="warp-input w-full"
                   type="number"
-                  placeholder="Not for sale"
-                  min="0"
+                  placeholder={lazyMintMode ? 'Min 100 \u2B23 (requis)' : 'Not for sale'}
+                  min={lazyMintMode ? '100' : '0'}
                   step="1"
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
+                {lazyMintMode && price && parseFloat(price) >= 100 && (
+                  <p className="text-[10px] opacity-50 mt-1">
+                    L'acheteur paiera {calculateBuyerTotal(parseFloat(price)).total} {'\u2B23'} ({price} {'\u2B23'} + {calculateBuyerTotal(parseFloat(price)).serviceFee} {'\u2B23'} frais)
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Royalty (%)</label>
@@ -2174,13 +2360,15 @@ export default function MarketplaceView() {
             <button
               className="warp-button w-full py-3.5 text-base font-bold"
               onClick={handleMint}
-              disabled={creating || !title || !imageData}
+              disabled={creating || !title || !imageData || (lazyMintMode && (!price || parseFloat(price) < 100))}
             >
               {creating ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
-                  {uploadStatus || 'Minting...'}
+                  {uploadStatus || (lazyMintMode ? 'Publication...' : 'Minting...')}
                 </span>
+              ) : lazyMintMode ? (
+                `Publier en Lazy Mint (gratuit)`
               ) : (
                 mintChain === 'ethereum' ? 'Certifier & Mint (Ethereum)' : 'Certifier & Mint (Strangrz)'
               )}

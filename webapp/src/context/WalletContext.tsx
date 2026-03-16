@@ -12,7 +12,7 @@ import {
 import type { MiningProof } from '../engine/miner';
 import { generateStrangrzLink, parseStrangrzLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/strangrmesh';
-import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
+import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
 import { is2FAEnabled, verify2FALogin } from '../engine/totp';
@@ -144,6 +144,20 @@ interface WalletContextType {
   createAuction: (wartId: string, startPrice: number, durationHours: number, reservePrice?: number) => Promise<CosmoContract | null>;
   getWartContracts: (wartId: string) => CosmoContract[];
   getActiveAuctions: () => CosmoContract[];
+  // Lazy minting (buyer-pays-all)
+  lazyListings: LazyMintTemplate[];
+  myLazyListings: LazyMintTemplate[];
+  createLazyListing: (params: {
+    title: string; description: string; imageData: string; price: number;
+    royaltyPercent?: number; editionType?: 'unique' | 'limited' | 'unlimited';
+    maxEditions?: number | null; durationHours?: number | null;
+    mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';
+    audioCover?: string; priceFiat?: number; fiatCurrency?: FiatCurrency;
+    mintChain?: 'strangrz' | 'ethereum';
+  }) => Promise<LazyMintTemplate>;
+  buyLazyMint: (templateId: string) => Promise<{ success: boolean; wart?: Wart; fees?: { price: number; serviceFee: number; total: number }; error?: string }>;
+  cancelLazyListing: (templateId: string) => boolean;
+  refreshLazyListings: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -162,6 +176,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [marketplace, setMarketplace] = useState<Wart[]>([]);
   const [myCollection, setMyCollection] = useState<Wart[]>([]);
   const [myCreated, setMyCreated] = useState<Wart[]>([]);
+  const [lazyListings, setLazyListings] = useState<LazyMintTemplate[]>([]);
+  const [myLazyListings, setMyLazyListings] = useState<LazyMintTemplate[]>([]);
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [pending2FA, setPending2FA] = useState(false);
   const pending2FARef = useRef<{ username: string; password: string } | null>(null);
@@ -179,10 +195,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     setWarts(engine.getAll());
     setMarketplace(engine.getMarketplace());
+    setLazyListings(engine.getLazyListings());
     if (address) {
       setMyCollection(engine.getCollection(address));
       setMyCreated(engine.getCreated(address));
       setVaultStats(engine.getVaultStats(address));
+      setMyLazyListings(engine.getLazyListingsByCreator(address));
     }
   }
 
@@ -1108,6 +1126,132 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return engine.getActiveAuctions();
   }, []);
 
+  // ─── Lazy Minting (Buyer-Pays-All) ─────────────────────
+
+  const doCreateLazyListing = useCallback(async (params: {
+    title: string; description: string; imageData: string; price: number;
+    royaltyPercent?: number; editionType?: 'unique' | 'limited' | 'unlimited';
+    maxEditions?: number | null; durationHours?: number | null;
+    mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';
+    audioCover?: string; priceFiat?: number; fiatCurrency?: FiatCurrency;
+    mintChain?: 'strangrz' | 'ethereum';
+  }): Promise<LazyMintTemplate> => {
+    if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');
+    const engine = getWartEngine();
+    const template = await engine.createLazyListing({
+      ...params,
+      creator: wallet.address,
+      privateKey: wallet.privateKey,
+    });
+
+    refreshWartsState(wallet.address);
+    setGlobalTxs(getGlobalTransactions());
+
+    // Sync template to Supabase
+    sync.syncWart({
+      id: template.id,
+      title: template.title,
+      description: template.description,
+      imageData: template.imageData,
+      creator: template.creator,
+      owner: template.creator,
+      price: template.price,
+      listed: true,
+      createdAt: template.createdAt,
+      mediaType: template.mediaType,
+      history: [],
+      royaltyPercent: template.royaltyPercent,
+      comments: [],
+      editionType: template.editionType,
+      maxEditions: template.maxEditions,
+      editionNumber: 0,
+      availableUntil: template.availableUntil,
+      storageMode: 'local',
+      vaultBackup: false,
+    } as Wart);
+
+    return template;
+  }, [wallet]);
+
+  const doBuyLazyMint = useCallback(async (templateId: string): Promise<{
+    success: boolean; wart?: Wart;
+    fees?: { price: number; serviceFee: number; total: number };
+    error?: string;
+  }> => {
+    if (!wallet || !wallet.privateKey) return { success: false, error: 'Wallet locked' };
+    const engine = getWartEngine();
+    const template = engine.getLazyTemplate(templateId);
+    if (!template) return { success: false, error: 'Listing not found' };
+
+    // Calculate total cost for buyer (price + service fee)
+    const fees = calculateBuyerTotal(template.price);
+
+    // Check buyer balance covers total (price + service fee)
+    if (wallet.balance < fees.total) {
+      return { success: false, error: `Insufficient STZ. Need ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service fee)` };
+    }
+
+    // Execute the lazy mint
+    const result = await engine.buyLazyMint(templateId, wallet.address, wallet.privateKey);
+    if (!result) return { success: false, error: 'Purchase failed' };
+
+    // Pay creator the full listed price
+    const payResult = await sendWarps(wallet, template.creator, fees.price, `Strangrz lazy mint: ${template.title}`);
+    if (!payResult.success) return { success: false, error: payResult.error };
+
+    // Pay service fee to platform (burn address or platform wallet)
+    const PLATFORM_ADDRESS = 'STZ_PLATFORM_FEE';
+    if (fees.serviceFee > 0) {
+      await sendWarps(wallet, PLATFORM_ADDRESS, fees.serviceFee, `Service fee: ${template.title}`);
+    }
+
+    // Record transaction
+    const buyTx: Transaction = {
+      id: payResult.tx?.id || Date.now().toString(36),
+      from: wallet.address,
+      to: template.creator,
+      amount: fees.total,
+      timestamp: Date.now(),
+      signature: 'wart_buy',
+      type: 'wart_buy',
+      memo: `Lazy mint purchase: ${template.title} (${fees.price} ⬣ + ${fees.serviceFee} ⬣ fee)`,
+    };
+    wallet.transactions.unshift(buyTx);
+
+    setWallet({ ...wallet });
+    refreshWartsState(wallet.address);
+    setGlobalTxs(getGlobalTransactions());
+
+    // Sync to Supabase
+    sync.syncWart(result.wart);
+    sync.syncProfile(wallet);
+    sync.syncTransaction(buyTx);
+    sync.syncNotification({
+      recipient: template.creator,
+      sender: wallet.address,
+      type: 'sale',
+      title: 'Artwork sold!',
+      body: `${template.title} was purchased for ${fees.price} ⬣ (buyer paid ${fees.total} ⬣ total)`,
+      refId: result.wart.id,
+    });
+
+    return { success: true, wart: result.wart, fees };
+  }, [wallet]);
+
+  const doCancelLazyListing = useCallback((templateId: string): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const ok = engine.cancelLazyListing(templateId, wallet.address);
+    if (ok) refreshWartsState(wallet.address);
+    return ok;
+  }, [wallet]);
+
+  const doRefreshLazyListings = useCallback(() => {
+    const engine = getWartEngine();
+    setLazyListings(engine.getLazyListings());
+    if (wallet) setMyLazyListings(engine.getLazyListingsByCreator(wallet.address));
+  }, [wallet]);
+
   return (
     <WalletContext.Provider value={{
       wallet, unlocked, needsMigration, globalTxs, meshStats, supplyInfo,
@@ -1136,6 +1280,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       createAuction: doCreateAuction,
       getWartContracts: doGetWartContracts,
       getActiveAuctions: doGetActiveAuctions,
+      // Lazy minting (buyer-pays-all)
+      lazyListings,
+      myLazyListings,
+      createLazyListing: doCreateLazyListing,
+      buyLazyMint: doBuyLazyMint,
+      cancelLazyListing: doCancelLazyListing,
+      refreshLazyListings: doRefreshLazyListings,
     }}>
       {children}
     </WalletContext.Provider>
