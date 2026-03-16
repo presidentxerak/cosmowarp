@@ -2,7 +2,7 @@ import { useState, useRef, useMemo, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
-import type { Wart, LazyMintTemplate } from '../engine/warts';
+import type { Wart } from '../engine/warts';
 import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 import { SocialEngine } from '../engine/social';
@@ -62,7 +62,7 @@ export default function MarketplaceView() {
     mintWart, buyWart, listWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
     listWartFiat, buyWartFiat, getWartFiatPrice,
-    lazyListings, myLazyListings, createLazyListing, buyLazyMint, cancelLazyListing, refreshLazyListings,
+    lazyListings, createLazyListing, buyLazyMint, cancelLazyListing,
   } = useWallet();
 
   const [tab, setTab] = useState<GalleryTab>(() => {

@@ -12,7 +12,7 @@ import {
 import type { MiningProof } from '../engine/miner';
 import { generateStrangrzLink, parseStrangrzLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/strangrmesh';
-import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
+import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal } from '../engine/warts';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
 import { is2FAEnabled, verify2FALogin } from '../engine/totp';
