@@ -20,7 +20,7 @@ export const ETH_REFERENCE_PRICE_USD = 2500;
 export const ETH_VOLATILITY_BAND = 0.20; // ±20% clamp
 
 // ─── Fee Structure ─────────────────────────────────────────
-export const PLATFORM_FEE_PERCENT = 2.5;
+export const PLATFORM_FEE_PERCENT = 5;
 
 export const PROCESSOR_FEES: Record<string, { percent: number; fixed: number }> = {
   card: { percent: 2.9, fixed: 0.30 },

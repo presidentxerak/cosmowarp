@@ -2,8 +2,26 @@
  * Strangrz Crypto Engine — Real Cryptographic Primitives
  *
  * Ed25519 for signatures, SHA-256 for hashing, AES-GCM for encryption.
- * Uses the Web Crypto API (SubtleCrypto) — no dependencies.
+ * Uses the Web Crypto API (SubtleCrypto) with @noble/ed25519 fallback
+ * for browsers that don't support Ed25519 natively (Safari < 17).
  */
+
+import * as ed from '@noble/ed25519';
+
+// ─── Ed25519 Feature Detection ──────────────────────────
+
+let _ed25519Native: boolean | null = null;
+
+async function isEd25519Supported(): Promise<boolean> {
+  if (_ed25519Native !== null) return _ed25519Native;
+  try {
+    const kp = await crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+    _ed25519Native = !!kp;
+  } catch {
+    _ed25519Native = false;
+  }
+  return _ed25519Native;
+}
 
 // ─── Helpers ─────────────────────────────────────────────
 
@@ -52,30 +70,38 @@ export interface CosmoKeyPair {
 }
 
 export async function generateKeyPair(): Promise<CosmoKeyPair> {
-  const keyPair = await crypto.subtle.generateKey(
-    { name: 'Ed25519' },
-    true,
-    ['sign', 'verify']
-  ) as { publicKey: CryptoKey; privateKey: CryptoKey };
+  if (await isEd25519Supported()) {
+    const keyPair = await crypto.subtle.generateKey(
+      { name: 'Ed25519' },
+      true,
+      ['sign', 'verify']
+    ) as { publicKey: CryptoKey; privateKey: CryptoKey };
 
-  const publicKeyRaw = await crypto.subtle.exportKey('raw', keyPair.publicKey);
-  const privateKeyPkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+    const publicKeyRaw = await crypto.subtle.exportKey('raw', keyPair.publicKey);
+    const privateKeyPkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
 
-  const pubHex = bufToHex(publicKeyRaw);
-  const privHex = bufToHex(privateKeyPkcs8);
+    const pubHex = bufToHex(publicKeyRaw);
+    const privHex = bufToHex(privateKeyPkcs8);
 
-  // Address = STZ + SHA-256(publicKey)[0:40]
+    const addressHash = await sha256(pubHex);
+    const address = 'STZ' + addressHash.slice(0, 40);
+
+    return { publicKey: pubHex, privateKey: privHex, address };
+  }
+
+  // Fallback: @noble/ed25519 for Safari < 17
+  const privBytes = ed.utils.randomPrivateKey();
+  const pubBytes = await ed.getPublicKeyAsync(privBytes);
+  const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
+  const privHex = bufToHex(privBytes.buffer as ArrayBuffer);
+
   const addressHash = await sha256(pubHex);
   const address = 'STZ' + addressHash.slice(0, 40);
 
-  return {
-    publicKey: pubHex,
-    privateKey: privHex,
-    address,
-  };
+  return { publicKey: pubHex, privateKey: privHex, address };
 }
 
-// Import keys from hex strings
+// Import keys from hex strings (native Web Crypto path)
 async function importPrivateKey(hexKey: string): Promise<CryptoKey> {
   return crypto.subtle.importKey(
     'pkcs8',
@@ -99,13 +125,21 @@ async function importPublicKey(hexKey: string): Promise<CryptoKey> {
 // ─── Ed25519 Signing & Verification ─────────────────────
 
 export async function signTransaction(data: string, privateKeyHex: string): Promise<string> {
-  const privKey = await importPrivateKey(privateKeyHex);
-  const signature = await crypto.subtle.sign(
-    { name: 'Ed25519' },
-    privKey,
-    strToBuf(data)
-  );
-  return bufToHex(signature);
+  if (await isEd25519Supported()) {
+    const privKey = await importPrivateKey(privateKeyHex);
+    const signature = await crypto.subtle.sign(
+      { name: 'Ed25519' },
+      privKey,
+      strToBuf(data)
+    );
+    return bufToHex(signature);
+  }
+
+  // Fallback: @noble/ed25519
+  const privBytes = new Uint8Array(hexToBuf(privateKeyHex));
+  const msgBytes = new Uint8Array(strToBuf(data));
+  const sig = await ed.signAsync(msgBytes, privBytes);
+  return bufToHex(sig.buffer as ArrayBuffer);
 }
 
 export async function verifySignature(
@@ -114,13 +148,21 @@ export async function verifySignature(
   publicKeyHex: string
 ): Promise<boolean> {
   try {
-    const pubKey = await importPublicKey(publicKeyHex);
-    return crypto.subtle.verify(
-      { name: 'Ed25519' },
-      pubKey,
-      hexToBuf(signatureHex),
-      strToBuf(data)
-    );
+    if (await isEd25519Supported()) {
+      const pubKey = await importPublicKey(publicKeyHex);
+      return crypto.subtle.verify(
+        { name: 'Ed25519' },
+        pubKey,
+        hexToBuf(signatureHex),
+        strToBuf(data)
+      );
+    }
+
+    // Fallback: @noble/ed25519
+    const sig = new Uint8Array(hexToBuf(signatureHex));
+    const msg = new Uint8Array(strToBuf(data));
+    const pub = new Uint8Array(hexToBuf(publicKeyHex));
+    return ed.verifyAsync(sig, msg, pub);
   } catch {
     return false;
   }
@@ -299,31 +341,43 @@ function base64urlDecode(str: string): Uint8Array {
 export async function generateKeyPairFromSeed(
   seed: Uint8Array
 ): Promise<CosmoKeyPair> {
-  // Ed25519 PKCS8 = 16-byte ASN.1 DER header + 32-byte seed
-  const pkcs8Header = new Uint8Array([
-    0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06,
-    0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20,
-  ]);
-  const pkcs8 = new Uint8Array(48);
-  pkcs8.set(pkcs8Header);
-  pkcs8.set(seed, 16);
+  if (await isEd25519Supported()) {
+    // Ed25519 PKCS8 = 16-byte ASN.1 DER header + 32-byte seed
+    const pkcs8Header = new Uint8Array([
+      0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06,
+      0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20,
+    ]);
+    const pkcs8 = new Uint8Array(48);
+    pkcs8.set(pkcs8Header);
+    pkcs8.set(seed, 16);
 
-  const privateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    pkcs8.buffer,
-    { name: 'Ed25519' },
-    true,
-    ['sign']
-  );
+    const privateKey = await crypto.subtle.importKey(
+      'pkcs8',
+      pkcs8.buffer,
+      { name: 'Ed25519' },
+      true,
+      ['sign']
+    );
 
-  // Export as JWK to get public key (x) alongside private key (d)
-  const jwk = await crypto.subtle.exportKey('jwk', privateKey);
-  const pubBytes = base64urlDecode(jwk.x!);
+    // Export as JWK to get public key (x) alongside private key (d)
+    const jwk = await crypto.subtle.exportKey('jwk', privateKey);
+    const pubBytes = base64urlDecode(jwk.x!);
+    const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
+
+    // Re-export full PKCS8 for storage
+    const pkcs8Export = await crypto.subtle.exportKey('pkcs8', privateKey);
+    const privHex = bufToHex(pkcs8Export);
+
+    const addressHash = await sha256(pubHex);
+    const address = 'STZ' + addressHash.slice(0, 40);
+
+    return { publicKey: pubHex, privateKey: privHex, address };
+  }
+
+  // Fallback: @noble/ed25519 for Safari < 17
+  const pubBytes = await ed.getPublicKeyAsync(seed);
   const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
-
-  // Re-export full PKCS8 for storage
-  const pkcs8Export = await crypto.subtle.exportKey('pkcs8', privateKey);
-  const privHex = bufToHex(pkcs8Export);
+  const privHex = bufToHex(seed.buffer as ArrayBuffer);
 
   const addressHash = await sha256(pubHex);
   const address = 'STZ' + addressHash.slice(0, 40);

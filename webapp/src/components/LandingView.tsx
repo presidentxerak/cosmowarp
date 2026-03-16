@@ -472,7 +472,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('playsinline', '');
     v.setAttribute('x-webkit-airplay', 'allow');
     // Safari may block autoplay; retry on user interaction
     const tryPlay = () => { v.play().catch(() => {}); };
@@ -515,6 +515,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           background: `rgba(0,0,0,${headerBgOpacity})`,
           backdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
           borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 h-16">
