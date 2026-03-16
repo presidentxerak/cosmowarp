@@ -1585,20 +1585,6 @@ export default function MarketplaceView() {
     <div className="space-y-3">
       <TransferModal />
 
-      {/* ─── Search Bar ─────────────────────────────────────── */}
-      <div className="glass-panel p-2 flex items-center gap-2">
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            placeholder="Rechercher une Strangrz..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="warp-input w-full text-body-sm py-2 pl-8 pr-3"
-          />
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30 text-body-sm">{'\u2315'}</span>
-        </div>
-      </div>
-
       {/* ─── Gallery Tabs (scrollable) ──────────────────────── */}
       <div className="glass-panel p-1.5">
         <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">

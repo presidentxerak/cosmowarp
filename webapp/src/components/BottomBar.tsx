@@ -7,12 +7,7 @@ interface BottomBarProps {
 }
 
 export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
-  const { wallet, globalTxs } = useWallet();
-
-  const getBadgeCount = (tabId: string): number => {
-    if (tabId === 'notifications') return globalTxs?.length || 0;
-    return 0;
-  };
+  const { wallet } = useWallet();
 
   const tabs = [
     {
@@ -43,41 +38,53 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
       isProfile: true,
     },
     {
-      id: 'notifications',
-      label: 'Notifs',
-      badge: true,
+      id: 'curate',
+      label: 'Curate',
       icon: (active: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
         </svg>
       ),
     },
     {
-      id: 'message',
-      label: 'Messages',
-      badge: true,
+      id: 'trading',
+      label: 'Trade',
       icon: (active: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
         </svg>
       ),
     },
   ];
 
+  const handleTabClick = (tabId: string) => {
+    if (tabId === 'curate') {
+      sessionStorage.setItem('strangrz_gallery_tab', 'curate');
+      setActiveTab('gallery');
+    } else if (tabId === 'trading') {
+      sessionStorage.setItem('strangrz_gallery_tab', 'trading');
+      setActiveTab('gallery');
+    } else {
+      setActiveTab(tabId);
+    }
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex items-center justify-around max-w-lg mx-auto h-full">
         {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          const badgeCount = 'badge' in tab && tab.badge ? getBadgeCount(tab.id) : 0;
+          const isActive = activeTab === tab.id ||
+            (tab.id === 'curate' && activeTab === 'gallery' && sessionStorage.getItem('strangrz_gallery_tab') === 'curate') ||
+            (tab.id === 'trading' && activeTab === 'gallery' && sessionStorage.getItem('strangrz_gallery_tab') === 'trading');
 
-          // Profile tab — same layout as other tabs
+          // Profile tab
           if ('isProfile' in tab && tab.isProfile) {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabClick(tab.id)}
                 className={`relative flex flex-col items-center gap-1 py-2.5 px-2 flex-1 transition-all cursor-pointer ${
                   isActive ? 'opacity-100' : 'opacity-60 hover:opacity-90'
                 }`}
@@ -103,7 +110,7 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               className={`relative flex flex-col items-center gap-1 py-2.5 px-2 flex-1 transition-all cursor-pointer ${
                 isActive ? 'opacity-100' : 'opacity-40 hover:opacity-70'
               }`}
@@ -111,11 +118,6 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
             >
               <div className="relative">
                 {'icon' in tab && tab.icon && tab.icon(isActive)}
-                {badgeCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white rounded-full" style={{ backgroundColor: '#e91e8c' }}>
-                    {badgeCount > 99 ? '99+' : badgeCount}
-                  </span>
-                )}
               </div>
               <span className="text-[11px] font-medium">
                 {tab.label}
