@@ -12,6 +12,8 @@ import HexAvatar from './HexAvatar';
 
 import PFPCollectionView from './PFPCollectionView';
 import MusicView from './MusicView';
+import CurateView from './CurateView';
+import TradingView from './TradingView';
 
 /**
  * Convert a data URL to a blob URL for reliable video/audio playback.
@@ -50,7 +52,7 @@ function useBlobUrl(dataUrl: string | undefined): string {
   }, [dataUrl]);
   return blobUrl;
 }
-type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'cards' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'top-collections' | 'create' | 'detail';
+type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'cards' | 'rwa' | 'phygital' | 'pfp' | 'top-creators' | 'top-collectors' | 'top-sales' | 'top-collections' | 'top-curators' | 'curate' | 'trading' | 'create' | 'detail';
 type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
 type SalesMarketFilter = '1st' | '2nd';
 
@@ -1493,6 +1495,9 @@ export default function MarketplaceView() {
     { id: 'top-collectors', label: 'Top Collectors' },
     { id: 'top-sales', label: 'Top Sales' },
     { id: 'top-collections', label: 'Top Collections' },
+    { id: 'top-curators', label: 'Top Curators' },
+    { id: 'curate', label: 'Curate' },
+    { id: 'trading', label: 'Trading' },
   ];
 
   const editionFilters: { id: EditionFilter; label: string }[] = [
@@ -1868,6 +1873,21 @@ export default function MarketplaceView() {
             </div>
           )}
         </>
+      )}
+
+      {/* ─── Top Curators Tab ─────────────────────────────── */}
+      {tab === 'top-curators' && (
+        <CurateView onNavigate={(t: string) => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: t }))} />
+      )}
+
+      {/* ─── Curate Tab ───────────────────────────────────── */}
+      {tab === 'curate' && (
+        <CurateView onNavigate={(t: string) => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: t }))} />
+      )}
+
+      {/* ─── Trading Tab (OpenSea-like) ───────────────────── */}
+      {tab === 'trading' && (
+        <TradingView />
       )}
 
       {/* ─── Create Tab ────────────────────────────────────── */}

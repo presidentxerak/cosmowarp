@@ -49,6 +49,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     resell: 'Revendre',
     resellDesc: 'Mettez vos oeuvres en vente à tout moment. Le certificat suit l\'objet et prouve la chaîne de propriété.',
     exploreMarketplace: 'Explorer la marketplace',
+    forCurators: 'Pour les curateurs',
+    curateTitle: 'Devenez Curateur',
+    curateDesc: 'Collectionnez 100 oeuvres et devenez Curateur. Créez des articles éditoriaux, mettez en valeur des artistes et partagez vos collections comme un magazine d\'art.',
+    curateStep1: 'Collectionnez',
+    curateStep1Desc: 'Achetez 100 oeuvres certifiées pour débloquer le statut Curateur et le badge doré sur votre profil.',
+    curateStep2: 'Curatez',
+    curateStep2Desc: 'Créez des articles, mettez en avant des artistes et des collections. Partagez votre vision artistique.',
+    curateStep3: 'Influencez',
+    curateStep3Desc: 'Vos sélections apparaissent dans le magazine Curate. Devenez une référence dans l\'univers Strangrz.',
+    tradingTitle: 'Trading Floor',
+    tradingDesc: 'Un marché d\'oeuvres numériques propulsé par STRNGRZ (⬣). Visualisez les cours, volumes, classements et gérez votre portfolio comme sur OpenSea — en mieux.',
     whatObjects: 'Quels objets certifier ?',
     digitalArt: 'Art numérique',
     digitalArtDesc: 'Illustrations, 3D, photo',
@@ -154,6 +165,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     resell: 'Resell',
     resellDesc: 'List your works for sale at any time. The certificate follows the object and proves the chain of ownership.',
     exploreMarketplace: 'Explore the marketplace',
+    forCurators: 'For curators',
+    curateTitle: 'Become a Curator',
+    curateDesc: 'Collect 100 artworks and unlock Curator status. Create editorial articles, highlight artists and share your curated collections like an art magazine.',
+    curateStep1: 'Collect',
+    curateStep1Desc: 'Buy 100 certified artworks to unlock Curator status and the golden badge on your profile.',
+    curateStep2: 'Curate',
+    curateStep2Desc: 'Write articles, feature artists and collections. Share your artistic vision with the community.',
+    curateStep3: 'Influence',
+    curateStep3Desc: 'Your selections appear in the Curate magazine. Become a tastemaker in the Strangrz universe.',
+    tradingTitle: 'Trading Floor',
+    tradingDesc: 'A digital art marketplace powered by STRNGRZ (⬣). View prices, volumes, rankings and manage your portfolio like OpenSea — but better.',
     whatObjects: 'What objects to certify?',
     digitalArt: 'Digital Art',
     digitalArtDesc: 'Illustrations, 3D, photo',
@@ -259,6 +281,17 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     resell: '再販',
     resellDesc: 'いつでも作品を販売に出せます。証明書はオブジェクトに従い、所有権の連鎖を証明します。',
     exploreMarketplace: 'マーケットプレイスを探索',
+    forCurators: 'キュレーター向け',
+    curateTitle: 'キュレーターになる',
+    curateDesc: '100作品を収集してキュレーターステータスを解除。エディトリアル記事を作成し、アーティストをハイライトし、アートマガジンのようにコレクションを共有。',
+    curateStep1: 'コレクト',
+    curateStep1Desc: '100の認証済み作品を購入してキュレーターステータスとゴールドバッジを解除。',
+    curateStep2: 'キュレート',
+    curateStep2Desc: '記事を書き、アーティストとコレクションをフィーチャー。あなたの芸術的ビジョンを共有。',
+    curateStep3: 'インフルエンス',
+    curateStep3Desc: 'あなたのセレクションがCurateマガジンに掲載。Strangrz宇宙のテイストメーカーに。',
+    tradingTitle: 'トレーディングフロア',
+    tradingDesc: 'STRNGRZ（⬣）で動くデジタルアートマーケットプレイス。価格、ボリューム、ランキングを表示し、OpenSeaのようにポートフォリオを管理。',
     whatObjects: 'どんなオブジェクトを認証？',
     digitalArt: 'デジタルアート',
     digitalArtDesc: 'イラスト、3D、写真',
@@ -889,6 +922,100 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                 style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
               >
                 {t('exploreMarketplace')} →
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ─── Curation ──────────────────────────────────── */}
+      <section id="curate" className="relative py-20 sm:py-32 px-4 sm:px-8" style={{ background: 'rgba(212,175,55,0.02)' }}>
+        <div className="max-w-5xl mx-auto">
+          <Reveal>
+            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3" style={{ color: '#d4af37' }}>{t('forCurators')}</p>
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
+              {t('curateTitle')}
+            </h2>
+            <p className="text-base opacity-40 text-center max-w-2xl mx-auto mb-12">
+              {t('curateDesc')}
+            </p>
+          </Reveal>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { step: '01', title: t('curateStep1'), desc: t('curateStep1Desc'), icon: '\u2B23' },
+              { step: '02', title: t('curateStep2'), desc: t('curateStep2Desc'), icon: '\u270E' },
+              { step: '03', title: t('curateStep3'), desc: t('curateStep3Desc'), icon: '\u2B50' },
+            ].map((card, i) => (
+              <Reveal key={card.step} delay={i * 0.1}>
+                <TiltCard
+                  className="p-5 sm:p-6 landing-card group text-center"
+                  style={{ background: 'rgba(212,175,55,0.03)', border: '1px solid rgba(212,175,55,0.1)' }}
+                >
+                  <span className="text-[10px] tracking-[0.3em] opacity-20 block mb-3">{card.step}</span>
+                  <span className="text-2xl block mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <h3 className="text-base font-bold opacity-90 mb-2">{card.title}</h3>
+                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                </TiltCard>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={0.3}>
+            <div className="text-center mt-10">
+              <button
+                onClick={() => onNavigate('gallery')}
+                className="px-6 py-3 text-sm font-bold cursor-pointer transition-all hover:bg-white/12 active:scale-95"
+                style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37' }}
+              >
+                Explore Curate →
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ─── Trading Floor ───────────────────────────────── */}
+      <section id="trading" className="relative py-20 sm:py-32 px-4 sm:px-8">
+        <div className="max-w-5xl mx-auto">
+          <Reveal>
+            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">STRNGRZ {'\u2B23'}</p>
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
+              {t('tradingTitle')}
+            </h2>
+            <p className="text-base opacity-40 text-center max-w-2xl mx-auto mb-12">
+              {t('tradingDesc')}
+            </p>
+          </Reveal>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Live Listings', desc: 'Real-time marketplace', icon: '\u26A1' },
+              { label: 'Portfolio', desc: 'Track your P&L', icon: '\u{1F4CA}' },
+              { label: 'Rankings', desc: 'Collections & Artists', icon: '\u{1F3C6}' },
+              { label: 'Activity', desc: 'Sales & transfers', icon: '\u{1F504}' },
+            ].map((item, i) => (
+              <Reveal key={item.label} delay={i * 0.05}>
+                <TiltCard
+                  className="p-4 text-center landing-card group"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <span className="text-xl block mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
+                  <p className="text-sm font-bold opacity-80">{item.label}</p>
+                  <p className="text-[10px] opacity-30 mt-1">{item.desc}</p>
+                </TiltCard>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={0.3}>
+            <div className="text-center mt-10">
+              <button
+                onClick={() => onNavigate('gallery')}
+                className="px-6 py-3 text-sm font-bold cursor-pointer transition-all hover:bg-white/12 active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
+              >
+                Open Trading Floor →
               </button>
             </div>
           </Reveal>

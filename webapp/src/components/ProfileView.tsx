@@ -6,6 +6,7 @@ import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import HexAvatar from './HexAvatar';
+import InfoTooltip from './InfoTooltip';
 
 type Tab = 'warts' | 'collected' | 'posts' | 'followers' | 'following';
 
@@ -161,10 +162,23 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Balance & Level */}
           <div className="flex gap-4 mt-2 items-center">
             <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u2B23'}</span>
+            <InfoTooltip text="Your STRNGRZ balance (⬣). Earn by mining, selling artworks, or receiving tips. Use it to buy digital art, tip creators, and trade on the marketplace." />
             <span className="text-body-sm opacity-40">|</span>
             <span className="text-base font-bold opacity-80">Lv.{wallet.level || 1}</span>
             <span className="text-label opacity-40">{wallet.levelName}</span>
+            <InfoTooltip text={`Your current level is Lv.${wallet.level || 1} ${wallet.levelName || 'Particle'}. Levels reflect your activity on Strangrz. Progress through 7 cosmic tiers — Particle, Wave, Atom, Molecule, Star, Galaxy, Universe — by making transactions and staying active. Higher levels unlock better mining rewards and exclusive features.`} />
           </div>
+
+          {/* Curator badge */}
+          {myCollection.length >= 100 && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold tracking-wide" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                CURATOR
+              </span>
+              <InfoTooltip text="You are a Curator! With 100+ collected works, you can create editorial articles, curate collections, and showcase artists. Visit the Curate page in Gallery to start curating." />
+            </div>
+          )}
 
           {/* Bio */}
           <div className="mt-3 w-full max-w-sm">
@@ -243,6 +257,14 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{posts.length}</span>
               <span className="opacity-40">Posts</span>
+            </div>
+            <div className="text-center">
+              <span className="block font-bold opacity-90 text-base">{myCreated.length}</span>
+              <span className="opacity-40">Created</span>
+            </div>
+            <div className="text-center">
+              <span className="block font-bold opacity-90 text-base">{myCollection.length}</span>
+              <span className="opacity-40">Collected</span>
             </div>
           </div>
         </div>

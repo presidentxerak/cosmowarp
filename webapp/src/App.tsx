@@ -60,6 +60,8 @@ const ROUTE_MAP: Record<string, string> = {
   '/fiat-gateway': 'fiat-gateway',
   '/notifications': 'notifications',
   '/dev': 'dev',
+  '/curate': 'curate',
+  '/trading': 'trading',
 };
 
 const TAB_TO_PATH: Record<string, string> = {};
@@ -227,6 +229,10 @@ function App() {
 
               {/* Notifications (from top bar bell) */}
               {activeTab === 'notifications' && <NotificationsView />}
+
+              {/* Curate & Trading — redirect to gallery with tab */}
+              {activeTab === 'curate' && (() => { sessionStorage.setItem('strangrz_gallery_tab', 'curate'); return <MarketplaceView />; })()}
+              {activeTab === 'trading' && (() => { sessionStorage.setItem('strangrz_gallery_tab', 'trading'); return <MarketplaceView />; })()}
 
               {/* Dev */}
               {activeTab === 'dev' && <DevView />}

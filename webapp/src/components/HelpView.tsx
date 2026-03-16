@@ -331,6 +331,33 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Portefeuille',
     },
   },
+  // Curate
+  {
+    keywords: ['curate', 'curator', 'curateur', 'magazine', 'article', 'editorial', 'éditorial', 'mise en valeur', 'highlight', 'badge curator', 'badge curateur'],
+    response: {
+      answer: "Curate, c'est le Vogue de Strangrz ! Un magazine d'art intégré où les collectionneurs deviennent des curateurs. Comment ça marche ? Collectionne 100 œuvres certifiées et tu débloques le statut Curateur — un badge doré apparaît sur ton profil. Ensuite tu peux : écrire des articles éditoriaux, mettre en avant tes artistes préférés, créer des sélections curatées, et apparaître dans le classement Top Curators. C'est comme être rédacteur en chef de ton propre magazine d'art numérique. Va dans Gallery → Curate pour explorer les articles publiés ou commencer à écrire le tien !",
+      navigateTo: 'gallery',
+      tabLabel: 'Gallery → Curate',
+    },
+  },
+  // Trading
+  {
+    keywords: ['trading', 'trade', 'trader', 'acheter', 'vendre', 'opensea', 'portfolio', 'portefeuille trading', 'cours', 'prix', 'volume', 'classement', 'ranking', 'floor price', 'listing', 'delist', 'p&l', 'profit', 'perte'],
+    response: {
+      answer: "Le Trading Floor, c'est ton OpenSea personnel — mais en mieux et sans gas fees ! Tu y trouves : (1) Vue d'ensemble du marché avec stats en temps réel — volume total, listings actifs, prix plancher, prix moyen. (2) Live Listings — toutes les œuvres en vente, triées par prix, date, popularité ou volume. (3) Activité — feed en temps réel de toutes les ventes, mints et transferts. (4) Collections — classement des collections par volume et floor price. (5) Portfolio — valeur totale de ta collection, P&L non réalisé, et gestion de tes listings. Le tout propulsé par STRNGRZ (⬣), LA monnaie des œuvres numériques. Zéro gas, zéro frais cachés. Va dans Gallery → Trading pour commencer !",
+      navigateTo: 'gallery',
+      tabLabel: 'Gallery → Trading',
+    },
+  },
+  // Level / Particle
+  {
+    keywords: ['level', 'niveau', 'particle', 'wave', 'atom', 'molecule', 'star', 'galaxy', 'universe', 'lv', 'lv.1', 'hiérarchie', 'hierarchy', 'rang', 'rank'],
+    response: {
+      answer: "Le système de niveaux Strangrz suit les 7 couches cosmiques : Lv.1 Particle (débutant), Lv.2 Wave (voyageur harmonique), Lv.3 Atom (noyau stable), Lv.4 Molecule (structure complexe), Lv.5 Star (luminaire), Lv.6 Galaxy (constellation), Lv.7 Universe (transcendance). Tu progresses en faisant des transactions et en restant actif. Chaque niveau débloque un multiplicateur de minage plus élevé et des bonus d'airdrop. Particle c'est le début du voyage — tout le monde commence là !",
+      navigateTo: 'profile',
+      tabLabel: 'Profil',
+    },
+  },
 ];
 
 const FALLBACK: CosmoResponse = {
@@ -383,6 +410,8 @@ const FAQ_ICONS: Record<string, ReactNode> = {
   'Strangrz & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
   'Ethereum & Multi-Chain': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L4 12l8 5 8-5L12 2z" /><path d="M4 12l8 10 8-10-8 5-8-5z" /></svg>,
+  'Curate — Magazine & Curateurs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+  'Trading Floor': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
 };
 
 const FAQ_SECTIONS = [
@@ -518,6 +547,28 @@ const FAQ_SECTIONS = [
         q: 'Pourquoi l\'art ne doit pas être gratuit ?',
         a: `Le modèle "gratuit" a détruit la valeur de la création numérique pendant 20 ans :\n\n• Les artistes sur les plateformes gratuites gagnent en moyenne 0.003 $ par stream/vue\n• 90% des NFT gratuits ou à bas prix n'ont jamais été revendus\n• Les marketplaces sans prix minimum sont envahies par les bots et le spam\n\nStrangrz impose un prix minimum de 100 ⬣ pour chaque oeuvre parce que :\n\n1. La création a de la valeur — un prix plancher respecte le travail de l'artiste\n2. Les collectionneurs investissent — un achat à 100 ⬣ crée un engagement réel\n3. L'écosystème vit — les royalties (5%) et le marché secondaire génèrent une économie circulaire\n4. Anti-spam — le coût d'entrée décourage la pollution du marketplace\n5. Durabilité — un écosystème où la création a un prix est un écosystème qui survit`,
       },
+    ],
+  },
+  {
+    title: 'Curate — Magazine & Curateurs',
+    icon: 'Curate — Magazine & Curateurs',
+    items: [
+      { q: `Qu'est-ce que Curate ?`, a: `Curate est la plateforme éditoriale de Strangrz. C'est un magazine d'art intégré où les collectionneurs-curateurs publient des articles, mettent en valeur des artistes et partagent leurs collections.` },
+      { q: `Comment devenir Curateur ?`, a: `Collectionnez 100 oeuvres certifiées sur la Marketplace. Une fois le seuil atteint, vous débloquez le statut Curateur et un badge doré apparaît sur votre profil. Vous pouvez alors publier des articles dans Curate.` },
+      { q: `Que peut faire un Curateur ?`, a: `Les Curateurs peuvent : (1) Écrire des articles éditoriaux, (2) Mettre en avant des artistes et des oeuvres de leur collection, (3) Créer des sélections curatoriales, (4) Apparaître dans le classement Top Curators, (5) Partager leurs articles avec la communauté.` },
+      { q: `Comment écrire un article ?`, a: `Allez dans Gallery → Curate → New Article. Donnez un titre, un sous-titre, rédigez votre article, sélectionnez les oeuvres à mettre en avant depuis votre collection, taguez les artistes, et publiez.` },
+      { q: `Comment apparaître dans Top Curators ?`, a: `Le classement se base sur le nombre d'articles publiés, les likes reçus et les vues totales. Plus vos articles sont appréciés, plus vous montez dans le classement.` },
+    ],
+  },
+  {
+    title: 'Trading Floor',
+    icon: 'Trading Floor',
+    items: [
+      { q: `Qu'est-ce que le Trading Floor ?`, a: `Le Trading Floor est une interface de trading inspirée d'OpenSea, intégrée dans Strangrz. Il offre une vue en temps réel du marché : listings actifs, activité récente, classement des collections, et gestion de votre portfolio.` },
+      { q: `Comment fonctionne le trading ?`, a: `Toutes les transactions sont en STRNGRZ (⬣), la monnaie native de Strangrz. Achetez des oeuvres listées, vendez les vôtres, suivez vos P&L. Zéro frais de gas — uniquement le prix de l'oeuvre et les royalties au créateur.` },
+      { q: `Comment suivre mon portfolio ?`, a: `Dans Gallery → Trading → My Portfolio, visualisez la valeur totale de votre collection, vos gains/pertes non réalisés, et gérez vos listings (mise en vente, retrait).` },
+      { q: `Qu'est-ce que STRNGRZ remplace ?`, a: `STRNGRZ (⬣) vise à être LA monnaie des oeuvres numériques, remplaçant ETH, SOL, XTZ etc. pour le trading d'art digital. Zéro gas, transactions gratuites, royalties garanties.` },
+      { q: `Comment voir l'activité du marché ?`, a: `Trading → Activity vous montre toutes les ventes, transferts et mints récents avec filtres temporels (1h, 24h, 7j, 30j). Suivez les tendances du marché en temps réel.` },
     ],
   },
   {

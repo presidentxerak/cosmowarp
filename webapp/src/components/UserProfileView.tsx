@@ -398,6 +398,16 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
             </div>
           )}
 
+          {/* Curator badge */}
+          {collection.length >= 100 && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold tracking-wide" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                CURATOR
+              </span>
+            </div>
+          )}
+
           {/* Bio */}
           {bio && <p className="text-body-sm opacity-50 mt-3 max-w-sm">{bio}</p>}
 
