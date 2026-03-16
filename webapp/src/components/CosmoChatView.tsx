@@ -4,7 +4,7 @@ import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
 import { SocialEngine } from '../engine/social';
 import type { ChatPost, ChatChannel } from '../engine/cosmochat';
-import { uploadMedia as uploadMediaToStorage, getMediaUrl, downloadMediaAsDataUrl } from '../lib/supabase-storage';
+import { uploadMedia as uploadMediaToStorage, downloadMediaAsDataUrl } from '../lib/supabase-storage';
 import { isBackendAvailable } from '../lib/supabase';
 import HexAvatar from './HexAvatar';
 
