@@ -17,6 +17,7 @@ export default function PFPCollectionView() {
   const [maxSupply, setMaxSupply] = useState('1000');
   const [basePrice, setBasePrice] = useState('');
   const [createError, setCreateError] = useState('');
+  const [mintChain, setMintChain] = useState<'strangrz' | 'ethereum'>('strangrz');
 
   // Layer/variant management
   const [newLayerName, setNewLayerName] = useState('');
@@ -40,6 +41,10 @@ export default function PFPCollectionView() {
 
   // Preview
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Upload state (must be before early returns to respect Rules of Hooks)
+  const [uploadError, setUploadError] = useState('');
+  const [bulkProgress, setBulkProgress] = useState('');
 
   useEffect(() => {
     const engine = PFPCollectionEngine.load();
@@ -70,7 +75,7 @@ export default function PFPCollectionView() {
     if (price !== null && (isNaN(price) || price < 0)) { setCreateError('Invalid price'); return; }
 
     const engine = PFPCollectionEngine.load();
-    const collection = engine.createCollection(wallet.address, name.trim(), description, supply, price);
+    const collection = engine.createCollection(wallet.address, name.trim(), description, supply, price, mintChain);
     setCollections(engine.getAllCollections());
     setSelectedCollection(collection);
     setStep('edit');
@@ -93,8 +98,6 @@ export default function PFPCollectionView() {
     refreshCollection();
   };
 
-  const [uploadError, setUploadError] = useState('');
-
   const handleVariantUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -104,8 +107,6 @@ export default function PFPCollectionView() {
     reader.onload = () => setVariantImage(reader.result as string);
     reader.readAsDataURL(file);
   };
-
-  const [bulkProgress, setBulkProgress] = useState('');
 
   const handleBulkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -258,7 +259,7 @@ export default function PFPCollectionView() {
   // ─── Create view ──────────────────────────────────────
   if (step === 'create') {
     return (
-      <div className="space-y-6 max-w-lg mx-auto">
+      <div className="space-y-6">
         <button onClick={() => setStep('list')} className="text-base opacity-50 hover:opacity-100 cursor-pointer transition-opacity">{'\u2190'} Back</button>
         <div className="glass-panel p-8">
           <h3 className="text-title-lg font-bold font-title text-center mb-6">{'\u2B21'} New PFP Collection</h3>
@@ -277,13 +278,42 @@ export default function PFPCollectionView() {
                 <input className="warp-input" type="number" value={maxSupply} onChange={e => setMaxSupply(e.target.value)} min="1" />
               </div>
               <div>
-                <label className="text-label opacity-50 block mb-2">MINT PRICE {'\u03A9'}</label>
+                <label className="text-label opacity-50 block mb-2">MINT PRICE {'\u2B23'}</label>
                 <input className="warp-input" type="number" value={basePrice} onChange={e => setBasePrice(e.target.value)} placeholder="Free" min="0" />
               </div>
             </div>
+            {/* Chain Selection */}
+            <div>
+              <label className="text-label opacity-50 block mb-2">BLOCKCHAIN</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'SZ-721 \u00B7 0 gas', icon: '\u2B22' },
+                  { id: 'ethereum' as const, label: 'Ethereum', sub: 'ERC-721 \u00B7 Gas fees', icon: '\u039E' },
+                ]).map(ch => (
+                  <button
+                    key={ch.id}
+                    onClick={() => setMintChain(ch.id)}
+                    className={`p-3 text-center transition-all cursor-pointer ${
+                      mintChain === ch.id
+                        ? 'bg-current/10 border border-current/20 opacity-90'
+                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                    }`}
+                  >
+                    <div className="text-base mb-1">{ch.icon}</div>
+                    <div className="text-[11px] font-medium">{ch.label}</div>
+                    <div className="text-[9px] opacity-60 mt-0.5">{ch.sub}</div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] opacity-30 mt-1.5">
+                {mintChain === 'strangrz'
+                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Strangrz Safe inclus.'
+                  : 'Mint sur Ethereum via ERC-721. N\u00E9cessite MetaMask. Gas fees requis.'}
+              </p>
+            </div>
             {createError && <p className="text-base opacity-70">{createError}</p>}
             <button onClick={handleCreateCollection} className="warp-button w-full py-3 text-base" disabled={!name.trim()}>
-              Create Collection
+              {mintChain === 'ethereum' ? 'Create Collection (Ethereum)' : 'Create Collection (Strangrz)'}
             </button>
           </div>
         </div>
@@ -315,7 +345,7 @@ export default function PFPCollectionView() {
                 <span>{col.layers.length} layers</span>
                 <span>{combos.toLocaleString()} combos</span>
                 <span>{col.items.length}/{col.maxSupply} minted</span>
-                {col.basePrice !== null && <span>{col.basePrice} {'\u03A9'}</span>}
+                {col.basePrice !== null && <span>{col.basePrice} {'\u2B23'}</span>}
               </div>
               <p className="text-label opacity-30 mt-1 font-mono">ID: {col.fingerprint}</p>
             </div>
@@ -545,7 +575,7 @@ export default function PFPCollectionView() {
 
         {/* ─── Mint ─────────────────────────────────────────── */}
         {step === 'mint' && (
-          <div className="glass-panel p-8 text-center space-y-6 max-w-md mx-auto">
+          <div className="glass-panel p-8 text-center space-y-6">
             <h3 className="text-title-lg font-bold font-title">Mint PFPs</h3>
             <p className="text-base opacity-50">
               Generate unique PFPs by randomly combining traits from each layer.

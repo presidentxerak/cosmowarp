@@ -1,5 +1,5 @@
 /**
- * Cosmorare — Sync Engine
+ * Strangrz — Sync Engine
  *
  * Bridges localStorage (fast local cache) with Supabase (persistent cloud storage).
  * Strategy:

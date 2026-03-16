@@ -1,5 +1,5 @@
 /**
- * Cosmorare State Proof Engine — Merkle Patricia Trie
+ * Strangrz State Proof Engine — Merkle Patricia Trie
  *
  * Surpasses Ethereum's MPT with:
  * 1. REAL proof of inclusion — prove any key-value pair exists in state
@@ -10,7 +10,7 @@
  * 6. Versioned snapshots — query state at any historical block
  *
  * Unlike Ethereum's hex-prefix MPT which uses RLP encoding,
- * Cosmorare uses a binary radix trie with SHA-256 hashing.
+ * Strangrz uses a binary radix trie with SHA-256 hashing.
  * This is simpler, faster, and equally secure.
  *
  * Every account balance, nonce, and shard state is provable
@@ -380,7 +380,7 @@ export class MerklePatriciaTrie {
     return this.getRoot();
   }
 
-  /** Compute state root from a map of balances (for CosmoChain integration) */
+  /** Compute state root from a map of balances (for StrangrzChain integration) */
   static async computeStateRoot(state: Map<string, number>): Promise<{
     root: string;
     trie: MerklePatriciaTrie;

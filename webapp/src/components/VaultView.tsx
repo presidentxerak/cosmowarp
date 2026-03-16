@@ -297,7 +297,7 @@ export default function VaultView() {
           </div>
           <div className="flex items-start gap-3">
             <span className="shrink-0">{'\u2713'}</span>
-            <span>Vault key derived from CosmoID (PBKDF2 600K rounds)</span>
+            <span>Vault key derived from StrangrzID (PBKDF2 600K rounds)</span>
           </div>
           <div className="flex items-start gap-3">
             <span className="shrink-0">{'\u2713'}</span>

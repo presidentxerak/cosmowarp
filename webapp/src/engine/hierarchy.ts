@@ -1,7 +1,7 @@
 import { storage } from './storage';
 
 /**
- * Cosmorare Account Hierarchy — Levels, Titles & Rewards
+ * Strangrz Account Hierarchy — Levels, Titles & Rewards
  *
  * 7 levels aligned with the 7 fractal layers.
  * Each level has a cosmic title, reward multiplier, and privileges.
@@ -58,7 +58,7 @@ export const HIERARCHY_LEVELS: HierarchyLevel[] = [
     rewardMultiplier: 1.5,
     airdropBonus: 250,
     color: 'opacity-80',
-    description: 'A guiding light in the CosmoMesh.',
+    description: 'A guiding light in the StrangrzMesh.',
   },
   {
     id: 3,
@@ -267,11 +267,11 @@ export class HierarchyEngine {
   }
 
   save(): void {
-    storage.setItem('cosmorare_hierarchy', this.serialize());
+    storage.setItem('strangrz_hierarchy', this.serialize());
   }
 
   static load(): HierarchyEngine | null {
-    const raw = storage.getItem('cosmorare_hierarchy');
+    const raw = storage.getItem('strangrz_hierarchy');
     if (!raw) return null;
     try {
       return HierarchyEngine.deserialize(raw);

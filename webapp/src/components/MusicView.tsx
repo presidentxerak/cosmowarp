@@ -176,7 +176,7 @@ function TrackCard({ wart, onClick }: { wart: Wart; onClick: () => void }) {
         </div>
         {wart.price !== null && (
           <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 font-bold">
-            {wart.price} {'\u03A9'}
+            {wart.price} {'\u2B23'}
           </div>
         )}
       </div>
@@ -290,7 +290,7 @@ export default function MusicView() {
             {selectedTrack.certId && (
               <span className="flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                CRCERT
+                STCERT
               </span>
             )}
             <span>{selectedTrack.editionType === 'unique' ? '1/1' : selectedTrack.editionType === 'limited' ? `Éd. ${selectedTrack.editionNumber}/${selectedTrack.maxEditions}` : 'Illimité'}</span>
@@ -303,14 +303,14 @@ export default function MusicView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-label opacity-40">PRIX</p>
-                  <p className="text-title-sm font-bold opacity-90">{selectedTrack.price} {'\u03A9'}</p>
+                  <p className="text-title-sm font-bold opacity-90">{selectedTrack.price} {'\u2B23'}</p>
                 </div>
                 <button
                   className="warp-button px-6 py-2.5"
                   onClick={() => handleBuy(selectedTrack)}
                   disabled={buying || wallet.balance < (selectedTrack.price || 0)}
                 >
-                  {buying ? 'Achat en cours...' : `Acheter ${selectedTrack.price} \u03A9`}
+                  {buying ? 'Achat en cours...' : `Acheter ${selectedTrack.price} \u2B23`}
                 </button>
               </div>
             </div>
@@ -334,7 +334,7 @@ export default function MusicView() {
               {selectedTrack.history.map((h, i) => (
                 <div key={i} className="flex justify-between opacity-40">
                   <span>{shortAddress(h.from)} → {shortAddress(h.to)}</span>
-                  <span>{h.price} {'\u03A9'}</span>
+                  <span>{h.price} {'\u2B23'}</span>
                 </div>
               ))}
             </div>
@@ -350,7 +350,7 @@ export default function MusicView() {
       <div className="glass-panel p-4 text-center">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u266B'} Musique</h2>
         <p className="text-body-sm opacity-40">
-          Écoutez, collectionnez et vendez des oeuvres musicales certifiées sur Cosmorare.
+          Écoutez, collectionnez et vendez des oeuvres musicales certifiées sur Strangrz.
         </p>
       </div>
 
@@ -392,7 +392,7 @@ export default function MusicView() {
             {filter === 'my-tracks' ? 'Aucun titre dans votre collection.' : 'Aucun titre disponible.'}
           </p>
           <p className="text-body-sm opacity-30 mt-1">
-            Créez une Cosmorare audio (.wav) avec une pochette dans l'onglet Créer.
+            Créez une Strangrz audio (.wav) avec une pochette dans l'onglet Créer.
           </p>
         </div>
       ) : (

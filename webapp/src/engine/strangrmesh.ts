@@ -1,5 +1,5 @@
 /**
- * CosmoMesh — DAG-Based Transactional Fabric
+ * StrangrzMesh — DAG-Based Transactional Fabric
  *
  * NOT a blockchain. A Directed Acyclic Graph of transactions where:
  * - Each transaction references 2+ parent transactions (validates them)
@@ -19,24 +19,24 @@
  * - Merkle-DAG = fully auditable
  * - CosmoASM programmable = smart contracts via VM
  *
- * ─── CosmoChain Integration ───────────────────────────────
- * CosmoMesh now serves as the DAG layer for the CosmoChain protocol.
+ * ─── StrangrzChain Integration ───────────────────────────────
+ * StrangrzMesh now serves as the DAG layer for the StrangrzChain protocol.
  * Transactions are simultaneously recorded in the DAG (for instant settlement)
- * and submitted to CosmoChain (for on-chain SVG storage and finality).
- * The DAG provides sub-second optimistic confirmation while CosmoChain
- * provides full on-chain SVG-encoded persistence via CosmoCode.
+ * and submitted to StrangrzChain (for on-chain SVG storage and finality).
+ * The DAG provides sub-second optimistic confirmation while StrangrzChain
+ * provides full on-chain SVG-encoded persistence via StrangrzCode.
  */
 
 import { signTransaction, verifySignature, computeTxId, isValidAddress } from './crypto';
 import { MerkleDAG } from './merkle';
-import type { CosmoChain } from './cosmochain';
+import type { StrangrzChain } from './cosmochain';
 
 // ─── Fractal Layers ──────────────────────────────────────
 
 export const MeshLayer = {
-  GRID:    0,  // Micro-transactions (< 10 Ω)
-  HELIX:   1,  // Standard transfers (10-100 Ω)
-  GLYPH:   2,  // Large transfers (100-1000 Ω)
+  GRID:    0,  // Micro-transactions (< 10 ⬣)
+  HELIX:   1,  // Standard transfers (10-100 ⬣)
+  GLYPH:   2,  // Large transfers (100-1000 ⬣)
   COSMO:   3,  // System operations (governance, staking)
   CHRONOS: 4,  // Time-locked transactions
   NEXUS:   5,  // Cross-layer bridges
@@ -95,9 +95,9 @@ export interface ValidationResult {
   layer: MeshLayer;
 }
 
-// ─── CosmoMesh Engine ────────────────────────────────────
+// ─── StrangrzMesh Engine ────────────────────────────────────
 
-export class CosmoMesh {
+export class StrangrzMesh {
   private transactions: Map<string, MeshTransaction> = new Map();
   private merkleDAG: MerkleDAG = new MerkleDAG();
   private balances: Map<string, number> = new Map();
@@ -108,8 +108,8 @@ export class CosmoMesh {
   // Layer-specific throughput counters
   private layerTps: Map<MeshLayer, number[]> = new Map();
 
-  // CosmoChain bridge — enables on-chain SVG persistence
-  private cosmoChain: CosmoChain | null = null;
+  // StrangrzChain bridge — enables on-chain SVG persistence
+  private strangrzChain: StrangrzChain | null = null;
 
   constructor() {
     // Initialize layer tip sets
@@ -119,14 +119,14 @@ export class CosmoMesh {
     }
   }
 
-  /** Connect to a CosmoChain instance for on-chain SVG persistence */
-  connectCosmoChain(chain: CosmoChain): void {
-    this.cosmoChain = chain;
+  /** Connect to a StrangrzChain instance for on-chain SVG persistence */
+  connectStrangrzChain(chain: StrangrzChain): void {
+    this.strangrzChain = chain;
   }
 
-  /** Get the connected CosmoChain instance */
-  getCosmoChain(): CosmoChain | null {
-    return this.cosmoChain;
+  /** Get the connected StrangrzChain instance */
+  getStrangrzChain(): StrangrzChain | null {
+    return this.strangrzChain;
   }
 
   get size(): number { return this.transactions.size; }
@@ -148,7 +148,7 @@ export class CosmoMesh {
       parentIds: [],
       layer: MeshLayer.LUMINA,
       type: 'genesis',
-      memo: `CosmoMesh Genesis — ${amount} Ω created`,
+      memo: `StrangrzMesh Genesis — ${amount} ⬣ created`,
       resonanceScore: 1.0, // Genesis is fully confirmed
       confirmations: 0,
       meshDepth: 0,
@@ -567,9 +567,9 @@ export class CosmoMesh {
     });
   }
 
-  static deserialize(json: string): CosmoMesh {
+  static deserialize(json: string): StrangrzMesh {
     const data = JSON.parse(json);
-    const mesh = new CosmoMesh();
+    const mesh = new StrangrzMesh();
     mesh.transactions = new Map(data.transactions);
     mesh.balances = new Map(data.balances);
     mesh.genesisId = data.genesisId;

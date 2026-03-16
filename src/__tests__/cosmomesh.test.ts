@@ -56,7 +56,7 @@ describe('Ed25519 Key Generation', () => {
     const kp = await generateKeyPair();
     expect(kp.publicKey).toBeTruthy();
     expect(kp.privateKey).toBeTruthy();
-    expect(kp.address).toMatch(/^CW[a-f0-9]{40}$/);
+    expect(kp.address).toMatch(/^STZ[a-f0-9]{40}$/);
   });
 
   test('two keypairs are different', async () => {
@@ -123,13 +123,13 @@ describe('Transaction ID', () => {
 
 describe('Utility Functions', () => {
   test('isValidAddress accepts valid addresses', () => {
-    expect(isValidAddress('CW' + 'a'.repeat(40))).toBe(true);
-    expect(isValidAddress('CW' + '0123456789abcdef'.repeat(2) + '01234567')).toBe(true);
+    expect(isValidAddress('STZ' + 'a'.repeat(40))).toBe(true);
+    expect(isValidAddress('STZ' + '0123456789abcdef'.repeat(2) + '01234567')).toBe(true);
   });
 
   test('isValidAddress rejects invalid addresses', () => {
     expect(isValidAddress('invalid')).toBe(false);
-    expect(isValidAddress('CW' + 'a'.repeat(39))).toBe(false);
+    expect(isValidAddress('STZ' + 'a'.repeat(39))).toBe(false);
     expect(isValidAddress('XX' + 'a'.repeat(40))).toBe(false);
   });
 

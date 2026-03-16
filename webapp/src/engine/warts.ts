@@ -1,23 +1,23 @@
 /**
- * Cosmorare Wart Engine — NFT-like Digital Art on the Cosmorare Protocol
+ * Strangrz Wart Engine — NFT-like Digital Art on the Strangrz Protocol
  *
- * Warts are unique digital artworks stored in the Cosmorare protocol.
+ * Warts are unique digital artworks stored in the Strangrz protocol.
  * Anyone with a wallet can mint, list, buy, and transfer Warts.
  * Creators earn royalties on every resale.
  *
- * ─── Full On-Chain SVG Architecture (CosmoCode) ──────────
- * With CosmoChain integration, all artwork is stored FULLY ON-CHAIN
- * as optimized CosmoCode SVG containers. The 7-layer fractal compression
+ * ─── Full On-Chain SVG Architecture (StrangrzCode) ──────────
+ * With StrangrzChain integration, all artwork is stored FULLY ON-CHAIN
+ * as optimized StrangrzCode SVG containers. The 7-layer fractal compression
  * pipeline achieves ~1000x storage efficiency, making on-chain storage
  * of full images practical at zero cost.
  *
  * ─── Hybrid Storage ──────────────────────────────────────
- * - On-Chain: CosmoCode SVG container in the CosmoChain block (permanent)
+ * - On-Chain: StrangrzCode SVG container in the StrangrzChain block (permanent)
  * - Local Cache: Content-addressable storage for fast rendering
  * - Both: Certificate of Authenticity with Ed25519 creator signature
  *
  * ─── Certificate of Authenticity ─────────────────────────
- * Every Wart receives an unforgeable Certificate ID (CRCERT_*) computed
+ * Every Wart receives an unforgeable Certificate ID (STCERT_*) computed
  * from SHA-256(creator + content fingerprint + timestamp + title).
  * The creator's Ed25519 signature proves authenticity. Certificates are
  * permanently registered in an append-only local registry.
@@ -25,10 +25,12 @@
 
 import { storage } from './storage';
 import { sha256, signTransaction } from './crypto';
-import { imageToOnChainSVG, extractImageFromOnChainSVG, type CosmoCodeContainer } from './cosmocode';
+import { extractImageFromOnChainSVG, type StrangrzCodeContainer } from './cosmocode';
 import { CosmoVault, type VaultEntry, type VaultStats, type RecoveryKit } from './cosmovault';
 import { ContractEngine, type CosmoContract, type FiatPrice } from './cosmocontract';
 import { FiatGateway, type FiatTransaction, type FiatCurrency, formatFiatPrice } from './fiatgateway';
+import { storeMedia, retrieveAllMedia, deleteMedia } from './mediadb';
+import { getStrangrzEngine } from './vobjct';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -51,7 +53,7 @@ export interface WartComment {
 }
 
 export interface WartCertificate {
-  certId: string;              // CRCERT_<SHA256[0:32]> — unforgeable
+  certId: string;              // STCERT_<SHA256[0:32]> — unforgeable
   contentFingerprint: string;  // SHA-256 of media data
   creatorSignature: string;    // Ed25519 signature of certId
   issuedAt: number;
@@ -65,30 +67,32 @@ export interface Wart {
   title: string;
   description: string;
   imageData: string;             // data URL (base64 image/gif/video/audio/svg)
-  mediaType?: 'image' | 'audio' | 'video' | 'svg';  // media type
+  mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';  // media type
   audioCover?: string;           // cover image for audio Warts
-  creator: string;               // CW address of original creator (immutable)
-  owner: string;                 // CW address of current owner
+  creator: string;               // STZ address of original creator (immutable)
+  owner: string;                 // STZ address of current owner
   price: number | null;          // Price in Warp (null = not for sale)
   listed: boolean;               // Currently on marketplace
   createdAt: number;
   history: WartTransfer[];       // Full transfer history
   royaltyPercent: number;        // % paid to creator on resale (default 5)
   comments: WartComment[];       // User comments
+  likes?: string[];              // Addresses that liked this Wart
+  bookmarks?: string[];          // Addresses that bookmarked this Wart
   // ─── Temporal Edition System ────────────────────────
   editionType: 'unique' | 'limited' | 'unlimited';   // Edition model
   maxEditions: number | null;    // null = unlimited, otherwise max copies
   editionNumber: number;         // Which edition this is (1-based)
   availableUntil: number | null; // Timestamp deadline (null = forever)
   // ─── Certificate of Authenticity ──────────────────────
-  certId?: string;               // CRCERT_<SHA256[0:32]> — unforgeable certificate ID
+  certId?: string;               // STCERT_<SHA256[0:32]> — unforgeable certificate ID
   contentFingerprint?: string;   // SHA-256 of media content — integrity proof
   creatorSignature?: string;     // Ed25519 signature — creator authenticity proof
-  // ─── CosmoCode On-Chain SVG Storage ─────────────────
-  onChainSVG?: string;           // Full CosmoCode SVG container (on-chain data)
-  cosmoCodeId?: string;          // CosmoCode container ID (SHA-256 of compressed content)
+  // ─── StrangrzCode On-Chain SVG Storage ─────────────────
+  onChainSVG?: string;           // Full StrangrzCode SVG container (on-chain data)
+  strangrzCodeId?: string;          // StrangrzCode container ID (SHA-256 of compressed content)
   compressionRatio?: number;     // How much the on-chain data was compressed
-  onChainTxId?: string;          // CosmoChain transaction ID that stores this Wart
+  onChainTxId?: string;          // StrangrzChain transaction ID that stores this Wart
   storageMode: 'local' | 'onchain' | 'hybrid';  // Where the data lives
   // ─── Fiat Pricing ────────────────────────────────────
   priceFiat?: number;              // Price in fiat currency
@@ -98,6 +102,11 @@ export interface Wart {
   // ─── Contract Reference ──────────────────────────────
   royaltyContractId?: string;      // CosmoContract ID for royalties
   activeContractIds?: string[];    // Other active contracts
+  // ─── Strangrz Integration ─────────────────────────────
+  vobjctId?: string;               // Strangrz manifest object ID
+  vobjctProtected?: boolean;       // Whether Strangrz Safe is active
+  // ─── Multi-Chain Minting ──────────────────────────────
+  mintChain?: 'strangrz' | 'ethereum';  // Which chain was used for minting
 }
 
 // ─── Rarity Computation ─────────────────────────────────
@@ -163,8 +172,8 @@ export function formatDateFR(timestamp: number): string {
 
 // ─── Storage ─────────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_warts';
-const CERT_REGISTRY_KEY = 'cosmorare_cert_registry';
+const STORAGE_KEY = 'strangrz_warts';
+const CERT_REGISTRY_KEY = 'strangrz_cert_registry';
 const MEDIA_STORE_PREFIX = 'cw_media_';
 
 // ─── Content-Addressable Media Store ─────────────────────
@@ -224,13 +233,56 @@ export class WartEngine {
       try {
         const arr: Wart[] = JSON.parse(raw);
         for (const w of arr) {
-          // Migration: add new fields to old warts
-          if (w.vaultBackup === undefined) w.vaultBackup = false;
+          WartEngine.normalizeWart(w);
           engine.warts.set(w.id, w);
         }
       } catch { /* corrupt data, start fresh */ }
     }
     return engine;
+  }
+
+  /** Rehydrate imageData from IndexedDB for all warts missing media */
+  async rehydrateMedia(): Promise<boolean> {
+    let changed = false;
+    try {
+      const allMedia = await retrieveAllMedia();
+      for (const [id, wart] of this.warts) {
+        const media = allMedia.get(id);
+        if (media) {
+          if (!wart.imageData || wart.imageData === '') {
+            wart.imageData = media.imageData;
+            changed = true;
+          }
+          if (!wart.audioCover && media.audioCover) {
+            wart.audioCover = media.audioCover;
+            changed = true;
+          }
+        }
+        // Legacy migration: try WartMediaStore (old localStorage-based)
+        if ((!wart.imageData || wart.imageData === '') && wart.contentFingerprint) {
+          const legacy = WartMediaStore.retrieve(wart.contentFingerprint);
+          if (legacy) {
+            wart.imageData = legacy;
+            // Migrate to IndexedDB
+            storeMedia(id, legacy, wart.audioCover);
+            changed = true;
+          }
+        }
+      }
+    } catch { /* IndexedDB unavailable */ }
+    return changed;
+  }
+
+  private static normalizeWart(w: Wart): void {
+    if (!Array.isArray(w.history)) w.history = [];
+    if (!Array.isArray(w.comments)) w.comments = [];
+    if (!w.editionType) w.editionType = 'unique';
+    if (w.editionNumber === undefined) w.editionNumber = 1;
+    if (w.royaltyPercent === undefined) w.royaltyPercent = 5;
+    if (!w.mediaType) w.mediaType = 'image';
+    if (!w.creator) w.creator = w.owner || '';
+    if (!w.owner) w.owner = w.creator || '';
+    if (w.vaultBackup === undefined) w.vaultBackup = false;
   }
 
   // ─── Sub-engine accessors ──────────────────────────
@@ -240,7 +292,22 @@ export class WartEngine {
 
   private save(): void {
     const arr = Array.from(this.warts.values());
-    storage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    // Store metadata in localStorage (without imageData to stay under 5MB limit)
+    const meta = arr.map(w => {
+      const { imageData, audioCover, ...rest } = w;
+      return rest;
+    });
+    try {
+      storage.setItem(STORAGE_KEY, JSON.stringify(meta));
+    } catch {
+      // localStorage quota exceeded — metadata stays in memory
+    }
+    // Persist media to IndexedDB (async, large capacity)
+    for (const w of arr) {
+      if (w.imageData) {
+        storeMedia(w.id, w.imageData, w.audioCover);
+      }
+    }
   }
 
   /** Save warts to localStorage (public access for cloud sync) */
@@ -251,6 +318,7 @@ export class WartEngine {
   /** Add a wart from cloud sync (doesn't trigger save — caller must call savePublic) */
   addFromCloud(wart: Wart): void {
     if (!this.warts.has(wart.id)) {
+      WartEngine.normalizeWart(wart);
       this.warts.set(wart.id, wart);
     }
   }
@@ -275,12 +343,14 @@ export class WartEngine {
     editionType: 'unique' | 'limited' | 'unlimited' = 'unique',
     maxEditions: number | null = null,
     durationHours: number | null = null,
-    mediaType: 'image' | 'audio' | 'video' | 'svg' = 'image',
+    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards' = 'image',
     audioCover?: string,
     privateKey?: string,
+    mintChain?: 'strangrz' | 'ethereum',
   ): Promise<Wart> {
     if (!title.trim()) throw new Error('Title required');
     if (!imageData) throw new Error('Media required');
+    if (price !== null && price < 100) throw new Error('Minimum price is 100 \u2B23');
     if (royaltyPercent < 0 || royaltyPercent > 50) throw new Error('Royalty must be 0-50%');
     if (editionType === 'limited' && (maxEditions === null || maxEditions < 1)) {
       throw new Error('Limited editions require a max count');
@@ -312,7 +382,7 @@ export class WartEngine {
     // 2. Compute unforgeable certificate ID
     const certSource = `CW_CERT:v1:${creator}:${contentFingerprint}:${timestamp}:${title.trim()}`;
     const certHash = await sha256(certSource);
-    const certId = 'CRCERT_' + certHash.slice(0, 32).toUpperCase();
+    const certId = 'STCERT_' + certHash.slice(0, 32).toUpperCase();
 
     // 3. Creator signs the certificate with their Ed25519 private key
     let creatorSignature: string | undefined;
@@ -320,32 +390,6 @@ export class WartEngine {
       try {
         creatorSignature = await signTransaction(certId, privateKey);
       } catch { /* signing failed, proceed without signature */ }
-    }
-
-    // 4. Store media in content-addressable local store (redundant backup)
-    WartMediaStore.store(contentFingerprint, imageData);
-    if (audioCover) {
-      const coverFingerprint = await sha256(audioCover);
-      WartMediaStore.store(coverFingerprint, audioCover);
-    }
-
-    // ─── CosmoCode On-Chain SVG Encoding ────────────────
-    // Encode the artwork as a compressed on-chain SVG container
-    let onChainSVG: string | undefined;
-    let cosmoCodeId: string | undefined;
-    let compressionRatio: number | undefined;
-
-    try {
-      const container = await imageToOnChainSVG(imageData, title.trim(), creator, {
-        edition: editionType,
-        royalty: royaltyPercent.toString(),
-        fingerprint: contentFingerprint,
-      });
-      onChainSVG = container.svg;
-      cosmoCodeId = container.id;
-      compressionRatio = container.compressionRatio;
-    } catch {
-      // Fallback: on-chain encoding failed, use local-only storage
     }
 
     const wart: Wart = {
@@ -371,13 +415,10 @@ export class WartEngine {
       certId,
       contentFingerprint,
       creatorSignature,
-      // CosmoCode On-Chain SVG
-      onChainSVG,
-      cosmoCodeId,
-      compressionRatio,
-      storageMode: onChainSVG ? 'hybrid' : 'local',
+      storageMode: 'local',
       // New v3 fields
       vaultBackup: false,
+      mintChain: mintChain || 'strangrz',
     };
 
     this.warts.set(id, wart);
@@ -394,13 +435,36 @@ export class WartEngine {
       title: title.trim(),
     });
 
+    // 6. Create Strangrz manifest & Safe protection
+    try {
+      const vobjctEngine = getStrangrzEngine();
+      const manifest = await vobjctEngine.createForWart({
+        wartId: id,
+        title: title.trim(),
+        description: description.trim(),
+        imageData,
+        mediaType,
+        creator,
+        creatorPublicKey: '', // Set by caller via WalletContext
+        creatorPrivateKey: privateKey,
+        certId,
+        editionType,
+        editionNumber: existingEditions + 1,
+        maxEditions: editionType === 'unique' ? 1 : maxEditions,
+        royaltyPercent,
+      });
+      wart.vobjctId = manifest.object_id;
+      wart.vobjctProtected = true;
+      this.save();
+    } catch { /* Strangrz creation non-critical */ }
+
     return wart;
   }
 
   // ─── On-Chain SVG Recovery ───────────────────────────
 
   /**
-   * Recover a Wart's image data from its on-chain CosmoCode SVG.
+   * Recover a Wart's image data from its on-chain StrangrzCode SVG.
    * This works even if the local cache is lost — the data is on-chain forever.
    */
   async recoverFromOnChain(wartId: string): Promise<string | null> {
@@ -408,10 +472,10 @@ export class WartEngine {
     if (!wart || !wart.onChainSVG) return null;
 
     try {
-      const container: CosmoCodeContainer = {
+      const container: StrangrzCodeContainer = {
         version: 1,
         type: 'wart',
-        id: wart.cosmoCodeId || '',
+        id: wart.strangrzCodeId || '',
         svg: wart.onChainSVG,
         originalSize: 0,
         compressedSize: wart.onChainSVG.length,
@@ -449,10 +513,10 @@ export class WartEngine {
       localSize,
       onChainSize,
       compressionRatio: wart.compressionRatio || 1,
-      cosmoCodeId: wart.cosmoCodeId,
+      strangrzCodeId: wart.strangrzCodeId,
       hasOnChainBackup: !!wart.onChainSVG,
       hasLocalCache: !!wart.imageData,
-      gasCost: 0, // Always free on CosmoChain
+      gasCost: 0, // Always free on StrangrzChain
     };
   }
 
@@ -474,7 +538,7 @@ export class WartEngine {
     // 2. Verify certificate ID — recompute and compare
     const certSource = `CW_CERT:v1:${wart.creator}:${wart.contentFingerprint}:${wart.createdAt}:${wart.title}`;
     const certHash = await sha256(certSource);
-    const expectedCertId = 'CRCERT_' + certHash.slice(0, 32).toUpperCase();
+    const expectedCertId = 'STCERT_' + certHash.slice(0, 32).toUpperCase();
     if (expectedCertId !== wart.certId) {
       return { valid: false, reason: 'Certificate ID mismatch — data has been altered' };
     }
@@ -493,7 +557,7 @@ export class WartEngine {
   list(wartId: string, price: number, ownerAddress: string): boolean {
     const wart = this.warts.get(wartId);
     if (!wart || wart.owner !== ownerAddress) return false;
-    if (price <= 0) return false;
+    if (price < 100) return false;
     wart.price = price;
     wart.listed = true;
     this.save();
@@ -560,6 +624,7 @@ export class WartEngine {
     const wart = this.warts.get(wartId);
     if (!wart || wart.owner !== ownerAddress) return false;
     this.warts.delete(wartId);
+    deleteMedia(wartId);
     this.save();
     return true;
   }
@@ -602,6 +667,26 @@ export class WartEngine {
     wart.comments.push(comment);
     this.save();
     return comment;
+  }
+
+  toggleLike(wartId: string, address: string): boolean {
+    const wart = this.warts.get(wartId);
+    if (!wart) return false;
+    if (!wart.likes) wart.likes = [];
+    const idx = wart.likes.indexOf(address);
+    if (idx >= 0) { wart.likes.splice(idx, 1); } else { wart.likes.push(address); }
+    this.save();
+    return idx < 0; // true if now liked
+  }
+
+  toggleBookmark(wartId: string, address: string): boolean {
+    const wart = this.warts.get(wartId);
+    if (!wart) return false;
+    if (!wart.bookmarks) wart.bookmarks = [];
+    const idx = wart.bookmarks.indexOf(address);
+    if (idx >= 0) { wart.bookmarks.splice(idx, 1); } else { wart.bookmarks.push(address); }
+    this.save();
+    return idx < 0; // true if now bookmarked
   }
 
   // ─── Queries ─────────────────────────────────────────
@@ -746,7 +831,7 @@ export class WartEngine {
   }
 
   /**
-   * Initialize the vault with CosmoID credentials.
+   * Initialize the vault with StrangrzID credentials.
    */
   async initVault(username: string, password: string): Promise<void> {
     await this.vault.init(username, password);
@@ -988,8 +1073,8 @@ export interface WartStorageInfo {
   localSize: number;
   onChainSize: number;
   compressionRatio: number;
-  cosmoCodeId?: string;
+  strangrzCodeId?: string;
   hasOnChainBackup: boolean;
   hasLocalCache: boolean;
-  gasCost: 0;  // Always free on CosmoChain
+  gasCost: 0;  // Always free on StrangrzChain
 }

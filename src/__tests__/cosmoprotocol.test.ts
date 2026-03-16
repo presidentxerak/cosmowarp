@@ -1,5 +1,5 @@
 /**
- * Tests for Cosmorare Protocole v2.1 — State Proofs, Integrity, Auto-Updates
+ * Tests for Strangrz Protocole v3.0 — State Proofs, Integrity, Auto-Updates
  *
  * Tests the 4 new modules that fix all critical audit findings:
  * 1. stateproof.ts — Merkle Patricia Trie (surpasses Ethereum's MPT)
@@ -718,9 +718,9 @@ describe('AutoUpdateEngine', () => {
 describe('Integration: State Proofs + Integrity', () => {
   test('state root from MPT is deterministic for same balances', async () => {
     const balances = new Map<string, number>([
-      ['CW' + 'a'.repeat(40), 1000],
-      ['CW' + 'b'.repeat(40), 2000],
-      ['CW' + 'c'.repeat(40), 3000],
+      ['STZ' + 'a'.repeat(40), 1000],
+      ['STZ' + 'b'.repeat(40), 2000],
+      ['STZ' + 'c'.repeat(40), 3000],
     ]);
 
     const { root: root1 } = await MerklePatriciaTrie.computeStateRoot(balances);
@@ -787,7 +787,7 @@ describe('Integration: State Proofs + Integrity', () => {
     const keys = await generateKeyPair();
     expect(keys.publicKey).toBeDefined();
     expect(keys.privateKey).toBeDefined();
-    expect(keys.address).toMatch(/^CW[a-f0-9]{40}$/);
+    expect(keys.address).toMatch(/^STZ[a-f0-9]{40}$/);
   });
 
   test('full update lifecycle: create, sign, submit, vote, apply', async () => {

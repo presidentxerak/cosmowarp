@@ -21,12 +21,12 @@ export default function SDKView() {
         <div className="flex items-center gap-3 mb-2">
           <span className="text-title-lg">{'\u2B21'}</span>
           <div>
-            <h2 className="text-title-md font-bold opacity-100 font-title">Cosmorare SDK</h2>
+            <h2 className="text-title-md font-bold opacity-100 font-title">Strangrz SDK</h2>
             <p className="text-body-sm opacity-40">Developer API & Extension Guide</p>
           </div>
         </div>
         <p className="text-base opacity-50">
-          Build apps, extensions, and integrations on the Cosmorare ecosystem.
+          Build apps, extensions, and integrations on the Strangrz multi-chain ecosystem (Strangrz SZ-721 + Ethereum ERC-721).
           The SDK provides wallet creation, cryptographic utilities, mining calculators,
           and an event system.
         </p>
@@ -101,17 +101,17 @@ function OverviewTab() {
     <div>
       <h3 className="text-title-sm font-bold opacity-80 mb-3">Getting Started</h3>
       <p className="text-base opacity-50 mb-4">
-        The Cosmorare SDK is a JavaScript/TypeScript library for building applications
-        on the Cosmorare ecosystem.
+        The Strangrz SDK is a JavaScript/TypeScript library for building multi-chain applications
+        on the Strangrz ecosystem, with native support for SZ-721 (Strangrz) and ERC-721 (Ethereum) token standards.
       </p>
 
-      <CodeBlock title="Installation" code={`import { CosmorareSDK } from 'cosmorare-sdk';
+      <CodeBlock title="Installation" code={`import { StrangrzSDK } from 'strangrz-sdk';
 
-const cosmo = new CosmorareSDK();`} />
+const cosmo = new StrangrzSDK();`} />
 
       <CodeBlock title="Quick Start" code={`// Create a wallet
 const wallet = await cosmo.createWallet('MyApp User');
-console.log(wallet.address); // CW...
+console.log(wallet.address); // STZ...
 
 // Get protocol info
 const info = cosmo.getProtocolInfo();
@@ -122,7 +122,7 @@ console.log(info.layers);      // ['GRID', 'HELIX', ...]
 const hash = await cosmo.hash('hello world');
 
 // Calculate mining reward
-const reward = cosmo.calculateReward(0); // 50 CW
+const reward = cosmo.calculateReward(0); // 50 STZ
 
 // Listen for events
 cosmo.on('balance_changed', (event) => {
@@ -132,12 +132,12 @@ cosmo.on('balance_changed', (event) => {
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Protocol Constants</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm">
         {[
-          ['Total Supply', '69,000,000 CW'],
-          ['Airdrop/Wallet', '1,000 CW'],
-          ['Base Mining Reward', '50 CW'],
+          ['Total Supply', '69,000,000 STZ'],
+          ['Airdrop/Wallet', '1,000 STZ'],
+          ['Base Mining Reward', '50 STZ'],
           ['Decay Constant', '5,000,000'],
           ['Golden Ratio', '1.618033...'],
-          ['Streak Reward', '10,000 CW'],
+          ['Streak Reward', '10,000 STZ'],
           ['Streak Days', '365'],
           ['Hierarchy Levels', '7'],
         ].map(([k, v]) => (
@@ -163,7 +163,7 @@ function WalletTab() {
       />
       <ApiMethod
         name="cosmo.validateAddress(address)"
-        desc="Check if an address has valid Cosmorare format (CW + 40 hex chars)."
+        desc="Check if an address has valid Strangrz format (STZ + 40 hex chars)."
         params={['address: string']}
         returns="boolean"
       />
@@ -175,7 +175,7 @@ function WalletTab() {
       />
 
       <CodeBlock title="SDKWallet Interface" code={`interface SDKWallet {
-  address: string;    // CW + 40 hex chars
+  address: string;    // STZ + 40 hex chars
   publicKey: string;  // Ed25519 public key (hex)
   privateKey: string; // Ed25519 private key (hex)
   alias?: string;
@@ -207,7 +207,7 @@ const hash = await cosmo.hash('transaction data');
 
 // Generate keys
 const keys = await cosmo.generateKeys();
-console.log(keys.address);    // CW...
+console.log(keys.address);    // STZ...
 console.log(keys.publicKey);  // hex string
 console.log(keys.privateKey); // hex string`} />
     </div>
@@ -220,9 +220,9 @@ function MiningTab() {
       <h3 className="text-title-sm font-bold opacity-80 mb-3">Mining Calculator</h3>
       <ApiMethod
         name="cosmo.calculateReward(totalMined)"
-        desc="Calculate the current mining reward based on total CW already mined (Resonance Decay)."
+        desc="Calculate the current mining reward based on total STZ already mined (Resonance Decay)."
         params={['totalMined: number']}
-        returns="number (CW reward)"
+        returns="number (STZ reward)"
       />
       <ApiMethod
         name="cosmo.getRewardCurve(points?)"
@@ -240,10 +240,10 @@ function MiningTab() {
       <CodeBlock title="Resonance Decay Formula" code={`// reward = 50 * \u03C6^(-totalMined / 5,000,000)
 // where \u03C6 = 1.618033988749895 (golden ratio)
 
-cosmo.calculateReward(0);          // 50.00 CW
-cosmo.calculateReward(5_000_000);  // ~30.90 CW
-cosmo.calculateReward(10_000_000); // ~19.10 CW
-cosmo.calculateReward(20_000_000); // ~7.30 CW
+cosmo.calculateReward(0);          // 50.00 STZ
+cosmo.calculateReward(5_000_000);  // ~30.90 STZ
+cosmo.calculateReward(10_000_000); // ~19.10 STZ
+cosmo.calculateReward(20_000_000); // ~7.30 STZ
 cosmo.calculateReward(58_000_000); // 0 (pool exhausted)`} />
     </div>
   );
@@ -288,7 +288,7 @@ function EventsTab() {
 });
 
 cosmo.on('transaction_received', (event) => {
-  console.log(\`Received \${event.data.amount} \u03A9 from \${event.address}\`);
+  console.log(\`Received \${event.data.amount} \u2B23 from \${event.address}\`);
 });`} />
     </div>
   );
@@ -299,7 +299,7 @@ function ExtensionTab() {
     <div>
       <h3 className="text-title-sm font-bold opacity-80 mb-3">Chrome Extension</h3>
       <p className="text-base opacity-50 mb-4">
-        The Cosmorare Chrome Extension provides a popup wallet interface directly in your browser.
+        The Strangrz Chrome Extension provides a popup wallet interface directly in your browser.
         It uses Manifest V3 and the Web Crypto API for Ed25519 operations.
       </p>
 
@@ -316,12 +316,12 @@ function ExtensionTab() {
         <p>1. Open Chrome and navigate to <code className="opacity-80">chrome://extensions</code></p>
         <p>2. Enable "Developer mode" (top right toggle)</p>
         <p>3. Click "Load unpacked" and select the <code className="opacity-80">extension/</code> folder</p>
-        <p>4. The Cosmorare icon appears in your toolbar</p>
+        <p>4. The Strangrz icon appears in your toolbar</p>
       </div>
 
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Features</h3>
       <ul className="text-body-sm opacity-50 space-y-1 list-disc list-inside">
-        <li>Ed25519 wallet creation with 1,000 CW airdrop</li>
+        <li>Ed25519 wallet creation with 1,000 STZ airdrop</li>
         <li>Send transactions with recipient validation</li>
         <li>Balance display with hierarchy level</li>
         <li>Transaction history</li>
@@ -330,7 +330,7 @@ function ExtensionTab() {
       </ul>
 
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Building Your Own Extension</h3>
-      <CodeBlock title="Communicate with Cosmorare" code={`// From your extension's content script:
+      <CodeBlock title="Communicate with Strangrz" code={`// From your extension's content script:
 chrome.runtime.sendMessage(
   { type: 'GET_WALLET' },
   (response) => {

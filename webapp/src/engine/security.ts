@@ -1,5 +1,5 @@
 /**
- * Cosmorare Security — Protocol Hardening
+ * Strangrz Security — Protocol Hardening
  *
  * Multi-layer security against hacking:
  * 1. Rate Limiting — per-address TX rate limits
@@ -175,11 +175,11 @@ export function checkAmountLimit(
   const limits = getAmountLimits(accountCreatedAt);
 
   if (amount > limits.maxSingleTx) {
-    return `Single TX limit: ${limits.maxSingleTx} CW (account age restriction).`;
+    return `Single TX limit: ${limits.maxSingleTx} STZ (account age restriction).`;
   }
 
   if (dailyTotal + amount > limits.maxDailyTotal) {
-    return `Daily limit: ${limits.maxDailyTotal} CW. Used: ${dailyTotal} CW.`;
+    return `Daily limit: ${limits.maxDailyTotal} STZ. Used: ${dailyTotal} STZ.`;
   }
 
   return null;

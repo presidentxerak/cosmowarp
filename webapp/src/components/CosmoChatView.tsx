@@ -23,7 +23,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection, marketplace, buyWart } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -55,6 +55,12 @@ export default function CosmoChatView() {
   // Share modal
   const [sharePost, setSharePost] = useState<ChatPost | null>(null);
 
+  // Artwork picker
+  const [showArtPicker, setShowArtPicker] = useState(false);
+
+  // Media upload state (must be before early return)
+  const [mediaError, setMediaError] = useState('');
+
   const refresh = () => {
     const e = CosmoChatEngine.load();
     setPosts(e.getTimeline());
@@ -63,11 +69,38 @@ export default function CosmoChatView() {
 
   useEffect(() => { refresh(); }, [tab]);
 
+  // Sync channels & posts from cloud on mount, rehydrate media from IndexedDB
+  useEffect(() => {
+    const e = CosmoChatEngine.load();
+    e.rehydratePostMedia().then(() => {
+      setPosts(e.getTimeline());
+      return e.fullSync();
+    }).then(() => refresh()).catch(() => {});
+  }, []);
+
+  // Open post from deep link (e.g. from Signets)
+  useEffect(() => {
+    const postId = sessionStorage.getItem('strangrz_open_post');
+    if (postId) {
+      sessionStorage.removeItem('strangrz_open_post');
+      const e = CosmoChatEngine.load();
+      const post = e.getPost(postId);
+      if (post) setSelectedPost(post);
+    }
+  }, []);
+
   useEffect(() => {
     if (selectedChannel) {
       channelScrollRef.current?.scrollTo(0, channelScrollRef.current.scrollHeight);
     }
   }, [selectedChannel?.messages.length]);
+
+  // Ensure social profile exists
+  useEffect(() => {
+    if (!wallet || !unlocked) return;
+    const social = SocialEngine.load();
+    social.ensureProfile(wallet.address, wallet.alias || shortAddress(wallet.address));
+  }, [wallet?.address, wallet?.alias, unlocked]);
 
   if (!wallet || !unlocked) {
     return (
@@ -77,7 +110,7 @@ export default function CosmoChatView() {
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Wall</h2>
+          <h2 className="text-title-lg font-bold opacity-100 mb-1 font-title">Wall</h2>
           <p className="opacity-50 text-base">Create and unlock your wallet to access the Wall.</p>
           <p className="opacity-30 text-body-sm mt-1">Encrypted anonymous social network</p>
         </div>
@@ -87,26 +120,18 @@ export default function CosmoChatView() {
 
   const alias = wallet.alias || shortAddress(wallet.address);
 
-  // Ensure social profile exists
-  useEffect(() => {
-    const social = SocialEngine.load();
-    social.ensureProfile(wallet.address, alias);
-  }, [wallet.address, alias]);
-
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
+    sessionStorage.setItem('strangrz_view_user', address);
     // Navigate to user-profile - we need a way to do this
     // Use a custom event that App.tsx listens to
-    window.dispatchEvent(new CustomEvent('cosmorare-navigate', { detail: 'user-profile' }));
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'user-profile' }));
   };
 
   // ─── Media upload ──────────────────────────────────────
-  const [mediaError, setMediaError] = useState('');
-
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setMediaError('File must be under 5MB'); setTimeout(() => setMediaError(''), 3000); return; }
+    if (file.size > 50 * 1024 * 1024) { setMediaError('File must be under 50MB'); setTimeout(() => setMediaError(''), 3000); return; }
     setMediaError('');
 
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
@@ -145,6 +170,7 @@ export default function CosmoChatView() {
     setComposeText(''); setComposeMedia(''); setComposeMediaType('');
     setComposeAudioCover(''); setComposeWartLink('');
     refresh();
+    engine.syncPostsToCloud().catch(() => {});
     setPosting(false);
   };
 
@@ -198,6 +224,7 @@ export default function CosmoChatView() {
     setNewChannelName(''); setNewChannelDesc('');
     setShowCreateChannel(false);
     refresh();
+    engine.syncChannelsToCloud().catch(() => {});
   };
 
   const handleSendChannelMsg = () => {
@@ -214,24 +241,46 @@ export default function CosmoChatView() {
 
   // ─── Media Renderer ────────────────────────────────────
   const MediaContent = ({ post }: { post: ChatPost }) => {
-    if (!post.mediaData) return null;
-    if (post.mediaType === 'audio') {
+    // Resolve media: use inline mediaData, or look up wart image from marketplace
+    let mediaSrc = post.mediaData;
+    let mediaType = post.mediaType;
+    if (!mediaSrc && post.wartLink) {
+      const wart = [...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
+      if (wart) {
+        mediaSrc = wart.imageData;
+        mediaType = mediaType || (wart.mediaType === 'svg' ? 'image' : wart.mediaType) || 'image';
+      }
+    }
+    if (!mediaSrc) return null;
+    if (mediaType === 'audio') {
       return (
         <div className="mt-2 p-3 bg-current/5 flex items-center gap-3">
           {post.audioCover && (
             <img src={post.audioCover} alt="" className="w-12 h-12 object-cover shrink-0" />
           )}
-          <audio controls className="w-full h-8" src={post.mediaData} />
+          <audio controls className="w-full h-8" src={mediaSrc} />
         </div>
       );
     }
-    if (post.mediaType === 'video') {
+    if (mediaType === 'video') {
+      // Convert base64 to blob URL for reliable video playback
+      let videoSrc = mediaSrc;
+      if (mediaSrc.startsWith('data:')) {
+        try {
+          const [header, b64] = mediaSrc.split(',');
+          const mime = header.match(/data:(.*?);/)?.[1] || 'video/mp4';
+          const binary = atob(b64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          videoSrc = URL.createObjectURL(new Blob([bytes], { type: mime }));
+        } catch { /* fallback to data URL */ }
+      }
       return (
-        <video controls className="mt-2 w-full max-h-[300px] bg-black" src={post.mediaData} />
+        <video controls playsInline preload="auto" className="mt-2 w-full max-h-[500px] bg-black object-contain" src={videoSrc} />
       );
     }
     return (
-      <img src={post.mediaData} alt="" className="mt-2 w-full max-h-[400px] object-cover" />
+      <img src={mediaSrc} alt="" className="mt-2 w-full max-h-[500px] object-contain" />
     );
   };
 
@@ -284,63 +333,80 @@ export default function CosmoChatView() {
         {/* Content */}
         {post.content && <p className="text-base opacity-70 mb-1 whitespace-pre-wrap">{post.content}</p>}
         {post.wartLink && (
-          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Cosmorare: {post.wartLink}</p>
+          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Strangrz: {post.wartLink}</p>
         )}
         <MediaContent post={post} />
 
-        {/* Action bar (X-style) */}
+        {/* Collect button (if post links to a wart with a price) */}
+        {(() => {
+          if (!post.wartLink) return null;
+          const linkedWart = [...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
+          if (!linkedWart || linkedWart.price === null) return null;
+          const isOwner = linkedWart.owner === wallet.address;
+          if (isOwner) return null;
+          return (
+            <button
+              className="warp-button w-full text-body-sm py-2 mt-2"
+              onClick={e => { e.stopPropagation(); buyWart(linkedWart.id); }}
+              disabled={wallet.balance < linkedWart.price}
+            >
+              Collect {linkedWart.price} {'\u2B23'}
+            </button>
+          );
+        })()}
+
+        {/* Action bar (icon-only) */}
         <div className="flex items-center justify-between mt-3 pt-2 border-t border-current/10">
           {/* Comments */}
-          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 text-body-sm cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedPost(post); }}>
-            <span>{'\u25CB'}</span>
-            <span>{post.comments.length || ''}</span>
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedPost(post); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span className="text-body-sm">{post.comments.length || ''}</span>
           </button>
 
           {/* ReCosmo */}
           <button
-            className={`flex items-center gap-1 text-body-sm cursor-pointer ${
+            className={`flex items-center gap-1 cursor-pointer ${
               post.rewarps.includes(wallet.address) ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleRewarp(post); }}
           >
-            <span>{'\u21C4'}</span>
-            <span>{post.rewarpCount || ''}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <span className="text-body-sm">{post.rewarpCount || ''}</span>
           </button>
 
-          {/* Tip (heart) */}
+          {/* Tip */}
           <button
-            className={`flex items-center gap-1 text-body-sm cursor-pointer ${
+            className={`flex items-center gap-1 cursor-pointer ${
               hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleTip(post); }}
           >
-            <span>{hasTipped ? '\u2665' : '\u2661'}</span>
-            <span>{post.tipCount || ''}</span>
-            {post.tipCount > 0 && <span className="text-label opacity-80">{'\u03A9'}</span>}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={hasTipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {post.tipCount > 0 && <span className="text-body-sm">Tip {post.tipCount}{'\u2B23'}</span>}
           </button>
 
           {/* Views */}
-          <span className="flex items-center gap-1 opacity-30 text-body-sm">
-            <span>{'\u25C9'}</span>
-            <span>{formatViews(post.views)}</span>
+          <span className="flex items-center gap-1 opacity-30">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span className="text-body-sm">{formatViews(post.views)}</span>
           </span>
 
           {/* Share */}
           <button
-            className="opacity-40 hover:opacity-80 text-body-sm cursor-pointer"
+            className="opacity-40 hover:opacity-80 cursor-pointer"
             onClick={e => { e.stopPropagation(); handleShare(post); }}
           >
-            {'\u2197'}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
 
           {/* Bookmark */}
           <button
-            className={`text-body-sm cursor-pointer ${
+            className={`cursor-pointer ${
               hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleBookmark(post); }}
           >
-            {hasBookmarked ? '\u2605' : '\u2606'}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={hasBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
       </div>
@@ -354,7 +420,7 @@ export default function CosmoChatView() {
     const hasBookmarked = post.bookmarkedBy.includes(wallet.address);
 
     return (
-      <div className="space-y-4 max-w-lg mx-auto">
+      <div className="space-y-4">
         <button className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer" onClick={() => setSelectedPost(null)}>
           {'\u2190'} Retour
         </button>
@@ -371,29 +437,30 @@ export default function CosmoChatView() {
           </div>
 
           {post.content && <p className="text-base opacity-70 whitespace-pre-wrap mb-3">{post.content}</p>}
-          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Cosmorare: {post.wartLink}</p>}
+          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Strangrz: {post.wartLink}</p>}
           <MediaContent post={post} />
 
           {/* Stats bar */}
           <div className="flex gap-4 mt-3 pt-3 border-t border-current/10 text-body-sm opacity-40">
             <span>{post.rewarpCount} ReCosmo</span>
-            <span>{post.tipCount} Tips ({post.tipCount} {'\u03A9'})</span>
+            <span>{post.tipCount} Tip{post.tipCount !== 1 ? 's' : ''} ({post.tipCount}{'\u2B23'})</span>
             <span>{formatViews(post.views)} vues</span>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-current/10">
-            <button className={`text-body-sm cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
-              {hasTipped ? '\u2665' : '\u2661'} Tip 1{'\u03A9'}
+            <button className={`flex items-center gap-1 cursor-pointer ${hasTipped ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleTip(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={hasTipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {post.tipCount > 0 && <span className="text-body-sm">{post.tipCount}{'\u2B23'}</span>}
             </button>
-            <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
-              {'\u21C4'} ReCosmo
+            <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleRewarp(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
             </button>
-            <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
-              {'\u2197'} Partager
+            <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={() => handleShare(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             </button>
-            <button className={`text-body-sm cursor-pointer ${hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleBookmark(post)}>
-              {hasBookmarked ? '\u2605' : '\u2606'} Sauver
+            <button className={`cursor-pointer ${hasBookmarked ? 'opacity-80' : 'opacity-40 hover:opacity-80'}`} onClick={() => handleBookmark(post)}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill={hasBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </button>
           </div>
         </div>
@@ -421,8 +488,8 @@ export default function CosmoChatView() {
             ) : (
               post.comments.map(c => (
                 <div key={c.id} className="flex gap-2">
-                  <div className="w-6 h-6 bg-current/5 border border-current/10 flex items-center justify-center text-label opacity-80 font-bold shrink-0 mt-0.5">
-                    {c.authorAlias.charAt(0).toUpperCase()}
+                  <div className="shrink-0 mt-0.5">
+                    <HexAvatar address={c.author} size={24} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -440,35 +507,10 @@ export default function CosmoChatView() {
     );
   }
 
-  // ─── Share modal ───────────────────────────────────────
-  const ShareModal = () => {
-    if (!sharePost) return null;
-    return (
-      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSharePost(null)}>
-        <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
-          <h3 className="text-base font-bold opacity-90">Share Post</h3>
-          <button className="warp-button w-full text-body-sm py-2" onClick={() => copyPostLink(sharePost)}>
-            {'\u2398'} Copy Link
-          </button>
-          <button className="warp-button w-full text-body-sm py-2" onClick={() => {
-            window.open(`mailto:?subject=CosmoChat Post&body=${encodeURIComponent(sharePost.content)}`, '_blank');
-            setSharePost(null);
-          }}>
-            {'\u2709'} Email
-          </button>
-          <button className="warp-button w-full text-body-sm py-2" onClick={() => {
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(sharePost.content.slice(0, 280))}`, '_blank');
-            setSharePost(null);
-          }}>
-            Share on X
-          </button>
-          <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={() => setSharePost(null)}>
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  };
+  // ─── Computed values for modals ────────────────────────
+  const allPickerWarts = [...(myCreated || []), ...(myCollection || [])].filter(
+    (w, i, arr) => arr.findIndex(x => x.id === w.id) === i
+  );
 
   // ─── Channel Detail ────────────────────────────────────
   if (selectedChannel) {
@@ -476,7 +518,7 @@ export default function CosmoChatView() {
     const isMember = ch.members.includes(wallet.address);
 
     return (
-      <div className="space-y-4 max-w-lg mx-auto">
+      <div className="space-y-4">
         <button className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer" onClick={() => setSelectedChannel(null)}>
           {'\u2190'} Retour to Channels
         </button>
@@ -544,7 +586,40 @@ export default function CosmoChatView() {
 
   return (
     <div className="space-y-4">
-      <ShareModal />
+      {/* Share modal */}
+      {sharePost && (
+        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setSharePost(null)}>
+          <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold opacity-90">Share Post</h3>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => copyPostLink(sharePost)}>{'\u2398'} Copy Link</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => { window.open(`mailto:?subject=CosmoChat Post&body=${encodeURIComponent(sharePost.content)}`, '_blank'); setSharePost(null); }}>{'\u2709'} Email</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(sharePost.content.slice(0, 280))}`, '_blank'); setSharePost(null); }}>Share on X</button>
+            <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center" onClick={() => setSharePost(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Artwork picker modal */}
+      {showArtPicker && (
+        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setShowArtPicker(false)}>
+          <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold opacity-90 mb-3">Select an artwork to post</h3>
+            {allPickerWarts.length === 0 ? (
+              <p className="text-body-sm opacity-40 text-center py-6">No artworks found in your profile.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {allPickerWarts.map(w => (
+                  <div key={w.id} className="cursor-pointer border border-current/10 hover:border-current/30 transition-all overflow-hidden" onClick={() => { setComposeMedia(''); setComposeMediaType('image'); setComposeWartLink(w.id); setShowArtPicker(false); }}>
+                    <img src={w.imageData} alt={w.title || ''} className="w-full aspect-square object-cover" />
+                    {w.title && <p className="text-label opacity-60 p-1 truncate">{w.title}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+            <button className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowArtPicker(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       {/* Sub-tabs */}
       <div className="flex gap-1 overflow-x-auto border-b border-current/10 px-2 pt-2">
@@ -586,12 +661,27 @@ export default function CosmoChatView() {
                       {composeMediaType === 'audio' && <audio src={composeMedia} controls className="h-8" />}
                       <button
                         className="absolute top-0 right-0 bg-black/70 text-white text-body-sm px-1 cursor-pointer"
-                        onClick={() => { setComposeMedia(''); setComposeMediaType(''); }}
+                        onClick={() => { setComposeMedia(''); setComposeMediaType(''); setComposeWartLink(''); }}
                       >
                         {'\u2716'}
                       </button>
                     </div>
                   )}
+                  {!composeMedia && composeWartLink && (() => {
+                    const linkedWart = marketplace.find(w => w.id === composeWartLink);
+                    return linkedWart ? (
+                      <div className="relative inline-block">
+                        <img src={linkedWart.imageData} alt={linkedWart.title || ''} className="max-h-32 object-cover" />
+                        <button
+                          className="absolute top-0 right-0 bg-black/70 text-white text-body-sm px-1 cursor-pointer"
+                          onClick={() => { setComposeWartLink(''); setComposeMediaType(''); }}
+                        >
+                          {'\u2716'}
+                        </button>
+                        <span className="absolute bottom-0 left-0 bg-black/70 text-white text-label px-1">{'\u2B22'} {linkedWart.title}</span>
+                      </div>
+                    ) : null;
+                  })()}
                   {composeMediaType === 'audio' && (
                     <div>
                       <input ref={audioCoverRef} type="file" accept="image/*" className="hidden" onChange={handleAudioCoverUpload} />
@@ -606,16 +696,19 @@ export default function CosmoChatView() {
                     <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => fileRef.current?.click()}>
                       {'\u2B06'} Media
                     </button>
+                    <button className="text-body-sm opacity-40 hover:opacity-80 cursor-pointer" onClick={() => setShowArtPicker(true)}>
+                      {'\u2B22'} Artwork
+                    </button>
                     <input
                       className="warp-input text-label py-1 px-2 w-36"
-                      placeholder="Lien Cosmorare (optionnel)"
+                      placeholder="Lien Strangrz (optionnel)"
                       value={composeWartLink}
                       onChange={e => setComposeWartLink(e.target.value)}
                     />
                     <button
                       className="warp-button text-body-sm px-4 py-1.5 ml-auto"
                       onClick={handlePost}
-                      disabled={posting || (!composeText.trim() && !composeMedia)}
+                      disabled={posting || (!composeText.trim() && !composeMedia && !composeWartLink)}
                     >
                       {posting ? '...' : 'Post'}
                     </button>

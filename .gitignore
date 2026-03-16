@@ -4,6 +4,13 @@ dist/
 *.d.ts.map
 .env
 
+# Binary / media files (should not be in git)
+*.mp4
+*.mp3
+*.wav
+*.zip
+*.tar.gz
+
 # Build artifacts in webapp engine (compiled by tsc)
 webapp/src/engine/*.js
 webapp/src/engine/*.d.ts

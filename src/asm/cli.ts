@@ -18,7 +18,7 @@ function main(): void {
   if (args.length === 0) {
     console.log('╔══════════════════════════════════════════╗');
     console.log('║       CosmoASM — Assembleur Cosmique     ║');
-    console.log('║        Cosmorare Protocole v0.1           ║');
+    console.log('║        Strangrz Protocole v3.0            ║');
     console.log('╚══════════════════════════════════════════╝');
     console.log('');
     console.log('Usage: npx cosmoasm <fichier.cosmo> [options]');

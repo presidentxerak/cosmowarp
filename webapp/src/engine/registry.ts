@@ -1,5 +1,5 @@
 /**
- * Cosmorare Admin Registry — Private Protocol Ledger
+ * Strangrz Admin Registry — Private Protocol Ledger
  *
  * Encrypted, admin-only registry that tracks:
  * - All accounts created (addresses, dates, levels)
@@ -77,8 +77,8 @@ export interface ProtocolSnapshot {
 
 // ─── Admin Registry ──────────────────────────────────────
 
-const REGISTRY_STORAGE_KEY = 'cosmorare_registry_enc';
-const ADMIN_HASH_KEY = 'cosmorare_admin_hash';
+const REGISTRY_STORAGE_KEY = 'strangrz_registry_enc';
+const ADMIN_HASH_KEY = 'strangrz_admin_hash';
 
 export class AdminRegistry {
   private accounts: Map<string, AccountEntry> = new Map();
@@ -169,7 +169,7 @@ export class AdminRegistry {
       this.addSecurityEvent({
         type: 'large_transfer',
         address: entry.from,
-        details: `Large transfer: ${entry.amount} CW to ${entry.to}`,
+        details: `Large transfer: ${entry.amount} STZ to ${entry.to}`,
         severity: 'warning',
       });
     }

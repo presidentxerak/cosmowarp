@@ -34,7 +34,7 @@ import {
   getAmountLimits, checkAmountLimit,
 } from '../../webapp/src/engine/security';
 
-import { CosmorareSDK } from '../../webapp/src/engine/sdk';
+import { StrangrzSDK } from '../../webapp/src/engine/sdk';
 
 // ─── Tokenomics Constants ───────────────────────────────
 
@@ -68,7 +68,7 @@ describe('Tokenomics Constants', () => {
 // ─── Resonance Decay ────────────────────────────────────
 
 describe('Resonance Decay', () => {
-  test('base reward at 0 mined is 50 CW', () => {
+  test('base reward at 0 mined is 50 STZ', () => {
     expect(calculateMiningReward(0)).toBe(BASE_MINING_REWARD);
   });
 
@@ -176,7 +176,7 @@ describe('Streak System', () => {
     expect(checkStreakReward(streak)).toBe(false);
   });
 
-  test('streak reward amount is 10000 CW', () => {
+  test('streak reward amount is 10000 STZ', () => {
     expect(STREAK_REWARD).toBe(10_000);
   });
 
@@ -190,7 +190,7 @@ describe('Streak System', () => {
 describe('TokenomicsEngine', () => {
   beforeEach(() => storage.clear());
 
-  test('airdrop gives 1000 CW', () => {
+  test('airdrop gives 1000 STZ', () => {
     const engine = new TokenomicsEngine('CWcreator');
     const amount = engine.processAirdrop('CWnew');
     expect(amount).toBe(1000);
@@ -384,17 +384,17 @@ describe('Security - NonceTracker', () => {
 });
 
 describe('Security - AmountLimits', () => {
-  test('new account has 100 CW single tx limit', () => {
+  test('new account has 100 STZ single tx limit', () => {
     const limits = getAmountLimits(Date.now());
     expect(limits.maxSingleTx).toBe(100);
   });
 
-  test('24h old account has 1000 CW limit', () => {
+  test('24h old account has 1000 STZ limit', () => {
     const limits = getAmountLimits(Date.now() - 25 * 3600000);
     expect(limits.maxSingleTx).toBe(1000);
   });
 
-  test('30d old account has 100000 CW limit', () => {
+  test('30d old account has 100000 STZ limit', () => {
     const limits = getAmountLimits(Date.now() - 31 * 24 * 3600000);
     expect(limits.maxSingleTx).toBe(100000);
   });
@@ -461,16 +461,16 @@ describe('SecurityManager', () => {
 
 // ─── SDK ────────────────────────────────────────────────
 
-describe('Cosmorare SDK', () => {
+describe('Strangrz SDK', () => {
   test('getVersion returns version string', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     expect(sdk.getVersion()).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
   test('getProtocolInfo returns correct data', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     const info = sdk.getProtocolInfo();
-    expect(info.name).toBe('Cosmorare');
+    expect(info.name).toBe('Strangrz');
     expect(info.totalSupply).toBe(TOTAL_SUPPLY);
     expect(info.airdropAmount).toBe(AIRDROP_AMOUNT);
     expect(info.layers).toHaveLength(7);
@@ -479,34 +479,34 @@ describe('Cosmorare SDK', () => {
   });
 
   test('createWallet generates valid address', async () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     const wallet = await sdk.createWallet('TestUser');
-    expect(wallet.address).toMatch(/^CW/);
+    expect(wallet.address).toMatch(/^STZ/);
     expect(wallet.publicKey).toBeTruthy();
     expect(wallet.alias).toBe('TestUser');
   });
 
   test('validateAddress checks format', () => {
-    const sdk = new CosmorareSDK();
-    expect(sdk.validateAddress('CW' + 'a'.repeat(40))).toBe(true);
+    const sdk = new StrangrzSDK();
+    expect(sdk.validateAddress('STZ' + 'a'.repeat(40))).toBe(true);
     expect(sdk.validateAddress('invalid')).toBe(false);
   });
 
   test('hash computes SHA-256', async () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     const hash = await sdk.hash('hello');
     expect(hash).toHaveLength(64);
     expect(hash).toMatch(/^[0-9a-f]+$/);
   });
 
   test('calculateReward returns Resonance Decay value', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     expect(sdk.calculateReward(0)).toBe(50);
     expect(sdk.calculateReward(5_000_000)).toBeLessThan(50);
   });
 
   test('getRewardCurve generates curve data', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     const curve = sdk.getRewardCurve(10);
     expect(curve).toHaveLength(11);
     expect(curve[0].reward).toBe(50);
@@ -514,7 +514,7 @@ describe('Cosmorare SDK', () => {
   });
 
   test('event system works', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     let received = false;
     const handler = () => { received = true; };
     sdk.on('balance_changed', handler);
@@ -528,7 +528,7 @@ describe('Cosmorare SDK', () => {
   });
 
   test('event unsubscribe works', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     let count = 0;
     const handler = () => { count++; };
     sdk.on('balance_changed', handler);
@@ -539,7 +539,7 @@ describe('Cosmorare SDK', () => {
   });
 
   test('getLayerForAmount returns correct layers', () => {
-    const sdk = new CosmorareSDK();
+    const sdk = new StrangrzSDK();
     expect(sdk.getLayerForAmount(5)).toBe('GRID');
     expect(sdk.getLayerForAmount(50)).toBe('HELIX');
     expect(sdk.getLayerForAmount(5000)).toBe('GLYPH');

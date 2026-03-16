@@ -4,34 +4,13 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
-const PLATFORM_FEE_PERCENT = 2.5;
-
-const PROCESSOR_FEES: Record<string, { percent: number; fixed: number }> = {
-  card: { percent: 2.9, fixed: 0.30 },
-  paypal: { percent: 3.49, fixed: 0.49 },
-  sepa: { percent: 0.8, fixed: 0 },
-  apple_pay: { percent: 2.9, fixed: 0.30 },
-  google_pay: { percent: 2.9, fixed: 0.30 },
-  bank_transfer: { percent: 0, fixed: 1.50 },
-};
-
-const RATES: Record<string, number> = {
-  EUR: 100, USD: 92, GBP: 115, JPY: 0.62, CHF: 105,
-};
-
-function calculateFees(amount: number, method: string) {
-  const platformFee = Math.round(amount * PLATFORM_FEE_PERCENT / 100 * 100) / 100;
-  const proc = PROCESSOR_FEES[method] || { percent: 0, fixed: 0 };
-  const processorFee = Math.round((amount * proc.percent / 100 + proc.fixed) * 100) / 100;
-  return { platformFee, processorFee, total: platformFee + processorFee };
-}
-
-let txCounter = 0;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -44,12 +23,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing required fields: amount, currency, buyerAddress' });
   }
 
-  const rate = RATES[currency];
+  if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+    return res.status(400).json({ error: 'Amount must be a positive number' });
+  }
+
+  const rate = DEFAULT_RATES[currency];
   if (!rate) return res.status(400).json({ error: `Unsupported currency: ${currency}` });
 
   const warpAmount = Math.round(amount * rate * 100) / 100;
   const fees = calculateFees(amount, paymentMethod || 'card');
-  const txId = `FIAT_${Date.now().toString(36)}_${(++txCounter).toString(36)}`;
+  const txId = generateTxId('FIAT');
 
   // Stripe integration
   if (STRIPE_SECRET_KEY) {
@@ -64,17 +47,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             currency: currency.toLowerCase(),
             unit_amount: Math.round(amount * 100),
             product_data: {
-              name: wartId ? `Cosmorare #${wartId}` : `${warpAmount} Warps (Ω)`,
-              description: `Cosmorare purchase — ${warpAmount} Ω`,
+              name: wartId ? `Strangrz #${wartId}` : `${warpAmount} STZ (⬣)`,
+              description: `Strangrz purchase — ${warpAmount} ⬣`,
             },
           },
           quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-success?tx=${txId}`,
-        cancel_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-cancel?tx=${txId}`,
+        success_url: `${req.headers.origin || 'https://strangrz.com'}/payment-success?tx=${txId}`,
+        cancel_url: `${req.headers.origin || 'https://strangrz.com'}/payment-cancel?tx=${txId}`,
         metadata: {
-          cosmorare_tx_id: txId,
+          strangrz_tx_id: txId,
           buyer_address: buyerAddress,
           seller_address: sellerAddress || '',
           warp_amount: warpAmount.toString(),

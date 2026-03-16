@@ -1,4 +1,6 @@
 import { storage } from './storage';
+import { storeMedia, retrieveMedia } from './mediadb';
+import { upsertChannel, fetchAllChannels, upsertPost, fetchAllPosts } from '../lib/supabase-db';
 
 // ─── Types ─────────────────────────────────────────────
 export interface ChatPost {
@@ -7,7 +9,7 @@ export interface ChatPost {
   authorAlias: string;
   content: string;
   mediaData?: string;
-  mediaType?: 'image' | 'audio' | 'video';
+  mediaType?: 'image' | 'audio' | 'video' | 'cards';
   audioCover?: string;
   timestamp: number;
   tips: Record<string, boolean>;
@@ -87,7 +89,12 @@ export class CosmoChatEngine {
   }
 
   private savePosts() {
-    storage.setItem(STORAGE_POSTS, JSON.stringify(this.posts.slice(0, 500)));
+    // Strip large mediaData from localStorage (stored in IndexedDB instead)
+    const slim = this.posts.slice(0, 500).map(p => ({
+      ...p,
+      mediaData: p.mediaData && p.mediaData.length > 5000 ? undefined : p.mediaData,
+    }));
+    storage.setItem(STORAGE_POSTS, JSON.stringify(slim));
   }
 
   private saveChannels() {
@@ -100,7 +107,7 @@ export class CosmoChatEngine {
 
   // ─── Posts ─────────────────────────────────────────────
 
-  createPost(author: string, authorAlias: string, content: string, mediaData?: string, mediaType?: 'image' | 'audio' | 'video', audioCover?: string, wartLink?: string): ChatPost {
+  createPost(author: string, authorAlias: string, content: string, mediaData?: string, mediaType?: 'image' | 'audio' | 'video' | 'cards', audioCover?: string, wartLink?: string): ChatPost {
     const post: ChatPost = {
       id: genId(),
       author,
@@ -121,8 +128,27 @@ export class CosmoChatEngine {
       isRewarp: false,
     };
     this.posts.unshift(post);
+    // Store large media in IndexedDB
+    if (mediaData && mediaData.length > 5000) {
+      storeMedia(`post_${post.id}`, mediaData, audioCover).catch(() => {});
+    }
     this.savePosts();
     return post;
+  }
+
+  /** Rehydrate media from IndexedDB for posts that have mediaType but no mediaData */
+  async rehydratePostMedia(): Promise<void> {
+    for (const post of this.posts) {
+      if (post.mediaType && !post.mediaData) {
+        try {
+          const media = await retrieveMedia(`post_${post.id}`);
+          if (media) {
+            post.mediaData = media.imageData;
+            if (media.audioCover) post.audioCover = media.audioCover;
+          }
+        } catch { /* skip */ }
+      }
+    }
   }
 
   deletePost(postId: string, author: string): boolean {
@@ -323,5 +349,74 @@ export class CosmoChatEngine {
   getThread(user: string, other: string): DirectThread | null {
     const threadId = [user, other].sort().join('_');
     return this.dms.find(t => t.id === threadId) || null;
+  }
+
+  // ─── Cloud Sync ────────────────────────────────────────
+
+  async syncChannelsToCloud(): Promise<void> {
+    for (const ch of this.channels) {
+      await upsertChannel({
+        id: ch.id, name: ch.name, description: ch.description,
+        createdBy: ch.createdBy, createdByAlias: ch.createdByAlias,
+        members: ch.members, createdAt: ch.createdAt, isPublic: ch.isPublic,
+      });
+    }
+  }
+
+  async syncChannelsFromCloud(): Promise<void> {
+    const cloudChannels = await fetchAllChannels();
+    const localIds = new Set(this.channels.map(c => c.id));
+    for (const cc of cloudChannels) {
+      if (!localIds.has(cc.id)) {
+        this.channels.push({
+          ...cc,
+          messages: [],
+        });
+      } else {
+        // Merge members
+        const local = this.channels.find(c => c.id === cc.id)!;
+        const allMembers = new Set([...local.members, ...cc.members]);
+        local.members = [...allMembers];
+      }
+    }
+    this.saveChannels();
+  }
+
+  async syncPostsToCloud(): Promise<void> {
+    for (const post of this.posts.slice(0, 50)) {
+      await upsertPost({
+        id: post.id, author: post.author, authorAlias: post.authorAlias,
+        content: post.content, mediaType: post.mediaType,
+        wartLink: post.wartLink, timestamp: post.timestamp,
+        tipCount: post.tipCount, rewarpCount: post.rewarpCount, views: post.views,
+      });
+    }
+  }
+
+  async syncPostsFromCloud(): Promise<void> {
+    const cloudPosts = await fetchAllPosts();
+    const localIds = new Set(this.posts.map(p => p.id));
+    for (const cp of cloudPosts) {
+      if (!localIds.has(cp.id)) {
+        this.posts.push({
+          ...cp,
+          mediaType: cp.mediaType as ChatPost['mediaType'],
+          tips: {},
+          rewarps: [],
+          comments: [],
+          bookmarkedBy: [],
+          isRewarp: false,
+        });
+      }
+    }
+    this.posts.sort((a, b) => b.timestamp - a.timestamp);
+    this.savePosts();
+  }
+
+  async fullSync(): Promise<void> {
+    await this.syncChannelsFromCloud();
+    await this.syncPostsFromCloud();
+    await this.syncChannelsToCloud();
+    await this.syncPostsToCloud();
   }
 }

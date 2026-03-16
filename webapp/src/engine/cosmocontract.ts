@@ -45,7 +45,7 @@
  * - All contracts are signed by both parties (Ed25519)
  * - State transitions are deterministic and verifiable
  * - No arbitrary code execution = no exploits
- * - Contract state is stored on-chain via CosmoChain
+ * - Contract state is stored on-chain via StrangrzChain
  */
 
 import { sha256, signTransaction } from './crypto';
@@ -68,7 +68,7 @@ export interface CosmoContract {
   history: ContractEvent[];
   signatures: ContractSignature[];
   wartId?: string;                 // Associated artwork
-  onChainTxId?: string;           // CosmoChain TX
+  onChainTxId?: string;           // StrangrzChain TX
 }
 
 export interface ContractParty {
@@ -119,7 +119,7 @@ export interface RoyaltySplit {
 export interface LicenseTerms {
   type: 'license';
   licenseType: 'personal' | 'commercial' | 'exclusive' | 'print';
-  price: number;                   // In Warps (Ω)
+  price: number;                   // In STZ (⬣)
   priceFiat?: FiatPrice;           // Optional fiat equivalent
   duration: number | null;         // Milliseconds, null = perpetual
   territory: string;               // 'worldwide' or specific
@@ -191,7 +191,7 @@ export interface FiatPrice {
 
 // ─── Contract Engine ─────────────────────────────────────
 
-const CONTRACTS_KEY = 'cosmorare_contracts';
+const CONTRACTS_KEY = 'strangrz_contracts';
 
 export class ContractEngine {
   private contracts: Map<string, CosmoContract> = new Map();
@@ -417,7 +417,7 @@ export class ContractEngine {
       type: 'bid',
       timestamp: Date.now(),
       actor: bidder,
-      details: `Bid ${amount} Ω`,
+      details: `Bid ${amount} ⬣`,
     });
 
     contract.updatedAt = Date.now();
@@ -449,7 +449,7 @@ export class ContractEngine {
         type: 'reserve_not_met',
         timestamp: Date.now(),
         actor: 'system',
-        details: `Reserve price ${terms.reservePrice} Ω not met (highest bid: ${terms.currentBid} Ω)`,
+        details: `Reserve price ${terms.reservePrice} ⬣ not met (highest bid: ${terms.currentBid} ⬣)`,
       });
       this.save();
       return null;
@@ -461,7 +461,7 @@ export class ContractEngine {
       type: 'settled',
       timestamp: Date.now(),
       actor: 'system',
-      details: `Auction won by ${terms.currentBidder} for ${terms.currentBid} Ω`,
+      details: `Auction won by ${terms.currentBidder} for ${terms.currentBid} ⬣`,
     });
     contract.updatedAt = Date.now();
     this.save();

@@ -134,6 +134,18 @@ export interface ExecutionResult {
   output: number[];
 }
 
+/** FNV-1a hash d'une valeur float64, retourne un entier non signé 32 bits */
+function fnv1aFloat64(val: number): number {
+  let hash = 2166136261;
+  const bytes = new Float64Array([val]);
+  const view = new Uint8Array(bytes.buffer);
+  for (const byte of view) {
+    hash ^= byte;
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
 // ─── CosmoVM ─────────────────────────────────────────────
 
 export class CosmoVM {
@@ -150,9 +162,6 @@ export class CosmoVM {
   private program: CosmoProgram | null = null;
   private trace: ExecutionTrace[] = [];
   private output: number[] = [];
-
-  // Callbacks pour les événements réseau
-  private networkHandlers: Map<string, (data: any) => void> = new Map();
 
   constructor(config: Partial<VMConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -307,8 +316,6 @@ export class CosmoVM {
         // Initialise le warp : reset énergie, set layer
         this.currentLayer = inst.layer;
         this.registers.set(RegisterId.OMEGA, 0);
-        this.state = VMState.WARPED;
-        // Après init, repasse en RUNNING
         this.state = VMState.RUNNING;
         this.pc++;
         break;
@@ -325,7 +332,12 @@ export class CosmoVM {
         // Porte conditionnelle : saute si registre != 0
         const val = this.registers.get(inst.reg1);
         if (val !== 0) {
-          this.pc = inst.immediate ?? (this.pc + 1);
+          const target = inst.immediate ?? (this.pc + 1);
+          if (target < 0 || target >= this.program!.instructions.length) {
+            this.state = VMState.ERROR;
+            break;
+          }
+          this.pc = target;
         } else {
           this.pc++;
         }
@@ -450,15 +462,8 @@ export class CosmoVM {
     switch (op) {
       case CryptoOp.HASH_STAR: {
         // Hash stellaire : hash simple du registre (FNV-1a inspiré)
-        let val = this.registers.get(inst.reg1);
-        let hash = 2166136261;
-        const bytes = new Float64Array([val]);
-        const view = new Uint8Array(bytes.buffer);
-        for (const byte of view) {
-          hash ^= byte;
-          hash = Math.imul(hash, 16777619);
-        }
-        this.registers.set(RegisterId.OMEGA, (hash >>> 0) / 4294967295);
+        const val = this.registers.get(inst.reg1);
+        this.registers.set(RegisterId.OMEGA, fnv1aFloat64(val) / 4294967295);
         this.pc++;
         break;
       }
@@ -514,14 +519,7 @@ export class CosmoVM {
         // Preuve cosmique : vérifie que hash(reg1) < seuil epsilon
         const val = this.registers.get(inst.reg1);
         const epsilon = this.registers.get(RegisterId.EPSILON);
-        let hash = 2166136261;
-        const bytes = new Float64Array([val]);
-        const view = new Uint8Array(bytes.buffer);
-        for (const byte of view) {
-          hash ^= byte;
-          hash = Math.imul(hash, 16777619);
-        }
-        const normalized = (hash >>> 0) / 4294967295;
+        const normalized = fnv1aFloat64(val) / 4294967295;
         this.registers.set(RegisterId.OMEGA, normalized < epsilon ? 1 : 0);
         this.pc++;
         break;
@@ -541,15 +539,8 @@ export class CosmoVM {
         // Sceau quantique : scelle la valeur en mémoire avec hash
         const val = this.registers.get(inst.reg1);
         const addr = this.registers.get(inst.reg2);
-        let hash = 2166136261;
-        const bytes = new Float64Array([val]);
-        const view = new Uint8Array(bytes.buffer);
-        for (const byte of view) {
-          hash ^= byte;
-          hash = Math.imul(hash, 16777619);
-        }
         this.memory.write(inst.layer, addr, val);
-        this.memory.write(inst.layer, addr + 1, hash >>> 0);
+        this.memory.write(inst.layer, addr + 1, fnv1aFloat64(val));
         this.pc++;
         break;
       }
@@ -675,8 +666,4 @@ export class CosmoVM {
     };
   }
 
-  /** Enregistre un handler réseau */
-  onNetwork(event: string, handler: (data: any) => void): void {
-    this.networkHandlers.set(event, handler);
-  }
 }

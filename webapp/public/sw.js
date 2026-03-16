@@ -1,5 +1,5 @@
 /**
- * Cosmorare Service Worker — Offline + Online Support & Auto-Update
+ * Strangrz Service Worker — Offline + Online Support & Auto-Update
  *
  * Strategy: Network-first with cache fallback.
  * - On install: pre-cache critical app shell assets
@@ -8,7 +8,7 @@
  * - Auto-update: checks for new version every hour
  */
 
-const CACHE_NAME = 'cosmorare-v3';
+const CACHE_NAME = 'strangrz-v3';
 
 const PRECACHE_ASSETS = [
   './',

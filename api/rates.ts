@@ -5,20 +5,24 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { DEFAULT_RATES } from './_shared/rates';
 
-const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY || 'cosmorare-admin-dev';
+const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY;
+if (!ADMIN_KEY) {
+  console.warn('[WARN] GATEWAY_ADMIN_KEY not set — rate updates will be disabled');
+}
 
 // In-memory rates (use Supabase in production for persistence)
-const rates = new Map([
-  ['EUR', { currency: 'EUR', warpsPerUnit: 100, lastUpdated: Date.now(), source: 'manual' }],
-  ['USD', { currency: 'USD', warpsPerUnit: 92, lastUpdated: Date.now(), source: 'manual' }],
-  ['GBP', { currency: 'GBP', warpsPerUnit: 115, lastUpdated: Date.now(), source: 'manual' }],
-  ['JPY', { currency: 'JPY', warpsPerUnit: 0.62, lastUpdated: Date.now(), source: 'manual' }],
-  ['CHF', { currency: 'CHF', warpsPerUnit: 105, lastUpdated: Date.now(), source: 'manual' }],
-]);
+const rates = new Map(
+  Object.entries(DEFAULT_RATES).map(([currency, warpsPerUnit]) => [
+    currency,
+    { currency, warpsPerUnit, lastUpdated: Date.now(), source: 'manual' },
+  ])
+);
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
 
@@ -30,7 +34,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     const adminKey = req.headers['x-admin-key'];
-    if (adminKey !== ADMIN_KEY) return res.status(403).json({ error: 'Unauthorized' });
+    if (!ADMIN_KEY || adminKey !== ADMIN_KEY) return res.status(403).json({ error: 'Unauthorized' });
 
     const { currency, warpsPerUnit, source } = req.body;
     if (currency && typeof warpsPerUnit === 'number') {

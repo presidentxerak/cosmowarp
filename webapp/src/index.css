@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Hoodlrz';
+  src: url('/hoodlrz-font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-cosmic-900: #0a0a1a;
   --color-cosmic-800: #0d1030;
@@ -7,7 +15,7 @@
   --color-cosmic-600: #1a1d6b;
   --color-cosmic-500: #2a2d8b;
   --font-mono: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  --font-title: 'Chokokutai', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-title: 'Hoodlrz', 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
 @layer base {
@@ -23,7 +31,7 @@
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.6;
   }
 }
@@ -44,19 +52,22 @@
   color: #ffffff;
 }
 
-/* Light mode — pure white bg, pure black text */
+/* Light mode — pure white bg, pure black text
+   Gray scale maps Tailwind semantic usage: gray-50 = lightest surface,
+   gray-950 = darkest text. In light mode, text is dark and surfaces are light,
+   so the scale is intentionally inverted from dark mode values. */
 [data-theme="light"] {
-  --color-gray-50: #000000;
-  --color-gray-100: #000000;
-  --color-gray-200: #111111;
-  --color-gray-300: #222222;
-  --color-gray-400: #444444;
-  --color-gray-500: #666666;
-  --color-gray-600: #999999;
-  --color-gray-700: #cccccc;
-  --color-gray-800: #e5e5e5;
-  --color-gray-900: #f5f5f5;
-  --color-gray-950: #fafafa;
+  --color-gray-50: #ffffff;
+  --color-gray-100: #fafafa;
+  --color-gray-200: #f5f5f5;
+  --color-gray-300: #e5e5e5;
+  --color-gray-400: #cccccc;
+  --color-gray-500: #999999;
+  --color-gray-600: #666666;
+  --color-gray-700: #444444;
+  --color-gray-800: #222222;
+  --color-gray-900: #111111;
+  --color-gray-950: #000000;
 
   /* Cosmic backgrounds become pure white */
   --color-cosmic-900: #ffffff;
@@ -198,44 +209,49 @@
 /* ─── Glass Panel — sharp, no outlines, large shadow ── */
 
 .glass-panel {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(12px);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="light"] .glass-panel {
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
 }
 
 /* ─── Buttons — sharp, no outlines, large shadow ────── */
 
 .warp-button {
-  @apply px-5 py-3 font-medium text-base transition-all duration-200 cursor-pointer;
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
+  @apply px-5 py-3 font-medium transition-all duration-200 cursor-pointer;
+  font-size: 1.25rem;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #ffffff;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   position: relative;
 }
 
 .warp-button:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
 }
-.warp-button:active { transform: scale(0.95); }
-.warp-button:disabled { opacity: 0.3; cursor: not-allowed; }
+.warp-button:active { transform: scale(0.97); }
+.warp-button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 [data-theme="light"] .warp-button {
   background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   color: #000000;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 [data-theme="light"] .warp-button:hover {
   background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.12);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
@@ -248,11 +264,12 @@
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
-.warp-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.warp-input::placeholder { color: rgba(255, 255, 255, 0.5); }
 .warp-input:focus {
   outline: none;
-  border-bottom-color: rgba(255, 255, 255, 0.4);
+  border-bottom-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
 [data-theme="light"] .warp-input {
@@ -260,10 +277,11 @@
   border-bottom-color: rgba(0, 0, 0, 0.1);
   color: #000000;
 }
-[data-theme="light"] .warp-input::placeholder { color: rgba(0, 0, 0, 0.3); }
+[data-theme="light"] .warp-input::placeholder { color: rgba(0, 0, 0, 0.45); }
 [data-theme="light"] .warp-input:focus {
-  border-bottom-color: rgba(0, 0, 0, 0.4);
+  border-bottom-color: rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Page transitions ───────────────────────────────── */
@@ -300,12 +318,17 @@ main > div > * {
 /* ─── Mobile optimizations ───────────────────────────── */
 
 @media (max-width: 640px) {
-  .warp-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
-  .warp-input { min-height: 44px; font-size: 16px; }
+  .warp-button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.125rem; }
+  .warp-input { min-height: 48px; font-size: 16px; }
   .glass-panel { border-radius: 0; }
-  table { font-size: 13px; }
-  pre { font-size: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { font-size: 14px; }
+  pre { font-size: 13px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .glass-panel { padding-left: 12px; padding-right: 12px; }
+  .text-title-xl { font-size: 2.25rem; }
+  .text-title-lg { font-size: 1.75rem; }
+  .text-title-md { font-size: 1.375rem; }
+  .info-tooltip-bubble { max-width: 220px; left: auto; right: 0; transform: none; }
+  .info-tooltip-bubble::after { left: auto; right: 8px; transform: none; }
 }
 
 @media (max-width: 640px) {
@@ -343,23 +366,23 @@ main > div > * {
   50% { box-shadow: 0 0 15px rgba(0, 0, 0, 0.15), 0 0 30px rgba(0, 0, 0, 0.05); }
 }
 
-/* ─── Typography — doubled sizes ─────────────────────── */
+/* ─── Typography — readable sizes ────────────────────── */
 
-.text-title-xl { font-size: 3rem; line-height: 1.1; }
-.text-title-lg { font-size: 2.25rem; line-height: 1.2; }
-.text-title-md { font-size: 1.5rem; line-height: 1.3; }
-.text-title-sm { font-size: 1.25rem; line-height: 1.4; }
-.text-body-lg { font-size: 1.125rem; line-height: 1.6; }
-.text-body-md { font-size: 1rem; line-height: 1.6; }
-.text-body-sm { font-size: 0.875rem; line-height: 1.5; }
-.text-label { font-size: 0.75rem; line-height: 1.4; letter-spacing: 0.05em; text-transform: uppercase; }
+.text-title-xl { font-size: 3rem; line-height: 1.1; }       /* 48px — H1 */
+.text-title-lg { font-size: 2.25rem; line-height: 1.2; }    /* 36px — H2 */
+.text-title-md { font-size: 1.75rem; line-height: 1.3; }    /* 28px — H3 */
+.text-title-sm { font-size: 1.375rem; line-height: 1.4; }   /* 22px — H4 */
+.text-body-lg { font-size: 1.25rem; line-height: 1.6; }     /* 20px */
+.text-body-md { font-size: 1.125rem; line-height: 1.6; }    /* 18px */
+.text-body-sm { font-size: 1rem; line-height: 1.5; }        /* 16px */
+.text-label { font-size: 0.8125rem; line-height: 1.4; letter-spacing: 0.05em; text-transform: uppercase; } /* 13px */
 
 /* ─── Cards — monochrome ─────────────────────────────── */
 
 .card {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -367,16 +390,20 @@ main > div > * {
 }
 
 .card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.10);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="light"] .card {
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="light"] .card:hover {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.10);
 }
 
 /* ─── Light mode overrides for white/black borders ──── */
@@ -392,4 +419,139 @@ main > div > * {
 @keyframes hex-breathe-light {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.1)); }
   50% { transform: scale(1.04); filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.2)); }
+}
+
+/* ─── Red-magenta gradient CTA button with loop animation ─── */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cta-gradient-btn {
+  background: linear-gradient(135deg, #e53e3e, #d53f8c, #e53e3e, #d53f8c);
+  background-size: 300% 300%;
+  animation: gradient-shift 3s ease-in-out infinite;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cta-gradient-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(213, 63, 140, 0.4);
+}
+
+.cta-gradient-btn:active {
+  transform: scale(0.97);
+}
+
+/* ─── Info Tooltip ──────────────────────────────────── */
+
+.info-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.info-tooltip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.info-tooltip-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="light"] .info-tooltip-btn {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .info-tooltip-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.info-tooltip-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 25, 0.95);
+  backdrop-filter: blur(16px);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  max-width: 280px;
+  min-width: 180px;
+  width: max-content;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  pointer-events: none;
+  animation: tooltipIn 0.15s ease-out;
+}
+
+.info-tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(20, 20, 25, 0.95);
+}
+
+[data-theme="light"] .info-tooltip-bubble {
+  background: rgba(255, 255, 255, 0.98);
+  color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .info-tooltip-bubble::after {
+  border-top-color: rgba(255, 255, 255, 0.98);
+}
+
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Right-aligned tooltip variant */
+.info-tooltip-bubble.tooltip-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+.info-tooltip-bubble.tooltip-right::after {
+  left: auto;
+  right: 8px;
+  transform: none;
+}
+
+/* Left-aligned tooltip variant */
+.info-tooltip-bubble.tooltip-left {
+  left: 0;
+  transform: none;
+}
+.info-tooltip-bubble.tooltip-left::after {
+  left: 8px;
+  transform: none;
 }

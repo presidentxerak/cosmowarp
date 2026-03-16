@@ -6,7 +6,7 @@ import { PlanckClock, TOTAL_PLANCK_PER_CYCLE } from '../core/planck';
 import { FluxOp, ConscienceOp, CryptoOp, ReseauOp, getOpcodeName, getOpcodeFamily, OpcodeFamily } from '../core/opcodes';
 import { encodeInstruction, decodeInstruction } from '../core/instruction';
 
-describe('Cosmorare Protocole', () => {
+describe('Strangrz Protocole', () => {
 
   // ─── Opcodes ────────────────────────────────────────
 

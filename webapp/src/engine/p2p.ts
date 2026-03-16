@@ -1,5 +1,5 @@
 /**
- * Cosmorare P2P — WebRTC Mesh Network
+ * Strangrz P2P — WebRTC Mesh Network
  *
  * Browser-native peer-to-peer networking using WebRTC DataChannels.
  * No server required for data transfer (only signaling).
@@ -18,7 +18,7 @@
  */
 
 import { randomHex } from './crypto';
-import type { MeshTransaction } from './cosmomesh';
+import type { MeshTransaction } from './strangrmesh';
 import type { ConsensusVote } from './consensus';
 import type { ShardBlock, BeaconBlock } from './cosmochain';
 import { blockDB, beaconDB } from './chaindb';
@@ -28,7 +28,7 @@ import { SignalingManager } from './signaling';
 
 export interface PeerInfo {
   id: string;
-  address: string;          // Cosmorare address
+  address: string;          // Strangrz address
   connectedAt: number;
   lastSeen: number;
   latencyMs: number;
@@ -52,10 +52,10 @@ export const MessageType = {
   PONG:              'pong',
   SYNC_REQUEST:      'sync_request',
   SYNC_RESPONSE:     'sync_response',
-  // CosmoChain block propagation
+  // StrangrzChain block propagation
   SHARD_BLOCK:       'shard_block',
   BEACON_BLOCK:      'beacon_block',
-  COSMOCODE_SVG:     'cosmocode_svg',
+  STRANGRZCODE_SVG:     'strangrzcode_svg',
   // Block/state sync
   BLOCK_SYNC_REQUEST:  'block_sync_request',
   BLOCK_SYNC_RESPONSE: 'block_sync_response',
@@ -108,7 +108,7 @@ export interface SignalData {
 //   - Cloudflare TURN: https://developers.cloudflare.com/calls/turn/
 //
 // Set TURN credentials via environment or config:
-//   window.COSMORARE_TURN_URL, COSMORARE_TURN_USER, COSMORARE_TURN_CREDENTIAL
+//   window.STRANGRZ_TURN_URL, STRANGRZ_TURN_USER, STRANGRZ_TURN_CREDENTIAL
 
 function getIceServers(): RTCIceServer[] {
   const servers: RTCIceServer[] = [
@@ -120,13 +120,13 @@ function getIceServers(): RTCIceServer[] {
 
   // Add TURN server if configured (required for ~20% of connections behind symmetric NAT)
   const w = typeof window !== 'undefined' ? (window as unknown as Record<string, string>) : {};
-  const turnUrl = w.COSMORARE_TURN_URL || '';
-  const turnUser = w.COSMORARE_TURN_USER || '';
-  const turnCredential = w.COSMORARE_TURN_CREDENTIAL || '';
+  const turnUrl = w.STRANGRZ_TURN_URL || '';
+  const turnUser = w.STRANGRZ_TURN_USER || '';
+  const turnCredential = w.STRANGRZ_TURN_CREDENTIAL || '';
 
   if (turnUrl) {
     servers.push({
-      urls: turnUrl, // e.g. 'turn:turn.cosmorare.com:3478'
+      urls: turnUrl, // e.g. 'turn:turn.strangrz.com:3478'
       username: turnUser,
       credential: turnCredential,
     });
@@ -216,7 +216,7 @@ export class CosmoP2P {
       iceServers: getIceServers(),
     });
 
-    const dataChannel = pc.createDataChannel('cosmomesh', {
+    const dataChannel = pc.createDataChannel('strangrmesh', {
       ordered: true,
     });
 
@@ -478,9 +478,9 @@ export class CosmoP2P {
             hash: block.hash,
             txCount: block.txCount,
             processingTimeMs: block.processingTimeMs,
-            cosmoCodeSVG: block.cosmoCodeSVG,
+            strangrzCodeSVG: block.strangrzCodeSVG,
             rawSize: JSON.stringify(block).length,
-            compressedSize: block.cosmoCodeSVG?.length ?? JSON.stringify(block).length,
+            compressedSize: block.strangrzCodeSVG?.length ?? JSON.stringify(block).length,
           }).catch(err => console.error('[P2P] Failed to store shard block:', err));
 
           this.handlers.onShardBlockReceived?.(block);
@@ -538,9 +538,9 @@ export class CosmoP2P {
                 hash: block.hash,
                 txCount: block.txCount,
                 processingTimeMs: block.processingTimeMs,
-                cosmoCodeSVG: block.cosmoCodeSVG,
+                strangrzCodeSVG: block.strangrzCodeSVG,
                 rawSize: JSON.stringify(block).length,
-                compressedSize: block.cosmoCodeSVG?.length ?? JSON.stringify(block).length,
+                compressedSize: block.strangrzCodeSVG?.length ?? JSON.stringify(block).length,
               }).catch(err => console.error('[P2P] Failed to store synced block:', err));
 
               this.handlers.onShardBlockReceived?.(block);
@@ -560,7 +560,7 @@ export class CosmoP2P {
 
       case MessageType.STATE_SYNC_RESPONSE: {
         // State sync responses are forwarded to the generic handler
-        // since shard state structure is managed by CosmoChain
+        // since shard state structure is managed by StrangrzChain
         this.handlers.onMessage?.(msg, peerId);
         break;
       }

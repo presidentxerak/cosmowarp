@@ -89,14 +89,6 @@ export const FRACTAL_LAYERS: ReadonlyArray<FractalLayer> = [
   },
 ];
 
-export function getLayer(id: LayerId): FractalLayer {
-  return FRACTAL_LAYERS[id];
-}
-
-export function getLayerByName(name: string): FractalLayer | undefined {
-  return FRACTAL_LAYERS.find(l => l.name === name.toUpperCase());
-}
-
 /**
  * Calcule la résonance entre deux couches fractales.
  * La résonance est maximale quand le ratio d'énergie est proche du nombre d'or.
@@ -111,11 +103,4 @@ export function computeResonance(layer1: LayerId, layer2: LayerId): number {
   const nearestInt = Math.round(logPhi);
   const deviation = Math.abs(logPhi - nearestInt);
   return Math.max(0, 1.0 - deviation);
-}
-
-/**
- * Calcule l'énergie totale d'un ensemble de couches actives.
- */
-export function totalEnergy(activeLayers: LayerId[]): number {
-  return activeLayers.reduce((sum, id) => sum + FRACTAL_LAYERS[id].energy, 0);
 }

@@ -1,7 +1,7 @@
 /**
- * Cosmorare Wallet Engine — Integrated with CosmoMesh + Tokenomics + Hierarchy + Security
+ * Strangrz Wallet Engine — Integrated with StrangrzMesh + Tokenomics + Hierarchy + Security
  *
- * Manages wallet state, transactions via the CosmoMesh DAG,
+ * Manages wallet state, transactions via the StrangrzMesh DAG,
  * consensus validation, tokenomics (Resonance Decay), hierarchy levels,
  * admin registry, and security hardening.
  *
@@ -19,16 +19,16 @@ import {
 } from './crypto';
 import { storage } from './storage';
 import {
-  CosmoMesh,
+  StrangrzMesh,
   type MeshTransaction,
   type MeshStats,
-} from './cosmomesh';
+} from './strangrmesh';
 import { ResonanceConsensus } from './consensus';
 import { TokenomicsEngine, AIRDROP_AMOUNT, type SupplyBreakdown } from './tokenomics';
 import { HierarchyEngine, HIERARCHY_LEVELS, type HierarchyLevel, type LevelUpResult } from './hierarchy';
 import { AdminRegistry, type RegistryDashboard } from './registry';
 import { SecurityManager } from './security';
-import { CosmoChain, type ChainStats } from './cosmochain';
+import { StrangrzChain, type ChainStats } from './cosmochain';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -77,34 +77,34 @@ export interface WalletExport {
 
 // ─── Storage Keys ────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_wallet';
-const TX_STORAGE_KEY = 'cosmorare_global_tx';
-const MESH_STORAGE_KEY = 'cosmorare_mesh';
-const CONSENSUS_STORAGE_KEY = 'cosmorare_consensus';
-const ADMIN_ADDRESS_KEY = 'cosmorare_admin_address';
-const DAILY_TOTAL_KEY = 'cosmorare_daily_totals';
+const STORAGE_KEY = 'strangrz_wallet';
+const TX_STORAGE_KEY = 'strangrz_global_tx';
+const MESH_STORAGE_KEY = 'strangrz_mesh';
+const CONSENSUS_STORAGE_KEY = 'strangrz_consensus';
+const ADMIN_ADDRESS_KEY = 'strangrz_admin_address';
+const DAILY_TOTAL_KEY = 'strangrz_daily_totals';
 
 // ─── Singletons ─────────────────────────────────────────
 
-let meshInstance: CosmoMesh | null = null;
+let meshInstance: StrangrzMesh | null = null;
 let consensusInstance: ResonanceConsensus | null = null;
 let tokenomicsInstance: TokenomicsEngine | null = null;
 let hierarchyInstance: HierarchyEngine | null = null;
 let registryInstance: AdminRegistry | null = null;
 let securityInstance: SecurityManager | null = null;
-let cosmoChainInstance: CosmoChain | null = null;
+let strangrzChainInstance: StrangrzChain | null = null;
 
-export function getMesh(): CosmoMesh {
+export function getMesh(): StrangrzMesh {
   if (!meshInstance) {
     const saved = storage.getItem(MESH_STORAGE_KEY);
     if (saved) {
       try {
-        meshInstance = CosmoMesh.deserialize(saved);
+        meshInstance = StrangrzMesh.deserialize(saved);
       } catch {
-        meshInstance = new CosmoMesh();
+        meshInstance = new StrangrzMesh();
       }
     } else {
-      meshInstance = new CosmoMesh();
+      meshInstance = new StrangrzMesh();
     }
   }
   return meshInstance;
@@ -154,19 +154,19 @@ export function getSecurity(): SecurityManager {
   return securityInstance;
 }
 
-/** Get or create the CosmoChain instance (new blockchain with parallel shards) */
-export function getCosmoChain(): CosmoChain {
-  if (!cosmoChainInstance) {
-    cosmoChainInstance = CosmoChain.load() || new CosmoChain();
-    // Bridge CosmoMesh → CosmoChain for dual-layer persistence
-    getMesh().connectCosmoChain(cosmoChainInstance);
+/** Get or create the StrangrzChain instance (new blockchain with parallel shards) */
+export function getStrangrzChain(): StrangrzChain {
+  if (!strangrzChainInstance) {
+    strangrzChainInstance = StrangrzChain.load() || new StrangrzChain();
+    // Bridge StrangrzMesh → StrangrzChain for dual-layer persistence
+    getMesh().connectStrangrzChain(strangrzChainInstance);
   }
-  return cosmoChainInstance;
+  return strangrzChainInstance;
 }
 
-/** Get CosmoChain statistics */
+/** Get StrangrzChain statistics */
 export function getChainStats(): ChainStats {
-  return getCosmoChain().getStats();
+  return getStrangrzChain().getStats();
 }
 
 function saveMesh(): void {
@@ -186,7 +186,7 @@ function saveEngines(): void {
   saveConsensus();
   getTokenomics().save();
   getHierarchy().save();
-  if (cosmoChainInstance) cosmoChainInstance.save();
+  if (strangrzChainInstance) strangrzChainInstance.save();
 }
 
 // ─── ID Generation ───────────────────────────────────────
@@ -383,16 +383,14 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
   const isFirstWallet = !existingAdmin;
   if (isFirstWallet) {
     storage.setItem(ADMIN_ADDRESS_KEY, keyPair.address);
-    tokenomics.constructor.prototype; // ensure creator address set
+    tokenomics.setCreatorAddress(keyPair.address);
     await registry.initAdmin(keyPair.address);
   }
 
-  // Process airdrop (1000 CW)
+  // Process airdrop (1000 STZ)
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
 
-  // Admin bonus: 999,000 CW
-  const adminBonus = isFirstWallet ? 999000 : 0;
-  const totalInitialBalance = airdropAmount + adminBonus;
+  const totalInitialBalance = airdropAmount;
 
   // Genesis in mesh
   await mesh.createGenesis(keyPair.address, totalInitialBalance);
@@ -431,29 +429,12 @@ export async function createWallet(password: string, alias?: string): Promise<Wa
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to Cosmorare! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u2B23`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,
     meshDepth: 0,
   }];
-
-  if (adminBonus > 0) {
-    transactions.unshift({
-      id: genId(),
-      from: 'COSMO_ADMIN_GRANT',
-      to: keyPair.address,
-      amount: adminBonus,
-      timestamp: Date.now(),
-      signature: 'admin_grant',
-      type: 'genesis',
-      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
-      resonanceScore: 1.0,
-      confirmations: 0,
-      layer: 6,
-      meshDepth: 0,
-    });
-  }
 
   const wallet: WarpWallet = {
     address: keyPair.address,
@@ -533,7 +514,7 @@ export async function importWallet(data: WalletExport, password: string): Promis
   return wallet;
 }
 
-// ─── CosmoID: Deterministic Wallet (username + password) ─
+// ─── StrangrzID: Deterministic Wallet (username + password) ─
 
 /**
  * Create or recover a wallet deterministically from username + password.
@@ -543,7 +524,7 @@ export async function importWallet(data: WalletExport, password: string): Promis
  * - If no wallet exists → create a new one (with airdrop)
  * - If a DIFFERENT wallet exists → throw (user must clear first)
  */
-export async function loginCosmoID(
+export async function loginStrangrzID(
   username: string,
   password: string
 ): Promise<WarpWallet> {
@@ -586,8 +567,8 @@ export async function loginCosmoID(
   }
 
   const airdropAmount = tokenomics.processAirdrop(keyPair.address);
-  const adminBonus = isFirstWallet ? 999000 : 0;
-  const totalInitialBalance = airdropAmount + adminBonus;
+
+  const totalInitialBalance = airdropAmount;
 
   await mesh.createGenesis(keyPair.address, totalInitialBalance);
 
@@ -622,29 +603,12 @@ export async function loginCosmoID(
     timestamp: Date.now(),
     signature: 'genesis',
     type: 'airdrop',
-    memo: `Welcome to Cosmorare! Airdrop: ${airdropAmount} \u03A9`,
+    memo: `Welcome to Strangrz! Airdrop: ${airdropAmount} \u2B23`,
     resonanceScore: 1.0,
     confirmations: 0,
     layer: 6,
     meshDepth: 0,
   }];
-
-  if (adminBonus > 0) {
-    transactions.unshift({
-      id: genId(),
-      from: 'COSMO_ADMIN_GRANT',
-      to: keyPair.address,
-      amount: adminBonus,
-      timestamp: Date.now(),
-      signature: 'admin_grant',
-      type: 'genesis',
-      memo: `Admin grant: ${adminBonus.toLocaleString()} \u03A9`,
-      resonanceScore: 1.0,
-      confirmations: 0,
-      layer: 6,
-      meshDepth: 0,
-    });
-  }
 
   const wallet: WarpWallet = {
     address: keyPair.address,
@@ -689,6 +653,49 @@ export function clearWallet(): boolean {
   return true;
 }
 
+/**
+ * Delete the profile permanently.
+ * Reintegrates the wallet's STRNGRZ balance back into the airdrop pool,
+ * removes all local data (wallet, social, warts, transactions).
+ */
+export function deleteProfile(wallet: WarpWallet): boolean {
+  // Reintegrate tokens into the airdrop pool
+  const tokenomics = getTokenomics();
+  if (wallet.balance > 0) {
+    tokenomics.reintegrateToAirdropPool(wallet.balance);
+    tokenomics.save();
+  }
+
+  // Remove social profile
+  storage.removeItem('strangrz_social');
+
+  // Remove wallet
+  storage.removeItem(STORAGE_KEY);
+  storage.removeItem(TX_STORAGE_KEY);
+  storage.removeItem(MESH_STORAGE_KEY);
+  storage.removeItem(CONSENSUS_STORAGE_KEY);
+  storage.removeItem(ADMIN_ADDRESS_KEY);
+  storage.removeItem(DAILY_TOTAL_KEY);
+
+  // Remove warts & certs
+  storage.removeItem('strangrz_warts');
+  storage.removeItem('strangrz_cert_registry');
+
+  // Remove hierarchy
+  storage.removeItem('strangrz_hierarchy');
+
+  // Reset singletons
+  meshInstance = null;
+  consensusInstance = null;
+  tokenomicsInstance = null;
+  hierarchyInstance = null;
+  registryInstance = null;
+  securityInstance = null;
+  strangrzChainInstance = null;
+
+  return true;
+}
+
 // ─── Send Warps ──────────────────────────────────────────
 
 export async function sendWarps(
@@ -699,7 +706,7 @@ export async function sendWarps(
 ): Promise<{ success: boolean; error?: string; tx?: Transaction; levelUp?: LevelUpResult }> {
   if (!wallet.privateKey) return { success: false, error: 'Wallet is locked' };
   if (amount <= 0) return { success: false, error: 'Amount must be positive' };
-  if (amount > wallet.balance) return { success: false, error: 'Insufficient Warps' };
+  if (amount > wallet.balance) return { success: false, error: 'Insufficient STZ' };
   if (toAddress === wallet.address) return { success: false, error: 'Cannot send to yourself' };
   if (!isValidAddress(toAddress)) return { success: false, error: 'Invalid address format' };
 
@@ -819,7 +826,7 @@ export async function sendWarps(
   }
 }
 
-// ─── Mine Warps (Real Proof-of-Work) ─────────────────────
+// ─── Mine STZ (Real Proof-of-Work) ─────────────────────
 
 import { type MiningProof, verifyProof } from './miner';
 
@@ -951,7 +958,7 @@ export async function unlockCreatorTokens(wallet: WarpWallet, amount: number): P
       timestamp: Date.now(),
       signature: 'creator_unlock',
       type: 'genesis',
-      memo: `Creator tokens unlocked: ${amount} \u03A9`,
+      memo: `Creator tokens unlocked: ${amount} \u2B23`,
     };
     wallet.transactions.unshift(tx);
     addGlobalTx(tx);
@@ -961,7 +968,7 @@ export async function unlockCreatorTokens(wallet: WarpWallet, amount: number): P
     getRegistry().addSecurityEvent({
       type: 'creator_unlock',
       address: wallet.address,
-      details: `Unlocked ${amount} CW from creator lock`,
+      details: `Unlocked ${amount} STZ from creator lock`,
       severity: 'info',
     });
   }

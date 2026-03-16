@@ -1,12 +1,12 @@
 /**
- * Cosmorare Fiat Gateway — EUR/USD/GBP/JPY/CHF On/Off Ramp
+ * Strangrz Fiat Gateway — EUR/USD/GBP/JPY/CHF On/Off Ramp
  *
  * Production-ready fiat payment processing engine.
  *
  * ─── Architecture ────────────────────────────────────────────
  *
- * 1. PRICE DISPLAY — Shows artwork prices in both Ω and fiat
- * 2. BUY FLOW — User pays in fiat → system credits Ω → transfers artwork
+ * 1. PRICE DISPLAY — Shows artwork prices in both ⬣ and fiat
+ * 2. BUY FLOW — User pays in fiat → system credits ⬣ → transfers artwork
  * 3. SELL FLOW — User lists in fiat → buyer pays → seller receives fiat
  * 4. EXCHANGE RATE — Configurable rates with real-time tracking
  *
@@ -17,7 +17,7 @@
  *
  * For external payment processors (Stripe, PayPal, SEPA):
  * - Create PaymentIntent → return checkout URL → await webhook → settle
- * - When a backend is available, set COSMORARE_GATEWAY_URL to enable
+ * - When a backend is available, set STRANGRZ_GATEWAY_URL to enable
  *   real processor integration. Without a backend, transactions
  *   are settled locally with proper state transitions.
  *
@@ -39,7 +39,7 @@ export type FiatCurrency = 'EUR' | 'USD' | 'GBP' | 'JPY' | 'CHF';
 
 export interface ExchangeRate {
   currency: FiatCurrency;
-  warpsPerUnit: number;           // How many Ω per 1 unit of fiat
+  warpsPerUnit: number;           // How many ⬣ per 1 unit of fiat
   lastUpdated: number;
   source: 'manual' | 'api' | 'market';
 }
@@ -66,7 +66,7 @@ export interface FiatTransaction {
   completedAt?: number;
   error?: string;
   // Fees
-  platformFeePercent: number;     // Cosmorare platform fee (default 2.5%)
+  platformFeePercent: number;     // Strangrz platform fee (default 2.5%)
   platformFeeAmount: number;      // Calculated fee
   processorFeeAmount: number;     // Payment processor fee (Stripe ~2.9% + 0.30)
   sellerReceives: number;         // Net amount seller receives in fiat
@@ -79,7 +79,7 @@ export type PaymentMethod =
   | 'apple_pay'       // Apple Pay
   | 'google_pay'      // Google Pay
   | 'bank_transfer'   // Generic bank transfer
-  | 'internal';       // Internal Ω transfer (no fiat)
+  | 'internal';       // Internal ⬣ transfer (no fiat)
 
 export interface FiatListing {
   wartId: string;
@@ -112,9 +112,9 @@ export interface GatewayStats {
 
 // ─── Constants ───────────────────────────────────────────
 
-const RATES_KEY = 'cosmorare_fiat_rates';
-const FIAT_TX_KEY = 'cosmorare_fiat_tx';
-const FIAT_LISTINGS_KEY = 'cosmorare_fiat_listings';
+const RATES_KEY = 'strangrz_fiat_rates';
+const FIAT_TX_KEY = 'strangrz_fiat_tx';
+const FIAT_LISTINGS_KEY = 'strangrz_fiat_listings';
 
 const DEFAULT_PLATFORM_FEE = 2.5;   // 2.5% platform fee
 const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> = {
@@ -127,13 +127,44 @@ const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> 
   internal: { percent: 0, fixed: 0 },
 };
 
-// Default exchange rates (configurable by admin)
+/**
+ * ─── Strangrz (STZ) Valuation Model ────────────────────────
+ *
+ * Anchor: 1 STZ = €0.10 (10 centimes d'euro)
+ *
+ * Supply: 69,000,000 STZ → Market cap at full supply = €6,900,000
+ * Circulating at launch (~11M via airdrops+mining): ~€1,100,000
+ *
+ * Utility check at €0.10/STZ:
+ *   Airdrop (1,000 STZ)  = €100   — onboarding incentive ✓
+ *   Min listing (100 STZ) = €10   — accessible NFT floor  ✓
+ *   Mining reward (50 STZ) = €5   — motivating            ✓
+ *   Streak (10,000 STZ)   = €1000 — yearly loyalty reward ✓
+ *   Tip (1-10 STZ)        = €0.10-1.00 — micro-tip       ✓
+ *
+ * Fiat rates derived from real forex (anchor = EUR):
+ *   EUR/USD ≈ 1.10 → 1 USD = 10/1.10 = 9.1 STZ
+ *   GBP/USD ≈ 1.29 → 1 GBP = 9.1 × 1.29 = 11.7 STZ
+ *   USD/JPY ≈ 150  → 1 JPY = 9.1/150 = 0.061 STZ
+ *   USD/CHF ≈ 0.89 → 1 CHF = 9.1/0.89 = 10.3 STZ
+ *
+ * ETH conversion (dynamic):
+ *   ETH/USD ≈ $2,500 → 1 ETH = 9.1 × 2,500 = 22,750 STZ
+ *   Updated via configurable reference price with ±20% volatility band
+ */
+
+// Reference ETH price in USD for STZ conversion
+const ETH_REFERENCE_PRICE_USD = 2500;
+// Volatility band: rates auto-clamp within ±20% of reference
+const ETH_VOLATILITY_BAND = 0.20;
+
+// Default exchange rates (forex-aligned, anchor = 1 STZ = €0.10)
 const DEFAULT_RATES: ExchangeRate[] = [
-  { currency: 'EUR', warpsPerUnit: 100, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'USD', warpsPerUnit: 92, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'GBP', warpsPerUnit: 115, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'JPY', warpsPerUnit: 0.62, lastUpdated: Date.now(), source: 'manual' },
-  { currency: 'CHF', warpsPerUnit: 105, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'EUR', warpsPerUnit: 10, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'USD', warpsPerUnit: 9.1, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'GBP', warpsPerUnit: 11.7, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'JPY', warpsPerUnit: 0.061, lastUpdated: Date.now(), source: 'manual' },
+  { currency: 'CHF', warpsPerUnit: 10.3, lastUpdated: Date.now(), source: 'manual' },
 ];
 
 // ─── Fiat Gateway Engine ─────────────────────────────────
@@ -148,6 +179,9 @@ export class FiatGateway {
     this.loadRates();
     this.loadTransactions();
     this.loadListings();
+    // Restore ETH price
+    const savedEth = storage.getItem('strangrz_eth_price');
+    if (savedEth) this._ethPriceUsd = parseFloat(savedEth) || ETH_REFERENCE_PRICE_USD;
   }
 
   // ─── Exchange Rates ──────────────────────────────────
@@ -198,7 +232,52 @@ export class FiatGateway {
 
   set preferredCurrency(currency: FiatCurrency) {
     this._preferredCurrency = currency;
-    storage.setItem('cosmorare_fiat_currency', currency);
+    storage.setItem('strangrz_fiat_currency', currency);
+  }
+
+  // ─── ETH Conversion ─────────────────────────────────
+
+  private _ethPriceUsd: number = ETH_REFERENCE_PRICE_USD;
+
+  /** Current ETH price in USD (for STZ↔ETH conversion) */
+  get ethPriceUsd(): number { return this._ethPriceUsd; }
+
+  /**
+   * Update ETH price. Clamped within ±20% volatility band of reference
+   * to prevent extreme rate swings.
+   */
+  setEthPrice(priceUsd: number): void {
+    const min = ETH_REFERENCE_PRICE_USD * (1 - ETH_VOLATILITY_BAND);
+    const max = ETH_REFERENCE_PRICE_USD * (1 + ETH_VOLATILITY_BAND);
+    this._ethPriceUsd = Math.min(max, Math.max(min, priceUsd));
+    storage.setItem('strangrz_eth_price', String(this._ethPriceUsd));
+  }
+
+  /** How many STZ per 1 ETH (dynamic based on current ETH price) */
+  get warpsPerEth(): number {
+    const usdRate = this.rates.get('USD');
+    if (!usdRate) return 0;
+    return Math.round(usdRate.warpsPerUnit * this._ethPriceUsd);
+  }
+
+  /** Convert STZ to ETH */
+  warpsToEth(warps: number): number {
+    const wpe = this.warpsPerEth;
+    if (wpe <= 0) return 0;
+    return Math.round(warps / wpe * 1e8) / 1e8; // 8 decimal precision like ETH
+  }
+
+  /** Convert ETH to STZ */
+  ethToWarps(eth: number): number {
+    return Math.round(eth * this.warpsPerEth * 100) / 100;
+  }
+
+  /** Format price showing STZ, fiat, and ETH */
+  formatTriplePrice(warps: number, currency: FiatCurrency = this._preferredCurrency): string {
+    const fiat = this.warpsToFiat(warps, currency);
+    const eth = this.warpsToEth(warps);
+    const symbol = getCurrencySymbol(currency);
+    return `${warps.toLocaleString()} ⬣ (${symbol}${fiat.toFixed(2)} / ${eth.toFixed(6)} ETH)`;
   }
 
   // ─── Price Conversion ────────────────────────────────
@@ -222,12 +301,12 @@ export class FiatGateway {
   }
 
   /**
-   * Format a price in both Ω and fiat for display.
+   * Format a price in both ⬣ and fiat for display.
    */
   formatDualPrice(warps: number, currency: FiatCurrency = this._preferredCurrency): string {
     const fiat = this.warpsToFiat(warps, currency);
     const symbol = getCurrencySymbol(currency);
-    return `${warps.toLocaleString()} Ω (${symbol}${fiat.toFixed(2)})`;
+    return `${warps.toLocaleString()} ⬣ (${symbol}${fiat.toFixed(2)})`;
   }
 
   /**
@@ -337,7 +416,7 @@ export class FiatGateway {
    * Create a fiat buy transaction (user buys artwork with fiat).
    *
    * Flow: pending → processing → completed
-   * If COSMORARE_GATEWAY_URL is set, this will call the backend to create
+   * If STRANGRZ_GATEWAY_URL is set, this will call the backend to create
    * a real PaymentIntent. Otherwise, transactions are settled locally.
    */
   async createBuyTransaction(params: {
@@ -378,9 +457,8 @@ export class FiatGateway {
     this.transactions.push(tx);
     this.saveTransactions();
 
-    // Call Vercel serverless API (same origin)
-    const gatewayUrl = typeof window !== 'undefined' ? '' : null;
-    if (gatewayUrl !== null) {
+    // Call Vercel serverless API (same origin, client-side only)
+    if (typeof window !== 'undefined') {
       try {
         tx.status = 'processing';
         this.saveTransactions();
@@ -423,7 +501,7 @@ export class FiatGateway {
   }
 
   /**
-   * Create a fiat sell/withdrawal (user converts Ω to fiat).
+   * Create a fiat sell/withdrawal (user converts ⬣ to fiat).
    *
    * Flow: pending → processing → completed
    */
@@ -459,9 +537,8 @@ export class FiatGateway {
 
     this.transactions.push(tx);
 
-    // Call Vercel serverless API (same origin)
-    const payoutGateway = typeof window !== 'undefined' ? '' : null;
-    if (payoutGateway !== null) {
+    // Call Vercel serverless API (same origin, client-side only)
+    if (typeof window !== 'undefined') {
       try {
         tx.status = 'processing';
         this.saveTransactions();

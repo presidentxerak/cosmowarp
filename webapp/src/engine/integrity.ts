@@ -1,5 +1,5 @@
 /**
- * Cosmorare Block Integrity Engine — Tamper Detection & Verification
+ * Strangrz Block Integrity Engine — Tamper Detection & Verification
  *
  * This module fixes the #1 critical security gap identified in the audit:
  * blocks retrieved from IndexedDB were NEVER re-verified.
@@ -12,7 +12,7 @@
  * 5. Its validator signature (Ed25519)
  *
  * If ANY verification fails, the block is rejected and a tamper alert is raised.
- * This makes Cosmorare's storage security equivalent to Ethereum's.
+ * This makes Strangrz's storage security equivalent to Ethereum's.
  *
  * Additionally provides:
  * - Full chain verification (verify entire history)
@@ -25,7 +25,7 @@ import type { StoredBlock, StoredBeacon, StoredTransaction } from './chaindb';
 
 // ─── Constants ──────────────────────────────────────────
 
-const CHAIN_VERSION = 'CosmoChain-v1';
+const CHAIN_VERSION = 'StrangrzChain-v1';
 
 // ─── Tamper Alert Types ─────────────────────────────────
 
@@ -349,7 +349,7 @@ export class BlockIntegrityVerifier {
     const allAlerts: TamperAlert[] = [];
     let blocksVerified = 0;
     let beaconsVerified = 0;
-    let txVerified = 0;
+    const txVerified = 0;
 
     // Verify each shard's chain
     for (let shard = 0; shard < params.shardCount; shard++) {
@@ -408,11 +408,11 @@ export class BlockIntegrityVerifier {
         const result = await scanFn();
         if (!result.valid) {
           console.warn(
-            `[Cosmorare Integrity] Background scan found ${result.alerts.length} issues.`
+            `[Strangrz Integrity] Background scan found ${result.alerts.length} issues.`
           );
         }
       } catch (err) {
-        console.error('[Cosmorare Integrity] Background scan failed:', err);
+        console.error('[Strangrz Integrity] Background scan failed:', err);
       }
     }, intervalMs);
   }
@@ -427,7 +427,7 @@ export class BlockIntegrityVerifier {
 
   // ─── Internal Helpers ───────────────────────────────
 
-  /** Compute a block hash from its header fields (same algorithm as CosmoChain) */
+  /** Compute a block hash from its header fields (same algorithm as StrangrzChain) */
   private async computeBlockHash(block: StoredBlock): Promise<string> {
     const headerData = [
       CHAIN_VERSION,

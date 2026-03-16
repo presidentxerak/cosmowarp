@@ -1,5 +1,5 @@
 /**
- * Cosmorare — Supabase Storage Layer
+ * Strangrz — Supabase Storage Layer
  *
  * Handles media uploads (images, audio, video, SVG) to Supabase Storage.
  * Falls back gracefully when backend is unavailable.

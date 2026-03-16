@@ -1,5 +1,5 @@
 /**
- * Cosmorare Fiat Gateway Server — Stripe + PayPal Payment Processing
+ * Strangrz Fiat Gateway Server — Stripe + PayPal Payment Processing
  *
  * Production backend for fiat on/off ramp.
  *
@@ -32,8 +32,14 @@ import { createServer, IncomingMessage, ServerResponse } from 'http';
 const PORT = parseInt(process.env.GATEWAY_PORT || '8788', 10);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
-const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY || 'cosmorare-admin-dev';
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+const ADMIN_KEY = process.env.GATEWAY_ADMIN_KEY;
+const PAYOUT_SECRET = process.env.PAYOUT_SECRET_KEY;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://strangrz.com';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+
+if (!ADMIN_KEY) console.warn('[FiatGateway] GATEWAY_ADMIN_KEY not set — rate updates disabled');
+if (!PAYOUT_SECRET) console.warn('[FiatGateway] PAYOUT_SECRET_KEY not set — payouts disabled');
 
 // ─── Stripe SDK (dynamic import for optional dependency) ──
 
@@ -51,7 +57,7 @@ async function initStripe() {
   }
   try {
     const Stripe = (await import('stripe')).default;
-    stripe = new (Stripe as any)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' }) as typeof stripe;
+    stripe = new (Stripe as unknown as new (key: string, opts: { apiVersion: string }) => typeof stripe)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
     console.log('[FiatGateway] Stripe SDK initialized');
   } catch {
     console.warn('[FiatGateway] stripe package not installed — run: npm install stripe');
@@ -173,9 +179,14 @@ const server = createServer(async (req, res) => {
     // ─── Update Rates (admin) ──────────────
     if (url === '/api/rates' && method === 'POST') {
       const adminKey = req.headers['x-admin-key'];
-      if (adminKey !== ADMIN_KEY) return json(res, 403, { error: 'Unauthorized' });
+      if (!ADMIN_KEY || adminKey !== ADMIN_KEY) return json(res, 403, { error: 'Unauthorized' });
 
-      const body = JSON.parse(await readBody(req));
+      let body;
+      try {
+        body = JSON.parse(await readBody(req));
+      } catch {
+        return json(res, 400, { error: 'Invalid JSON body' });
+      }
       if (body.currency && typeof body.warpsPerUnit === 'number') {
         rates.set(body.currency, {
           currency: body.currency,
@@ -190,7 +201,12 @@ const server = createServer(async (req, res) => {
 
     // ─── Create Payment ────────────────────
     if (url === '/api/payments/create' && method === 'POST') {
-      const body = JSON.parse(await readBody(req));
+      let body;
+      try {
+        body = JSON.parse(await readBody(req));
+      } catch {
+        return json(res, 400, { error: 'Invalid JSON body' });
+      }
       const { amount, currency, paymentMethod, wartId, buyerAddress, sellerAddress } = body;
 
       if (!amount || !currency || !buyerAddress) {
@@ -235,17 +251,17 @@ const server = createServer(async (req, res) => {
                 currency: currency.toLowerCase(),
                 unit_amount: Math.round(amount * 100), // Stripe uses cents
                 product_data: {
-                  name: wartId ? `Cosmorare #${wartId}` : `${warpAmount} Warps (Ω)`,
-                  description: `Cosmorare purchase — ${warpAmount} Ω`,
+                  name: wartId ? `Strangrz #${wartId}` : `${warpAmount} STZ (⬣)`,
+                  description: `Strangrz purchase — ${warpAmount} ⬣`,
                 },
               },
               quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-success?tx=${txId}`,
-            cancel_url: `${req.headers.origin || 'https://cosmorare.com'}/payment-cancel?tx=${txId}`,
+            success_url: `${req.headers.origin || 'https://strangrz.com'}/payment-success?tx=${txId}`,
+            cancel_url: `${req.headers.origin || 'https://strangrz.com'}/payment-cancel?tx=${txId}`,
             metadata: {
-              cosmorare_tx_id: txId,
+              strangrz_tx_id: txId,
               buyer_address: buyerAddress,
               seller_address: sellerAddress || '',
               warp_amount: warpAmount.toString(),
@@ -298,13 +314,13 @@ const server = createServer(async (req, res) => {
       let event;
       try {
         event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
-      } catch (err) {
+      } catch {
         return json(res, 400, { error: 'Invalid webhook signature' });
       }
 
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        const txId = (session.metadata as Record<string, string>)?.cosmorare_tx_id;
+        const txId = (session.metadata as Record<string, string>)?.strangrz_tx_id;
         if (txId) {
           const record = transactions.get(txId);
           if (record) {
@@ -312,15 +328,33 @@ const server = createServer(async (req, res) => {
             record.completedAt = Date.now();
             console.log(`[FiatGateway] Payment completed: ${txId}`);
 
-            // TODO: Trigger Supabase balance update + chain transaction
-            // await supabase.rpc('credit_warps', { address: record.buyerAddress, amount: record.warpAmount });
+            // Credit buyer balance via Supabase RPC
+            if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+              try {
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+                const { data: credited } = await supabase.rpc('credit_warps', {
+                  p_address: record.buyerAddress,
+                  p_amount: record.warpAmount,
+                  p_tx_id: txId + '_credit',
+                  p_memo: `Fiat purchase: ${record.warpAmount} \u2B23`,
+                });
+                if (credited) {
+                  console.log(`[FiatGateway] Credited ${record.warpAmount} \u2B23 to ${record.buyerAddress}`);
+                } else {
+                  console.error(`[FiatGateway] Failed to credit ${record.buyerAddress}`);
+                }
+              } catch (err) {
+                console.error('[FiatGateway] Supabase credit error:', err);
+              }
+            }
           }
         }
       }
 
       if (event.type === 'checkout.session.expired') {
         const session = event.data.object;
-        const txId = (session.metadata as Record<string, string>)?.cosmorare_tx_id;
+        const txId = (session.metadata as Record<string, string>)?.strangrz_tx_id;
         if (txId) {
           const record = transactions.get(txId);
           if (record) {
@@ -335,11 +369,26 @@ const server = createServer(async (req, res) => {
 
     // ─── Create Payout ─────────────────────
     if (url === '/api/payouts/create' && method === 'POST') {
-      const body = JSON.parse(await readBody(req));
+      // Authentication required for payouts
+      const authHeader = req.headers.authorization;
+      if (!PAYOUT_SECRET || authHeader !== `Bearer ${PAYOUT_SECRET}`) {
+        return json(res, 401, { error: 'Unauthorized: valid authentication required for payouts' });
+      }
+
+      let body;
+      try {
+        body = JSON.parse(await readBody(req));
+      } catch {
+        return json(res, 400, { error: 'Invalid JSON body' });
+      }
       const { warpAmount, currency, paymentMethod, sellerAddress } = body;
 
       if (!warpAmount || !currency || !sellerAddress) {
         return json(res, 400, { error: 'Missing required fields' });
+      }
+
+      if (typeof warpAmount !== 'number' || warpAmount <= 0 || !Number.isFinite(warpAmount)) {
+        return json(res, 400, { error: 'warpAmount must be a positive number' });
       }
 
       const rate = rates.get(currency);
@@ -377,7 +426,7 @@ const server = createServer(async (req, res) => {
             amount: Math.round((fiatAmount - fees.total) * 100),
             currency: currency.toLowerCase(),
             destination: sellerAddress, // This would be the Stripe Connect account ID
-            metadata: { cosmorare_tx_id: txId },
+            metadata: { strangrz_tx_id: txId },
           });
           record.processorRef = transfer.id;
           record.status = 'completed';
@@ -432,7 +481,7 @@ async function start() {
   server.listen(PORT, () => {
     console.log(`
 ┌─────────────────────────────────────────────┐
-│  Cosmorare Fiat Gateway                     │
+│  Strangrz Fiat Gateway                     │
 │  HTTP:   http://0.0.0.0:${PORT}                │
 │  Health: http://0.0.0.0:${PORT}/health          │
 │                                             │

@@ -33,7 +33,7 @@ export interface SocialStats {
 
 // ─── Storage ───────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_social';
+const STORAGE_KEY = 'strangrz_social';
 
 function loadProfiles(): UserProfile[] {
   try {
@@ -82,12 +82,25 @@ export class SocialEngine {
     return this.profiles.find(p => p.address === address) || null;
   }
 
+  /** Check if an alias is already taken by another address */
+  isAliasTaken(alias: string, excludeAddress?: string): boolean {
+    const normalized = alias.trim().toLowerCase();
+    if (!normalized) return false;
+    return this.profiles.some(
+      p => p.alias.toLowerCase() === normalized && p.address !== excludeAddress
+    );
+  }
+
   ensureProfile(address: string, alias: string): UserProfile {
     let profile = this.profiles.find(p => p.address === address);
+    // If alias is taken by another address, fall back to truncated address
+    const safeAlias = (alias && this.isAliasTaken(alias, address))
+      ? address.slice(0, 10)
+      : alias;
     if (!profile) {
       profile = {
         address,
-        alias: alias || address.slice(0, 10),
+        alias: safeAlias || address.slice(0, 10),
         bio: '',
         profileImage: '',
         joinedAt: Date.now(),
@@ -105,8 +118,8 @@ export class SocialEngine {
       };
       this.profiles.push(profile);
       this.save();
-    } else if (alias && alias !== profile.alias) {
-      profile.alias = alias;
+    } else if (safeAlias && safeAlias !== profile.alias) {
+      profile.alias = safeAlias;
       this.save();
     }
     return profile;
@@ -123,7 +136,9 @@ export class SocialEngine {
   updateAlias(address: string, alias: string): boolean {
     const profile = this.profiles.find(p => p.address === address);
     if (!profile) return false;
-    profile.alias = alias.slice(0, 30);
+    const trimmed = alias.slice(0, 30);
+    if (this.isAliasTaken(trimmed, address)) return false;
+    profile.alias = trimmed;
     this.save();
     return true;
   }

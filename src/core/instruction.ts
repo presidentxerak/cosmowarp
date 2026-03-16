@@ -50,7 +50,7 @@ export function decodeInstruction(word: number): CosmoInstruction {
     layer: ((word >>> 23) & 0x07) as LayerId,
     reg1: ((word >>> 19) & 0x0F) as RegisterId,
     reg2: ((word >>> 15) & 0x0F) as RegisterId,
-    immediate: (word & 0x7FFF) | ((word & 0x4000) ? ~0x7FFF : 0), // Extension de signe
+    immediate: ((word & 0x7FFF) << 17) >> 17, // Extension de signe 15-bit
   };
 }
 

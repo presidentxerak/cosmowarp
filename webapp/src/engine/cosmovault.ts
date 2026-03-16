@@ -5,19 +5,19 @@
  *
  * ─── How It Works ────────────────────────────────────────────
  *
- * 1. DETERMINISTIC VAULT KEY — Derived from CosmoID (username + password)
+ * 1. DETERMINISTIC VAULT KEY — Derived from StrangrzID (username + password)
  *    via PBKDF2 (600K rounds). Same credentials = same vault on any device.
  *
  * 2. ENCRYPTED ARTWORK STORAGE — Each artwork is:
  *    a) Fingerprinted (SHA-256 of raw media)
  *    b) Encrypted with AES-256-GCM using the vault key
  *    c) Stored in IndexedDB (local, multi-GB capacity)
- *    d) Optionally encoded as CosmoCode SVG for on-chain backup
+ *    d) Optionally encoded as StrangrzCode SVG for on-chain backup
  *
  * 3. RECOVERY MODES:
- *    - CosmoID Recovery: Same username + password → same vault key → decrypt all
+ *    - StrangrzID Recovery: Same username + password → same vault key → decrypt all
  *    - Recovery Kit: Encrypted JSON bundle (downloadable, works offline)
- *    - On-Chain Recovery: CosmoCode SVG stored in CosmoChain blocks
+ *    - On-Chain Recovery: StrangrzCode SVG stored in StrangrzChain blocks
  *    - Peer Recovery: Request encrypted fragments from connected peers
  *
  * 4. VAULT MANIFEST — A signed, encrypted index of all owned artworks.
@@ -46,12 +46,12 @@ export interface VaultEntry {
   creator: string;                 // Creator address
   owner: string;                   // Current owner address
   encryptedMedia: EncryptedPayload; // AES-256-GCM encrypted media data
-  mediaType: 'image' | 'audio' | 'video' | 'svg';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
   mediaSizeBytes: number;          // Original media size
   createdAt: number;
   addedToVaultAt: number;
-  onChainTxId?: string;            // CosmoChain TX that stores the on-chain backup
-  onChainSVG?: string;             // CosmoCode SVG backup (if available)
+  onChainTxId?: string;            // StrangrzChain TX that stores the on-chain backup
+  onChainSVG?: string;             // StrangrzCode SVG backup (if available)
   recoveryStatus: 'local' | 'onchain' | 'hybrid' | 'peer';
 }
 
@@ -69,7 +69,7 @@ export interface VaultManifestEntry {
   fingerprint: string;
   certId: string;
   title: string;
-  mediaType: 'image' | 'audio' | 'video' | 'svg';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
   mediaSizeBytes: number;
   createdAt: number;
   recoveryStatus: 'local' | 'onchain' | 'hybrid' | 'peer';
@@ -89,7 +89,7 @@ export interface RecoveryKitEntry {
   fingerprint: string;
   certId: string;
   title: string;
-  mediaType: 'image' | 'audio' | 'video' | 'svg';
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
   encryptedMedia: EncryptedPayload;  // Double-encrypted: vault key + recovery password
   metadata: Record<string, string>;
 }
@@ -114,7 +114,7 @@ const VAULT_SALT = 'CosmoVault-AES-v2';
 // ─── Vault Key Derivation ────────────────────────────────
 
 /**
- * Derive the vault encryption key from CosmoID credentials.
+ * Derive the vault encryption key from StrangrzID credentials.
  * Uses a different salt than wallet key derivation for domain separation.
  */
 async function deriveVaultSecret(username: string, password: string): Promise<string> {
@@ -150,7 +150,7 @@ export class CosmoVault {
   // ─── Initialization ─────────────────────────────────
 
   /**
-   * Initialize vault with CosmoID credentials.
+   * Initialize vault with StrangrzID credentials.
    * Must be called before encrypt/decrypt operations.
    */
   async init(username: string, password: string): Promise<void> {
@@ -158,7 +158,7 @@ export class CosmoVault {
   }
 
   /**
-   * Initialize vault with a raw secret (for wallet-based init without CosmoID).
+   * Initialize vault with a raw secret (for wallet-based init without StrangrzID).
    */
   initWithSecret(secret: string): void {
     this.vaultSecret = `${VAULT_SALT}:${secret}`;
@@ -186,7 +186,7 @@ export class CosmoVault {
     creator: string;
     owner: string;
     mediaData: string;          // Raw media (data URL or base64)
-    mediaType: 'image' | 'audio' | 'video' | 'svg';
+    mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
     onChainSVG?: string;
     onChainTxId?: string;
   }): Promise<VaultEntry> {

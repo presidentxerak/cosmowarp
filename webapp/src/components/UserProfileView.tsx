@@ -3,16 +3,16 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
-import { WartEngine } from '../engine/warts';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import * as sync from '../lib/supabase-sync';
+import { fetchSocialProfile, fetchProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
 import HexAvatar from './HexAvatar';
 
-type Tab = 'posts' | 'created' | 'collection';
+type Tab = 'posts' | 'created' | 'collection' | 'media';
 
 export default function UserProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { wallet } = useWallet();
+  const { wallet, warts } = useWallet();
   const [targetAddress, setTargetAddress] = useState('');
   const [tab, setTab] = useState<Tab>('posts');
   const [alias, setAlias] = useState('');
@@ -29,6 +29,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
   const [twitter, setTwitter] = useState('');
+  const [copied, setCopied] = useState(false);
   // Follow dropdown state
   const [showFollowMenu, setShowFollowMenu] = useState(false);
   const [isCloseFriend, setIsCloseFriend] = useState(false);
@@ -37,12 +38,12 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const [isRestricted, setIsRestricted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Refresh created/collection when warts from context change (media rehydrated)
   useEffect(() => {
-    const addr = sessionStorage.getItem('cosmorare_view_user');
-    if (!addr) return;
-    setTargetAddress(addr);
-    refresh(addr);
-  }, []);
+    if (!targetAddress) return;
+    setCreated(warts.filter(w => w.creator === targetAddress));
+    setCollection(warts.filter(w => w.owner === targetAddress));
+  }, [warts, targetAddress]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -59,16 +60,66 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const refresh = (addr: string) => {
     const social = SocialEngine.load();
     const profile = social.getProfile(addr);
-    if (profile) {
-      setAlias(profile.alias);
-      setBio(profile.bio);
-      setFollowersCount(profile.followers.length);
-      setFollowingCount(profile.following.length);
-      setWebsite(profile.website);
-      setInstagram(profile.instagram);
-      setTwitter(profile.twitter);
-    } else {
-      setAlias(shortAddress(addr));
+
+    const applyProfile = (p: { alias?: string; bio?: string; followers?: string[]; following?: string[]; website?: string; instagram?: string; twitter?: string } | null) => {
+      let resolvedAlias = shortAddress(addr);
+      if (p) {
+        const pa = p.alias || '';
+        const isTruncated = pa === addr.slice(0, 10) || pa === shortAddress(addr);
+        if (pa && !isTruncated) {
+          resolvedAlias = pa;
+        } else if (wallet && wallet.address === addr && wallet.alias) {
+          resolvedAlias = wallet.alias;
+          social.ensureProfile(addr, wallet.alias);
+        }
+        setBio(p.bio || '');
+        setFollowersCount(p.followers?.length || 0);
+        setFollowingCount(p.following?.length || 0);
+        setWebsite(p.website || '');
+        setInstagram(p.instagram || '');
+        setTwitter(p.twitter || '');
+      } else if (wallet && wallet.address === addr && wallet.alias) {
+        resolvedAlias = wallet.alias;
+        social.ensureProfile(addr, wallet.alias);
+      }
+      setAlias(resolvedAlias);
+    };
+
+    // Apply local profile immediately
+    applyProfile(profile);
+
+    // If no local profile or alias is truncated, fetch from Supabase
+    const localAlias = profile?.alias || '';
+    const isTruncated = !localAlias || localAlias === addr.slice(0, 10) || localAlias === shortAddress(addr);
+    if (isTruncated && !(wallet && wallet.address === addr)) {
+      // Try social_profiles first, then fall back to profiles table
+      Promise.all([
+        fetchSocialProfile(addr).catch(() => null),
+        fetchProfile(addr).catch(() => null),
+      ]).then(([remote, walletProfile]) => {
+        const resolvedAlias = (remote?.alias && remote.alias !== addr.slice(0, 10) && remote.alias !== shortAddress(addr))
+          ? remote.alias
+          : walletProfile?.alias || '';
+
+        if (resolvedAlias) {
+          const s = SocialEngine.load();
+          s.ensureProfile(addr, resolvedAlias);
+          if (remote?.bio) s.updateBio(addr, remote.bio);
+          if (remote?.website || remote?.instagram || remote?.twitter) {
+            s.updateLinks(addr, { website: remote?.website, instagram: remote?.instagram, twitter: remote?.twitter });
+          }
+          applyProfile(s.getProfile(addr));
+        }
+      }).catch(() => { /* non-critical */ });
+
+      // Fetch follower/following counts from Supabase
+      Promise.all([
+        fetchFollowers(addr).catch(() => []),
+        fetchFollowing(addr).catch(() => []),
+      ]).then(([followers, following]) => {
+        setFollowersCount(followers.length);
+        setFollowingCount(following.length);
+      });
     }
 
     if (wallet) {
@@ -89,10 +140,19 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(addr));
 
-    const wartEngine = WartEngine.load();
-    setCreated(wartEngine.getCreated(addr));
-    setCollection(wartEngine.getCollection(addr));
+    // Use warts from context (already has media loaded from IndexedDB)
+    setCreated(warts.filter(w => w.creator === addr));
+    setCollection(warts.filter(w => w.owner === addr));
   };
+
+  // Load target user on mount
+  useEffect(() => {
+    const addr = sessionStorage.getItem('strangrz_view_user');
+    if (!addr) return;
+    setTargetAddress(addr);
+    refresh(addr);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFollow = () => {
     if (!wallet || !targetAddress) return;
@@ -139,15 +199,20 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   };
 
   const handleMessage = () => {
-    sessionStorage.setItem('cosmorare_dm_to', targetAddress);
+    sessionStorage.setItem('strangrz_dm_to', targetAddress);
     onNavigate('message');
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
+    sessionStorage.setItem('strangrz_view_user', address);
     setTargetAddress(address);
     setTab('posts');
     refresh(address);
+  };
+
+  const handleViewWart = (wart: Wart) => {
+    sessionStorage.setItem('strangrz_open_wart', wart.id);
+    onNavigate('gallery');
   };
 
   const toggleCloseFriend = () => {
@@ -204,14 +269,74 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
 
   const isMe = wallet?.address === targetAddress;
 
+  const mediaWarts = [...created, ...collection].filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
   const tabList: { id: Tab; label: string; count: number }[] = [
     { id: 'posts', label: 'Posts', count: posts.length },
+    { id: 'media', label: 'Media', count: mediaWarts.length },
     { id: 'created', label: 'Created', count: created.length },
     { id: 'collection', label: 'Collection', count: collection.length },
   ];
 
+  // ─── Resolve creator alias ─────────────────────────────
+  const getCreatorName = (address: string): string => {
+    if (wallet && address === wallet.address) return wallet.alias || shortAddress(address);
+    const social = SocialEngine.load();
+    const profile = social.getProfile(address);
+    return profile?.alias || shortAddress(address);
+  };
+
+  // ─── Wart Card with social bar ─────────────────────────
+  const WartCard = ({ wart }: { wart: Wart }) => (
+    <div className="glass-panel overflow-hidden cursor-pointer" onClick={() => handleViewWart(wart)}>
+      <div className="aspect-square overflow-hidden bg-current/5">
+        {wart.mediaType === 'video' && wart.imageData ? (
+          <video src={wart.imageData} className="w-full h-full object-cover" muted playsInline />
+        ) : wart.mediaType === 'audio' && wart.audioCover ? (
+          <img src={wart.audioCover} alt={wart.title} className="w-full h-full object-cover" />
+        ) : wart.imageData ? (
+          <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl opacity-30">
+              {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="p-2">
+        <p className="text-body-sm font-medium opacity-90 truncate">{wart.title}</p>
+        <div
+          className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={(e) => { e.stopPropagation(); handleViewUser(wart.creator); }}
+        >
+          <HexAvatar address={wart.creator} size={16} />
+          <p className="text-[10px] opacity-40 truncate">
+            {getCreatorName(wart.creator)}
+          </p>
+        </div>
+        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+        {/* Social bar */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
+          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {wart.history.length > 0 && <span className="text-[10px]">Tip {wart.history.length}{'\u2B23'}</span>}
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-0 pb-4 max-w-2xl mx-auto">
+    <div className="space-y-0 pb-4">
       {/* Back button */}
       <div className="px-3 py-2">
         <button
@@ -230,7 +355,24 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         <div className="flex flex-col items-center text-center">
           <HexAvatar address={targetAddress} size={80} animate className="mb-3" />
           <h2 className="text-title-md font-bold opacity-100 font-title">{alias}</h2>
-          <p className="text-[11px] opacity-40 font-mono mt-0.5">{targetAddress}</p>
+          <p
+            className="text-[11px] opacity-40 font-mono mt-0.5 cursor-pointer hover:opacity-60 transition-opacity"
+            onClick={() => {
+              navigator.clipboard.writeText(targetAddress);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            title="Copier l'adresse"
+          >
+            {targetAddress}
+            <span className="ml-1 inline-block align-middle">
+              {copied ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              )}
+            </span>
+          </p>
 
           {/* Social links */}
           {(website || instagram || twitter) && (
@@ -253,6 +395,16 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   @{twitter.replace('@', '')}
                 </a>
               )}
+            </div>
+          )}
+
+          {/* Curator badge */}
+          {collection.length >= 100 && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold tracking-wide" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                CURATOR
+              </span>
             </div>
           )}
 
@@ -396,12 +548,18 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                   </div>
                   <p className="text-base opacity-70 whitespace-pre-wrap">{post.content}</p>
                   {post.mediaData && post.mediaType === 'image' && (
-                    <img src={post.mediaData} alt="" className="mt-2 w-full max-h-64 object-cover" />
+                    <img src={post.mediaData} alt="" className="mt-2 w-auto max-w-full" />
                   )}
-                  <div className="flex gap-4 mt-2 text-label opacity-40">
-                    <span>{post.tipCount} tips</span>
-                    <span>{post.rewarpCount} rewarps</span>
-                    <span>{post.comments.length} comments</span>
+                  {post.mediaData && post.mediaType === 'video' && (
+                    <video controls src={post.mediaData} className="mt-2 w-full bg-black" />
+                  )}
+                  {post.mediaData && post.mediaType === 'audio' && (
+                    <audio controls src={post.mediaData} className="mt-2 w-full h-10" />
+                  )}
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
+                    <span className="opacity-40 text-body-sm">{post.tipCount > 0 ? `Tip ${post.tipCount}\u2B23` : '0 tips'}</span>
+                    <span className="opacity-40 text-body-sm">{post.rewarpCount} rewarps</span>
+                    <span className="opacity-40 text-body-sm">{post.comments.length} comments</span>
                   </div>
                 </div>
               ))}
@@ -412,21 +570,26 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Cosmorare créée</p>
+              <p className="opacity-40 text-base">No artwork created</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {created.map(wart => (
-                <div key={wart.id} className="glass-panel p-2">
-                  {wart.mediaType !== 'audio' && wart.imageData && (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  {wart.mediaType === 'audio' && wart.audioCover && (
-                    <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u03A9` : 'Not listed'}</p>
-                </div>
+                <WartCard key={wart.id} wart={wart} />
+              ))}
+            </div>
+          )
+        )}
+
+        {tab === 'media' && (
+          mediaWarts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="opacity-40 text-base">No media</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {mediaWarts.map(wart => (
+                <WartCard key={wart.id} wart={wart} />
               ))}
             </div>
           )
@@ -440,13 +603,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {collection.map(wart => (
-                <div key={wart.id} className="glass-panel p-2">
-                  {wart.mediaType !== 'audio' && wart.imageData && (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  )}
-                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
-                </div>
+                <WartCard key={wart.id} wart={wart} />
               ))}
             </div>
           )

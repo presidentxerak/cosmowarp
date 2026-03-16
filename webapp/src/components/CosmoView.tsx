@@ -12,78 +12,79 @@ interface Message {
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
   {
     keywords: ['wallet', 'portefeuille', 'balance', 'solde', 'compte'],
-    response: 'Votre wallet est le coeur de Cosmorare ! Il stocke vos tokens Cosmorares et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Cosmorares. Vous voulez accéder à votre wallet ?',
+    response: 'Votre wallet est le coeur de Strangrz ! Il stocke vos tokens Strangrz et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Strangrz. Vous voulez accéder à votre wallet ?',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['mine', 'mining', 'miner', 'minage'],
-    response: 'Le minage sur Cosmorare utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Cosmorares (Ω). La récompense diminue progressivement selon le nombre d\'or.',
+    response: 'Le minage sur Strangrz utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Strangrz (⬣). La récompense diminue progressivement selon le nombre d\'or.',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
-    response: 'Les Cosmorares sont des objets certifiés sur Cosmorare. Chaque objet reçoit un certificat CRCERT infalsifiable avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
+    response: 'Les Strangrz sont des objets certifiés sur Strangrz. Chaque objet reçoit un certificat STCERT infalsifiable multi-chaîne (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
     suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {
     keywords: ['send', 'transfer', 'envoyer'],
-    response: 'Vous pouvez envoyer des Cosmorares à n\'importe quelle adresse Cosmorare. Les transactions passent par le réseau CosmoMesh DAG avec 7 couches de validation. Instantané et gratuit !',
+    response: 'Vous pouvez envoyer des Strangrz à n\'importe quelle adresse Strangrz. Les transactions passent par le réseau StrangrzMesh DAG avec 7 couches de validation. Instantané et gratuit !',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
-    keywords: ['cosmomesh', 'mesh', 'dag', 'network', 'reseau', 'réseau'],
-    response: 'CosmoMesh est notre réseau en graphe acyclique dirigé (DAG). Contrairement aux blockchains traditionnelles, il utilise 7 couches de validation parallèles et un consensus par Résonance pour une finalité quasi instantanée.',
+    keywords: ['strangrmesh', 'mesh', 'dag', 'network', 'reseau', 'réseau'],
+    response: 'StrangrzMesh est notre réseau en graphe acyclique dirigé (DAG). Contrairement aux blockchains traditionnelles, il utilise 7 couches de validation parallèles et un consensus par Résonance pour une finalité quasi instantanée.',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['help', 'aide', 'how', 'comment'],
-    response: 'Je suis là pour vous guider dans Cosmorare ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Que souhaitez-vous explorer ?',
+    response: 'Je suis là pour vous guider dans Strangrz ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Vous pouvez aussi me demander de générer une image AI !',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   },
   {
     keywords: ['wall', 'post', 'social', 'feed', 'chat', 'mur'],
-    response: 'Le Mur est le réseau social décentralisé de Cosmorare. Partagez du texte, des objets certifiés, et tippez les publications avec des Cosmorares. Toutes les conversations sont chiffrées et anonymes.',
+    response: 'Le Mur est le réseau social décentralisé de Strangrz. Partagez du texte, des objets certifiés, et tippez les publications avec des Strangrz. Toutes les conversations sont chiffrées et anonymes.',
     suggestion: { label: 'Ouvrir le Mur', tab: 'wall' },
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Bonjour ! Je suis Cosmo, votre guide dans l\'univers Cosmorare コスモラレ. Je peux vous expliquer comment certifier un objet rare, miner des Cosmorares, utiliser le paiement, ou naviguer dans l\'écosystème.',
+    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz. Je peux vous expliquer comment certifier un objet rare, miner des Strangrz, utiliser le paiement, ou générer une oeuvre d\'art AI.',
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
-    response: 'Cosmorare (コスモラレ) est une plateforme de certification pour objets rares. Le Protocole Cosmorare crée des certificats d\'authenticité infalsifiables (CRCERT) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
+    response: 'Strangrz est une plateforme multi-chaîne de certification pour objets rares. Le Protocole Strangrz crée des certificats d\'authenticité infalsifiables (STCERT) en SZ-721 (Strangrz) et ERC-721 (Ethereum) pour n\'importe quel objet : cartes, sneakers, vinyles, art numérique... L\'app fonctionne offline ET online !',
   },
   {
-    keywords: ['token', 'warp', 'supply', 'tokenomics'],
-    response: 'Le Cosmorare (symbole : Ω) est le token natif de Cosmorare avec une supply fixe de 69 millions. On le gagne par le minage et il sert à certifier des objets, tipper les publications, et acheter sur la place de marché.',
+    keywords: ['token', 'warp', 'supply', 'tokenomics', 'stz', 'coin', 'monnaie', 'valeur', 'prix token', 'combien vaut', 'hexagone', '⬣'],
+    response: 'Le Strangrz (⬣), ticker STZ, est le token natif de Strangrz. Supply fixe : 69 millions. Valeur de référence : 1 STZ = 0,10 € (10 centimes). On le gagne par le minage (récompenses de 50 STZ/bloc qui diminuent via la Décroissance par Résonance basée sur le nombre d\'or φ), par airdrop (1 000 STZ pour chaque nouveau compte), ou par achat fiat (carte, PayPal, SEPA). Il sert à certifier des objets rares, tipper sur le Mur, acheter sur la Marketplace, et payer les royalties. Transactions : toujours gratuites, zéro gas !',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['paiement', 'payment', 'payer', 'acheter', 'buy', 'euro', 'carte', 'card', 'paypal', 'fiat'],
-    response: 'Cosmorare intègre une passerelle de paiement ! Achetez des Cosmorares par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Cosmorares contre des euros. Tout est intégré dans l\'app.',
+    response: 'Strangrz intègre une passerelle de paiement ! Achetez des Strangrz par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Strangrz contre des euros. Tout est intégré dans l\'app.',
     suggestion: { label: 'Passerelle de paiement', tab: 'fiat-gateway' },
   },
   {
     keywords: ['offline', 'hors ligne', 'internet', 'connexion'],
-    response: 'Cosmorare fonctionne 100% offline ! Grâce au service worker, l\'app se met en cache sur votre appareil. Vos certificats, votre wallet et vos données restent accessibles sans internet. À la reconnexion, tout se synchronise.',
+    response: 'Strangrz fonctionne 100% offline ! Grâce au service worker, l\'app se met en cache sur votre appareil. Vos certificats, votre wallet et vos données restent accessibles sans internet. À la reconnexion, tout se synchronise.',
     suggestion: { label: 'Paramètres', tab: 'settings' },
   },
   {
     keywords: ['privacy', 'anonymous', 'encrypt', 'secure', 'privé', 'chiffré', 'sécurité'],
-    response: 'La vie privée est au coeur de Cosmorare. Conversations chiffrées, identités pseudonymes, principes zero-knowledge. Vos données restent les vôtres.',
+    response: 'La vie privée est au coeur de Strangrz. Conversations chiffrées, identités pseudonymes, principes zero-knowledge. Vos données restent les vôtres.',
     suggestion: { label: 'Confidentialité', tab: 'privacy' },
   },
 ];
 
 function getResponse(input: string): { response: string; suggestion?: { label: string; tab: string } } {
   const lower = input.toLowerCase();
+
   for (const entry of COSMO_RESPONSES) {
     if (entry.keywords.some(kw => lower.includes(kw))) {
       return { response: entry.response, suggestion: entry.suggestion };
     }
   }
   return {
-    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le réseau CosmoMesh. Vous pouvez aussi consulter la section Aide.',
+    response: 'Bonne question ! Essayez de me poser des questions sur les wallets, le minage, les certificats d\'objets rares, le paiement, ou le réseau StrangrzMesh.',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   };
 }
@@ -93,7 +94,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     {
       id: 'welcome',
       role: 'cosmo',
-      text: 'Bienvenue sur Cosmorare コスモラレ ! Je suis Cosmo, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
+      text: 'Bienvenue sur Strangrz ! Je suis Doctor Strangrz, votre guide. Posez-moi n\'importe quelle question — wallets, minage, certificats d\'objets rares, paiement, réseau...',
       timestamp: Date.now(),
     },
   ]);
@@ -120,8 +121,9 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
     setInput('');
     setTyping(true);
 
+    const { response, suggestion } = getResponse(text);
+
     setTimeout(() => {
-      const { response, suggestion } = getResponse(text);
       const cosmoMsg: Message = {
         id: `cosmo-${Date.now()}`,
         role: 'cosmo',
@@ -135,10 +137,9 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
   };
 
   const quickActions = [
-    { label: 'C\'est quoi Cosmorare ?', query: 'C\'est quoi Cosmorare ?' },
-    { label: 'Comment miner ?', query: 'Comment miner des Cosmorares ?' },
+    { label: 'C\'est quoi Strangrz ?', query: 'C\'est quoi Strangrz ?' },
+    { label: 'Comment miner ?', query: 'Comment miner des Strangrz ?' },
     { label: 'Certifier un objet', query: 'Comment certifier un objet rare ?' },
-    { label: 'Paiement par carte', query: 'Comment acheter avec ma carte ?' },
   ];
 
   return (
@@ -162,6 +163,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
               }`}>
                 {msg.text}
               </p>
+
               {msg.suggestion && (
                 <button
                   onClick={() => onNavigate(msg.suggestion!.tab)}
@@ -201,6 +203,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                 onClick={() => {
                   setInput(action.query);
                   setTimeout(() => {
+                    setInput('');
                     const text = action.query;
                     const userMsg: Message = {
                       id: `user-${Date.now()}`,
@@ -210,18 +213,17 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                     };
                     setMessages(prev => [...prev, userMsg]);
                     setTyping(true);
+
+                    const { response, suggestion } = getResponse(text);
                     setTimeout(() => {
-                      const { response, suggestion } = getResponse(text);
-                      const cosmoMsg: Message = {
+                      setMessages(prev => [...prev, {
                         id: `cosmo-${Date.now()}`,
                         role: 'cosmo',
                         text: response,
                         timestamp: Date.now(),
                         suggestion,
-                      };
-                      setMessages(prev => [...prev, cosmoMsg]);
+                      }]);
                       setTyping(false);
-                      setInput('');
                     }, 800 + Math.random() * 1200);
                   }, 50);
                 }}
@@ -243,7 +245,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Posez votre question à Cosmo..."
+            placeholder="Posez votre question ou demandez une image AI..."
             className="flex-1 warp-input py-2.5"
             disabled={typing}
           />
@@ -260,7 +262,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           </button>
         </div>
         <p className="text-label opacity-30 mt-1.5 text-center">
-          Cosmo est votre guide IA Cosmorare. Réponses générées localement.
+          Doctor Strangrz — guide IA & générateur d'art AI Strangrz
         </p>
       </div>
     </div>

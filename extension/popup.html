@@ -261,7 +261,8 @@
       <div style="font-size:28px;margin-bottom:8px;">&#10022;</div>
       <div style="font-size:13px;font-weight:700;color:#c084fc;margin-bottom:4px;">Create Your Warp Wallet</div>
       <div class="text-xs text-gray mb-2">Ed25519 keypair + 1,000 &#937; airdrop</div>
-      <input class="input mb-2" id="create-alias" placeholder="Alias (optional)" style="text-align:center;">
+      <input class="input mb-1" id="create-alias" placeholder="Alias (optional)" style="text-align:center;">
+      <input class="input mb-2" id="create-password" type="password" placeholder="Password (min 6 chars)" style="text-align:center;">
       <button class="btn btn-full" id="btn-create">&#10022; Initialize Wallet</button>
     </div>
 
@@ -270,7 +271,7 @@
         <div class="level"><span class="symbol" id="w-symbol"></span> <span id="w-title"></span></div>
         <div id="w-alias" class="text-xxs text-gray"></div>
         <div class="amount"><span id="w-balance"></span> <span class="unit">&#937;</span></div>
-        <div class="label">COSMORARE ENERGY UNITS</div>
+        <div class="label">STRANGRZ ENERGY UNITS</div>
         <div id="w-admin" class="hidden mt-2"><span class="admin-badge">ADMIN</span></div>
       </div>
 
@@ -279,6 +280,11 @@
         <div class="address-panel">
           <code id="w-address"></code>
           <button class="btn btn-sm" id="btn-copy">Copy</button>
+          <button class="btn btn-sm" id="btn-lock" title="Lock/Unlock"><span id="w-lock-status">&#128274;</span></button>
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          <button class="btn btn-sm" id="btn-export" style="flex:1;">Export</button>
+          <button class="btn btn-sm" id="btn-import" style="flex:1;">Import</button>
         </div>
       </div>
 
@@ -317,14 +323,14 @@
   <!-- Send Tab -->
   <div class="content hidden" id="tab-send">
     <div class="panel">
-      <div style="font-size:13px;font-weight:700;color:#c084fc;margin-bottom:4px;">&#8599; Send Warps</div>
+      <div style="font-size:13px;font-weight:700;color:#c084fc;margin-bottom:4px;">&#8599; Send STZ</div>
       <div class="text-xxs text-gray mb-2">
         Balance: <span class="text-energy" id="s-balance"></span>
       </div>
       <div class="send-form">
         <div>
           <div class="text-xxs text-gray mb-1">RECIPIENT ADDRESS</div>
-          <input class="input" id="s-to" placeholder="CW...">
+          <input class="input" id="s-to" placeholder="STZ...">
         </div>
         <div>
           <div class="text-xxs text-gray mb-1">AMOUNT (&#937;)</div>
@@ -355,8 +361,8 @@
         &#8226; 7 fractal validation layers<br>
         &#8226; Resonance Consensus protocol<br>
         &#8226; Resonance Decay (golden ratio curve)<br>
-        &#8226; 69,000,000 CW total supply<br>
-        &#8226; 1,000 CW airdrop per new wallet<br>
+        &#8226; 69,000,000 STZ total supply<br>
+        &#8226; 1,000 STZ airdrop per new wallet<br>
         &#8226; 7-level account hierarchy<br>
         &#8226; Annual 365-day streak rewards<br>
         &#8226; Rate limiting &amp; pattern detection<br>

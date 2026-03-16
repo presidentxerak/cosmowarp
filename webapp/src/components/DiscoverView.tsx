@@ -52,7 +52,7 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
   };
 
   const handleViewUser = (address: string) => {
-    sessionStorage.setItem('cosmorare_view_user', address);
+    sessionStorage.setItem('strangrz_view_user', address);
     onNavigate('user-profile');
   };
 

@@ -1,7 +1,7 @@
 /**
- * Cosmorare Chain Sync — Bridges CosmoChain to Supabase for Multi-Node Persistence
+ * Strangrz Chain Sync — Bridges StrangrzChain to Supabase for Multi-Node Persistence
  *
- * This module connects the local CosmoChain (IndexedDB/localStorage) to the
+ * This module connects the local StrangrzChain (IndexedDB/localStorage) to the
  * Supabase backend, enabling:
  *
  * 1. Block propagation — new blocks are pushed to Supabase and pulled by other nodes
@@ -10,7 +10,7 @@
  * 4. State sync on startup — pull missing blocks from Supabase on login
  *
  * Architecture:
- *   Local CosmoChain → chain-sync → Supabase (shared state)
+ *   Local StrangrzChain → chain-sync → Supabase (shared state)
  *                    ← Supabase Realtime (push updates)
  */
 
@@ -113,7 +113,7 @@ export class ChainSync {
         validator: block.validator,
         tx_count: block.txCount,
         processing_time_ms: block.processingTimeMs,
-        cosmo_code_svg: block.cosmoCodeSVG || null,
+        strangrz_code_svg: block.strangrzCodeSVG || null,
         created_at: block.timestamp,
       }, { onConflict: 'block_key' });
 
@@ -254,7 +254,7 @@ export class ChainSync {
         timestamp: Number(row.created_at),
         validator: row.validator as string,
         transactions: [],
-        cosmoCodeSVG: (row.cosmo_code_svg as string) || undefined,
+        strangrzCodeSVG: (row.strangrz_code_svg as string) || undefined,
         hash: row.block_hash as string,
         gasUsed: 0 as const,
         txCount: row.tx_count as number,
@@ -479,7 +479,7 @@ export class ChainSync {
 //   validator TEXT NOT NULL,
 //   tx_count INTEGER DEFAULT 0,
 //   processing_time_ms REAL DEFAULT 0,
-//   cosmo_code_svg TEXT,
+//   strangrz_code_svg TEXT,
 //   created_at BIGINT NOT NULL
 // );
 // CREATE INDEX idx_chain_blocks_shard ON chain_blocks(shard_id, block_number);

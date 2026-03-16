@@ -1,5 +1,5 @@
 /**
- * Cosmorare Phygital Authentication System
+ * Strangrz Phygital Authentication System
  *
  * Generates printable hash signatures from Wart transactions
  * that creators can physically attach to their artworks.
@@ -26,7 +26,7 @@ export interface PhygitalCertificate {
 
 // ─── Storage ───────────────────────────────────────────
 
-const STORAGE_KEY = 'cosmorare_phygital_certs';
+const STORAGE_KEY = 'strangrz_phygital_certs';
 
 function loadCerts(): PhygitalCertificate[] {
   try {
@@ -134,7 +134,7 @@ export function generatePrintableSVG(cert: PhygitalCertificate): string {
   <text x="30" y="210" font-size="7" fill="#999999">${cert.certHash}</text>
 
   <!-- Logo -->
-  <text x="370" y="225" text-anchor="end" font-size="8" fill="#999999">Cosmorare</text>
+  <text x="370" y="225" text-anchor="end" font-size="8" fill="#999999">Strangrz</text>
 </svg>`;
 }
 
@@ -350,7 +350,7 @@ export function generateSignaturePDF(data: SignatureData): void {
     }
   };
 
-  logoImg.src = '/cosmowarp-logo-black.svg';
+  logoImg.src = '/strangrz-logo-black.svg';
 }
 
 function escapeXml(str: string): string {

@@ -1,5 +1,5 @@
 /**
- * Cosmorare Resonance Consensus — Fractal Layer Consensus with PBFT
+ * Strangrz Resonance Consensus — Fractal Layer Consensus with PBFT
  *
  * Consensus modes (honest about what each provides):
  *
@@ -22,8 +22,8 @@
  * on top of PBFT — it determines vote weight within the protocol, not a
  * replacement for it.
  *
- * ─── CosmoChain Integration ───────────────────────────────
- * With CosmoChain, validators now participate in shard-level consensus.
+ * ─── StrangrzChain Integration ───────────────────────────────
+ * With StrangrzChain, validators now participate in shard-level consensus.
  * Each validator specializes in 1-3 shards based on their affinity.
  * Shard blocks achieve finality through Resonance Consensus.
  * Beacon blocks achieve cross-shard consensus every 10 shard blocks.
@@ -40,7 +40,7 @@
  */
 
 import { sha256, signTransaction, verifySignature } from './crypto';
-import { type MeshTransaction, MeshLayer } from './cosmomesh';
+import { type MeshTransaction, MeshLayer } from './strangrmesh';
 
 // ─── Validator State ─────────────────────────────────────
 
@@ -48,7 +48,7 @@ export interface Validator {
   id: string;                      // Address of the validator
   publicKey: string;
   privateKey?: string;             // Private key for signing votes (only for local validator)
-  stake: number;                   // Staked Ω (weight in consensus)
+  stake: number;                   // Staked ⬣ (weight in consensus)
   layerAffinities: number[];       // Affinity score per layer [0, 1]
   reputation: number;              // Trust score [0, 1]
   validationsCount: number;
@@ -536,8 +536,7 @@ export class ResonanceConsensus {
     const totalStake = this.getTotalStake();
     if (totalStake === 0) return;
 
-    // Compute weighted resonance from all votes
-    let totalResonance = 0;
+    // Compute weighted approval from all votes
     let approveWeight = 0;
     let totalWeight = 0;
 
@@ -550,7 +549,6 @@ export class ResonanceConsensus {
 
       if (vote.approve) {
         approveWeight += weight;
-        totalResonance += vote.resonanceContribution;
       }
     }
 

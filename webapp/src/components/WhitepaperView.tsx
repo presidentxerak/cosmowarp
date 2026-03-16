@@ -7,7 +7,7 @@ const NAV: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: "Vue d\u2019ensemble", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg> },
   { id: 'how', label: 'Comment ça marche', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg> },
   { id: 'certificates', label: 'Certificats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg> },
-  { id: 'tokenomics', label: 'Cosmorare (Ω)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg> },
+  { id: 'tokenomics', label: 'Strangrz (⬣)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg> },
   { id: 'hierarchy', label: 'Niveaux', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> },
   { id: 'security', label: 'Sécurité', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg> },
   { id: 'roadmap', label: 'Feuille de route', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> },
@@ -27,8 +27,8 @@ export default function WhitepaperView() {
           <div className="flex justify-center mb-4">
             <Logo className="w-16 sm:w-20 h-16 sm:h-20 animate-float" />
           </div>
-          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">{'コスモラレ'}</h1>
-          <p className="text-base sm:text-base opacity-50 mb-1">Cosmorare Protocole</p>
+          <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">Strangrz</h1>
+          <p className="text-base sm:text-base opacity-50 mb-1">Strangrz Protocole</p>
           <p className="text-body-sm opacity-40 max-w-md mx-auto">
             La plateforme de certification pour objets rares.
             Certifiez, échangez et collectionnez en toute confiance.
@@ -106,20 +106,20 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
 function OverviewSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg>} title={"Vue d\u2019ensemble"} subtitle="Cosmorare en quelques mots" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg>} title={"Vue d\u2019ensemble"} subtitle="Strangrz en quelques mots" />
       <P>
-        <span className="opacity-80 font-bold">Cosmorare</span> est une <span className="opacity-80 font-bold">plateforme de certification pour objets rares</span>.
+        <span className="opacity-80 font-bold">Strangrz</span> est une <span className="opacity-80 font-bold">plateforme multi-chaîne de certification pour objets rares</span>.
         Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat
-        d'authenticité infalsifiable. C'est exactement ce que Cosmorare propose.
+        d'authenticité infalsifiable. C'est exactement ce que Strangrz propose, avec un support natif des standards <span className="opacity-80 font-bold">SZ-721 (Strangrz)</span> et <span className="opacity-80 font-bold">ERC-721 (Ethereum)</span>.
       </P>
 
       <H3>Comment ça marche en 4 étapes</H3>
       <div className="space-y-3 mb-4">
         {[
           ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
-          ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Cosmorare génère un certificat CRCERT infalsifiable avec empreinte numérique et signature cryptographique.'],
-          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Cosmorares certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Cosmorare (Ω).'],
-          ['4', 'Collectionnez en confiance', 'Chaque Cosmorare a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
+          ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Strangrz génère un certificat STCERT infalsifiable (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte numérique et signature cryptographique.'],
+          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Strangrz certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Strangrz (⬣).'],
+          ['4', 'Collectionnez en confiance', 'Chaque Strangrz a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="text-title-md opacity-80 shrink-0 w-8 text-center font-bold">{num}</span>
@@ -131,12 +131,12 @@ function OverviewSection() {
         ))}
       </div>
 
-      <H3>Pourquoi Cosmorare ?</H3>
+      <H3>Pourquoi Strangrz ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Cosmorares, vérifier un certificat : tout est gratuit.'],
-          ['✓', 'Infalsifiable', 'Les certificats CRCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
-          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Cosmorare (Ω). Pas besoin d\u2019exchange crypto."],
+          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Strangrz, vérifier un certificat : tout est gratuit.'],
+          ['✓', 'Infalsifiable', 'Les certificats STCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
+          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Strangrz (⬣). Pas besoin d\u2019exchange crypto."],
           ['✓', 'Décentralisé', "Vos données vous appartiennent. Pas d\u2019intermédiaire, pas de banque."],
           ['✓', 'Hors ligne', "L\u2019app fonctionne même sans internet grâce au mode PWA."],
         ].map(([icon, title, desc]) => (
@@ -158,38 +158,38 @@ function OverviewSection() {
 function HowItWorksSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>} title="Comment ça marche" subtitle="Le Cosmorare Protocole expliqué simplement" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>} title="Comment ça marche" subtitle="Le Strangrz Protocole expliqué simplement" />
       <P>
-        Cosmorare repose sur un ensemble de technologies qui travaillent ensemble pour rendre
+        Strangrz repose sur un ensemble de technologies qui travaillent ensemble pour rendre
         la certification d'objets rares <span className="opacity-80">rapide, gratuite et sécurisée</span>.
         Voici comment chaque pièce s'emboîte.
       </P>
 
-      <H3>Le réseau : CosmoMesh</H3>
+      <H3>Le réseau : StrangrzMesh</H3>
       <P>
         Imaginez un filet où chaque nœud est connecté à plusieurs autres.
-        C'est le <span className="opacity-80 font-bold">CosmoMesh</span> : au lieu d'empiler des blocs
+        C'est le <span className="opacity-80 font-bold">StrangrzMesh</span> : au lieu d'empiler des blocs
         un par un (comme une blockchain classique), les transactions sont validées
         <span className="opacity-80"> en parallèle</span> sur 7 couches simultanées.
         Résultat : confirmation rapide et zéro frais.
       </P>
       <div className="grid grid-cols-3 gap-2 mb-4">
         <Stat label="Couches" value="7" />
-        <Stat label="Frais" value="0 Ω" />
+        <Stat label="Frais" value="0 ⬣" />
         <Stat label="Confirmation" value="~15s" />
       </div>
 
-      <H3>Le stockage : CosmoCode</H3>
+      <H3>Le stockage : StrangrzCode</H3>
       <P>
         Chaque certificat contient une représentation visuelle de l'objet certifié.
-        <span className="opacity-80 font-bold"> CosmoCode</span> compresse ces images
+        <span className="opacity-80 font-bold"> StrangrzCode</span> compresse ces images
         via 7 couches de compression pour les stocker directement sur le réseau.
         Pas de serveur externe qui pourrait disparaître : votre certificat est permanent et autosuffisant.
       </P>
 
-      <H3>L'exécution : CosmoChain</H3>
+      <H3>L'exécution : StrangrzChain</H3>
       <P>
-        <span className="opacity-80 font-bold">CosmoChain</span> est le moteur d'exécution.
+        <span className="opacity-80 font-bold">StrangrzChain</span> est le moteur d'exécution.
         7 shards (zones de traitement) fonctionnent en parallèle dans votre navigateur
         grâce aux Web Workers. Même sur un smartphone, les transactions se traitent
         en arrière-plan sans ralentir l'interface.
@@ -216,30 +216,31 @@ function HowItWorksSection() {
         Quand vous certifiez un objet rare, voici ce qui se passe en coulisses :
       </P>
       <div className="p-4 rounded-none bg-current/5 mb-4 text-body-sm opacity-60 space-y-1">
-        <p>1. Votre photo est compressée par <span className="font-bold">CosmoCode</span> (7 couches de compression)</p>
-        <p>2. Un certificat CRCERT est généré avec empreinte SHA-256 + signature Ed25519</p>
-        <p>3. Le tout est validé par le <span className="font-bold">CosmoMesh</span> (7 couches parallèles)</p>
-        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">CosmoChain</span></p>
+        <p>1. Votre photo est compressée par <span className="font-bold">StrangrzCode</span> (7 couches de compression)</p>
+        <p>2. Un certificat STCERT est généré (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 + signature Ed25519</p>
+        <p>3. Le tout est validé par le <span className="font-bold">StrangrzMesh</span> (7 couches parallèles)</p>
+        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">StrangrzChain</span></p>
         <p>5. Vous recevez un certificat vérifiable à tout moment par n'importe qui</p>
       </div>
     </div>
   );
 }
 
-// ─── Certificats CRCERT ─────────────────────────────────
+// ─── Certificats STCERT ─────────────────────────────────
 
 function CertificatesSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg>} title="Certificats CRCERT" subtitle="Comment vos objets rares sont protégés" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" /></svg>} title="Certificats STCERT" subtitle="Comment vos objets rares sont protégés" />
       <P>
-        Chaque objet certifié sur Cosmorare reçoit un <span className="opacity-80 font-bold">CRCERT</span> (Certificat Cosmorare).
-        C'est une preuve mathématique que cet objet est authentique et qu'il vous appartient.
+        Chaque objet certifié sur Strangrz reçoit un <span className="opacity-80 font-bold">STCERT</span> (Certificat Strangrz),
+        émis en tant que token <span className="opacity-80 font-bold">SZ-721</span> sur la chaîne Strangrz et <span className="opacity-80 font-bold">ERC-721</span> sur Ethereum.
+        C'est une preuve mathématique multi-chaîne que cet objet est authentique et qu'il vous appartient.
       </P>
 
-      <H3>Qu'est-ce qu'un CRCERT contient ?</H3>
+      <H3>Qu'est-ce qu'un STCERT contient ?</H3>
       <div className="p-4 rounded-none bg-current/5 mb-4 font-mono text-body-sm opacity-60 space-y-1">
-        <p>CRCERT = {'{'}</p>
+        <p>STCERT = {'{'}</p>
         <p>  empreinte: SHA-256(photo de l'objet),</p>
         <p>  signature: Ed25519(votre clé privée),</p>
         <p>  horodatage: date et heure précises,</p>
@@ -267,15 +268,15 @@ function CertificatesSection() {
 
       <H3>Comment vérifier un certificat ?</H3>
       <P>
-        Sur n'importe quelle Cosmorare, cliquez sur <span className="opacity-80 font-bold">"Vérifier"</span>.
+        Sur n'importe quelle Strangrz, cliquez sur <span className="opacity-80 font-bold">"Vérifier"</span>.
         Le système recalcule l'empreinte de l'objet et la compare au certificat d'origine.
         Si tout correspond : <span className="opacity-80">✔ Authentique</span>.
         Si quelque chose a été modifié : ✘ le certificat est invalidé.
       </P>
 
-      <H3>Rareté des Cosmorares</H3>
+      <H3>Rareté des Strangrz</H3>
       <P>
-        Chaque Cosmorare possède un niveau de rareté calculé automatiquement selon le type d'édition
+        Chaque Strangrz possède un niveau de rareté calculé automatiquement selon le type d'édition
         et la disponibilité :
       </P>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
@@ -294,7 +295,7 @@ function CertificatesSection() {
         ))}
       </div>
       <P>
-        Bonus : les Cosmorares à durée limitée gagnent un niveau de rareté supplémentaire dans les
+        Bonus : les Strangrz à durée limitée gagnent un niveau de rareté supplémentaire dans les
         dernières 24 heures avant l'expiration.
       </P>
     </div>
@@ -306,27 +307,27 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Cosmorare (Ω)" subtitle="La monnaie de l'écosystème Cosmorare" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (⬣)" subtitle="La monnaie de l'écosystème Strangrz" />
       <P>
-        Le <span className="opacity-80 font-bold">Cosmorare (Ω)</span> est la monnaie native de Cosmorare.
+        Le <span className="opacity-80 font-bold">Strangrz (⬣)</span> est la monnaie native de Strangrz.
         Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
-        Aucun Cosmorare supplémentaire ne sera jamais créé.
+        Aucun Strangrz supplémentaire ne sera jamais créé.
       </P>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <Stat label="Offre totale" value="69M Ω" />
+        <Stat label="Offre totale" value="69M ⬣" />
         <Stat label="Minage" value="60%" />
         <Stat label="Fondation" value="20%" />
         <Stat label="Communauté" value="20%" />
       </div>
 
-      <H3>Comment obtenir des Cosmorares ?</H3>
+      <H3>Comment obtenir des Strangrz ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          [<svg key="mine" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Cosmorares. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
-          [<svg key="buy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Acheter', "Achetez des Cosmorares directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
-          [<svg key="sell" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 'Vendre des Cosmorares', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Cosmorares.'],
-          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrops', 'Des Cosmorares sont distribués gratuitement à la communauté active.'],
+          [<svg key="mine" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Strangrz. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
+          [<svg key="buy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Acheter', "Achetez des Strangrz directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
+          [<svg key="sell" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 'Vendre des Strangrz', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Strangrz.'],
+          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrops', 'Des Strangrz sont distribués gratuitement à la communauté active.'],
         ].map(([icon, title, desc]) => (
           <div key={title as string} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="opacity-60 shrink-0 mt-0.5">{icon}</span>
@@ -340,7 +341,7 @@ function TokenomicsSection() {
 
       <H3>Décroissance Résonante</H3>
       <P>
-        Au lieu du "halving" brutal du Bitcoin (récompense divisée par 2 tous les 4 ans), Cosmorare
+        Au lieu du "halving" brutal du Bitcoin (récompense divisée par 2 tous les 4 ans), Strangrz
         utilise une courbe douce basée sur le <span className="opacity-80 font-bold">nombre d'or (φ = 1.618)</span>.
         Les premiers mineurs sont récompensés généreusement, mais la récompense ne s'effondre jamais
         brutalement. La transition est fluide et prévisible.
@@ -348,7 +349,7 @@ function TokenomicsSection() {
 
       <H3>Zéro frais — toujours</H3>
       <P>
-        Envoyer des Cosmorares, certifier un objet, vérifier un certificat : tout est gratuit.
+        Envoyer des Strangrz, certifier un objet, vérifier un certificat : tout est gratuit.
         Le réseau se finance par la récompense de minage, pas par les frais des utilisateurs.
       </P>
     </div>
@@ -360,9 +361,9 @@ function TokenomicsSection() {
 function HierarchySection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>} title="Niveaux" subtitle="Plus vous utilisez Cosmorare, plus vous êtes récompensé" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>} title="Niveaux" subtitle="Plus vous utilisez Strangrz, plus vous êtes récompensé" />
       <P>
-        Cosmorare récompense l'engagement avec un système de <span className="opacity-80 font-bold">7 niveaux</span>.
+        Strangrz récompense l'engagement avec un système de <span className="opacity-80 font-bold">7 niveaux</span>.
         Plus vous certifiez, échangez et minez, plus vous montez et plus vos récompenses augmentent.
       </P>
 
@@ -394,7 +395,7 @@ function HierarchySection() {
 
       <H3>Bonus de série</H3>
       <P>
-        Utilisez Cosmorare plusieurs jours consécutifs et vos récompenses augmentent.
+        Utilisez Strangrz plusieurs jours consécutifs et vos récompenses augmentent.
         Après 7 jours consécutifs, vous recevez un bonus spécial.
       </P>
     </div>
@@ -409,15 +410,15 @@ function SecuritySection() {
       <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>} title="Sécurité" subtitle="Vos données et certificats sont protégés" />
       <P>
         Certifier des objets rares exige un haut niveau de confiance.
-        Voici comment Cosmorare protège vos données.
+        Voici comment Strangrz protège vos données.
       </P>
 
       <div className="space-y-3 mb-4">
         {[
-          [<svg key="enc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>, 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Cosmorare ne peut pas lire vos messages.'],
-          [<svg key="cert" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4"/><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>, 'Certificats infalsifiables', 'Les CRCERT combinent SHA-256 (empreinte) et Ed25519 (signature). Modifier un seul octet invalide le certificat. La vérification est instantanée.'],
+          [<svg key="enc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>, 'Chiffrement de bout en bout', 'Vos messages sur le Mur sont chiffrés avec AES-GCM. Vos clés privées ne quittent jamais votre appareil. Même Strangrz ne peut pas lire vos messages.'],
+          [<svg key="cert" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4"/><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>, 'Certificats infalsifiables — multi-chaîne', 'Les STCERT combinent SHA-256 (empreinte) et Ed25519 (signature), émis en SZ-721 (Strangrz) et ERC-721 (Ethereum). Modifier un seul octet invalide le certificat. La vérification est instantanée sur les deux chaînes.'],
           [<svg key="pwa" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>, 'Mode hors ligne (PWA)', "L\u2019app fonctionne sans internet. Consultez vos certificats et pr\u00e9parez des transactions hors ligne. Tout se synchronise automatiquement \u00e0 la reconnexion."],
-          [<svg key="pay" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Paiement intégré', 'Achetez des Cosmorares par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
+          [<svg key="pay" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Paiement intégré', 'Achetez des Strangrz par carte, PayPal, SEPA, Apple Pay ou Google Pay. Aucun exchange tiers nécessaire.'],
         ].map(([icon, title, desc]) => (
           <div key={title as string} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center gap-2 mb-2">
@@ -453,21 +454,21 @@ function SecuritySection() {
 function RoadmapSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} title="Feuille de route" subtitle="Évolution prévue du Cosmorare Protocole" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} title="Feuille de route" subtitle="Évolution prévue du Strangrz Protocole" />
       <P>
-        Cosmorare est un projet vivant qui évolue continuellement.
+        Strangrz est un projet vivant qui évolue continuellement.
       </P>
 
       <div className="space-y-4 mb-4">
         {[
           ['Phase 1 — Genèse', 'T1 2026', [
-            'Lancement du réseau CosmoMesh',
-            'Premiers certificats CRCERT',
+            'Lancement du réseau StrangrzMesh',
+            'Premiers certificats STCERT multi-chaîne (SZ-721 + ERC-721)',
             'Application PWA avec mode hors ligne',
             'Passerelle de paiement fiat',
           ]],
           ['Phase 2 — Expansion', 'T2 2026', [
-            'Ouverture de la marketplace Cosmorares',
+            'Ouverture de la marketplace Strangrz',
             'Lancement du Mur (réseau social chiffré)',
             "Support de toutes cat\u00e9gories d\u2019objets rares",
             'Intégration SEPA, Apple Pay et Google Pay',
@@ -479,7 +480,7 @@ function RoadmapSection() {
             'Application mobile native',
           ]],
           ['Phase 4 — Cosmos', '2027+', [
-            "Interop\u00e9rabilit\u00e9 avec d\u2019autres protocoles",
+            "Interop\u00e9rabilit\u00e9 \u00e9tendue avec d\u2019autres protocoles et chaînes EVM",
             "Certification d\u2019objets physiques via NFC et QR codes",
             "IA pour la d\u00e9tection de contrefaçons",
             "\u00c9cosyst\u00e8me d\u2019applications tierces",
@@ -505,7 +506,7 @@ function RoadmapSection() {
       <H3>Rejoignez l'aventure</H3>
       <P>
         Que vous soyez collectionneur de cartes Pokémon, amateur de sneakers, passionné de vinyles
-        ou fan d'art numérique, Cosmorare est fait pour vous.
+        ou fan d'art numérique, Strangrz est fait pour vous.
         Chaque objet rare mérite un certificat infalsifiable.
       </P>
     </div>

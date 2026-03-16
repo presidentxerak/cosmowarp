@@ -1,5 +1,5 @@
 -- ============================================================
--- Cosmorare — Full Supabase Schema (Production)
+-- Strangrz — Full Supabase Schema (Production)
 -- Run this in your Supabase SQL Editor to set up all tables,
 -- storage buckets, RLS policies, and realtime subscriptions.
 -- ============================================================
@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS warts (
   cert_id             TEXT,
   content_fingerprint TEXT,
   creator_signature   TEXT,
-  -- CosmoCode On-Chain SVG
+  -- StrangrzCode On-Chain SVG
   on_chain_svg        TEXT,
-  cosmo_code_id       TEXT,
+  strangrz_code_id       TEXT,
   compression_ratio   NUMERIC,
   on_chain_tx_id      TEXT,
   storage_mode        TEXT DEFAULT 'hybrid', -- local | onchain | hybrid
