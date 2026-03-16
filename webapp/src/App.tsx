@@ -199,7 +199,7 @@ function App() {
         <BackgroundErrorBoundary>
           <Suspense fallback={null}><CosmicBackground /></Suspense>
         </BackgroundErrorBoundary>
-        <div className="min-h-screen min-h-[100dvh] relative z-10 flex flex-col">
+        <div className="min-h-screen min-h-[-webkit-fill-available] supports-[min-height:100dvh]:min-h-[100dvh] relative z-10 flex flex-col">
           {/* Top bar - sticky search + create */}
           <TopBar onNavigate={navigate} />
 

@@ -1,12 +1,14 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#000000" />
     <meta name="color-scheme" content="dark light" />
+    <!-- Restore saved theme before React hydration to prevent flash of wrong color -->
+    <script>try{var t=localStorage.getItem('strangrz_theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 
     <!-- SEO Meta -->
     <title>Strangrz — Protocole et marketplace multi-chaîne de certification pour œuvres rares</title>

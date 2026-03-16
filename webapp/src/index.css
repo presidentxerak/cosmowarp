@@ -27,12 +27,15 @@
     @apply bg-cosmic-900 font-mono m-0;
     color: #ffffff;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
     font-size: 18px;
     line-height: 1.6;
+  }
+  @supports (min-height: 100dvh) {
+    body { min-height: 100dvh; }
   }
 }
 
@@ -210,6 +213,7 @@
 
 .glass-panel {
   background: rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0;
@@ -305,11 +309,10 @@ main > div > * {
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.3); }
 
 /* ─── Safe area for mobile notches ───────────────────── */
+/* Applied to #root instead of body to avoid layout shift on Safari */
 
 @supports (padding: env(safe-area-inset-bottom)) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+  #root {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
@@ -381,6 +384,7 @@ main > div > * {
 
 .card {
   background: rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0;
@@ -495,6 +499,7 @@ main > div > * {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(20, 20, 25, 0.95);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   color: rgba(255, 255, 255, 0.85);
   padding: 10px 14px;

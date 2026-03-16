@@ -43,18 +43,43 @@ function dismissRecoveryReminderStorage(): void {
 // ─── Session persistence ─────────────────────────────────
 // Store private key in sessionStorage so the user stays logged in
 // across page refreshes (cleared automatically when tab closes).
+// Safari ITP / private mode can silently clear or block sessionStorage,
+// so we keep an in-memory fallback to survive the current session.
 const SESSION_PK_KEY = 'strangrz_session_pk';
+let _sessionPkMemory: string | null = null;
+
+function isSessionStorageAvailable(): boolean {
+  try {
+    const k = '__cw_ss_test__';
+    sessionStorage.setItem(k, '1');
+    sessionStorage.removeItem(k);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function saveSessionKey(pk: string): void {
-  try { sessionStorage.setItem(SESSION_PK_KEY, pk); } catch { /* quota */ }
+  _sessionPkMemory = pk;
+  try { if (isSessionStorageAvailable()) sessionStorage.setItem(SESSION_PK_KEY, pk); } catch { /* quota */ }
 }
 
 function loadSessionKey(): string | null {
-  try { return sessionStorage.getItem(SESSION_PK_KEY); } catch { return null; }
+  try {
+    if (isSessionStorageAvailable()) {
+      const stored = sessionStorage.getItem(SESSION_PK_KEY);
+      if (stored) {
+        _sessionPkMemory = stored;
+        return stored;
+      }
+    }
+  } catch { /* ignore */ }
+  return _sessionPkMemory;
 }
 
 function clearSessionKey(): void {
-  try { sessionStorage.removeItem(SESSION_PK_KEY); } catch { /* ignore */ }
+  _sessionPkMemory = null;
+  try { if (isSessionStorageAvailable()) sessionStorage.removeItem(SESSION_PK_KEY); } catch { /* ignore */ }
 }
 
 interface WalletContextType {
