@@ -128,7 +128,7 @@ export default function MarketplaceView() {
   const createAudioBlobUrl = useBlobUrl(mediaType === 'audio' ? imageData : undefined);
 
   // Search
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
 
   // Buy / List state
   const [buying, setBuying] = useState(false);
