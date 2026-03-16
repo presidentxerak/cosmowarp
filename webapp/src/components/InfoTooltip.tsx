@@ -7,7 +7,7 @@ interface InfoTooltipProps {
 
 export default function InfoTooltip({ text, align = 'center' }: InfoTooltipProps) {
   const [show, setShow] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const wrapRef = useRef<HTMLSpanElement>(null);
 
   const handleEnter = () => {

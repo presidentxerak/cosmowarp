@@ -37,7 +37,7 @@ export default function MineView() {
   const [phase, setPhase] = useState<MiningPhase>('config');
   const [progress, setProgress] = useState<MiningProgress | null>(null);
   const [lastReward, setLastReward] = useState<number | null>(null);
-  const [lastHash, setLastHash] = useState<string | null>(null);
+  const [, setLastHash] = useState<string | null>(null);
   const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<MiningHistoryEntry[]>([]);
