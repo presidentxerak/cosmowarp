@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
@@ -6,8 +6,24 @@ import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import * as sync from '../lib/supabase-sync';
-import { fetchSocialProfile, fetchProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
+import { fetchSocialProfile, fetchProfile, fetchFollowers, fetchFollowing, fetchAllPosts } from '../lib/supabase-db';
+import { getMediaUrl } from '../lib/supabase-storage';
 import HexAvatar from './HexAvatar';
+
+/** Convert base64 data URL to blob URL for reliable video/audio playback on Safari */
+function dataUrlToBlobUrl(dataUrl: string): string {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+  try {
+    const [header, b64] = dataUrl.split(',');
+    const mime = header.match(/data:(.*?);/)?.[1] || 'video/mp4';
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  } catch {
+    return dataUrl;
+  }
+}
 
 type Tab = 'posts' | 'created' | 'collection' | 'media';
 
@@ -138,11 +154,74 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     }
 
     const chatEngine = CosmoChatEngine.load();
-    setPosts(chatEngine.getUserPosts(addr));
+    const localPosts = chatEngine.getUserPosts(addr);
+    setPosts(localPosts);
 
     // Use warts from context (already has media loaded from IndexedDB)
     setCreated(warts.filter(w => w.creator === addr));
     setCollection(warts.filter(w => w.owner === addr));
+
+    // ── Fetch remote data for cross-device visibility ──
+    // Fetch cloud warts for this user (created + owned)
+    Promise.all([
+      sync.pullWarts({ creator: addr }).catch(() => []),
+      sync.pullWarts({ owner: addr }).catch(() => []),
+    ]).then(([cloudCreated, cloudOwned]) => {
+      const localIds = new Set(warts.map(w => w.id));
+      const toWart = (row: Record<string, unknown>): Wart => ({
+        id: row.id as string,
+        title: (row.title as string) || '',
+        description: (row.description as string) || '',
+        imageData: row.media_path ? getMediaUrl(row.media_path as string) : '',
+        mediaType: (row.media_type as Wart['mediaType']) || 'image',
+        creator: (row.creator as string) || '',
+        owner: (row.owner as string) || '',
+        price: row.price != null ? Number(row.price) : null,
+        listed: (row.listed as boolean) || false,
+        createdAt: Number(row.created_at) || Date.now(),
+        history: [],
+        royaltyPercent: Number(row.royalty_percent) || 5,
+        comments: [],
+        editionType: (row.edition_type as Wart['editionType']) || 'unique',
+        maxEditions: row.max_editions != null ? Number(row.max_editions) : null,
+        editionNumber: Number(row.edition_number) || 1,
+        availableUntil: row.available_until != null ? Number(row.available_until) : null,
+        certId: (row.cert_id as string) || undefined,
+        contentFingerprint: (row.content_fingerprint as string) || undefined,
+        creatorSignature: (row.creator_signature as string) || undefined,
+        storageMode: (row.storage_mode as Wart['storageMode']) || 'hybrid',
+        vaultBackup: false,
+      });
+
+      const remoteCreated = cloudCreated.filter(r => !localIds.has(r.id as string)).map(toWart);
+      const remoteOwned = cloudOwned.filter(r => !localIds.has(r.id as string)).map(toWart);
+
+      const localCreated = warts.filter(w => w.creator === addr);
+      const localCollection = warts.filter(w => w.owner === addr);
+
+      if (remoteCreated.length > 0) setCreated([...localCreated, ...remoteCreated]);
+      if (remoteOwned.length > 0) setCollection([...localCollection, ...remoteOwned]);
+    }).catch(() => {});
+
+    // Fetch cloud posts for this user
+    fetchAllPosts().then(cloudPosts => {
+      const userCloudPosts = cloudPosts.filter(p => p.author === addr);
+      const localPostIds = new Set(localPosts.map(p => p.id));
+      const newPosts: ChatPost[] = userCloudPosts
+        .filter(cp => !localPostIds.has(cp.id))
+        .map(cp => ({
+          ...cp,
+          mediaType: cp.mediaType as ChatPost['mediaType'],
+          tips: {},
+          rewarps: [],
+          comments: [],
+          bookmarkedBy: [],
+          isRewarp: false,
+        }));
+      if (newPosts.length > 0) {
+        setPosts(prev => [...prev, ...newPosts].sort((a, b) => b.timestamp - a.timestamp));
+      }
+    }).catch(() => {});
   };
 
   // Load target user on mount
@@ -286,11 +365,13 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   };
 
   // ─── Wart Card with social bar ─────────────────────────
-  const WartCard = ({ wart }: { wart: Wart }) => (
+  const WartCard = ({ wart }: { wart: Wart }) => {
+    const videoBlobUrl = useMemo(() => wart.mediaType === 'video' && wart.imageData ? dataUrlToBlobUrl(wart.imageData) : '', [wart.imageData, wart.mediaType]);
+    return (
     <div className="glass-panel overflow-hidden cursor-pointer" onClick={() => handleViewWart(wart)}>
       <div className="aspect-square overflow-hidden bg-current/5">
         {wart.mediaType === 'video' && wart.imageData ? (
-          <video src={wart.imageData} className="w-full h-full object-cover" muted playsInline />
+          <video src={videoBlobUrl || wart.imageData} className="w-full h-full object-cover" muted playsInline preload="metadata" />
         ) : wart.mediaType === 'audio' && wart.audioCover ? (
           <img src={wart.audioCover} alt={wart.title} className="w-full h-full object-cover" />
         ) : wart.imageData ? (
@@ -334,6 +415,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       </div>
     </div>
   );
+  };
 
   return (
     <div className="space-y-0 pb-4">
@@ -551,7 +633,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                     <img src={post.mediaData} alt="" className="mt-2 w-auto max-w-full" />
                   )}
                   {post.mediaData && post.mediaType === 'video' && (
-                    <video controls src={post.mediaData} className="mt-2 w-full bg-black" />
+                    <video controls playsInline preload="auto" src={post.mediaData.startsWith('data:') ? dataUrlToBlobUrl(post.mediaData) : post.mediaData} className="mt-2 w-full bg-black" />
                   )}
                   {post.mediaData && post.mediaType === 'audio' && (
                     <audio controls src={post.mediaData} className="mt-2 w-full h-10" />

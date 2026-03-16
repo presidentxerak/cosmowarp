@@ -468,6 +468,19 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
   const logoSrc = import.meta.env.BASE_URL + 'strangrz-logo-white.svg';
 
+  // Safari video autoplay fix
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('x-webkit-airplay', 'allow');
+    // Safari may block autoplay; retry on user interaction
+    const tryPlay = () => { v.play().catch(() => {}); };
+    tryPlay();
+    document.addEventListener('touchstart', tryPlay, { once: true });
+    return () => document.removeEventListener('touchstart', tryPlay);
+  }, []);
+
   // Parallax scroll tracking
   useEffect(() => {
     let ticking = false;
@@ -622,9 +635,6 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           >
             Strangrz
           </h1>
-          <p className="text-base sm:text-lg opacity-30 mb-4 tracking-[0.2em]">
-            Protocole et marketplace multi-chaîne de certification pour œuvres rares
-          </p>
           <p className="text-base sm:text-lg opacity-70 font-bold mb-3">
             {t('heroSubtitle')}
           </p>

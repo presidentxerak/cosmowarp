@@ -4,6 +4,8 @@ import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
 import { SocialEngine } from '../engine/social';
 import type { ChatPost, ChatChannel } from '../engine/cosmochat';
+import { uploadMedia as uploadMediaToStorage, getMediaUrl, downloadMediaAsDataUrl } from '../lib/supabase-storage';
+import { isBackendAvailable } from '../lib/supabase';
 import HexAvatar from './HexAvatar';
 
 type Tab = 'timeline' | 'explore' | 'channels';
@@ -69,13 +71,29 @@ export default function CosmoChatView() {
 
   useEffect(() => { refresh(); }, [tab]);
 
-  // Sync channels & posts from cloud on mount, rehydrate media from IndexedDB
+  // Sync channels & posts from cloud on mount, rehydrate media from IndexedDB + Supabase Storage
   useEffect(() => {
     const e = CosmoChatEngine.load();
     e.rehydratePostMedia().then(() => {
       setPosts(e.getTimeline());
       return e.fullSync();
-    }).then(() => refresh()).catch(() => {});
+    }).then(() => {
+      refresh();
+      // For posts with mediaType but no mediaData, try fetching from Supabase Storage
+      if (isBackendAvailable()) {
+        const timeline = e.getTimeline();
+        const postsNeedingMedia = timeline.filter(p => p.mediaType && !p.mediaData).slice(0, 20);
+        for (const post of postsNeedingMedia) {
+          // Try multiple path patterns for compatibility
+          downloadMediaAsDataUrl(`warts/post_${post.id}/main`).then(dataUrl => {
+            if (dataUrl) {
+              post.mediaData = dataUrl;
+              setPosts(prev => prev.map(p => p.id === post.id ? { ...p, mediaData: dataUrl } : p));
+            }
+          }).catch(() => {});
+        }
+      }
+    }).catch(() => {});
   }, []);
 
   // Open post from deep link (e.g. from Signets)
@@ -157,10 +175,10 @@ export default function CosmoChatView() {
   };
 
   // ─── Post Actions ──────────────────────────────────────
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!composeText.trim() && !composeMedia) return;
     setPosting(true);
-    engine.createPost(
+    const post = engine.createPost(
       wallet.address, alias, composeText,
       composeMedia || undefined,
       composeMediaType || undefined,
@@ -170,6 +188,11 @@ export default function CosmoChatView() {
     setComposeText(''); setComposeMedia(''); setComposeMediaType('');
     setComposeAudioCover(''); setComposeWartLink('');
     refresh();
+
+    // Upload post media to Supabase Storage for cross-device visibility
+    if (composeMedia && isBackendAvailable()) {
+      uploadMediaToStorage(composeMedia, `post_${post.id}`, 'main').catch(() => {});
+    }
     engine.syncPostsToCloud().catch(() => {});
     setPosting(false);
   };
@@ -657,7 +680,7 @@ export default function CosmoChatView() {
                   {composeMedia && (
                     <div className="relative inline-block">
                       {composeMediaType === 'image' && <img src={composeMedia} alt="" className="max-h-32 object-cover" />}
-                      {composeMediaType === 'video' && <video src={composeMedia} className="max-h-32" />}
+                      {composeMediaType === 'video' && <video src={composeMedia} className="max-h-32" muted playsInline />}
                       {composeMediaType === 'audio' && <audio src={composeMedia} controls className="h-8" />}
                       <button
                         className="absolute top-0 right-0 bg-black/70 text-white text-body-sm px-1 cursor-pointer"

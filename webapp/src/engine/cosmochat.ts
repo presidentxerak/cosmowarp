@@ -1,6 +1,7 @@
 import { storage } from './storage';
 import { storeMedia, retrieveMedia } from './mediadb';
 import { upsertChannel, fetchAllChannels, upsertPost, fetchAllPosts } from '../lib/supabase-db';
+import { downloadMediaAsDataUrl } from '../lib/supabase-storage';
 
 // ─── Types ─────────────────────────────────────────────
 export interface ChatPost {
@@ -387,6 +388,7 @@ export class CosmoChatEngine {
       await upsertPost({
         id: post.id, author: post.author, authorAlias: post.authorAlias,
         content: post.content, mediaType: post.mediaType,
+        mediaPath: post.mediaType ? `warts/post_${post.id}/main` : undefined,
         wartLink: post.wartLink, timestamp: post.timestamp,
         tipCount: post.tipCount, rewarpCount: post.rewarpCount, views: post.views,
       });
@@ -398,7 +400,7 @@ export class CosmoChatEngine {
     const localIds = new Set(this.posts.map(p => p.id));
     for (const cp of cloudPosts) {
       if (!localIds.has(cp.id)) {
-        this.posts.push({
+        const post: ChatPost = {
           ...cp,
           mediaType: cp.mediaType as ChatPost['mediaType'],
           tips: {},
@@ -406,7 +408,19 @@ export class CosmoChatEngine {
           comments: [],
           bookmarkedBy: [],
           isRewarp: false,
-        });
+        };
+        this.posts.push(post);
+
+        // Try to download media from Supabase Storage for cross-device posts
+        if (cp.mediaType && cp.mediaPath) {
+          downloadMediaAsDataUrl(cp.mediaPath).then(dataUrl => {
+            if (dataUrl) {
+              post.mediaData = dataUrl;
+              // Cache in IndexedDB for future loads
+              storeMedia(`post_${post.id}`, dataUrl).catch(() => {});
+            }
+          }).catch(() => {});
+        }
       }
     }
     this.posts.sort((a, b) => b.timestamp - a.timestamp);

@@ -5,8 +5,25 @@ import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
+import { fetchSocialProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
+import * as sync from '../lib/supabase-sync';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
+
+/** Convert base64 data URL to blob URL for reliable video playback on Safari */
+function dataUrlToBlobUrl(dataUrl: string): string {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+  try {
+    const [header, b64] = dataUrl.split(',');
+    const mime = header.match(/data:(.*?);/)?.[1] || 'video/mp4';
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  } catch {
+    return dataUrl;
+  }
+}
 
 type Tab = 'warts' | 'collected' | 'posts' | 'followers' | 'following';
 
@@ -47,6 +64,35 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
 
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(wallet.address));
+
+    // ── Fetch from Supabase for cross-device sync ──
+    fetchSocialProfile(wallet.address).then(remote => {
+      if (!remote) return;
+      if (remote.bio && !profile.bio) { setBio(remote.bio); social.updateBio(wallet.address, remote.bio); }
+      if (remote.website && !profile.website) { setWebsite(remote.website); }
+      if (remote.instagram && !profile.instagram) { setInstagram(remote.instagram); }
+      if (remote.twitter && !profile.twitter) { setTwitter(remote.twitter); }
+      if (remote.website || remote.instagram || remote.twitter) {
+        social.updateLinks(wallet.address, {
+          website: remote.website || profile.website,
+          instagram: remote.instagram || profile.instagram,
+          twitter: remote.twitter || profile.twitter,
+        });
+      }
+    }).catch(() => {});
+
+    Promise.all([
+      fetchFollowers(wallet.address).catch(() => []),
+      fetchFollowing(wallet.address).catch(() => []),
+    ]).then(([cloudFollowers, cloudFollowing]) => {
+      // Merge: use the larger count (local or cloud) as truth
+      if (cloudFollowers.length > profile.followers.length) {
+        setFollowersCount(cloudFollowers.length);
+      }
+      if (cloudFollowing.length > profile.following.length) {
+        setFollowingCount(cloudFollowing.length);
+      }
+    }).catch(() => {});
   }, [wallet, tab]);
 
   if (!wallet || !unlocked) {
@@ -67,6 +113,9 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     social.updateBio(wallet.address, bioInput);
     setBio(bioInput);
     setEditingBio(false);
+    // Sync to Supabase
+    const profile = social.getProfile(wallet.address);
+    if (profile) sync.syncSocialProfile(profile);
   };
 
   const handleSaveLinks = () => {
@@ -76,6 +125,9 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     setInstagram(linkInstagram);
     setTwitter(linkTwitter);
     setEditingLinks(false);
+    // Sync to Supabase
+    const profile = social.getProfile(wallet.address);
+    if (profile) sync.syncSocialProfile(profile);
   };
 
   const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -328,7 +380,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
               {myCreated.map((wart: Wart) => (
                 <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
                   {wart.mediaType === 'video' && wart.imageData ? (
-                    <video src={wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
+                    <video src={wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
                   ) : wart.mediaType !== 'audio' && wart.imageData ? (
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
                   ) : wart.mediaType === 'audio' && wart.audioCover ? (
@@ -369,7 +421,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
               {myCollection.map((wart: Wart) => (
                 <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
                   {wart.mediaType === 'video' && wart.imageData ? (
-                    <video src={wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
+                    <video src={wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
                   ) : wart.mediaType !== 'audio' && wart.imageData ? (
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
                   ) : (
