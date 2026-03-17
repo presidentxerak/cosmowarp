@@ -7,6 +7,7 @@ import type { ChatPost, ChatChannel } from '../engine/cosmochat';
 import { uploadMedia as uploadMediaToStorage, downloadMediaAsDataUrl } from '../lib/supabase-storage';
 import { isBackendAvailable } from '../lib/supabase';
 import HexAvatar from './HexAvatar';
+import { copyToClipboard } from '../lib/clipboard';
 
 type Tab = 'timeline' | 'explore' | 'channels';
 
@@ -236,7 +237,7 @@ export default function CosmoChatView() {
   };
 
   const copyPostLink = (post: ChatPost) => {
-    navigator.clipboard.writeText(`CosmoChat by @${post.authorAlias}: "${post.content.slice(0, 100)}"`);
+    copyToClipboard(`CosmoChat by @${post.authorAlias}: "${post.content.slice(0, 100)}"`);;
     setSharePost(null);
   };
 

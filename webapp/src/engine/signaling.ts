@@ -48,12 +48,60 @@ interface SignalingMessage {
   timestamp: number;
 }
 
-// ─── LocalSignaling (BroadcastChannel) ───────────────────
+// ─── Cross-tab channel abstraction (Safari compat) ───────
+// BroadcastChannel is not available in Safari < 15.4.
+// Fall back to localStorage 'storage' events which work everywhere.
+
+interface TabChannel {
+  postMessage(msg: SignalingMessage): void;
+  close(): void;
+  onmessage: ((msg: SignalingMessage) => void) | null;
+}
+
+function createTabChannel(name: string): TabChannel {
+  // Prefer BroadcastChannel when available
+  if (typeof BroadcastChannel !== 'undefined') {
+    const bc = new BroadcastChannel(name);
+    const channel: TabChannel = {
+      postMessage: (msg) => bc.postMessage(msg),
+      close: () => bc.close(),
+      onmessage: null,
+    };
+    bc.onmessage = (event: MessageEvent) => {
+      channel.onmessage?.(event.data as SignalingMessage);
+    };
+    return channel;
+  }
+
+  // Fallback: localStorage 'storage' events (Safari < 15.4)
+  const storageKey = `__tab_channel_${name}`;
+  const handler = (e: StorageEvent) => {
+    if (e.key !== storageKey || !e.newValue) return;
+    try {
+      channel.onmessage?.(JSON.parse(e.newValue) as SignalingMessage);
+    } catch { /* ignore malformed */ }
+  };
+  window.addEventListener('storage', handler);
+  const channel: TabChannel = {
+    postMessage: (msg) => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(msg));
+        // Remove immediately so the next identical message still fires
+        localStorage.removeItem(storageKey);
+      } catch { /* storage unavailable */ }
+    },
+    close: () => window.removeEventListener('storage', handler),
+    onmessage: null,
+  };
+  return channel;
+}
+
+// ─── LocalSignaling (cross-tab) ─────────────────────────
 
 const LOCAL_CHANNEL_NAME = 'strangrz-signaling';
 
 export class LocalSignaling {
-  private channel: BroadcastChannel | null = null;
+  private channel: TabChannel | null = null;
   private localId: string;
   private p2p: CosmoP2P;
   private knownPeers: Set<string> = new Set();
@@ -68,14 +116,10 @@ export class LocalSignaling {
 
   start(): void {
     if (this.active) return;
-    if (typeof BroadcastChannel === 'undefined') {
-      console.warn('[LocalSignaling] BroadcastChannel API not available');
-      return;
-    }
 
-    this.channel = new BroadcastChannel(LOCAL_CHANNEL_NAME);
-    this.channel.onmessage = (event: MessageEvent) => {
-      this.handleMessage(event.data as SignalingMessage);
+    this.channel = createTabChannel(LOCAL_CHANNEL_NAME);
+    this.channel.onmessage = (msg: SignalingMessage) => {
+      this.handleMessage(msg);
     };
     this.active = true;
 

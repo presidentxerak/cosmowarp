@@ -3,6 +3,7 @@ import { useWallet } from '../context/WalletContext';
 import { useTheme } from '../context/ThemeContext';
 import { shortAddress } from '../engine/crypto';
 import { storage } from '../engine/storage';
+import { copyToClipboard } from '../lib/clipboard';
 
 const LegalsView = lazy(() => import('./LegalsView'));
 const PrivacyView = lazy(() => import('./PrivacyView'));
@@ -62,7 +63,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
 
   const handleCopyStrangrzLink = () => {
     if (!strangrzLink) return;
-    navigator.clipboard.writeText(strangrzLink);
+    copyToClipboard(strangrzLink);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 3000);
   };

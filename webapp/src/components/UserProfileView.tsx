@@ -9,6 +9,7 @@ import * as sync from '../lib/supabase-sync';
 import { fetchSocialProfile, fetchProfile, fetchFollowers, fetchFollowing, fetchAllPosts } from '../lib/supabase-db';
 import { getMediaUrl } from '../lib/supabase-storage';
 import HexAvatar from './HexAvatar';
+import { copyToClipboard } from '../lib/clipboard';
 
 /** Convert base64 data URL to blob URL for reliable video/audio playback on Safari */
 function dataUrlToBlobUrl(dataUrl: string): string {
@@ -440,7 +441,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           <p
             className="text-[11px] opacity-40 font-mono mt-0.5 cursor-pointer hover:opacity-60 transition-opacity"
             onClick={() => {
-              navigator.clipboard.writeText(targetAddress);
+              copyToClipboard(targetAddress);
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
             }}

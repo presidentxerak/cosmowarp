@@ -9,6 +9,7 @@ import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
 import { getStrangrzEngine } from '../engine/vobjct';
 import HexAvatar from './HexAvatar';
+import { copyToClipboard } from '../lib/clipboard';
 
 import PFPCollectionView from './PFPCollectionView';
 import MusicView from './MusicView';
@@ -858,7 +859,7 @@ export default function MarketplaceView() {
       <div className="space-y-4 px-[10px] sm:px-0">
         <button
           className="sticky top-16 z-40 text-body-sm opacity-50 text-current hover:opacity-90 cursor-pointer py-2"
-          style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
           onClick={() => { setTab('all'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
         >
           {'\u2190'} Back to Gallery
@@ -1127,7 +1128,7 @@ export default function MarketplaceView() {
                           <button
                             className="warp-button flex-1 text-body-sm py-2"
                             onClick={() => {
-                              navigator.clipboard.writeText(phygitalCert.verificationCode);
+                              copyToClipboard(phygitalCert.verificationCode);
                             }}
                           >
                             Copy Code

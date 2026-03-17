@@ -12,6 +12,7 @@ import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
+import { copyToClipboard } from '../lib/clipboard';
 
 type WalletTab = 'overview' | 'send' | 'mine' | 'payment' | 'ethereum';
 type AuthTab = 'signup' | 'signin';
@@ -564,7 +565,7 @@ export default function WalletView() {
 
   // ─── Helper functions ──────────────────────────────────
   const copyAddress = () => {
-    navigator.clipboard.writeText(wallet.address);
+    copyToClipboard(wallet.address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

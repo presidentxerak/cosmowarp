@@ -514,6 +514,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         style={{
           background: `rgba(0,0,0,${headerBgOpacity})`,
           backdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
+          WebkitBackdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
           borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.05)' : 'none',
           paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
