@@ -68,10 +68,11 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     // ── Fetch from Supabase for cross-device sync ──
     fetchSocialProfile(wallet.address).then(remote => {
       if (!remote) return;
-      if (remote.bio && !profile.bio) { setBio(remote.bio); social.updateBio(wallet.address, remote.bio); }
-      if (remote.website && !profile.website) { setWebsite(remote.website); }
-      if (remote.instagram && !profile.instagram) { setInstagram(remote.instagram); }
-      if (remote.twitter && !profile.twitter) { setTwitter(remote.twitter); }
+      // Use cloud data as source of truth — overwrite local if cloud has content
+      if (remote.bio) { setBio(remote.bio); social.updateBio(wallet.address, remote.bio); }
+      if (remote.website) { setWebsite(remote.website); }
+      if (remote.instagram) { setInstagram(remote.instagram); }
+      if (remote.twitter) { setTwitter(remote.twitter); }
       if (remote.website || remote.instagram || remote.twitter) {
         social.updateLinks(wallet.address, {
           website: remote.website || profile.website,
@@ -93,7 +94,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         setFollowingCount(cloudFollowing.length);
       }
     }).catch(() => {});
-  }, [wallet, tab]);
+  }, [wallet]);
 
   if (!wallet || !unlocked) {
     return (

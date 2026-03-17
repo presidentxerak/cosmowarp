@@ -85,15 +85,18 @@ export default function MarketplaceView() {
       }
     };
     window.addEventListener('storage', handleStorage);
-    // Also poll for same-window sessionStorage changes
-    const interval = setInterval(() => {
-      const stored = sessionStorage.getItem('strangrz_gallery_tab');
-      if (stored) {
-        sessionStorage.removeItem('strangrz_gallery_tab');
-        setTab(stored as GalleryTab);
-      }
-    }, 200);
-    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
+    // Listen for same-window custom event (avoids polling race condition)
+    const handleGalleryTab = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setTab(detail as GalleryTab);
+    };
+    window.addEventListener('strangrz_gallery_tab', handleGalleryTab);
+    // Check once on mount for any pending tab change
+    handleStorage();
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('strangrz_gallery_tab', handleGalleryTab);
+    };
   }, []);
   const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
   const [editionFilter, setEditionFilter] = useState<EditionFilter>('all');

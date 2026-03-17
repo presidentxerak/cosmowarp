@@ -62,9 +62,11 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
   const handleTabClick = (tabId: string) => {
     if (tabId === 'curate') {
       sessionStorage.setItem('strangrz_gallery_tab', 'curate');
+      window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'curate' }));
       setActiveTab('gallery');
     } else if (tabId === 'trading') {
       sessionStorage.setItem('strangrz_gallery_tab', 'trading');
+      window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'trading' }));
       setActiveTab('gallery');
     } else {
       setActiveTab(tabId);

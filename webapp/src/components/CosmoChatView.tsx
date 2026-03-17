@@ -88,7 +88,6 @@ export default function CosmoChatView() {
           // Try multiple path patterns for compatibility
           downloadMediaAsDataUrl(`warts/post_${post.id}/main`).then(dataUrl => {
             if (dataUrl) {
-              post.mediaData = dataUrl;
               setPosts(prev => prev.map(p => p.id === post.id ? { ...p, mediaData: dataUrl } : p));
             }
           }).catch(() => {});

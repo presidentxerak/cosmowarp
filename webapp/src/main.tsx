@@ -93,7 +93,6 @@ try {
         oldDb.close();
       }
     };
-    oldDbReq.onerror = () => {};
   }
 } catch { /* IndexedDB unavailable (Safari Private Browsing) */ }
 

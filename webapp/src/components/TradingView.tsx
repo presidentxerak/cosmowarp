@@ -135,6 +135,7 @@ export default function TradingView() {
   const handleViewWart = (wartId: string) => {
     sessionStorage.setItem('strangrz_open_wart', wartId);
     sessionStorage.setItem('strangrz_gallery_tab', 'detail');
+    window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
   };
 
   const navigateToProfile = (address: string) => {

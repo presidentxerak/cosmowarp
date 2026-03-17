@@ -428,8 +428,10 @@ export class CosmoChatEngine {
   }
 
   async fullSync(): Promise<void> {
+    // Pull from cloud first, then push local changes to avoid overwriting newer cloud data
     await this.syncChannelsFromCloud();
     await this.syncPostsFromCloud();
+    // Push local data to cloud (merge — cloud already has latest from pull above)
     await this.syncChannelsToCloud();
     await this.syncPostsToCloud();
   }

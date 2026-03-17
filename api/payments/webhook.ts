@@ -49,6 +49,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const buyerAddress = session.metadata?.buyer_address;
       const warpAmount = parseFloat(session.metadata?.warp_amount || '0');
 
+      if (!Number.isFinite(warpAmount) || warpAmount <= 0) {
+        console.error(`[Webhook] Invalid warp amount: ${warpAmount} for tx ${txId}`);
+        return res.json({ received: true });
+      }
+
+      if (!txId || !buyerAddress) {
+        console.error(`[Webhook] Missing metadata — txId: ${txId}, buyerAddress: ${buyerAddress}`);
+        return res.json({ received: true });
+      }
+
       console.log(`[Webhook] Payment completed: ${txId} — ${warpAmount} Ω → ${buyerAddress}`);
 
       // Credit buyer's balance atomically via Supabase RPC

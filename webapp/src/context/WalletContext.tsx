@@ -289,18 +289,26 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         sync.fullSync(w.address).then(cloudData => {
           if (!cloudData) return;
 
-          // Sync profile: use cloud balance as source of truth if higher
+          // Sync profile: reconcile local and cloud state
           if (cloudData.profile) {
             let changed = false;
-            if (cloudData.profile.balance > w.balance) {
-              w.balance = cloudData.profile.balance;
-              changed = true;
+            // Use cloud balance when it differs (cloud is source of truth for cross-device sync)
+            if (cloudData.profile.balance !== w.balance) {
+              // Cloud wins when it has a different balance (server-side credits, other-device transactions)
+              // Local wins only if we have unsent local transactions not yet synced
+              const cloudTxCount = cloudData.transactions?.length || 0;
+              const localTxCount = w.transactions?.length || 0;
+              if (cloudTxCount >= localTxCount || cloudData.profile.balance > w.balance) {
+                w.balance = cloudData.profile.balance;
+                changed = true;
+              }
             }
             if (cloudData.profile.alias && !w.alias) {
               w.alias = cloudData.profile.alias;
               changed = true;
             }
-            if (cloudData.profile.level > w.level) {
+            // Sync level/XP: use the higher of local or cloud
+            if (cloudData.profile.level > w.level || (cloudData.profile.level === w.level && cloudData.profile.xp > w.xp)) {
               w.level = cloudData.profile.level;
               w.levelName = cloudData.profile.levelName;
               w.levelTitle = cloudData.profile.levelTitle;
@@ -468,13 +476,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // Pull cloud data and persist locally for cross-device sync
     const cloudData = await sync.fullSync(w.address);
     if (cloudData) {
-      if (cloudData.profile && cloudData.profile.balance > w.balance) {
-        w.balance = cloudData.profile.balance;
-        w.level = Math.max(w.level, cloudData.profile.level);
-        w.xp = Math.max(w.xp, cloudData.profile.xp);
-        if (cloudData.profile.alias && !w.alias) w.alias = cloudData.profile.alias;
-        saveWallet(w);
-        setWallet({ ...w });
+      if (cloudData.profile) {
+        let profileChanged = false;
+        // Use cloud balance as source of truth after login (most up-to-date cross-device)
+        if (cloudData.profile.balance !== w.balance) {
+          const cloudTxCount = cloudData.transactions?.length || 0;
+          const localTxCount = w.transactions?.length || 0;
+          if (cloudTxCount >= localTxCount || cloudData.profile.balance > w.balance) {
+            w.balance = cloudData.profile.balance;
+            profileChanged = true;
+          }
+        }
+        if (cloudData.profile.level > w.level || (cloudData.profile.level === w.level && cloudData.profile.xp > w.xp)) {
+          w.level = cloudData.profile.level;
+          w.xp = cloudData.profile.xp;
+          profileChanged = true;
+        }
+        if (cloudData.profile.alias && !w.alias) { w.alias = cloudData.profile.alias; profileChanged = true; }
+        if (profileChanged) {
+          saveWallet(w);
+          setWallet({ ...w });
+        }
       }
       if (cloudData.transactions.length > 0) {
         const localTxs = getGlobalTransactions();
@@ -498,12 +520,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
 
     // Pull ALL warts from Supabase (full gallery — all artworks across all users)
-    sync.pullWarts().then(allWarts => {
+    try {
+      const allWarts = await sync.pullWarts();
       if (allWarts && allWarts.length > 0) {
         mergeCloudWarts(allWarts);
         refreshWartsState(w.address);
       }
-    });
+    } catch { /* Pull failed — use local data */ }
 
     sync.syncProfile(w);
     for (const tx of w.transactions) sync.syncTransaction(tx);
@@ -801,9 +824,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const txs = JSON.parse(storage.getItem('strangrz_global_tx') || '[]');
     txs.unshift(tx);
     storage.setItem('strangrz_global_tx', JSON.stringify(txs.slice(0, 200)));
-    wallet.transactions.unshift(tx);
+    const updatedWallet = { ...wallet, transactions: [tx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
 
-    setWallet({ ...wallet });
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
     // Sync to Supabase (wart + media + transaction)
@@ -863,9 +887,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_buy',
       memo: `Bought Strangrz: ${wart.title}`,
     };
-    wallet.transactions.unshift(buyTx);
+    const updatedWallet = { ...wallet, transactions: [buyTx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
 
-    setWallet({ ...wallet });
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
     // Sync purchase to Supabase (atomic operation)
@@ -935,8 +960,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_transfer',
       memo: `Transferred Strangrz: ${wart.title}`,
     };
-    wallet.transactions.unshift(tx);
-    setWallet({ ...wallet });
+    const updatedWallet = { ...wallet, transactions: [tx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
     // Sync transfer to Supabase
@@ -1216,15 +1242,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_buy',
       memo: `Lazy mint purchase: ${template.title} (${fees.price} ⬣ + ${fees.serviceFee} ⬣ fee)`,
     };
-    wallet.transactions.unshift(buyTx);
+    const updatedWallet = { ...wallet, transactions: [buyTx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
 
-    setWallet({ ...wallet });
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
 
     // Sync to Supabase
     sync.syncWart(result.wart);
-    sync.syncProfile(wallet);
+    sync.syncProfile(updatedWallet);
     sync.syncTransaction(buyTx);
     sync.syncNotification({
       recipient: template.creator,

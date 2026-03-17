@@ -15,7 +15,7 @@
   --color-cosmic-600: #1a1d6b;
   --color-cosmic-500: #2a2d8b;
   --font-mono: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  --font-title: 'Hoodlrz', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-title: 'Hoodlrz', 'Chokokutai', 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* ─── Safari fallback: ensure custom colors work even without oklch ─ */
