@@ -159,7 +159,8 @@ export function generateSignaturePDF(data: SignatureData): void {
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D context not available');
 
   // White background
   ctx.fillStyle = '#ffffff';

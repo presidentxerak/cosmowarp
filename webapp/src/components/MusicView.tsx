@@ -6,7 +6,8 @@ import type { Wart } from '../engine/warts';
 // ─── Waveform Generator ──────────────────────────────────────
 function generateWaveformData(audioSrc: string, bars: number): Promise<number[]> {
   return new Promise((resolve) => {
-    const audio = new AudioContext();
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    const audio = new AudioCtx();
     fetch(audioSrc)
       .then(r => r.arrayBuffer())
       .then(buf => audio.decodeAudioData(buf))

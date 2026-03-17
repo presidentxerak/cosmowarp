@@ -275,7 +275,7 @@ describe('BlockIntegrityVerifier', () => {
     const block = makeBlock(overrides);
     // Compute correct hash
     const headerData = [
-      'CosmoChain-v1',
+      'StrangrzChain-v1',
       block.shard.toString(),
       block.number.toString(),
       block.parentHash,
@@ -312,7 +312,7 @@ describe('BlockIntegrityVerifier', () => {
     });
     // Recompute hash with future timestamp
     const headerData = [
-      'CosmoChain-v1',
+      'StrangrzChain-v1',
       block.shard.toString(),
       block.number.toString(),
       block.parentHash,
@@ -356,12 +356,13 @@ describe('BlockIntegrityVerifier', () => {
 
   test('beacon verification works', async () => {
     const shardRoots = Array(7).fill('a'.repeat(64));
+    const now = Date.now();
     const headerData = [
-      'CosmoChain-v1',
+      'StrangrzChain-v1',
       'BEACON',
       '0',
       ...shardRoots,
-      Date.now().toString(),
+      now.toString(),
       'system',
     ].join(':');
 
@@ -370,7 +371,7 @@ describe('BlockIntegrityVerifier', () => {
       shardRoots,
       shardHeads: [0, 0, 0, 0, 0, 0, 0],
       globalStateRoot: '', // Will compute
-      timestamp: Date.now(),
+      timestamp: now,
       validator: 'system',
       hash: await sha256(headerData),
     };
@@ -762,7 +763,7 @@ describe('Integration: State Proofs + Integrity', () => {
 
     // Compute valid hash
     const headerData = [
-      'CosmoChain-v1',
+      'StrangrzChain-v1',
       block.shard.toString(),
       block.number.toString(),
       block.parentHash,

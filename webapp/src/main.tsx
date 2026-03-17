@@ -116,12 +116,20 @@ if ('serviceWorker' in navigator) {
                 'background:#111111;border:1px solid rgba(255,255,255,0.15);padding:12px 20px;' +
                 'color:#cccccc;font-size:13px;font-family:Inter,sans-serif;display:flex;gap:12px;align-items:center;'
               );
-              banner.innerHTML = '<span>\u2B21 Strangrz update available</span>' +
-                '<button style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);' +
-                'color:#ffffff;padding:4px 12px;cursor:pointer;font-size:12px" ' +
-                'onclick="window.location.reload()">Reload</button>' +
-                '<button style="background:none;border:none;color:#666666;cursor:pointer;font-size:14px" ' +
-                'onclick="this.parentElement.remove()">\u2715</button>';
+              const label = document.createElement('span');
+              label.textContent = '\u2B21 Strangrz update available';
+              const reloadBtn = document.createElement('button');
+              reloadBtn.textContent = 'Reload';
+              reloadBtn.setAttribute('style',
+                'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);' +
+                'color:#ffffff;padding:4px 12px;cursor:pointer;font-size:12px');
+              reloadBtn.addEventListener('click', () => window.location.reload());
+              const closeBtn = document.createElement('button');
+              closeBtn.textContent = '\u2715';
+              closeBtn.setAttribute('style',
+                'background:none;border:none;color:#666666;cursor:pointer;font-size:14px');
+              closeBtn.addEventListener('click', () => banner.remove());
+              banner.append(label, reloadBtn, closeBtn);
               document.body.appendChild(banner);
             }
           });
