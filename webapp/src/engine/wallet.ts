@@ -797,7 +797,6 @@ export async function sendWarps(
 
     // Process level-up bonus if applicable
     if (levelUp) {
-      wallet.balance += levelUp.airdropBonus;
       const levelUpTx: Transaction = {
         id: genId(),
         from: 'COSMO_HIERARCHY',
@@ -808,7 +807,9 @@ export async function sendWarps(
         type: 'level_up',
         memo: `Level up! ${HIERARCHY_LEVELS[levelUp.oldLevel].name} \u2192 ${levelUp.levelDef.name}: ${levelUp.levelDef.title}`,
       };
+      // Record transaction BEFORE updating balance for consistency
       wallet.transactions.unshift(levelUpTx);
+      wallet.balance += levelUp.airdropBonus;
       addGlobalTx(levelUpTx);
       saveWallet(wallet);
 
@@ -905,7 +906,6 @@ export async function mineWarps(
 
   // Process level-up
   if (levelUp) {
-    wallet.balance += levelUp.airdropBonus;
     const levelUpTx: Transaction = {
       id: genId(),
       from: 'COSMO_HIERARCHY',
@@ -916,7 +916,9 @@ export async function mineWarps(
       type: 'level_up',
       memo: `Level up! ${HIERARCHY_LEVELS[levelUp.oldLevel].name} \u2192 ${levelUp.levelDef.name}: ${levelUp.levelDef.title}`,
     };
+    // Record transaction BEFORE updating balance for consistency
     wallet.transactions.unshift(levelUpTx);
+    wallet.balance += levelUp.airdropBonus;
     addGlobalTx(levelUpTx);
     saveWallet(wallet);
   }

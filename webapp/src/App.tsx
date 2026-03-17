@@ -62,6 +62,7 @@ const ROUTE_MAP: Record<string, string> = {
   '/dev': 'dev',
   '/curate': 'curate',
   '/trading': 'trading',
+  '/user-profile': 'user-profile',
 };
 
 const TAB_TO_PATH: Record<string, string> = {};

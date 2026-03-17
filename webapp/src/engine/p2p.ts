@@ -230,9 +230,11 @@ export class CosmoP2P {
     // Wait for ICE gathering to complete
     await this.waitForIce(pc);
 
+    if (!pc.localDescription) throw new Error('Local description not set after ICE gathering');
+
     return {
       type: 'offer',
-      sdp: pc.localDescription!.sdp,
+      sdp: pc.localDescription.sdp,
       peerId,
       address: this.localAddress,
     };
@@ -264,9 +266,11 @@ export class CosmoP2P {
 
     await this.waitForIce(pc);
 
+    if (!pc.localDescription) throw new Error('Local description not set after ICE gathering');
+
     return {
       type: 'answer',
-      sdp: pc.localDescription!.sdp,
+      sdp: pc.localDescription.sdp,
       peerId: this.localId,
       address: this.localAddress,
     };

@@ -119,7 +119,7 @@ export function generatePrintableSVG(cert: PhygitalCertificate): string {
 
   <!-- Title -->
   <text x="200" y="70" text-anchor="middle" font-size="18" font-weight="700" fill="#000000">${escapeXml(cert.wartTitle)}</text>
-  <text x="200" y="88" text-anchor="middle" font-size="10" fill="#666666">Edition ${cert.editionInfo}</text>
+  <text x="200" y="88" text-anchor="middle" font-size="10" fill="#666666">Edition ${escapeXml(cert.editionInfo)}</text>
 
   <!-- Verification code -->
   <rect x="110" y="100" width="180" height="36" fill="#f5f5f5" stroke="#000000" stroke-width="1"/>

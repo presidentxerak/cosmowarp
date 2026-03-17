@@ -36,7 +36,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const stripe = new (Stripe as any)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
 
     const body = await getRawBody(req);
-    const sig = req.headers['stripe-signature'] as string;
+    const sig = req.headers['stripe-signature'];
+    if (!sig || typeof sig !== 'string') {
+      return res.status(400).json({ error: 'Missing stripe-signature header' });
+    }
 
     const event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
 
@@ -53,18 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
           const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-          // Update fiat transaction status
-          const { error: updateError } = await supabase.from('fiat_transactions').update({
-            status: 'completed',
-            processor_ref: session.id,
-            updated_at: Date.now(),
-          }).eq('tx_id', txId);
-
-          if (updateError) {
-            console.error(`[Webhook] Failed to update tx ${txId}:`, updateError.message);
-          }
-
-          // Atomic credit via RPC (prevents race conditions)
+          // Credit balance FIRST — if this fails, status stays pending (safe to retry)
           const memo = `Fiat purchase: ${warpAmount} ⬣ (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`;
           const { data: credited, error: creditError } = await supabase.rpc('credit_warps', {
             p_address: buyerAddress,
@@ -77,6 +69,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             console.error(`[Webhook] RPC error crediting ${warpAmount} ⬣ to ${buyerAddress}:`, creditError.message);
           } else if (!credited) {
             console.error(`[Webhook] Failed to credit ${warpAmount} ⬣ to ${buyerAddress}`);
+          }
+
+          // Only mark as completed AFTER successful credit
+          if (credited) {
+            const { error: updateError } = await supabase.from('fiat_transactions').update({
+              status: 'completed',
+              processor_ref: session.id,
+              updated_at: Date.now(),
+            }).eq('tx_id', txId);
+
+            if (updateError) {
+              console.error(`[Webhook] Failed to update tx ${txId}:`, updateError.message);
+            }
           }
         } catch (supaErr) {
           console.error(`[Webhook] Supabase error for tx ${txId}:`, supaErr instanceof Error ? supaErr.message : supaErr);

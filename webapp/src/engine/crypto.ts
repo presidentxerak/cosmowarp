@@ -364,7 +364,8 @@ export async function generateKeyPairFromSeed(
 
     // Export as JWK to get public key (x) alongside private key (d)
     const jwk = await crypto.subtle.exportKey('jwk', privateKey);
-    const pubBytes = base64urlDecode(jwk.x!);
+    if (!jwk.x) throw new Error('Ed25519 JWK export missing public key (x)');
+    const pubBytes = base64urlDecode(jwk.x);
     const pubHex = bufToHex(pubBytes.slice().buffer);
 
     // Re-export full PKCS8 for storage
