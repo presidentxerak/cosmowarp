@@ -18,6 +18,17 @@
   --font-title: 'Hoodlrz', 'Inter', 'Helvetica Neue', Arial, sans-serif;
 }
 
+/* ─── Safari fallback: ensure custom colors work even without oklch ─ */
+@supports not (color: oklch(0% 0 0)) {
+  :root {
+    --color-cosmic-900: #0a0a1a;
+    --color-cosmic-800: #0d1030;
+    --color-cosmic-700: #131650;
+    --color-cosmic-600: #1a1d6b;
+    --color-cosmic-500: #2a2d8b;
+  }
+}
+
 @layer base {
   html {
     height: 100%;
@@ -317,6 +328,19 @@ main > div > * {
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* ─── Safari dvh fallback: set --dvh for browsers without dvh ── */
+/* Safari < 15.4 doesn't support dvh units. Provide vh fallback. */
+@supports not (height: 100dvh) {
+  :root {
+    --dvh-unit: 1vh;
+  }
+}
+@supports (height: 100dvh) {
+  :root {
+    --dvh-unit: 1dvh;
   }
 }
 

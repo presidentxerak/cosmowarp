@@ -157,7 +157,7 @@ export default function ConsoleView() {
   };
 
   return (
-    <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100dvh - 140px)', minHeight: '250px', maxHeight: '85dvh' }}>
+    <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100vh - 140px)', minHeight: '250px', maxHeight: '85vh' }}>
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-base font-bold opacity-80">{'\u25B7'} StrangrzCode Console</h2>
         <button className="warp-button text-label px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>

@@ -36,11 +36,14 @@ function hexToBuf(hex: string): ArrayBuffer {
   for (let i = 0; i < hex.length; i += 2) {
     bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
   }
-  return bytes.buffer;
+  // Safari compat: .slice() ensures a plain ArrayBuffer (not a view over a larger buffer)
+  return bytes.buffer.slice(0, bytes.byteLength);
 }
 
 function strToBuf(str: string): ArrayBuffer {
-  return new TextEncoder().encode(str).buffer;
+  const u8 = new TextEncoder().encode(str);
+  // Safari compat: .buffer may return ArrayBufferLike; slice ensures a plain ArrayBuffer
+  return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
 }
 
 // ─── SHA-256 Hashing ─────────────────────────────────────
@@ -92,8 +95,8 @@ export async function generateKeyPair(): Promise<CosmoKeyPair> {
   // Fallback: @noble/ed25519 for Safari < 17
   const privBytes = ed.utils.randomPrivateKey();
   const pubBytes = await ed.getPublicKeyAsync(privBytes);
-  const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
-  const privHex = bufToHex(privBytes.buffer as ArrayBuffer);
+  const pubHex = bufToHex(pubBytes.slice().buffer);
+  const privHex = bufToHex(privBytes.slice().buffer);
 
   const addressHash = await sha256(pubHex);
   const address = 'STZ' + addressHash.slice(0, 40);
@@ -139,7 +142,7 @@ export async function signTransaction(data: string, privateKeyHex: string): Prom
   const privBytes = new Uint8Array(hexToBuf(privateKeyHex));
   const msgBytes = new Uint8Array(strToBuf(data));
   const sig = await ed.signAsync(msgBytes, privBytes);
-  return bufToHex(sig.buffer as ArrayBuffer);
+  return bufToHex(sig.slice().buffer);
 }
 
 export async function verifySignature(
@@ -211,7 +214,7 @@ export async function encryptData(
   );
   return {
     ciphertext: bufToHex(ciphertext),
-    iv: bufToHex(iv.buffer),
+    iv: bufToHex(iv.slice().buffer),
     tag: '', // tag is appended to ciphertext by WebCrypto
   };
 }
@@ -353,7 +356,7 @@ export async function generateKeyPairFromSeed(
 
     const privateKey = await crypto.subtle.importKey(
       'pkcs8',
-      pkcs8.buffer,
+      pkcs8.slice().buffer,
       { name: 'Ed25519' },
       true,
       ['sign']
@@ -362,7 +365,7 @@ export async function generateKeyPairFromSeed(
     // Export as JWK to get public key (x) alongside private key (d)
     const jwk = await crypto.subtle.exportKey('jwk', privateKey);
     const pubBytes = base64urlDecode(jwk.x!);
-    const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
+    const pubHex = bufToHex(pubBytes.slice().buffer);
 
     // Re-export full PKCS8 for storage
     const pkcs8Export = await crypto.subtle.exportKey('pkcs8', privateKey);
@@ -376,8 +379,8 @@ export async function generateKeyPairFromSeed(
 
   // Fallback: @noble/ed25519 for Safari < 17
   const pubBytes = await ed.getPublicKeyAsync(seed);
-  const pubHex = bufToHex(pubBytes.buffer as ArrayBuffer);
-  const privHex = bufToHex(seed.buffer as ArrayBuffer);
+  const pubHex = bufToHex(pubBytes.slice().buffer);
+  const privHex = bufToHex(seed.slice().buffer);
 
   const addressHash = await sha256(pubHex);
   const address = 'STZ' + addressHash.slice(0, 40);

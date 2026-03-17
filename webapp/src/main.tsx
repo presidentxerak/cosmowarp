@@ -50,49 +50,52 @@ if (walletRaw) {
 }
 
 // Migrate IndexedDB: cosmorare_media → strangrz_media
-if (typeof indexedDB !== 'undefined') {
-  const oldDbReq = indexedDB.open('cosmorare_media', 1);
-  oldDbReq.onerror = () => { /* Old DB doesn't exist — nothing to migrate */ };
-  oldDbReq.onsuccess = () => {
-    const oldDb = oldDbReq.result;
-    try {
-      const tx = oldDb.transaction('media', 'readonly');
-      const store = tx.objectStore('media');
-      const getAll = store.getAll();
-      const getAllKeys = store.getAllKeys();
-      getAll.onerror = () => { oldDb.close(); };
-      getAllKeys.onerror = () => { oldDb.close(); };
-      getAll.onsuccess = () => {
-        getAllKeys.onsuccess = () => {
-          if (getAll.result.length === 0 || getAllKeys.result.length === 0) { oldDb.close(); return; }
-          const newDbReq = indexedDB.open('strangrz_media', 1);
-          newDbReq.onerror = () => { oldDb.close(); };
-          newDbReq.onupgradeneeded = () => {
-            const db = newDbReq.result;
-            if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
-          };
-          newDbReq.onsuccess = () => {
-            const newDb = newDbReq.result;
-            const writeTx = newDb.transaction('media', 'readwrite');
-            const writeStore = writeTx.objectStore('media');
-            for (let i = 0; i < getAll.result.length; i++) {
-              writeStore.put(getAll.result[i], getAllKeys.result[i]);
-            }
-            writeTx.oncomplete = () => {
-              newDb.close();
-              oldDb.close();
-              indexedDB.deleteDatabase('cosmorare_media');
+// Wrapped in try/catch for Safari Private Browsing where IndexedDB can throw
+try {
+  if (typeof indexedDB !== 'undefined') {
+    const oldDbReq = indexedDB.open('cosmorare_media', 1);
+    oldDbReq.onerror = () => { /* Old DB doesn't exist — nothing to migrate */ };
+    oldDbReq.onsuccess = () => {
+      const oldDb = oldDbReq.result;
+      try {
+        const tx = oldDb.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const getAll = store.getAll();
+        const getAllKeys = store.getAllKeys();
+        getAll.onerror = () => { oldDb.close(); };
+        getAllKeys.onerror = () => { oldDb.close(); };
+        getAll.onsuccess = () => {
+          getAllKeys.onsuccess = () => {
+            if (getAll.result.length === 0 || getAllKeys.result.length === 0) { oldDb.close(); return; }
+            const newDbReq = indexedDB.open('strangrz_media', 1);
+            newDbReq.onerror = () => { oldDb.close(); };
+            newDbReq.onupgradeneeded = () => {
+              const db = newDbReq.result;
+              if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
             };
-            writeTx.onerror = () => { newDb.close(); oldDb.close(); };
+            newDbReq.onsuccess = () => {
+              const newDb = newDbReq.result;
+              const writeTx = newDb.transaction('media', 'readwrite');
+              const writeStore = writeTx.objectStore('media');
+              for (let i = 0; i < getAll.result.length; i++) {
+                writeStore.put(getAll.result[i], getAllKeys.result[i]);
+              }
+              writeTx.oncomplete = () => {
+                newDb.close();
+                oldDb.close();
+                indexedDB.deleteDatabase('cosmorare_media');
+              };
+              writeTx.onerror = () => { newDb.close(); oldDb.close(); };
+            };
           };
         };
-      };
-    } catch {
-      oldDb.close();
-    }
-  };
-  oldDbReq.onerror = () => {};
-}
+      } catch {
+        oldDb.close();
+      }
+    };
+    oldDbReq.onerror = () => {};
+  }
+} catch { /* IndexedDB unavailable (Safari Private Browsing) */ }
 
 createRoot(document.getElementById('root')!).render(<App />)
 

@@ -473,12 +473,23 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
     const v = videoRef.current;
     if (!v) return;
     v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
     v.setAttribute('x-webkit-airplay', 'allow');
+    // Safari requires muted to be set before play() for autoplay policy
+    v.muted = true;
+    v.defaultMuted = true;
     // Safari may block autoplay; retry on user interaction
     const tryPlay = () => { v.play().catch(() => {}); };
     tryPlay();
+    // Safari sometimes needs a slight delay after mount
+    const timer = setTimeout(tryPlay, 300);
     document.addEventListener('touchstart', tryPlay, { once: true });
-    return () => document.removeEventListener('touchstart', tryPlay);
+    document.addEventListener('click', tryPlay, { once: true });
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('touchstart', tryPlay);
+      document.removeEventListener('click', tryPlay);
+    };
   }, []);
 
   // Parallax scroll tracking
