@@ -29,7 +29,7 @@ export default function WhitepaperView() {
           </div>
           <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">Strangrz</h1>
           <p className="text-base sm:text-base opacity-50 mb-1">Strangrz Protocole</p>
-          <p className="text-body-sm opacity-40 max-w-md mx-auto">
+          <p className="text-body-sm opacity-60 max-w-md mx-auto">
             La plateforme de certification pour objets rares.
             Certifiez, échangez et collectionnez en toute confiance.
           </p>
@@ -46,7 +46,7 @@ export default function WhitepaperView() {
               className={`flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-2 sm:py-1.5 rounded-none text-label sm:text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 section === n.id
                   ? 'bg-current/10 opacity-80'
-                  : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                  : 'opacity-60 hover:opacity-70 hover:bg-current/5'
               }`}
             >
               <span className="text-base sm:text-[11px] leading-none">{n.icon}</span>
@@ -79,7 +79,7 @@ function SectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title:
         <span className="text-title-lg opacity-60">{icon}</span>
         <h2 className="text-title-md font-bold opacity-100 font-title">{title}</h2>
       </div>
-      <p className="text-body-sm opacity-40">{subtitle}</p>
+      <p className="text-body-sm opacity-60">{subtitle}</p>
     </div>
   );
 }
@@ -96,7 +96,7 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
   return (
     <div className="glass-panel p-3 text-center bg-current/5">
       <p className={`text-title-sm sm:text-title-md font-bold ${color}`}>{value}</p>
-      <p className="text-label opacity-40">{label}</p>
+      <p className="text-label opacity-60">{label}</p>
     </div>
   );
 }
@@ -125,7 +125,7 @@ function OverviewSection() {
             <span className="text-title-md opacity-80 shrink-0 w-8 text-center font-bold">{num}</span>
             <div>
               <p className="text-body-sm font-bold opacity-90">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-label opacity-60">{desc}</p>
             </div>
           </div>
         ))}
@@ -144,7 +144,7 @@ function OverviewSection() {
             <span className="text-body-sm opacity-80 shrink-0">{icon}</span>
             <div>
               <p className="text-body-sm font-bold opacity-80">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-label opacity-60">{desc}</p>
             </div>
           </div>
         ))}
@@ -290,7 +290,7 @@ function CertificatesSection() {
           <div key={label} className="text-center p-2 rounded-none bg-current/5">
             <p className="text-title-sm">{icon}</p>
             <p className="text-body-sm font-bold opacity-80">{label}</p>
-            <p className="text-label opacity-40">{desc}</p>
+            <p className="text-label opacity-60">{desc}</p>
           </div>
         ))}
       </div>
@@ -333,7 +333,7 @@ function TokenomicsSection() {
             <span className="opacity-60 shrink-0 mt-0.5">{icon}</span>
             <div>
               <p className="text-body-sm font-bold opacity-80">{title as string}</p>
-              <p className="text-label opacity-40">{desc as string}</p>
+              <p className="text-label opacity-60">{desc as string}</p>
             </div>
           </div>
         ))}
@@ -440,7 +440,7 @@ function SecuritySection() {
           <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
             <div>
               <p className="text-body-sm font-bold opacity-80">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-label opacity-60">{desc}</p>
             </div>
           </div>
         ))}
@@ -489,12 +489,12 @@ function RoadmapSection() {
           <div key={phase as string} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-base font-bold opacity-80">{phase as string}</span>
-              <span className="text-label opacity-40">{date as string}</span>
+              <span className="text-label opacity-60">{date as string}</span>
             </div>
             <ul className="space-y-1">
               {(items as string[]).map(item => (
                 <li key={item} className="text-body-sm opacity-50 flex gap-2">
-                  <span className="opacity-40 shrink-0">{'→'}</span>
+                  <span className="opacity-60 shrink-0">{'→'}</span>
                   <span>{item}</span>
                 </li>
               ))}

@@ -334,7 +334,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   if (!targetAddress) {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
-        <p className="opacity-40 text-base">No user selected</p>
+        <p className="opacity-60 text-base">No user selected</p>
       </div>
     );
   }
@@ -380,7 +380,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-2xl opacity-30">
+            <span className="text-2xl opacity-50">
               {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}
             </span>
           </div>
@@ -393,20 +393,20 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           onClick={(e) => { e.stopPropagation(); handleViewUser(wart.creator); }}
         >
           <HexAvatar address={wart.creator} size={16} />
-          <p className="text-[10px] opacity-40 truncate">{getCreatorName(wart.creator)}</p>
+          <p className="text-[10px] opacity-60 truncate">{getCreatorName(wart.creator)}</p>
         </div>
-        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+        <p className="text-label opacity-60">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
-          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+          <button className="flex items-center gap-1 opacity-60 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+          <button className="opacity-60 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+          <button className="opacity-60 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
+          <button className="opacity-60 hover:opacity-80 cursor-pointer" onClick={e => e.stopPropagation()}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
@@ -459,7 +459,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
 
           <h2 className="text-title-md font-bold opacity-100 font-title mt-3">{alias}</h2>
           <p
-            className="text-[11px] opacity-40 font-mono mt-0.5 cursor-pointer hover:opacity-60 transition-opacity"
+            className="text-[11px] opacity-60 font-mono mt-0.5 cursor-pointer hover:opacity-60 transition-opacity"
             onClick={() => {
               copyToClipboard(targetAddress);
               setCopied(true);
@@ -545,11 +545,11 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                       <div className="border-t border-current/10" />
                       <button onClick={toggleMute} className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between">
                         <span className="opacity-70">Mute</span>
-                        {isMuted && <span className="opacity-40">{'\u2713'}</span>}
+                        {isMuted && <span className="opacity-60">{'\u2713'}</span>}
                       </button>
                       <button onClick={toggleRestrict} className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors flex items-center justify-between">
                         <span className="opacity-70">Restrict</span>
-                        {isRestricted && <span className="opacity-40">{'\u2713'}</span>}
+                        {isRestricted && <span className="opacity-60">{'\u2713'}</span>}
                       </button>
                       <div className="border-t border-current/10" />
                       <button onClick={handleUnfollow} className="w-full text-left px-4 py-2.5 text-body-sm hover:bg-current/5 cursor-pointer transition-colors opacity-70">
@@ -567,7 +567,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                 Message
               </button>
               {!isBlocked && (
-                <button onClick={handleBlock} className="text-body-sm px-2 py-2 opacity-30 cursor-pointer hover:opacity-70 transition-colors" title="Block">
+                <button onClick={handleBlock} className="text-body-sm px-2 py-2 opacity-50 cursor-pointer hover:opacity-70 transition-colors" title="Block">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
                   </svg>
@@ -580,21 +580,21 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           <div className="flex gap-6 mt-4 text-body-sm">
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{followersCount}</span>
-              <span className="opacity-40">Followers</span>
+              <span className="opacity-60">Followers</span>
             </div>
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{followingCount}</span>
-              <span className="opacity-40">Following</span>
+              <span className="opacity-60">Following</span>
             </div>
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{posts.length}</span>
-              <span className="opacity-40">Posts</span>
+              <span className="opacity-60">Posts</span>
             </div>
           </div>
 
           {/* Mutual followers */}
           {mutualFollowers.length > 0 && (
-            <p className="text-label opacity-40 mt-2">
+            <p className="text-label opacity-60 mt-2">
               Followed by {mutualFollowers.length} {mutualFollowers.length === 1 ? 'person' : 'people'} you follow
             </p>
           )}
@@ -610,10 +610,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
             className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
                 ? 'border-current/20 opacity-80'
-                : 'border-transparent opacity-40 hover:opacity-70'
+                : 'border-transparent opacity-60 hover:opacity-70'
             }`}
           >
-            {t.label} <span className="text-label opacity-30 ml-1">{t.count}</span>
+            {t.label} <span className="text-label opacity-50 ml-1">{t.count}</span>
           </button>
         ))}
       </div>
@@ -623,7 +623,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'posts' && (
           posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No posts yet</p>
+              <p className="opacity-60 text-base">No posts yet</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -644,9 +644,9 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                     <audio controls src={post.mediaData} className="mt-2 w-full h-10" />
                   )}
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
-                    <span className="opacity-40 text-body-sm">{post.tipCount > 0 ? `Tip ${post.tipCount}\u2B23` : '0 tips'}</span>
-                    <span className="opacity-40 text-body-sm">{post.rewarpCount} rewarps</span>
-                    <span className="opacity-40 text-body-sm">{post.comments.length} comments</span>
+                    <span className="opacity-60 text-body-sm">{post.tipCount > 0 ? `Tip ${post.tipCount}\u2B23` : '0 tips'}</span>
+                    <span className="opacity-60 text-body-sm">{post.rewarpCount} rewarps</span>
+                    <span className="opacity-60 text-body-sm">{post.comments.length} comments</span>
                   </div>
                 </div>
               ))}
@@ -657,7 +657,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'created' && (
           created.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No artwork created</p>
+              <p className="opacity-60 text-base">No artwork created</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -669,7 +669,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'collection' && (
           collection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Empty collection</p>
+              <p className="opacity-60 text-base">Empty collection</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -682,7 +682,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'curations' && (
           curatorArticles.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune curation</p>
+              <p className="opacity-60 text-base">Aucune curation</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -696,14 +696,14 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                         <img src={coverWart.imageData} alt={article.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-20"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-40"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                         </div>
                       )}
                     </div>
                     <div className="p-3">
                       <p className="text-body-sm font-bold opacity-90 truncate">{article.title}</p>
-                      {article.subtitle && <p className="text-label opacity-40 truncate mt-0.5">{article.subtitle}</p>}
-                      <div className="flex gap-3 mt-2 text-label opacity-30">
+                      {article.subtitle && <p className="text-label opacity-60 truncate mt-0.5">{article.subtitle}</p>}
+                      <div className="flex gap-3 mt-2 text-label opacity-50">
                         <span>{article.likes?.length || 0} likes</span>
                         <span>{article.views || 0} views</span>
                       </div>
@@ -718,7 +718,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
         {tab === 'media' && (
           mediaWarts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No media</p>
+              <p className="opacity-60 text-base">No media</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

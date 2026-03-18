@@ -210,7 +210,7 @@ export default function MessageView() {
             <HexAvatar address={peer} size={32} />
             <div>
               <p className="text-base font-medium opacity-90 hover:opacity-80">{peerAlias}</p>
-              <p className="text-label opacity-40">Chiffré</p>
+              <p className="text-label opacity-60">Chiffré</p>
             </div>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function MessageView() {
               <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] px-3 py-2 ${isMe ? 'bg-current/8 border border-current/12' : 'bg-current/5 border border-current/10'}`}>
                   <p className="text-base opacity-90">{msg.content}</p>
-                  <p className="text-label opacity-30 mt-0.5 text-right">{timeAgo(msg.timestamp)}</p>
+                  <p className="text-label opacity-50 mt-0.5 text-right">{timeAgo(msg.timestamp)}</p>
                 </div>
               </div>
             );
@@ -257,12 +257,12 @@ export default function MessageView() {
               </div>
               <div>
                 <p className="text-base font-medium opacity-90">{selectedChannel.name}</p>
-                <p className="text-label opacity-40">{selectedChannel.members.length} membres · {selectedChannel.isPublic ? 'Public' : 'Privé'}</p>
+                <p className="text-label opacity-60">{selectedChannel.members.length} membres · {selectedChannel.isPublic ? 'Public' : 'Privé'}</p>
               </div>
             </div>
           </div>
           {isMember && (
-            <button onClick={() => handleLeaveChannel(selectedChannel.id)} className="text-label opacity-40 hover:opacity-80 cursor-pointer px-2">
+            <button onClick={() => handleLeaveChannel(selectedChannel.id)} className="text-label opacity-60 hover:opacity-80 cursor-pointer px-2">
               Quitter
             </button>
           )}
@@ -282,7 +282,7 @@ export default function MessageView() {
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
               {selectedChannel.messages.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="opacity-30 text-body-sm">Aucun message. Soyez le premier !</p>
+                  <p className="opacity-50 text-body-sm">Aucun message. Soyez le premier !</p>
                 </div>
               ) : (
                 selectedChannel.messages.map((msg, i) => {
@@ -292,7 +292,7 @@ export default function MessageView() {
                       <div className={`max-w-[80%] px-3 py-2 ${isMe ? 'bg-current/8 border border-current/12' : 'bg-current/5 border border-current/10'}`}>
                         {!isMe && <p className="text-label opacity-50 mb-0.5">{msg.fromAlias}</p>}
                         <p className="text-base opacity-90">{msg.content}</p>
-                        <p className="text-label opacity-30 mt-0.5 text-right">{timeAgo(msg.timestamp)}</p>
+                        <p className="text-label opacity-50 mt-0.5 text-right">{timeAgo(msg.timestamp)}</p>
                       </div>
                     </div>
                   );
@@ -334,7 +334,7 @@ export default function MessageView() {
             <label className="text-body-sm opacity-50">Visibilité :</label>
             <button
               onClick={() => setNewGroupPublic(true)}
-              className={`px-3 py-1.5 text-body-sm cursor-pointer transition-all ${newGroupPublic ? 'bg-current/10 opacity-90' : 'opacity-40 hover:opacity-70'}`}
+              className={`px-3 py-1.5 text-body-sm cursor-pointer transition-all ${newGroupPublic ? 'bg-current/10 opacity-90' : 'opacity-60 hover:opacity-70'}`}
               style={{ border: '1px solid rgba(255,255,255,0.1)' }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline mr-1"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
@@ -342,7 +342,7 @@ export default function MessageView() {
             </button>
             <button
               onClick={() => setNewGroupPublic(false)}
-              className={`px-3 py-1.5 text-body-sm cursor-pointer transition-all ${!newGroupPublic ? 'bg-current/10 opacity-90' : 'opacity-40 hover:opacity-70'}`}
+              className={`px-3 py-1.5 text-body-sm cursor-pointer transition-all ${!newGroupPublic ? 'bg-current/10 opacity-90' : 'opacity-60 hover:opacity-70'}`}
               style={{ border: '1px solid rgba(255,255,255,0.1)' }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline mr-1"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
@@ -371,7 +371,7 @@ export default function MessageView() {
         {/* Search bar */}
         <div className="p-3 border-b border-current/10">
           <div className="relative">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
             </svg>
             <input
@@ -389,18 +389,18 @@ export default function MessageView() {
           {/* Following section (when no search) */}
           {!searchQuery.trim() && friends.length === 0 && following.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30 mb-3">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-50 mb-3">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
               <p className="opacity-50 text-base">Aucun ami pour le moment</p>
-              <p className="opacity-30 text-body-sm mt-1">Suivez des utilisateurs pour les voir ici</p>
+              <p className="opacity-50 text-body-sm mt-1">Suivez des utilisateurs pour les voir ici</p>
             </div>
           )}
 
           {/* Friends (mutual follows) */}
           {!searchQuery.trim() && friends.length > 0 && (
             <div>
-              <p className="px-3 pt-3 pb-1 text-label opacity-40 uppercase tracking-wider">Amis ({friends.length})</p>
+              <p className="px-3 pt-3 pb-1 text-label opacity-60 uppercase tracking-wider">Amis ({friends.length})</p>
               {friends.map(friend => (
                 <button
                   key={friend.address}
@@ -410,9 +410,9 @@ export default function MessageView() {
                   <HexAvatar address={friend.address} size={40} />
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-medium opacity-90 truncate">{friend.alias}</p>
-                    <p className="text-label opacity-30 truncate">{shortAddress(friend.address)}</p>
+                    <p className="text-label opacity-50 truncate">{shortAddress(friend.address)}</p>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-30 shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50 shrink-0">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </button>
@@ -423,7 +423,7 @@ export default function MessageView() {
           {/* Following (not mutual) */}
           {!searchQuery.trim() && following.length > 0 && (
             <div>
-              <p className="px-3 pt-3 pb-1 text-label opacity-40 uppercase tracking-wider">Abonnements ({following.length})</p>
+              <p className="px-3 pt-3 pb-1 text-label opacity-60 uppercase tracking-wider">Abonnements ({following.length})</p>
               {following.filter(f => !friends.some(fr => fr.address === f.address)).map(user => (
                 <button
                   key={user.address}
@@ -433,9 +433,9 @@ export default function MessageView() {
                   <HexAvatar address={user.address} size={40} />
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
-                    <p className="text-label opacity-30 truncate">{shortAddress(user.address)}</p>
+                    <p className="text-label opacity-50 truncate">{shortAddress(user.address)}</p>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-30 shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50 shrink-0">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </button>
@@ -448,11 +448,11 @@ export default function MessageView() {
             <div>
               {searchResults.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="opacity-40 text-body-sm">Aucun résultat pour "{searchQuery}"</p>
+                  <p className="opacity-60 text-body-sm">Aucun résultat pour "{searchQuery}"</p>
                 </div>
               ) : (
                 <>
-                  <p className="px-3 pt-3 pb-1 text-label opacity-40 uppercase tracking-wider">Résultats ({searchResults.length})</p>
+                  <p className="px-3 pt-3 pb-1 text-label opacity-60 uppercase tracking-wider">Résultats ({searchResults.length})</p>
                   {searchResults.map(user => (
                     <button
                       key={user.address}
@@ -462,9 +462,9 @@ export default function MessageView() {
                       <HexAvatar address={user.address} size={40} />
                       <div className="flex-1 min-w-0">
                         <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
-                        <p className="text-label opacity-30 truncate">{shortAddress(user.address)}</p>
+                        <p className="text-label opacity-50 truncate">{shortAddress(user.address)}</p>
                       </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-30 shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50 shrink-0">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                     </button>
@@ -510,7 +510,7 @@ export default function MessageView() {
               key={tab.id}
               onClick={() => { if (tab.id === 'friends') { setView('friends'); } else { setListTab(tab.id); } }}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-body-sm cursor-pointer transition-all ${
-                listTab === tab.id && view === 'list' ? 'opacity-90 border-b-2 border-current' : 'opacity-40 hover:opacity-70'
+                listTab === tab.id && view === 'list' ? 'opacity-90 border-b-2 border-current' : 'opacity-60 hover:opacity-70'
               }`}
             >
               {tab.icon}
@@ -526,11 +526,11 @@ export default function MessageView() {
           <>
             {threads.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30 mb-3">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-50 mb-3">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 <p className="opacity-50 text-base">Aucun message</p>
-                <p className="opacity-30 text-body-sm mt-1">Envoyez un message à un ami</p>
+                <p className="opacity-50 text-body-sm mt-1">Envoyez un message à un ami</p>
                 <button onClick={() => setView('new-dm')} className="warp-button mt-4 px-4 py-2 text-body-sm">
                   Démarrer une conversation
                 </button>
@@ -552,10 +552,10 @@ export default function MessageView() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-base font-medium opacity-90 truncate">{peerAlias}</p>
-                        {lastMsg && <span className="text-label opacity-30 shrink-0">{timeAgo(lastMsg.timestamp)}</span>}
+                        {lastMsg && <span className="text-label opacity-50 shrink-0">{timeAgo(lastMsg.timestamp)}</span>}
                       </div>
                       {lastMsg && (
-                        <p className="text-body-sm opacity-40 truncate mt-0.5">{lastMsg.content}</p>
+                        <p className="text-body-sm opacity-60 truncate mt-0.5">{lastMsg.content}</p>
                       )}
                     </div>
                   </button>
@@ -576,11 +576,11 @@ export default function MessageView() {
             </div>
             {channels.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-6">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30 mb-3">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-50 mb-3">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 <p className="opacity-50 text-base">Aucun groupe</p>
-                <p className="opacity-30 text-body-sm mt-1">Créez un groupe public ou privé</p>
+                <p className="opacity-50 text-body-sm mt-1">Créez un groupe public ou privé</p>
               </div>
             ) : (
               channels.map(ch => {
@@ -602,13 +602,13 @@ export default function MessageView() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-base font-medium opacity-90 truncate">{ch.name}</p>
-                        {lastMsg && <span className="text-label opacity-30 shrink-0">{timeAgo(lastMsg.timestamp)}</span>}
+                        {lastMsg && <span className="text-label opacity-50 shrink-0">{timeAgo(lastMsg.timestamp)}</span>}
                       </div>
-                      <p className="text-body-sm opacity-40 truncate mt-0.5">
+                      <p className="text-body-sm opacity-60 truncate mt-0.5">
                         {lastMsg ? lastMsg.content : ch.description || 'Aucun message'}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-label opacity-30">{ch.members.length} membres</span>
+                        <span className="text-label opacity-50">{ch.members.length} membres</span>
                         {!isMember && <span className="text-label opacity-50 text-amber-400">Rejoindre</span>}
                       </div>
                     </div>

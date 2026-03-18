@@ -66,7 +66,7 @@ export default function LegalsView() {
             </p>
           </section>
 
-          <div className="text-label opacity-30 pt-2 border-t border-current/10">
+          <div className="text-label opacity-50 pt-2 border-t border-current/10">
             Last updated: February 2026 &middot; Strangrz Foundation
           </div>
         </div>

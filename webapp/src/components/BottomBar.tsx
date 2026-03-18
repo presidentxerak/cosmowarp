@@ -114,7 +114,7 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
               className={`relative flex flex-col items-center gap-1 py-2.5 px-2 flex-1 transition-all cursor-pointer ${
-                isActive ? 'opacity-100' : 'opacity-40 hover:opacity-70'
+                isActive ? 'opacity-100' : 'opacity-60 hover:opacity-70'
               }`}
               aria-label={tab.label}
             >

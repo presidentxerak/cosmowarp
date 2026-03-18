@@ -109,7 +109,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
               className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer ${
                 activeTab === item.id
                   ? 'opacity-100'
-                  : 'opacity-40 hover:opacity-80'
+                  : 'opacity-60 hover:opacity-80'
               }`}
               title={item.label}
               aria-label={item.label}
@@ -121,7 +121,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
         <div className="mt-auto pt-2 border-t border-current/10 w-8">
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-all mx-auto"
+            className="w-10 h-10 flex items-center justify-center opacity-60 hover:opacity-80 cursor-pointer transition-all mx-auto"
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           >
             {theme === 'dark' ? (
@@ -157,7 +157,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-opacity"
+              className="w-9 h-9 flex items-center justify-center opacity-60 hover:opacity-80 cursor-pointer transition-opacity"
               aria-label="Close menu"
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -173,7 +173,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
               <HexAvatar address={wallet.address} size={44} animate />
               <div className="min-w-0 flex-1">
                 <p className="text-base font-bold truncate">{wallet.alias || shortAddress(wallet.address)}</p>
-                <p className="text-body-sm opacity-40 truncate">{shortAddress(wallet.address)}</p>
+                <p className="text-body-sm opacity-60 truncate">{shortAddress(wallet.address)}</p>
               </div>
             </button>
           )}

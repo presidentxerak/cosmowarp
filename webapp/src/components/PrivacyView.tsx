@@ -3,7 +3,7 @@ export default function PrivacyView() {
     <div className="space-y-4 pb-4">
       <div className="glass-panel p-5 sm:p-6">
         <h2 className="text-title-md font-bold opacity-100 font-title mb-1">Privacy Policy</h2>
-        <p className="text-body-sm opacity-40 mb-4">How Strangrz protects your data</p>
+        <p className="text-body-sm opacity-60 mb-4">How Strangrz protects your data</p>
 
         <div className="space-y-6 text-base opacity-70 leading-relaxed">
           <div className="glass-panel p-4">
@@ -82,7 +82,7 @@ export default function PrivacyView() {
             </p>
           </section>
 
-          <div className="text-label opacity-30 pt-2 border-t border-current/10">
+          <div className="text-label opacity-50 pt-2 border-t border-current/10">
             Last updated: February 2026 &middot; Strangrz Foundation
           </div>
         </div>

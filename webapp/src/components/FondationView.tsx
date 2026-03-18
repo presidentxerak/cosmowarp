@@ -8,7 +8,7 @@ export default function FondationView() {
           <Logo className="w-10 h-10 animate-float" />
           <div>
             <h2 className="text-title-md font-bold opacity-100 font-title">Strangrz Foundation</h2>
-            <p className="text-body-sm opacity-40">Protocole multi-chaîne de certification pour objets rares</p>
+            <p className="text-body-sm opacity-60">Protocole multi-chaîne de certification pour objets rares</p>
           </div>
         </div>
 
@@ -46,19 +46,19 @@ export default function FondationView() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-body-sm font-medium opacity-90">Décentralisation</p>
-                <p className="text-[11px] opacity-40">Aucune autorité centrale, aucun point unique de défaillance</p>
+                <p className="text-[11px] opacity-60">Aucune autorité centrale, aucun point unique de défaillance</p>
               </div>
               <div>
                 <p className="text-body-sm font-medium opacity-90">Vie privée</p>
-                <p className="text-[11px] opacity-40">Vos données vous appartiennent, toujours</p>
+                <p className="text-[11px] opacity-60">Vos données vous appartiennent, toujours</p>
               </div>
               <div>
                 <p className="text-body-sm font-medium opacity-90">Transparence</p>
-                <p className="text-[11px] opacity-40">Code ouvert, gouvernance ouverte</p>
+                <p className="text-[11px] opacity-60">Code ouvert, gouvernance ouverte</p>
               </div>
               <div>
                 <p className="text-body-sm font-medium opacity-90">Accessibilité</p>
-                <p className="text-[11px] opacity-40">Offline + Online, pour tous et partout</p>
+                <p className="text-[11px] opacity-60">Offline + Online, pour tous et partout</p>
               </div>
             </div>
           </div>

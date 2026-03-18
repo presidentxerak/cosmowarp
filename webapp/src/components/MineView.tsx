@@ -187,7 +187,7 @@ export default function MineView() {
                   className={`py-3 px-3 text-body-sm font-medium transition-all cursor-pointer text-center ${
                     energyLevel === e.id
                       ? 'bg-current/10 border border-current/20 opacity-100'
-                      : 'border border-current/10 opacity-40 hover:opacity-70 hover:border-current/15'
+                      : 'border border-current/10 opacity-60 hover:opacity-70 hover:border-current/15'
                   }`}
                 >
                   <div className="text-body-lg mb-0.5">{e.icon}</div>
@@ -221,7 +221,7 @@ export default function MineView() {
                       const newVal = prev ? `${prev}, ${w.title}` : w.title;
                       return newVal.slice(0, 120);
                     })}
-                    className="text-body-sm opacity-40 hover:opacity-70 border border-current/10 px-2 py-1 cursor-pointer transition-all truncate max-w-[140px]"
+                    className="text-body-sm opacity-60 hover:opacity-70 border border-current/10 px-2 py-1 cursor-pointer transition-all truncate max-w-[140px]"
                   >
                     + {w.title}
                   </button>
@@ -286,7 +286,7 @@ export default function MineView() {
                   style={{ width: `${Math.min(100, (progress.bestZeroBits / progress.targetBits) * 100)}%` }}
                 />
               </div>
-              <p className="text-label opacity-40 mt-1 text-center">
+              <p className="text-label opacity-60 mt-1 text-center">
                 {(progress.hashesComputed || 0).toLocaleString()} hashes — {progress.bestZeroBits}/{progress.targetBits} bits
               </p>
             </div>

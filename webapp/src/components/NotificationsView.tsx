@@ -55,7 +55,7 @@ export default function NotificationsView() {
       {/* Mesh stats */}
       {meshStats && (
         <div className="glass-panel p-3">
-          <div className="flex gap-4 text-label opacity-40 flex-wrap">
+          <div className="flex gap-4 text-label opacity-60 flex-wrap">
             <span>DAG: <span className="opacity-80">{meshStats.totalTransactions}</span></span>
             <span>Tips: <span className="opacity-80">{meshStats.totalTips}</span></span>
             <span>Resonance: <span className="opacity-80">{(meshStats.avgResonance * 100).toFixed(0)}%</span></span>
@@ -67,12 +67,12 @@ export default function NotificationsView() {
       {/* Transaction list */}
       {globalTxs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30 mb-3">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-50 mb-3">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           <p className="opacity-50 text-base">No notifications yet</p>
-          <p className="opacity-30 text-body-sm mt-1">Transactions will appear here</p>
+          <p className="opacity-50 text-body-sm mt-1">Transactions will appear here</p>
         </div>
       ) : (
         <div className="space-y-1">
@@ -87,9 +87,9 @@ export default function NotificationsView() {
                        tx.type === 'genesis' ? 'Genesis' :
                        tx.type === 'send' ? 'Transfer' : tx.type}
                     </span>
-                    <span className="text-label opacity-30">{timeAgo(tx.timestamp)}</span>
+                    <span className="text-label opacity-50">{timeAgo(tx.timestamp)}</span>
                     {tx.layer !== undefined && (
-                      <span className="text-label px-1.5 py-0.5 bg-current/5 opacity-80/70">
+                      <span className="text-label px-1.5 py-0.5 bg-current/5 opacity-70">
                         {LAYER_NAMES[tx.layer]}
                       </span>
                     )}
@@ -114,14 +114,14 @@ export default function NotificationsView() {
                   {(tx.resonanceScore !== undefined || tx.confirmations !== undefined) && (
                     <div className="flex gap-3 mt-1 text-label">
                       {tx.resonanceScore !== undefined && (
-                        <span className="opacity-80/60">{(tx.resonanceScore * 100).toFixed(0)}% resonance</span>
+                        <span className="opacity-60">{(tx.resonanceScore * 100).toFixed(0)}% resonance</span>
                       )}
                       {tx.confirmations !== undefined && tx.confirmations > 0 && (
-                        <span className="opacity-80/60">{tx.confirmations} conf</span>
+                        <span className="opacity-60">{tx.confirmations} conf</span>
                       )}
                     </div>
                   )}
-                  {tx.memo && <p className="text-label opacity-40 mt-1 truncate">{tx.memo}</p>}
+                  {tx.memo && <p className="text-label opacity-60 mt-1 truncate">{tx.memo}</p>}
                 </div>
                 <div className="text-right shrink-0">
                   <span className={`text-base font-bold ${

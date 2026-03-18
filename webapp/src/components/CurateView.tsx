@@ -230,7 +230,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             <img src={coverWart.imageData} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(100,50,150,0.1))' }}>
-              <span className="text-4xl opacity-20">{'\u2B21'}</span>
+              <span className="text-4xl opacity-40">{'\u2B21'}</span>
             </div>
           )}
           {/* Overlay gradient */}
@@ -253,10 +253,10 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             <div className="flex items-center gap-3 mt-3">
               <HexAvatar address={article.authorAddress} size={20} />
               <span className="text-[11px] opacity-50" style={{ color: '#ffffff' }}>by {article.authorAlias}</span>
-              <span className="text-[11px] opacity-30" style={{ color: '#ffffff' }}>{'\u2022'}</span>
-              <span className="text-[11px] opacity-40" style={{ color: '#ffffff' }}>{new Date(article.createdAt).toLocaleDateString()}</span>
-              <span className="text-[11px] opacity-30" style={{ color: '#ffffff' }}>{'\u2022'}</span>
-              <span className="text-[11px] opacity-40" style={{ color: '#ffffff' }}>{'\u2665'} {article.likes.length}</span>
+              <span className="text-[11px] opacity-50" style={{ color: '#ffffff' }}>{'\u2022'}</span>
+              <span className="text-[11px] opacity-60" style={{ color: '#ffffff' }}>{new Date(article.createdAt).toLocaleDateString()}</span>
+              <span className="text-[11px] opacity-50" style={{ color: '#ffffff' }}>{'\u2022'}</span>
+              <span className="text-[11px] opacity-60" style={{ color: '#ffffff' }}>{'\u2665'} {article.likes.length}</span>
             </div>
           </div>
         </div>
@@ -270,11 +270,11 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
     <div className="space-y-0 pb-4">
       {/* Magazine Header */}
       <div className="text-center py-6 sm:py-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <p className="text-[10px] tracking-[0.4em] uppercase opacity-30 mb-1">Strangrz</p>
+        <p className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-1">Strangrz</p>
         <h1 className="text-title-xl sm:text-[2.5rem] font-title font-bold tracking-tight opacity-95" style={{ letterSpacing: '-0.02em' }}>
           CURATE
         </h1>
-        <p className="text-body-sm opacity-40 mt-1 max-w-md mx-auto">
+        <p className="text-body-sm opacity-60 mt-1 max-w-md mx-auto">
           The art magazine for collectors and curators
         </p>
         <InfoTooltip text="Curate is Strangrz's editorial platform. Collectors who own 100+ artworks become Curators and can write articles, highlight artists, and curate collections like an art magazine." align="center" />
@@ -296,7 +296,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             className={`px-4 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
                 ? 'border-current/20 opacity-80'
-                : 'border-transparent opacity-40 hover:opacity-70'
+                : 'border-transparent opacity-60 hover:opacity-70'
             }`}
           >
             {t.label}
@@ -311,7 +311,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             <div className="text-center py-20">
               <div className="text-5xl opacity-10 mb-4">{'\u2B21'}</div>
               <h3 className="text-title-sm font-title font-bold opacity-60 mb-2">No articles yet</h3>
-              <p className="text-body-sm opacity-30 max-w-sm mx-auto">
+              <p className="text-body-sm opacity-50 max-w-sm mx-auto">
                 {isCurator
                   ? 'Be the first to publish a curated article! Highlight your favorite artists and artworks.'
                   : `Collect ${100 - myCollection.length} more artworks to become a Curator and start publishing.`
@@ -322,7 +322,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${progressToCurator}%`, background: 'linear-gradient(90deg, #d4af37, #c0a030)' }} />
                   </div>
-                  <p className="text-[10px] opacity-30 mt-1">{myCollection.length}/100 artworks collected</p>
+                  <p className="text-[10px] opacity-50 mt-1">{myCollection.length}/100 artworks collected</p>
                 </div>
               )}
             </div>
@@ -349,11 +349,11 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
         <div className="pt-4 space-y-2">
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Curators</h2>
-            <p className="text-body-sm opacity-40">The most influential art curators on Strangrz</p>
+            <p className="text-body-sm opacity-60">The most influential art curators on Strangrz</p>
           </div>
           {topCurators.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No curators yet. Be the first!</p>
+              <p className="opacity-60 text-base">No curators yet. Be the first!</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -363,7 +363,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   onClick={() => navigateToProfile(curator.address)}
                   className="w-full flex items-center gap-3 p-3 glass-panel hover:bg-current/5 transition-colors cursor-pointer text-left"
                 >
-                  <span className="text-label opacity-30 w-6 text-center font-bold">#{idx + 1}</span>
+                  <span className="text-label opacity-50 w-6 text-center font-bold">#{idx + 1}</span>
                   <HexAvatar address={curator.address} size={36} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -373,7 +373,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                         CURATOR
                       </span>
                     </div>
-                    <div className="flex gap-3 text-label opacity-40">
+                    <div className="flex gap-3 text-label opacity-60">
                       <span>{curator.articlesCount} articles</span>
                       <span>{curator.totalLikes} likes</span>
                       <span>{curator.totalViews} views</span>
@@ -391,7 +391,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
         <div className="pt-4 space-y-2">
           {articles.filter(a => a.authorAddress === wallet.address).length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">You haven't published any articles yet</p>
+              <p className="opacity-60 text-base">You haven't published any articles yet</p>
               <button onClick={() => setTab('create')} className="warp-button px-4 py-2 mt-4 text-body-sm">Write your first article</button>
             </div>
           ) : (
@@ -400,14 +400,14 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                 <div key={article.id} className="glass-panel p-3 flex gap-3">
                   <div className="flex-1 min-w-0">
                     <h4 className="text-base font-bold opacity-90 truncate cursor-pointer hover:opacity-100" onClick={() => handleViewArticle(article)}>{article.title}</h4>
-                    <p className="text-body-sm opacity-40 truncate">{article.subtitle}</p>
-                    <div className="flex gap-3 text-label opacity-30 mt-1">
+                    <p className="text-body-sm opacity-60 truncate">{article.subtitle}</p>
+                    <div className="flex gap-3 text-label opacity-50 mt-1">
                       <span>{new Date(article.createdAt).toLocaleDateString()}</span>
                       <span>{'\u2665'} {article.likes.length}</span>
                       <span>{article.views} views</span>
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteArticle(article.id)} className="opacity-30 hover:opacity-70 cursor-pointer text-label self-start">Delete</button>
+                  <button onClick={() => handleDeleteArticle(article.id)} className="opacity-50 hover:opacity-70 cursor-pointer text-label self-start">Delete</button>
                 </div>
               ))}
             </div>
@@ -420,7 +420,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
         <div className="pt-4 space-y-4 max-w-2xl mx-auto">
           <div className="glass-panel p-4 sm:p-6 space-y-4">
             <h3 className="text-title-sm font-title font-bold opacity-90">New Curated Article</h3>
-            <p className="text-body-sm opacity-40">Share your perspective on the art world. Feature artists and artworks from your collection.</p>
+            <p className="text-body-sm opacity-60">Share your perspective on the art world. Feature artists and artworks from your collection.</p>
 
             {createError && <p className="text-body-sm" style={{ color: '#ff6b6b' }}>{createError}</p>}
             {createSuccess && <p className="text-body-sm" style={{ color: '#51cf66' }}>{createSuccess}</p>}
@@ -472,7 +472,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                       <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                        <span className="text-lg opacity-30">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                        <span className="text-lg opacity-50">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
                       </div>
                     )}
                     {artFeaturedWarts.includes(wart.id) && (
@@ -497,7 +497,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   <button
                     key={address}
                     onClick={() => toggleFeaturedArtist(address)}
-                    className={`flex items-center gap-1.5 px-2 py-1 text-body-sm transition-all cursor-pointer ${artFeaturedArtists.includes(address) ? 'opacity-90' : 'opacity-40 hover:opacity-60'}`}
+                    className={`flex items-center gap-1.5 px-2 py-1 text-body-sm transition-all cursor-pointer ${artFeaturedArtists.includes(address) ? 'opacity-90' : 'opacity-60 hover:opacity-60'}`}
                     style={artFeaturedArtists.includes(address) ? { background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' } : { border: '1px solid rgba(255,255,255,0.1)' }}
                   >
                     <HexAvatar address={address} size={16} />
@@ -521,15 +521,15 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
       {tab === 'create' && wallet && !isCurator && (
         <div className="text-center py-16 px-4">
           <div className="max-w-md mx-auto glass-panel p-6 sm:p-8">
-            <div className="text-4xl opacity-20 mb-4">{'\u2B21'}</div>
+            <div className="text-4xl opacity-40 mb-4">{'\u2B21'}</div>
             <h3 className="text-title-sm font-title font-bold opacity-80 mb-2">Become a Curator</h3>
-            <p className="text-body-sm opacity-40 mb-4">
+            <p className="text-body-sm opacity-60 mb-4">
               Collect 100 artworks to unlock Curator status. Curators can write editorial articles, feature artists, and create curated collections.
             </p>
             <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
               <div className="h-full rounded-full transition-all" style={{ width: `${progressToCurator}%`, background: 'linear-gradient(90deg, #d4af37, #c0a030)' }} />
             </div>
-            <p className="text-label opacity-40">{myCollection.length}/100 artworks collected ({progressToCurator}%)</p>
+            <p className="text-label opacity-60">{myCollection.length}/100 artworks collected ({progressToCurator}%)</p>
             <button onClick={() => onNavigate('gallery')} className="warp-button px-6 py-2 mt-4 text-body-sm">Browse Gallery</button>
           </div>
         </div>
@@ -539,7 +539,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
       {tab === 'article-detail' && selectedArticle && (
         <div className="pt-0 max-w-3xl mx-auto">
           {/* Back button */}
-          <button onClick={() => { setSelectedArticle(null); setTab('magazine'); }} className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer py-3 flex items-center gap-1">
+          <button onClick={() => { setSelectedArticle(null); setTab('magazine'); }} className="text-body-sm opacity-60 hover:opacity-70 cursor-pointer py-3 flex items-center gap-1">
             {'\u2190'} Back to Magazine
           </button>
 
@@ -559,7 +559,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             {selectedArticle.tags.length > 0 && (
               <div className="flex gap-2 mb-3">
                 {selectedArticle.tags.map(tag => (
-                  <span key={tag} className="text-[10px] tracking-[0.15em] uppercase opacity-40 px-2 py-0.5" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
+                  <span key={tag} className="text-[10px] tracking-[0.15em] uppercase opacity-60 px-2 py-0.5" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{tag}</span>
                 ))}
               </div>
             )}
@@ -571,7 +571,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
               <HexAvatar address={selectedArticle.authorAddress} size={28} />
               <div>
                 <button onClick={() => navigateToProfile(selectedArticle.authorAddress)} className="text-body-sm font-medium opacity-80 hover:opacity-100 cursor-pointer">{selectedArticle.authorAlias}</button>
-                <div className="flex gap-3 text-label opacity-30">
+                <div className="flex gap-3 text-label opacity-50">
                   <span>{new Date(selectedArticle.createdAt).toLocaleDateString()}</span>
                   <span>{selectedArticle.views} views</span>
                 </div>
@@ -602,7 +602,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
           {/* Featured artworks gallery */}
           {selectedArticle.featuredWartIds.length > 0 && (
             <div className="px-0 sm:px-4 mb-8">
-              <p className="text-[10px] tracking-[0.3em] uppercase opacity-30 mb-3">Featured Works</p>
+              <p className="text-[10px] tracking-[0.3em] uppercase opacity-50 mb-3">Featured Works</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {selectedArticle.featuredWartIds.map(wartId => {
                   const wart = getWartById(wartId);
@@ -614,13 +614,13 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                           <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-2xl opacity-20">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                            <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
                           </div>
                         )}
                       </div>
                       <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
-                      <p className="text-label opacity-30">by {getCreatorName(wart.creator)}</p>
-                      {wart.price !== null && <p className="text-label opacity-40">{wart.price} {'\u2B23'}</p>}
+                      <p className="text-label opacity-50">by {getCreatorName(wart.creator)}</p>
+                      {wart.price !== null && <p className="text-label opacity-60">{wart.price} {'\u2B23'}</p>}
                     </div>
                   );
                 })}
@@ -631,7 +631,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
           {/* Featured artists */}
           {selectedArticle.featuredArtists.length > 0 && (
             <div className="px-0 sm:px-4 mb-8">
-              <p className="text-[10px] tracking-[0.3em] uppercase opacity-30 mb-3">Featured Artists</p>
+              <p className="text-[10px] tracking-[0.3em] uppercase opacity-50 mb-3">Featured Artists</p>
               <div className="flex flex-wrap gap-2">
                 {selectedArticle.featuredArtists.map(address => (
                   <button
@@ -642,7 +642,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                     <HexAvatar address={address} size={28} />
                     <div className="text-left">
                       <p className="text-body-sm font-medium opacity-80">{getCreatorName(address)}</p>
-                      <p className="text-label opacity-30">{shortAddress(address)}</p>
+                      <p className="text-label opacity-50">{shortAddress(address)}</p>
                     </div>
                   </button>
                 ))}

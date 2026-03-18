@@ -195,7 +195,7 @@ export default function WalletView() {
               <span className="flex items-center justify-center gap-2"><Spinner /> Verifying...</span>
             ) : 'Verify'}
           </button>
-          <p className="text-label opacity-30">You can also enter a backup code</p>
+          <p className="text-label opacity-50">You can also enter a backup code</p>
         </div>
       </div>
     );
@@ -210,7 +210,7 @@ export default function WalletView() {
         </div>
         <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-logo">{'\u30B9\u30C8\u30EC\u30F3\u30B8\u30E3\u30FC\u30BA'}</h2>
         <p className="text-body-sm opacity-60 mb-1">Strangrz</p>
-        <p className="text-body-sm opacity-40 mb-5">
+        <p className="text-body-sm opacity-60 mb-5">
           Protocole de certification pour objets rares
         </p>
 
@@ -221,7 +221,7 @@ export default function WalletView() {
             className={`flex-1 py-2.5 text-base font-bold transition-colors cursor-pointer ${
               authTab === 'signup'
                 ? 'bg-current/5 opacity-80 border-b-2 border-current/20'
-                : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                : 'opacity-60 hover:opacity-70 hover:bg-current/5'
             }`}
           >
             Sign Up
@@ -231,7 +231,7 @@ export default function WalletView() {
             className={`flex-1 py-2.5 text-base font-bold transition-colors cursor-pointer ${
               authTab === 'signin'
                 ? 'bg-current/5 opacity-80 border-b-2 border-current/20'
-                : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                : 'opacity-60 hover:opacity-70 hover:bg-current/5'
             }`}
           >
             Sign In
@@ -288,7 +288,7 @@ export default function WalletView() {
                 </span>
               )}
             </button>
-            <p className="text-label opacity-30 pt-2">Ed25519 + PBKDF2 (600K rounds) + AES-256-GCM</p>
+            <p className="text-label opacity-50 pt-2">Ed25519 + PBKDF2 (600K rounds) + AES-256-GCM</p>
           </div>
         ) : (
           <div className="max-w-xs mx-auto space-y-3">
@@ -305,7 +305,7 @@ export default function WalletView() {
                   className={`flex-1 py-2 text-[11px] font-medium transition-all cursor-pointer flex items-center justify-center gap-1 ${
                     signInMethod === m.id
                       ? 'bg-current/5 opacity-80 border border-current/10'
-                      : 'opacity-40 hover:opacity-70 border border-current/10 hover:bg-current/5'
+                      : 'opacity-60 hover:opacity-70 border border-current/10 hover:bg-current/5'
                   }`}
                 >
                   {m.icon} {m.label}
@@ -317,7 +317,7 @@ export default function WalletView() {
             {signInMethod === 'strangrzid' && (
               <div className="space-y-3">
                 <p className="text-base opacity-50">Sign in with your StrangrzID credentials.</p>
-                <p className="text-label opacity-40">Same username + password = same wallet, any device.</p>
+                <p className="text-label opacity-60">Same username + password = same wallet, any device.</p>
                 <input
                   className="warp-input text-center"
                   placeholder="Username"
@@ -342,7 +342,7 @@ export default function WalletView() {
                     <span className="flex items-center justify-center gap-2"><Spinner />Deriving keys...</span>
                   ) : 'Sign In'}
                 </button>
-                <p className="text-label opacity-40">
+                <p className="text-label opacity-60">
                   Mot de passe oublié ? Votre wallet est dérivé de votre username + mot de passe. Sans ces identifiants, le wallet ne peut pas être récupéré. Vous pouvez aussi importer un fichier de récupération via l'onglet <strong>File</strong>.
                 </p>
               </div>
@@ -352,7 +352,7 @@ export default function WalletView() {
             {signInMethod === 'strangrzlink' && (
               <div className="space-y-3">
                 <p className="text-base opacity-50">Paste a StrangrzLink code from another device.</p>
-                <p className="text-label opacity-40">StrangrzLink is an encrypted transfer code you can share via any messaging app.</p>
+                <p className="text-label opacity-60">StrangrzLink is an encrypted transfer code you can share via any messaging app.</p>
                 <textarea
                   className="warp-input text-center text-body-sm min-h-[80px] resize-none"
                   placeholder="Paste STZLINK-... code here"
@@ -385,7 +385,7 @@ export default function WalletView() {
             {signInMethod === 'file' && (
               <div className="space-y-3">
                 <p className="text-base opacity-50">Restore from a recovery file.</p>
-                <p className="text-label opacity-40">Legacy method: upload the .json file exported from a previous wallet.</p>
+                <p className="text-label opacity-60">Legacy method: upload the .json file exported from a previous wallet.</p>
                 <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={e => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -508,7 +508,7 @@ export default function WalletView() {
           </span>
         </button>
 
-        <p className="text-label opacity-30 mt-3">Ed25519 + PBKDF2 (600K) + AES-256-GCM</p>
+        <p className="text-label opacity-50 mt-3">Ed25519 + PBKDF2 (600K) + AES-256-GCM</p>
       </div>
     );
   }
@@ -522,7 +522,7 @@ export default function WalletView() {
         </div>
         <p className="text-base opacity-50 mb-1">Welcome back</p>
         <h2 className="text-title-md font-bold opacity-100 mb-1 font-title">{wallet.alias ? `@${wallet.alias}` : shortAddress(wallet.address)}</h2>
-        <p className="text-title-sm font-bold opacity-100/40 mb-5">{wallet.balance.toLocaleString()} {'\u2B23'}</p>
+        <p className="text-title-sm font-bold opacity-100 mb-5">{wallet.balance.toLocaleString()} {'\u2B23'}</p>
         <div className="max-w-xs mx-auto space-y-3">
           <input className="warp-input text-center" type="password" placeholder="Enter your password" value={unlockPassword}
             onChange={e => { setUnlockPassword(e.target.value); setUnlockError(''); }}
@@ -534,7 +534,7 @@ export default function WalletView() {
             {unlocking ? <span className="flex items-center justify-center gap-2"><Spinner />Unlocking...</span> : 'Unlock'}
           </button>
           <button
-            className="text-label opacity-40 hover:opacity-70 transition-opacity cursor-pointer bg-transparent border-none"
+            className="text-label opacity-60 hover:opacity-70 transition-opacity cursor-pointer bg-transparent border-none"
             onClick={() => setShowForgotPassword(!showForgotPassword)}
           >
             Mot de passe oublié ?
@@ -669,7 +669,7 @@ export default function WalletView() {
 
           {/* Address */}
           <div className="glass-panel p-3">
-            <p className="text-label opacity-40 mb-1">YOUR ADDRESS (Ed25519)</p>
+            <p className="text-label opacity-60 mb-1">YOUR ADDRESS (Ed25519)</p>
             <div className="flex items-center gap-2">
               <code className="text-body-sm opacity-80 flex-1 truncate">{wallet.address}</code>
               <button onClick={copyAddress} className="warp-button text-body-sm px-2 py-1">
@@ -711,7 +711,7 @@ export default function WalletView() {
                       Download Recovery Kit
                     </button>
                     <button
-                      className="text-body-sm px-3 py-1.5 opacity-40 hover:opacity-70 border border-current/10 cursor-pointer"
+                      className="text-body-sm px-3 py-1.5 opacity-60 hover:opacity-70 border border-current/10 cursor-pointer"
                       onClick={dismissRecoveryReminder}
                     >
                       Later
@@ -726,7 +726,7 @@ export default function WalletView() {
           <div className="glass-panel p-4">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-label opacity-40">TWO-FACTOR AUTHENTICATION</p>
+                <p className="text-label opacity-60">TWO-FACTOR AUTHENTICATION</p>
                 <p className="text-body-sm opacity-50">
                   {is2FAEnabled(wallet.address) ? 'Enabled — your account is protected' : 'Not enabled — add an extra layer of security'}
                 </p>
@@ -802,7 +802,7 @@ export default function WalletView() {
                 </div>
 
                 <button
-                  className="text-body-sm opacity-40 hover:opacity-70 cursor-pointer"
+                  className="text-body-sm opacity-60 hover:opacity-70 cursor-pointer"
                   onClick={() => { setSetting2FA(false); setSetup2FAData(null); setSetup2FACode(''); }}
                 >
                   Cancel
@@ -841,7 +841,7 @@ export default function WalletView() {
           <div className="glass-panel p-4">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-label opacity-40">SYNC & BACKUP</p>
+                <p className="text-label opacity-60">SYNC & BACKUP</p>
                 <p className="text-body-sm opacity-50">StrangrzID + StrangrzLink available in Settings</p>
               </div>
               <button onClick={handleExport} className="text-label px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer flex items-center gap-1">
@@ -930,7 +930,7 @@ export default function WalletView() {
           <div className="glass-panel p-4">
             <h3 className="text-base font-bold opacity-70 mb-3">Recent Transactions</h3>
             {recentTxs.length === 0 ? (
-              <p className="text-body-sm opacity-40 text-center py-4">No transactions yet</p>
+              <p className="text-body-sm opacity-60 text-center py-4">No transactions yet</p>
             ) : (
               <div className="space-y-2">
                 {recentTxs.map(tx => (
@@ -953,9 +953,9 @@ export default function WalletView() {
                           tx.type === 'streak_reward' ? 'Streak Reward' : tx.type === 'send' ? `To ${shortAddress(tx.to)}` :
                           `From ${shortAddress(tx.from)}`)).replace(/Cosmorare/gi, 'Strangrz')}
                       </p>
-                      <div className="flex gap-2 text-label opacity-40">
-                        {tx.layer !== undefined && <span className="opacity-80/60">{LAYER_NAMES[tx.layer]}</span>}
-                        {tx.resonanceScore !== undefined && <span className="opacity-80/60">{(tx.resonanceScore * 100).toFixed(0)}% resonance</span>}
+                      <div className="flex gap-2 text-label opacity-60">
+                        {tx.layer !== undefined && <span className="opacity-60">{LAYER_NAMES[tx.layer]}</span>}
+                        {tx.resonanceScore !== undefined && <span className="opacity-60">{(tx.resonanceScore * 100).toFixed(0)}% resonance</span>}
                       </div>
                     </div>
                     <span className={`font-bold shrink-0 ${tx.type === 'send' || tx.type === 'wart_buy' ? 'opacity-80' : 'opacity-80'}`}>
@@ -977,9 +977,9 @@ export default function WalletView() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
               Envoyer des Strangrz
             </h2>
-            <p className="text-body-sm opacity-40 mb-4">
+            <p className="text-body-sm opacity-60 mb-4">
               Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u2B23'}</span>
-              <span className="opacity-30 ml-2">Ed25519 signed + DAG validated</span>
+              <span className="opacity-50 ml-2">Ed25519 signed + DAG validated</span>
             </p>
             <div className="space-y-3 max-w-md mx-auto">
               <div>
@@ -1013,7 +1013,7 @@ export default function WalletView() {
             </div>
           </div>
           <div className="glass-panel p-4">
-            <p className="text-label opacity-40 mb-2">QUICK AMOUNTS</p>
+            <p className="text-label opacity-60 mb-2">QUICK AMOUNTS</p>
             <div className="flex gap-2 flex-wrap">
               {[10, 25, 50, 100].map(a => (
                 <button key={a} className="warp-button text-body-sm" onClick={() => setSendAmount(a.toString())} disabled={a > wallet.balance}>{a} {'\u2B23'}</button>
@@ -1043,7 +1043,7 @@ export default function WalletView() {
             <div className="text-4xl sm:text-5xl font-bold opacity-100 mb-1">
               0.00 <span className="text-title-lg">ETH</span>
             </div>
-            <p className="text-label opacity-40">ERC-721 COMPATIBLE</p>
+            <p className="text-label opacity-60">ERC-721 COMPATIBLE</p>
           </div>
 
           {/* Connection Status */}
@@ -1055,7 +1055,7 @@ export default function WalletView() {
                   <span className="text-lg opacity-60">{'\u26A0'}</span>
                   <div>
                     <p className="text-body-sm opacity-70">No wallet connected</p>
-                    <p className="text-label opacity-40">Connect MetaMask or WalletConnect</p>
+                    <p className="text-label opacity-60">Connect MetaMask or WalletConnect</p>
                   </div>
                 </div>
                 <button className="px-4 py-2 bg-current/10 border border-current/20 text-body-sm opacity-70 hover:opacity-90 cursor-pointer transition-all">
@@ -1073,14 +1073,14 @@ export default function WalletView() {
                 <span className="text-lg shrink-0">{'\u2B22'}</span>
                 <div>
                   <p className="opacity-70 font-bold mb-0.5">Strangrz Chain (SZ-721)</p>
-                  <p className="opacity-40">Zero gas fees. Instant minting. Protected by Strangrz system with STCERT certificates and StrangrzCode on-chain backup.</p>
+                  <p className="opacity-60">Zero gas fees. Instant minting. Protected by Strangrz system with STCERT certificates and StrangrzCode on-chain backup.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-current/5 border border-current/10">
                 <span className="text-lg shrink-0">{'\u039E'}</span>
                 <div>
                   <p className="opacity-70 font-bold mb-0.5">Ethereum (ERC-721)</p>
-                  <p className="opacity-40">Standard ERC-721 NFTs on Ethereum mainnet. Gas fees apply. Full Strangrz protection and cross-chain verification via the adapter system.</p>
+                  <p className="opacity-60">Standard ERC-721 NFTs on Ethereum mainnet. Gas fees apply. Full Strangrz protection and cross-chain verification via the adapter system.</p>
                 </div>
               </div>
             </div>
@@ -1089,13 +1089,13 @@ export default function WalletView() {
           {/* ETH NFTs */}
           <div className="glass-panel p-4">
             <h3 className="text-base font-bold opacity-70 mb-3">Ethereum NFTs</h3>
-            <p className="text-body-sm opacity-40 text-center py-6">No Ethereum NFTs yet. Mint your first artwork on Ethereum from the Gallery.</p>
+            <p className="text-body-sm opacity-60 text-center py-6">No Ethereum NFTs yet. Mint your first artwork on Ethereum from the Gallery.</p>
           </div>
 
           {/* ETH Transactions */}
           <div className="glass-panel p-4">
             <h3 className="text-base font-bold opacity-70 mb-3">Ethereum Transactions</h3>
-            <p className="text-body-sm opacity-40 text-center py-4">No Ethereum transactions yet</p>
+            <p className="text-body-sm opacity-60 text-center py-4">No Ethereum transactions yet</p>
           </div>
         </div>
       )}

@@ -219,18 +219,18 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-2xl opacity-30">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+            <span className="text-2xl opacity-50">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
           </div>
         )}
       </div>
       <div className="p-2">
         <p className="text-body-sm font-medium opacity-90 truncate">{wart.title}</p>
-        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+        <p className="text-label opacity-60">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
         <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-current/10">
           <button className={`opacity-${wart.likes?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
+          <button className="opacity-60 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
           <button className={`opacity-${wart.bookmarks?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
@@ -260,26 +260,26 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         )}
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
-        {/* Banner edit button */}
+        {/* Banner edit button — always visible */}
         <button
           onClick={() => bannerRef.current?.click()}
-          className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-white/80 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
-          title="Changer la banniere (max 200 Ko)"
+          className="absolute top-3 right-3 flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-all cursor-pointer"
+          title="Changer la bannière (max 200 Ko)"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
             <circle cx="12" cy="13" r="4"/>
           </svg>
           Edit
         </button>
         <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
-        {/* Top-right action buttons */}
-        <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Top-left action buttons — always visible */}
+        <div className="absolute top-3 left-3 flex gap-2">
           <button
             onClick={() => onNavigate('wallet')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-white/80 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-all cursor-pointer"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="2" y="4" width="20" height="16" rx="2" />
               <path d="M2 10h20" />
             </svg>
@@ -287,24 +287,25 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           </button>
           <button
             onClick={() => onNavigate('settings')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-white/80 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-all cursor-pointer"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
+            Paramètres
           </button>
         </div>
       </div>
 
       {/* ─── Profile Info (centered, overlapping banner) ──── */}
-      <div className="relative max-w-2xl mx-auto px-4">
+      <div className="relative max-w-2xl mx-auto px-3 sm:px-4">
         {/* Avatar - overlapping the banner */}
         <div className="flex flex-col items-center -mt-14 sm:-mt-16">
           <div className="relative group">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--bg,#0a0a0f)] overflow-hidden bg-[var(--bg,#0a0a0f)]">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 overflow-hidden flex items-center justify-center">
               {profileImage ? (
-                <img src={profileImage} alt={alias} className="w-full h-full object-cover" />
+                <img src={profileImage} alt={alias} className="w-full h-full object-cover rounded-full" />
               ) : (
                 <HexAvatar address={wallet.address} size={128} animate />
               )}
@@ -329,15 +330,15 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
 
           {/* Name & address */}
           <h2 className="text-title-lg font-bold opacity-100 font-title mt-3">{alias}</h2>
-          <p className="text-[11px] opacity-40 font-mono mt-0.5">{wallet.address}</p>
+          <p className="text-[11px] opacity-60 font-mono mt-0.5">{wallet.address}</p>
 
           {/* Balance & Level */}
           <div className="flex gap-4 mt-2 items-center flex-wrap justify-center">
             <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u2B23'}</span>
             <InfoTooltip text="Your STRNGRZ balance (\u2B23). Earn by mining, selling artworks, or receiving tips." />
-            <span className="text-body-sm opacity-40">|</span>
+            <span className="text-body-sm opacity-60">|</span>
             <span className="text-base font-bold opacity-80">Lv.{wallet.level || 1}</span>
-            <span className="text-label opacity-40">{wallet.levelName}</span>
+            <span className="text-label opacity-60">{wallet.levelName}</span>
             <InfoTooltip text={`Level ${wallet.level || 1} ${wallet.levelName || 'Particle'}. Progress through 7 cosmic tiers by staying active.`} />
           </div>
 
@@ -366,11 +367,11 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   autoFocus
                 />
                 <button onClick={handleSaveBio} className="warp-button text-body-sm px-3 py-1.5">Save</button>
-                <button onClick={() => setEditingBio(false)} className="text-body-sm opacity-40 cursor-pointer">Cancel</button>
+                <button onClick={() => setEditingBio(false)} className="text-body-sm opacity-60 cursor-pointer">Cancel</button>
               </div>
             ) : (
               <p
-                className="text-body-sm opacity-50 cursor-pointer hover:opacity-70 transition-colors"
+                className="text-body-sm opacity-60 cursor-pointer hover:opacity-80 transition-colors"
                 onClick={() => { setBioInput(bio); setEditingBio(true); }}
               >
                 {bio || 'Tap to add a bio...'}
@@ -400,7 +401,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             )}
             <button
               onClick={() => { setLinkWebsite(website); setLinkInstagram(instagram); setLinkTwitter(twitter); setEditingLinks(!editingLinks); }}
-              className="text-label opacity-30 hover:opacity-50 cursor-pointer"
+              className="text-label opacity-50 hover:opacity-50 cursor-pointer"
             >
               {editingLinks ? 'Cancel' : (website || instagram || twitter ? 'Edit links' : '+ Add links')}
             </button>
@@ -420,23 +421,23 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           <div className="flex gap-6 mt-4 text-body-sm">
             <button onClick={() => setTab('followers')} className="cursor-pointer hover:opacity-80 transition-colors text-center">
               <span className="block font-bold opacity-90 text-base">{followersCount}</span>
-              <span className="opacity-40">Followers</span>
+              <span className="opacity-60">Followers</span>
             </button>
             <button onClick={() => setTab('following')} className="cursor-pointer hover:opacity-80 transition-colors text-center">
               <span className="block font-bold opacity-90 text-base">{followingCount}</span>
-              <span className="opacity-40">Following</span>
+              <span className="opacity-60">Following</span>
             </button>
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{posts.length}</span>
-              <span className="opacity-40">Posts</span>
+              <span className="opacity-60">Posts</span>
             </div>
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{myCreated.length}</span>
-              <span className="opacity-40">Created</span>
+              <span className="opacity-60">Created</span>
             </div>
             <div className="text-center">
               <span className="block font-bold opacity-90 text-base">{myCollection.length}</span>
-              <span className="opacity-40">Collected</span>
+              <span className="opacity-60">Collected</span>
             </div>
           </div>
         </div>
@@ -451,11 +452,11 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             className={`flex-1 px-3 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
               tab === t.id
                 ? 'border-current/20 opacity-80'
-                : 'border-transparent opacity-40 hover:opacity-70'
+                : 'border-transparent opacity-60 hover:opacity-70'
             }`}
           >
             {t.label}
-            {t.count !== undefined && <span className="ml-1 text-label opacity-30">{t.count}</span>}
+            {t.count !== undefined && <span className="ml-1 text-label opacity-50">{t.count}</span>}
           </button>
         ))}
       </div>
@@ -466,7 +467,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'posts' && (
           posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No posts yet</p>
+              <p className="opacity-60 text-base">No posts yet</p>
               <button onClick={() => onNavigate('wall')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Wall</button>
             </div>
           ) : (
@@ -477,7 +478,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   {post.mediaData && post.mediaType === 'image' && (
                     <img src={post.mediaData} alt="" className="mt-2 w-full max-h-64 object-cover" />
                   )}
-                  <div className="flex gap-4 mt-2 text-label opacity-40">
+                  <div className="flex gap-4 mt-2 text-label opacity-60">
                     <span>{post.tipCount} tips</span>
                     <span>{post.rewarpCount} rewarps</span>
                     <span>{post.comments.length} comments</span>
@@ -492,7 +493,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'warts' && (
           myCreated.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Strangrz creee</p>
+              <p className="opacity-60 text-base">Aucune Strangrz créée</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Gallery</button>
             </div>
           ) : (
@@ -506,7 +507,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'collected' && (
           myCollection.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Strangrz dans la collection</p>
+              <p className="opacity-60 text-base">Aucune Strangrz dans la collection</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Browse Gallery</button>
             </div>
           ) : (
@@ -520,11 +521,11 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'curations' && (
           curatorArticles.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune curation</p>
+              <p className="opacity-60 text-base">Aucune curation</p>
               {myCollection.length >= 100 ? (
                 <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Creer un article</button>
               ) : (
-                <p className="text-label opacity-30 mt-1">Collectionnez 100 oeuvres pour devenir Curateur</p>
+                <p className="text-label opacity-50 mt-1">Collectionnez 100 œuvres pour devenir Curateur</p>
               )}
             </div>
           ) : (
@@ -544,8 +545,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                     </div>
                     <div className="p-3">
                       <p className="text-body-sm font-bold opacity-90 truncate">{article.title}</p>
-                      {article.subtitle && <p className="text-label opacity-40 truncate mt-0.5">{article.subtitle}</p>}
-                      <div className="flex gap-3 mt-2 text-label opacity-30">
+                      {article.subtitle && <p className="text-label opacity-60 truncate mt-0.5">{article.subtitle}</p>}
+                      <div className="flex gap-3 mt-2 text-label opacity-50">
                         <span>{article.likes?.length || 0} likes</span>
                         <span>{article.views || 0} views</span>
                       </div>
@@ -561,7 +562,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'followers' && (
           followersList.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No followers yet</p>
+              <p className="opacity-60 text-base">No followers yet</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -574,7 +575,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   <HexAvatar address={user.address} size={36} />
                   <div className="min-w-0 flex-1">
                     <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
-                    <p className="text-label opacity-40 truncate">{shortAddress(user.address)}</p>
+                    <p className="text-label opacity-60 truncate">{shortAddress(user.address)}</p>
                   </div>
                 </button>
               ))}
@@ -586,7 +587,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'following' && (
           followingList.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Not following anyone yet</p>
+              <p className="opacity-60 text-base">Not following anyone yet</p>
               <button onClick={() => onNavigate('discover')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Discover users</button>
             </div>
           ) : (
@@ -600,7 +601,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                   <HexAvatar address={user.address} size={36} />
                   <div className="min-w-0 flex-1">
                     <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
-                    <p className="text-label opacity-40 truncate">{shortAddress(user.address)}</p>
+                    <p className="text-label opacity-60 truncate">{shortAddress(user.address)}</p>
                   </div>
                 </button>
               ))}
@@ -615,7 +616,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           onClick={lock}
           className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-40">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           Lock Wallet
@@ -624,7 +625,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           onClick={() => { if (confirm('Sign out? Make sure you have a backup.')) { signOut(); onNavigate('wallet'); } }}
           className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-70/70">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-70">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           Sign Out

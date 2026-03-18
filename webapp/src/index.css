@@ -521,6 +521,20 @@ main > div > * {
   transform: scale(0.97);
 }
 
+/* ─── Search Dropdown — solid black background ────── */
+
+.search-dropdown {
+  background: #000000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .search-dropdown {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
 /* ─── Info Tooltip ──────────────────────────────────── */
 
 .info-tooltip-wrap {

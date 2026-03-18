@@ -84,7 +84,7 @@ export default function PaymentSuccessView({ onNavigate }: { onNavigate: (tab: s
             Déverrouillez votre wallet pour voir votre achat
           </p>
           {txId && (
-            <p className="opacity-30 text-body-sm font-mono">TX: {txId}</p>
+            <p className="opacity-50 text-body-sm font-mono">TX: {txId}</p>
           )}
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function PaymentSuccessView({ onNavigate }: { onNavigate: (tab: s
           Votre achat a été traité avec succès
         </p>
         {txId && (
-          <p className="opacity-30 text-body-sm font-mono mt-2">
+          <p className="opacity-50 text-body-sm font-mono mt-2">
             Réf: {txId}
           </p>
         )}
@@ -258,7 +258,7 @@ export default function PaymentSuccessView({ onNavigate }: { onNavigate: (tab: s
 
         <button
           onClick={() => onNavigate('gallery')}
-          className="w-full py-3 text-base cursor-pointer rounded-lg opacity-40 hover:opacity-70 transition-opacity"
+          className="w-full py-3 text-base cursor-pointer rounded-lg opacity-60 hover:opacity-70 transition-opacity"
           style={{ background: 'transparent' }}
         >
           {'\u2190'} Retour à la Galerie

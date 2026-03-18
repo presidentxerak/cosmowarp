@@ -646,7 +646,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
             </svg>
             Centre d'aide
           </h1>
-          <p className="text-body-sm opacity-40">
+          <p className="text-body-sm opacity-60">
             FAQ & Doctor Strangrz — Votre guide IA dans l'univers Strangrz
           </p>
         </div>
@@ -698,7 +698,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               <p className="text-label opacity-80">En ligne — Oracle de Strangrz</p>
             </div>
             {wallet && (
-              <span className="text-label opacity-30 ml-auto">
+              <span className="text-label opacity-50 ml-auto">
                 {wallet.alias || wallet.address.slice(0, 10)}
               </span>
             )}
@@ -749,7 +749,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="px-4 py-2 bg-current/10 border border-current/15 opacity-80 text-body-sm font-medium cursor-pointer hover:bg-current/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-current/10 border border-current/15 opacity-80 text-body-sm font-medium cursor-pointer hover:bg-current/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
               </button>
@@ -759,7 +759,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}
-                  className="text-label opacity-40 hover:opacity-80 cursor-pointer px-2 py-1 bg-white/3 border border-gray-800/30 hover:border-current/10 transition-all"
+                  className="text-label opacity-60 hover:opacity-80 cursor-pointer px-2 py-1 bg-white/3 border border-gray-800/30 hover:border-current/10 transition-all"
                 >
                   {q}
                 </button>
@@ -800,7 +800,7 @@ function FaqSection({ section }: { section: typeof FAQ_SECTIONS[number] }) {
               className="w-full text-left p-3 flex items-center justify-between text-body-sm hover:bg-white/3 transition-all cursor-pointer"
             >
               <span className="opacity-70 font-medium">{item.q}</span>
-              <span className={`opacity-40 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>
+              <span className={`opacity-60 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
               </span>
             </button>

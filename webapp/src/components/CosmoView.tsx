@@ -175,7 +175,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
                   </svg>
                 </button>
               )}
-              <p className={`text-label mt-1 ${msg.role === 'user' ? 'opacity-40 text-right' : 'opacity-30'}`}>
+              <p className={`text-label mt-1 ${msg.role === 'user' ? 'opacity-60 text-right' : 'opacity-50'}`}>
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -252,7 +252,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
           <button
             onClick={handleSend}
             disabled={!input.trim() || typing}
-            className="warp-button px-3 py-2.5 shrink-0 disabled:opacity-30"
+            className="warp-button px-3 py-2.5 shrink-0 disabled:opacity-50"
             aria-label="Envoyer"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -261,7 +261,7 @@ export default function CosmoView({ onNavigate }: { onNavigate: (tab: string) =>
             </svg>
           </button>
         </div>
-        <p className="text-label opacity-30 mt-1.5 text-center">
+        <p className="text-label opacity-50 mt-1.5 text-center">
           Doctor Strangrz — guide IA & générateur d'art AI Strangrz
         </p>
       </div>

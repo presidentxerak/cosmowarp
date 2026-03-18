@@ -119,7 +119,7 @@ class AppErrorBoundary extends Component<
           <div className="text-center max-w-md">
             <p className="text-4xl mb-6">{'\u2B21'}</p>
             <h1 className="text-title-md font-bold mb-3">Strangrz encountered an error</h1>
-            <p className="text-base opacity-50 mb-6">{this.state.error || 'Something went wrong.'}</p>
+            <p className="text-base opacity-60 mb-6">{this.state.error || 'Something went wrong.'}</p>
             <button
               onClick={() => window.location.reload()}
               className="warp-button px-6 py-3 text-base cursor-pointer"
@@ -208,7 +208,7 @@ function App() {
           <TopBar onNavigate={navigate} />
 
           {/* Main content area */}
-          <main className="flex-1 px-[10px] pb-16">
+          <main className="flex-1 px-2.5 sm:px-[10px] pb-16">
             <Suspense fallback={<ViewLoader />}>
               {/* Bottom bar tabs */}
               {activeTab === 'wall' && <CosmoChatView />}
@@ -244,7 +244,7 @@ function App() {
                 <div className="max-w-lg mx-auto py-8 px-4 text-center">
                   <p className="text-5xl mb-4">{'\u2716'}</p>
                   <h1 className="text-title-md font-bold font-title mb-2">Paiement annulé</h1>
-                  <p className="opacity-50 text-base mb-6">Aucun montant n'a été débité.</p>
+                  <p className="opacity-60 text-base mb-6">Aucun montant n'a été débité.</p>
                   <button onClick={() => navigate('gallery')} className="warp-button px-6 py-3 text-base cursor-pointer">
                     Retour à la Galerie
                   </button>

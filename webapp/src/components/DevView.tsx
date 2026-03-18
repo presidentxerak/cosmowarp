@@ -25,7 +25,7 @@ export default function DevView() {
               className={`flex-1 px-3 py-2 rounded-none text-xs font-medium transition-all cursor-pointer ${
                 tab === t.id
                   ? 'bg-current/10 opacity-80'
-                  : 'opacity-40 hover:opacity-80 hover:bg-white/5'
+                  : 'opacity-60 hover:opacity-80 hover:bg-white/5'
               }`}
             >
               {t.icon} {t.label}

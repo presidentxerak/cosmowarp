@@ -169,7 +169,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
               ? 'bg-white/10 dark:bg-white/10'
               : 'bg-white/5 dark:bg-white/5'
           }`}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40 shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-60 shrink-0">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
@@ -186,7 +186,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
-                className="opacity-40 hover:opacity-80 cursor-pointer shrink-0"
+                className="opacity-60 hover:opacity-80 cursor-pointer shrink-0"
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 5l10 10M15 5L5 15" />
@@ -197,18 +197,18 @@ export default function TopBar({ onNavigate }: TopBarProps) {
 
           {/* Search results dropdown — three columns: artists | artworks | collections */}
           {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 glass-panel z-[60] max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 z-[60] max-h-80 overflow-y-auto search-dropdown">
               {results.length === 0 ? (
-                <div className="px-4 py-4 text-base opacity-40 text-center">
+                <div className="px-4 py-4 text-base opacity-60 text-center">
                   Aucun résultat pour "{searchQuery}"
                 </div>
               ) : (
-                <div className="grid grid-cols-3 divide-x divide-current/5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-current/5">
                   {/* Left column: Artists */}
                   <div>
-                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Artists</p>
+                    <p className="text-label opacity-50 px-3 pt-2 pb-1">Artists</p>
                     {userResults.length === 0 ? (
-                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                      <p className="px-3 py-2 text-body-sm opacity-40">—</p>
                     ) : userResults.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
@@ -218,16 +218,16 @@ export default function TopBar({ onNavigate }: TopBarProps) {
                         {result.address && <HexAvatar address={result.address} size={28} />}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-sm truncate">{result.title}</p>
-                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                          <p className="text-label opacity-50 truncate">{result.subtitle}</p>
                         </div>
                       </button>
                     ))}
                   </div>
                   {/* Middle column: Artworks */}
                   <div>
-                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Strangrz</p>
+                    <p className="text-label opacity-50 px-3 pt-2 pb-1">Strangrz</p>
                     {wartResults.length === 0 ? (
-                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                      <p className="px-3 py-2 text-body-sm opacity-40">—</p>
                     ) : wartResults.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
@@ -240,21 +240,21 @@ export default function TopBar({ onNavigate }: TopBarProps) {
                           </div>
                         ) : (
                           <div className="w-7 h-7 bg-current/5 flex items-center justify-center shrink-0">
-                            <span className="opacity-30">{'\u25C8'}</span>
+                            <span className="opacity-50">{'\u25C8'}</span>
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-sm truncate">{result.title}</p>
-                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                          <p className="text-label opacity-50 truncate">{result.subtitle}</p>
                         </div>
                       </button>
                     ))}
                   </div>
                   {/* Right column: Collections */}
                   <div>
-                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Collections</p>
+                    <p className="text-label opacity-50 px-3 pt-2 pb-1">Collections</p>
                     {collectionResults.length === 0 ? (
-                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                      <p className="px-3 py-2 text-body-sm opacity-40">—</p>
                     ) : collectionResults.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
@@ -267,12 +267,12 @@ export default function TopBar({ onNavigate }: TopBarProps) {
                           </div>
                         ) : (
                           <div className="w-7 h-7 bg-current/5 flex items-center justify-center shrink-0">
-                            <span className="opacity-30">{'\u25C8'}</span>
+                            <span className="opacity-50">{'\u25C8'}</span>
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-sm truncate">{result.title}</p>
-                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                          <p className="text-label opacity-50 truncate">{result.subtitle}</p>
                         </div>
                       </button>
                     ))}

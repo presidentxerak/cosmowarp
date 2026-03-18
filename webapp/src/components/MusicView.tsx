@@ -96,7 +96,7 @@ function WaveformPlayer({ src, cover, title, artist }: { src: string; cover?: st
           {cover ? (
             <img src={cover} alt={title} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-2xl opacity-30">{'\u266B'}</span>
+            <span className="text-2xl opacity-50">{'\u266B'}</span>
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -146,7 +146,7 @@ function WaveformPlayer({ src, cover, title, artist }: { src: string; cover?: st
       </div>
 
       {/* Time display */}
-      <div className="flex justify-between px-3 pb-2 text-label opacity-40">
+      <div className="flex justify-between px-3 pb-2 text-label opacity-60">
         <span>{formatTime(currentTime)}</span>
         <span>{duration > 0 ? formatTime(duration) : '--:--'}</span>
       </div>
@@ -167,7 +167,7 @@ function TrackCard({ wart, onClick }: { wart: Wart; onClick: () => void }) {
         {wart.audioCover ? (
           <img src={wart.audioCover} alt={wart.title} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-4xl opacity-20">{'\u266B'}</span>
+          <span className="text-4xl opacity-40">{'\u266B'}</span>
         )}
         {/* Play overlay on hover */}
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -183,9 +183,9 @@ function TrackCard({ wart, onClick }: { wart: Wart; onClick: () => void }) {
       </div>
       <div className="p-3">
         <p className="text-base font-bold opacity-90 truncate">{wart.title}</p>
-        <p className="text-body-sm opacity-40 truncate">{shortAddress(wart.creator)}</p>
+        <p className="text-body-sm opacity-60 truncate">{shortAddress(wart.creator)}</p>
         {wart.description && (
-          <p className="text-body-sm opacity-30 truncate mt-0.5">{wart.description}</p>
+          <p className="text-body-sm opacity-50 truncate mt-0.5">{wart.description}</p>
         )}
       </div>
     </div>
@@ -287,7 +287,7 @@ export default function MusicView() {
             <p className="text-base opacity-60">{selectedTrack.description}</p>
           )}
 
-          <div className="flex flex-wrap gap-3 text-body-sm opacity-40">
+          <div className="flex flex-wrap gap-3 text-body-sm opacity-60">
             {selectedTrack.certId && (
               <span className="flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -303,7 +303,7 @@ export default function MusicView() {
             <div className="pt-2 border-t border-current/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-label opacity-40">PRIX</p>
+                  <p className="text-label opacity-60">PRIX</p>
                   <p className="text-title-sm font-bold opacity-90">{selectedTrack.price} {'\u2B23'}</p>
                 </div>
                 <button
@@ -333,7 +333,7 @@ export default function MusicView() {
             <h3 className="text-base font-bold opacity-70 mb-2">Historique</h3>
             <div className="space-y-1 text-body-sm">
               {selectedTrack.history.map((h, i) => (
-                <div key={i} className="flex justify-between opacity-40">
+                <div key={i} className="flex justify-between opacity-60">
                   <span>{shortAddress(h.from)} → {shortAddress(h.to)}</span>
                   <span>{h.price} {'\u2B23'}</span>
                 </div>
@@ -350,7 +350,7 @@ export default function MusicView() {
     <div className="space-y-4">
       <div className="glass-panel p-4 text-center">
         <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{'\u266B'} Musique</h2>
-        <p className="text-body-sm opacity-40">
+        <p className="text-body-sm opacity-60">
           Écoutez, collectionnez et vendez des oeuvres musicales certifiées sur Strangrz.
         </p>
       </div>
@@ -388,11 +388,11 @@ export default function MusicView() {
 
       {tracks.length === 0 ? (
         <div className="glass-panel p-8 text-center">
-          <p className="text-3xl mb-2 opacity-20">{'\u266B'}</p>
+          <p className="text-3xl mb-2 opacity-40">{'\u266B'}</p>
           <p className="opacity-50 text-base">
             {filter === 'my-tracks' ? 'Aucun titre dans votre collection.' : 'Aucun titre disponible.'}
           </p>
-          <p className="text-body-sm opacity-30 mt-1">
+          <p className="text-body-sm opacity-50 mt-1">
             Créez une Strangrz audio (.wav) avec une pochette dans l'onglet Créer.
           </p>
         </div>

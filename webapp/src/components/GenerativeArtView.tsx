@@ -394,7 +394,7 @@ export default function GenerativeArtView() {
     <div className="space-y-4">
       <div className="glass-panel p-4">
         <h2 className="text-title-sm font-bold opacity-100 font-title mb-1">Generative Art Studio</h2>
-        <p className="text-body-sm opacity-40 mb-4">
+        <p className="text-body-sm opacity-60 mb-4">
           Create unique algorithmic artworks inspired by Art Blocks. Each piece is deterministic — the same seed always produces the same art.
         </p>
 
@@ -415,7 +415,7 @@ export default function GenerativeArtView() {
               >
                 Randomize
               </button>
-              <div className="flex items-center gap-1 px-3 opacity-40 text-body-sm">
+              <div className="flex items-center gap-1 px-3 opacity-60 text-body-sm">
                 Seed: <span className="font-mono">{seed}</span>
               </div>
             </div>
@@ -434,7 +434,7 @@ export default function GenerativeArtView() {
                     className={`py-2 px-2 text-[11px] font-medium transition-all cursor-pointer ${
                       style === s
                         ? 'bg-current/10 opacity-80 border border-current/20'
-                        : 'opacity-40 border border-white/10 hover:opacity-60'
+                        : 'opacity-60 border border-white/10 hover:opacity-60'
                     }`}
                   >
                     {s.replace('-', ' ')}
@@ -454,7 +454,7 @@ export default function GenerativeArtView() {
                     className={`py-2 px-2 text-[11px] transition-all cursor-pointer ${
                       paletteIdx === i
                         ? 'opacity-90 border border-current/20'
-                        : 'opacity-40 border border-white/10 hover:opacity-60'
+                        : 'opacity-60 border border-white/10 hover:opacity-60'
                     }`}
                   >
                     <div className="flex gap-0.5 mb-1 justify-center">
