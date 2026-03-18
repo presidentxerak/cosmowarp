@@ -31,7 +31,15 @@ export type IntegrityStatus = 'verified' | 'unverified' | 'mismatch' | 'pending'
 export type StorageNetwork = 'arweave' | 'ipfs' | 'https' | 'supabase' | 'indexeddb' | 'onchain' | 'custom';
 export type RecoveryType = 'mirror_pool' | 'vault_backup' | 'onchain_recovery' | 'peer_recovery' | 'archive_operator';
 export type RightsLevel = 'allowed' | 'personal_only' | 'commercial' | 'forbidden' | 'custom';
-export type SignatureAlgorithm = 'ed25519' | 'ecdsa_secp256k1' | 'ecdsa_secp256r1' | 'custom';
+export type SignatureAlgorithm =
+  | 'ed25519'
+  | 'ecdsa_secp256k1'
+  | 'ecdsa_secp256r1'
+  | 'dilithium3'          // CRYSTALS-Dilithium (ML-DSA-65) — NIST PQC standard
+  | 'dilithium5'          // CRYSTALS-Dilithium (ML-DSA-87) — highest security level
+  | 'sphincs_sha256_128f' // SPHINCS+ (SLH-DSA) — stateless hash-based, fast signing
+  | 'sphincs_sha256_256f' // SPHINCS+ (SLH-DSA) — highest security level
+  | 'custom';
 export type SignatureRole = 'issuer' | 'creator' | 'owner' | 'archive_operator' | 'safe_operator' | 'auditor';
 
 // ─── Token Binding ──────────────────────────────────────────
@@ -50,6 +58,7 @@ export interface TokenBinding {
 export interface AssetDescriptor {
   mime_type: string;
   sha256: string;
+  cid?: string;            // IPFS CIDv1 — content-addressed identifier (preferred over URLs)
   size_bytes: number;
   canonical?: boolean;
   encoding?: string;
@@ -91,7 +100,9 @@ export interface StrangrzPolicy {
 export interface StrangrzIntegrity {
   manifest_sha256: string;
   canonical_asset_sha256: string;
+  canonical_asset_cid?: string;   // IPFS CIDv1 of canonical asset
   preview_asset_sha256?: string;
+  preview_asset_cid?: string;     // IPFS CIDv1 of preview asset
   status: IntegrityStatus;
   last_verified_at?: string;
 }
@@ -243,6 +254,8 @@ export function getTrustSignals(manifest: StrangrzManifest): string[] {
 
   if (manifest.integrity.status === 'verified') signals.push('Integrity Verified');
   if (manifest.storage_routes.some(r => r.network === 'onchain' || r.network === 'arweave')) signals.push('Permanent Storage');
+  if (manifest.storage_routes.some(r => r.network === 'ipfs')) signals.push('Content-Addressed');
+  if (manifest.integrity.canonical_asset_cid) signals.push('CID Verified');
   if (manifest.storage_routes.filter(r => r.status === 'active').length >= 2) signals.push('Multi-Network Backup');
   if (manifest.rights.display !== 'forbidden') signals.push('Rights Embedded');
   if (manifest.recovery_routes.length > 0) signals.push('Recovery Active');

@@ -12,10 +12,15 @@ import { validateManifest, getTrustSignals, isSafeProtected, getActiveStorageRou
 import { buildManifest, verifyManifest, type ManifestBuildInput, type VerificationResult } from './manifest';
 import { StrangrzSafeEngine, getSafeBadges, type StrangrzSafeConfig, type RouteCheckResult } from './safe';
 import { StrangrzAdapter, EVMAdapter, registerAdapter, type ChainAdapter } from './adapters';
-import { StrangrzStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
+import {
+  StrangrzStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider,
+  OnChainStorageProvider, HTTPSMirrorProvider, IPFSStorageProvider, ArweaveStorageProvider,
+  type IPFSConfig, type ArweaveConfig,
+} from './storage-layer';
 
 // Re-exports
 export type { StrangrzManifest, StorageRoute, RecoveryRoute, StrangrzSafeConfig, ManifestBuildInput, VerificationResult, RouteCheckResult };
+export type { IPFSConfig, ArweaveConfig };
 export { validateManifest, getTrustSignals, isSafeProtected, getSafeBadges, getActiveStorageRoutes };
 export { buildManifest, verifyManifest };
 export type { ChainAdapter };
@@ -70,6 +75,8 @@ export class StrangrzEngine {
     indexedDBStore?: (wartId: string, data: string, cover?: string) => Promise<void>,
     indexedDBRetrieve?: (wartId: string) => Promise<{ imageData: string; audioCover?: string } | null>,
     getOnChainSVG?: (wartId: string) => string | undefined,
+    ipfsConfig?: IPFSConfig,
+    arweaveConfig?: ArweaveConfig,
   ): void {
     // Register Strangrz adapter
     this.adapter = new StrangrzAdapter(wartLookup);
@@ -92,6 +99,16 @@ export class StrangrzEngine {
       this.storageLayer.registerProvider(
         new OnChainStorageProvider(getOnChainSVG)
       );
+    }
+
+    // Register IPFS provider (content-addressed storage)
+    if (ipfsConfig) {
+      this.storageLayer.registerProvider(new IPFSStorageProvider(ipfsConfig));
+    }
+
+    // Register Arweave provider (permanent storage)
+    if (arweaveConfig) {
+      this.storageLayer.registerProvider(new ArweaveStorageProvider(arweaveConfig));
     }
 
     // Always register HTTPS mirror support
