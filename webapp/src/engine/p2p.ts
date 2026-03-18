@@ -18,7 +18,7 @@
  */
 
 import { randomHex } from './crypto';
-import type { MeshTransaction } from './strangrmesh';
+import type { MeshTransaction, GossipMessage, MeshGossipHandler } from './strangrmesh';
 import type { ConsensusVote } from './consensus';
 import type { ShardBlock, BeaconBlock } from './cosmochain';
 import { blockDB, beaconDB } from './chaindb';
@@ -61,6 +61,8 @@ export const MessageType = {
   BLOCK_SYNC_RESPONSE: 'block_sync_response',
   STATE_SYNC_REQUEST:  'state_sync_request',
   STATE_SYNC_RESPONSE: 'state_sync_response',
+  // Mesh gossip (StrangrzMesh DAG propagation)
+  MESH_GOSSIP:         'mesh_gossip',
 } as const;
 
 export type MessageType = (typeof MessageType)[keyof typeof MessageType];
@@ -85,6 +87,7 @@ export interface P2PEventHandlers {
   onBeaconBlockReceived?: (beacon: BeaconBlock) => void;
   onBlockSyncRequest?: (peerId: string, shard: number, fromHeight: number) => void;
   onStateSyncRequest?: (peerId: string, shard: number) => void;
+  onMeshGossip?: (gossipMsg: GossipMessage, fromPeerId: string) => void;
   onMessage?: (msg: P2PMessage, peerId: string) => void;
 }
 
@@ -390,6 +393,35 @@ export class CosmoP2P {
     }
   }
 
+  // ─── Mesh Gossip Bridge ──────────────────────────────
+
+  /** Create a MeshGossipHandler that bridges StrangrzMesh gossip to P2P */
+  createMeshGossipHandler(): MeshGossipHandler {
+    return {
+      broadcast: (gossipMsg: GossipMessage) => {
+        this.broadcast({
+          type: MessageType.MESH_GOSSIP,
+          senderId: this.localId,
+          timestamp: Date.now(),
+          payload: gossipMsg,
+          nonce: randomHex(8),
+        });
+      },
+      sendTo: (peerId: string, gossipMsg: GossipMessage) => {
+        const peer = this.peers.get(peerId);
+        if (peer && peer.state === 'connected') {
+          peer.send(JSON.stringify({
+            type: MessageType.MESH_GOSSIP,
+            senderId: this.localId,
+            timestamp: Date.now(),
+            payload: gossipMsg,
+            nonce: randomHex(8),
+          }));
+        }
+      },
+    };
+  }
+
   // ─── Internal ────────────────────────────────────────
 
   private broadcast(msg: P2PMessage): void {
@@ -566,6 +598,14 @@ export class CosmoP2P {
         // State sync responses are forwarded to the generic handler
         // since shard state structure is managed by StrangrzChain
         this.handlers.onMessage?.(msg, peerId);
+        break;
+      }
+
+      case MessageType.MESH_GOSSIP: {
+        const gossipMsg = msg.payload as GossipMessage;
+        if (gossipMsg) {
+          this.handlers.onMeshGossip?.(gossipMsg, peerId);
+        }
         break;
       }
 

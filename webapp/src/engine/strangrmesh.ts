@@ -31,6 +31,26 @@ import { signTransaction, verifySignature, computeTxId, isValidAddress } from '.
 import { MerkleDAG } from './merkle';
 import type { StrangrzChain } from './cosmochain';
 
+// ─── Gossip Protocol Types ──────────────────────────────
+
+export interface GossipMessage {
+  type: 'tx_gossip' | 'tx_request' | 'tx_response' | 'tip_sync' | 'mesh_summary';
+  originPeerId: string;
+  hopCount: number;
+  maxHops: number;
+  ttl: number;           // Timestamp-based expiry (ms)
+  payload: unknown;
+  nonce: string;         // Dedup key
+}
+
+export interface MeshGossipHandler {
+  broadcast(msg: GossipMessage): void;
+  sendTo(peerId: string, msg: GossipMessage): void;
+}
+
+/** Callback fired when a remote TX is validated and applied */
+export type OnRemoteTxApplied = (tx: MeshTransaction) => void;
+
 // ─── Fractal Layers ──────────────────────────────────────
 
 export const MeshLayer = {
@@ -110,6 +130,18 @@ export class StrangrzMesh {
 
   // StrangrzChain bridge — enables on-chain SVG persistence
   private strangrzChain: StrangrzChain | null = null;
+
+  // ─── Gossip Protocol State ──────────────────────────────
+  private gossipHandler: MeshGossipHandler | null = null;
+  private seenGossip: Map<string, number> = new Map(); // nonce -> timestamp
+  private localPeerId: string = '';
+  private onRemoteTxCallbacks: OnRemoteTxApplied[] = [];
+  private pendingTxRequests: Set<string> = new Set();   // TX IDs we've requested
+  private static readonly GOSSIP_MAX_HOPS = 6;
+  private static readonly GOSSIP_TTL_MS = 30_000;       // 30s message lifetime
+  private static readonly GOSSIP_DEDUP_WINDOW_MS = 60_000; // 1min dedup window
+  private static readonly GOSSIP_CLEANUP_INTERVAL_MS = 30_000;
+  private gossipCleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     // Initialize layer tip sets
@@ -469,6 +501,303 @@ export class StrangrzMesh {
     // Keep only last 60 seconds
     const cutoff = now - 60000;
     while (tps.length > 0 && tps[0] < cutoff) tps.shift();
+  }
+
+  // ─── Gossip Protocol ─────────────────────────────────
+
+  /** Attach a P2P gossip handler for broadcasting mesh messages */
+  attachGossip(peerId: string, handler: MeshGossipHandler): void {
+    this.localPeerId = peerId;
+    this.gossipHandler = handler;
+
+    // Start dedup cleanup timer
+    if (!this.gossipCleanupTimer) {
+      this.gossipCleanupTimer = setInterval(() => {
+        this.cleanupSeenGossip();
+      }, StrangrzMesh.GOSSIP_CLEANUP_INTERVAL_MS);
+    }
+  }
+
+  /** Detach gossip handler and stop cleanup */
+  detachGossip(): void {
+    this.gossipHandler = null;
+    if (this.gossipCleanupTimer) {
+      clearInterval(this.gossipCleanupTimer);
+      this.gossipCleanupTimer = null;
+    }
+  }
+
+  /** Register callback for remotely received transactions */
+  onRemoteTx(callback: OnRemoteTxApplied): void {
+    this.onRemoteTxCallbacks.push(callback);
+  }
+
+  /** Broadcast a locally created transaction to the mesh network */
+  gossipTransaction(tx: MeshTransaction): void {
+    if (!this.gossipHandler) return;
+
+    const nonce = `${this.localPeerId}:${tx.id}:${Date.now()}`;
+    this.seenGossip.set(nonce, Date.now());
+
+    const msg: GossipMessage = {
+      type: 'tx_gossip',
+      originPeerId: this.localPeerId,
+      hopCount: 0,
+      maxHops: StrangrzMesh.GOSSIP_MAX_HOPS,
+      ttl: Date.now() + StrangrzMesh.GOSSIP_TTL_MS,
+      payload: tx,
+      nonce,
+    };
+
+    this.gossipHandler.broadcast(msg);
+  }
+
+  /** Handle an incoming gossip message from a peer */
+  async handleGossipMessage(msg: GossipMessage, fromPeerId: string): Promise<void> {
+    // 1. TTL check
+    if (Date.now() > msg.ttl) return;
+
+    // 2. Hop limit
+    if (msg.hopCount >= msg.maxHops) return;
+
+    // 3. Dedup
+    if (this.seenGossip.has(msg.nonce)) return;
+    this.seenGossip.set(msg.nonce, Date.now());
+
+    switch (msg.type) {
+      case 'tx_gossip':
+        await this.handleTxGossip(msg, fromPeerId);
+        break;
+      case 'tx_request':
+        this.handleTxRequest(msg, fromPeerId);
+        break;
+      case 'tx_response':
+        await this.handleTxResponse(msg);
+        break;
+      case 'tip_sync':
+        this.handleTipSync(msg, fromPeerId);
+        break;
+      case 'mesh_summary':
+        this.handleMeshSummary(msg, fromPeerId);
+        break;
+    }
+  }
+
+  /** Request missing transactions from peers */
+  requestMissingTx(txIds: string[]): void {
+    if (!this.gossipHandler) return;
+
+    const missing = txIds.filter(id => !this.transactions.has(id) && !this.pendingTxRequests.has(id));
+    if (missing.length === 0) return;
+
+    for (const id of missing) {
+      this.pendingTxRequests.add(id);
+    }
+
+    const nonce = `${this.localPeerId}:req:${Date.now()}`;
+    this.seenGossip.set(nonce, Date.now());
+
+    this.gossipHandler.broadcast({
+      type: 'tx_request',
+      originPeerId: this.localPeerId,
+      hopCount: 0,
+      maxHops: 3, // Don't go far for requests
+      ttl: Date.now() + 10_000,
+      payload: { txIds: missing },
+      nonce,
+    });
+  }
+
+  /** Broadcast current tip state for sync */
+  broadcastTips(): void {
+    if (!this.gossipHandler) return;
+
+    const tips: Record<number, string[]> = {};
+    for (const [layer, tipSet] of this.tipsByLayer) {
+      const tipArray = Array.from(tipSet);
+      if (tipArray.length > 0) {
+        tips[layer] = tipArray.slice(0, 20); // Limit to 20 tips per layer
+      }
+    }
+
+    const nonce = `${this.localPeerId}:tips:${Date.now()}`;
+    this.seenGossip.set(nonce, Date.now());
+
+    this.gossipHandler.broadcast({
+      type: 'tip_sync',
+      originPeerId: this.localPeerId,
+      hopCount: 0,
+      maxHops: 3,
+      ttl: Date.now() + 15_000,
+      payload: { tips, txCount: this.transactions.size },
+      nonce,
+    });
+  }
+
+  /** Broadcast a compact mesh summary for discovery/sync */
+  broadcastMeshSummary(): void {
+    if (!this.gossipHandler) return;
+
+    const nonce = `${this.localPeerId}:summary:${Date.now()}`;
+    this.seenGossip.set(nonce, Date.now());
+
+    this.gossipHandler.broadcast({
+      type: 'mesh_summary',
+      originPeerId: this.localPeerId,
+      hopCount: 0,
+      maxHops: 4,
+      ttl: Date.now() + 20_000,
+      payload: {
+        txCount: this.transactions.size,
+        tipCount: this.getAllTips().length,
+        maxDepth: Math.max(0, ...Array.from(this.transactions.values()).map(t => t.meshDepth)),
+        genesisId: this.genesisId,
+      },
+      nonce,
+    });
+  }
+
+  // ─── Gossip Internal Handlers ───────────────────────────
+
+  private async handleTxGossip(msg: GossipMessage, fromPeerId: string): Promise<void> {
+    const tx = msg.payload as MeshTransaction;
+    if (!tx || !tx.id) return;
+
+    // Already have this TX
+    if (this.transactions.has(tx.id)) return;
+
+    // Check if we have the parent TXs — request missing ones
+    const missingParents = tx.parentIds.filter(pid => !this.transactions.has(pid));
+    if (missingParents.length > 0) {
+      this.requestMissingTx(missingParents);
+    }
+
+    // Validate and apply the remote transaction
+    const validation = await this.validateTransaction(tx);
+    if (validation.valid) {
+      this.applyTransaction(tx);
+      tx.resonanceScore = validation.resonanceScore;
+      this.propagateConfirmation(tx);
+      this.trackTps(tx.layer);
+
+      // Notify listeners
+      for (const cb of this.onRemoteTxCallbacks) {
+        cb(tx);
+      }
+
+      // Re-gossip to other peers (increment hop count)
+      if (this.gossipHandler && msg.hopCount + 1 < msg.maxHops) {
+        this.gossipHandler.broadcast({
+          ...msg,
+          hopCount: msg.hopCount + 1,
+        });
+      }
+    }
+  }
+
+  private handleTxRequest(msg: GossipMessage, fromPeerId: string): void {
+    const { txIds } = msg.payload as { txIds: string[] };
+    if (!txIds || !Array.isArray(txIds) || !this.gossipHandler) return;
+
+    const found: MeshTransaction[] = [];
+    for (const id of txIds.slice(0, 50)) { // Limit response size
+      const tx = this.transactions.get(id);
+      if (tx) found.push(tx);
+    }
+
+    if (found.length === 0) return;
+
+    const nonce = `${this.localPeerId}:resp:${Date.now()}`;
+    this.seenGossip.set(nonce, Date.now());
+
+    this.gossipHandler.sendTo(fromPeerId, {
+      type: 'tx_response',
+      originPeerId: this.localPeerId,
+      hopCount: 0,
+      maxHops: 1, // Direct response, no forwarding
+      ttl: Date.now() + 10_000,
+      payload: { transactions: found },
+      nonce,
+    });
+  }
+
+  private async handleTxResponse(msg: GossipMessage): Promise<void> {
+    const { transactions } = msg.payload as { transactions: MeshTransaction[] };
+    if (!transactions || !Array.isArray(transactions)) return;
+
+    for (const tx of transactions) {
+      if (!tx || !tx.id || this.transactions.has(tx.id)) continue;
+
+      this.pendingTxRequests.delete(tx.id);
+
+      const validation = await this.validateTransaction(tx);
+      if (validation.valid) {
+        this.applyTransaction(tx);
+        tx.resonanceScore = validation.resonanceScore;
+        this.propagateConfirmation(tx);
+
+        for (const cb of this.onRemoteTxCallbacks) {
+          cb(tx);
+        }
+      }
+    }
+  }
+
+  private handleTipSync(msg: GossipMessage, fromPeerId: string): void {
+    const { tips, txCount } = msg.payload as { tips: Record<number, string[]>; txCount: number };
+    if (!tips) return;
+
+    // Collect TX IDs we don't have
+    const missing: string[] = [];
+    for (const tipIds of Object.values(tips)) {
+      for (const id of tipIds) {
+        if (!this.transactions.has(id)) {
+          missing.push(id);
+        }
+      }
+    }
+
+    // If the remote peer has significantly more TXs, request missing tips
+    if (missing.length > 0) {
+      this.requestMissingTx(missing);
+    }
+  }
+
+  private handleMeshSummary(msg: GossipMessage, fromPeerId: string): void {
+    const { txCount, genesisId } = msg.payload as {
+      txCount: number;
+      tipCount: number;
+      maxDepth: number;
+      genesisId: string | null;
+    };
+
+    // If remote has more transactions, request a tip sync
+    if (txCount > this.transactions.size && this.gossipHandler) {
+      const nonce = `${this.localPeerId}:tips_req:${Date.now()}`;
+      this.seenGossip.set(nonce, Date.now());
+
+      // Respond by broadcasting our own tips so the peer can fill gaps
+      this.broadcastTips();
+    }
+
+    // If we don't have genesis yet and remote has one, note it
+    if (!this.genesisId && genesisId) {
+      this.requestMissingTx([genesisId]);
+    }
+  }
+
+  private cleanupSeenGossip(): void {
+    const cutoff = Date.now() - StrangrzMesh.GOSSIP_DEDUP_WINDOW_MS;
+    for (const [nonce, ts] of this.seenGossip) {
+      if (ts < cutoff) {
+        this.seenGossip.delete(nonce);
+      }
+    }
+    // Also cleanup pending requests older than 30s
+    // (pendingTxRequests doesn't track time, so clear if too large)
+    if (this.pendingTxRequests.size > 500) {
+      this.pendingTxRequests.clear();
+    }
   }
 
   // ─── Queries ─────────────────────────────────────────

@@ -421,11 +421,241 @@ export class RemoteSignaling {
   }
 }
 
+// ─── WebSocketSignaling (dedicated signaling server) ─────
+
+export class WebSocketSignaling {
+  private ws: WebSocket | null = null;
+  private localId: string;
+  private p2p: CosmoP2P;
+  private serverUrl: string;
+  private active: boolean = false;
+  private connected: boolean = false;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 10;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private announceInterval: ReturnType<typeof setInterval> | null = null;
+  private knownPeers: Set<string> = new Set();
+  private pendingOffers: Map<string, boolean> = new Map();
+
+  constructor(serverUrl: string, localId: string, p2p: CosmoP2P) {
+    this.serverUrl = serverUrl;
+    this.localId = localId;
+    this.p2p = p2p;
+  }
+
+  start(): void {
+    if (this.active) return;
+    this.active = true;
+    this.connect();
+  }
+
+  stop(): void {
+    this.active = false;
+    this.connected = false;
+    this.reconnectAttempts = 0;
+
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.announceInterval) {
+      clearInterval(this.announceInterval);
+      this.announceInterval = null;
+    }
+    if (this.ws) {
+      // Send leave before closing
+      this.send({
+        type: 'leave',
+        senderId: this.localId,
+        payload: null,
+        timestamp: Date.now(),
+      });
+      this.ws.close(1000, 'Client stop');
+      this.ws = null;
+    }
+    this.knownPeers.clear();
+    this.pendingOffers.clear();
+  }
+
+  get isActive(): boolean { return this.active; }
+  get isConnected(): boolean { return this.connected; }
+  get attempts(): number { return this.reconnectAttempts; }
+  get url(): string { return this.serverUrl; }
+
+  private connect(): void {
+    if (!this.active) return;
+
+    try {
+      this.ws = new WebSocket(this.serverUrl);
+    } catch {
+      this.scheduleReconnect();
+      return;
+    }
+
+    this.ws.onopen = () => {
+      this.connected = true;
+      this.reconnectAttempts = 0;
+      console.log(`[WebSocketSignaling] Connected to ${this.serverUrl}`);
+      this.announce();
+      this.announceInterval = setInterval(() => this.announce(), 5000);
+    };
+
+    this.ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data as string) as SignalingMessage & { type: string };
+        this.handleMessage(msg);
+      } catch { /* ignore malformed */ }
+    };
+
+    this.ws.onclose = () => {
+      this.connected = false;
+      if (this.announceInterval) {
+        clearInterval(this.announceInterval);
+        this.announceInterval = null;
+      }
+      if (this.active) {
+        this.scheduleReconnect();
+      }
+    };
+
+    this.ws.onerror = () => {
+      // onclose will fire after onerror, reconnect handled there
+    };
+  }
+
+  private scheduleReconnect(): void {
+    if (!this.active || this.reconnectAttempts >= this.maxReconnectAttempts) return;
+
+    this.reconnectAttempts++;
+    // Exponential backoff: 1s, 2s, 4s, 8s, ... capped at 30s
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 30_000);
+    console.log(`[WebSocketSignaling] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect();
+    }, delay);
+  }
+
+  private announce(): void {
+    this.send({
+      type: 'announce',
+      senderId: this.localId,
+      payload: { address: this.p2p.getLocalAddress() },
+      timestamp: Date.now(),
+    });
+  }
+
+  private async handleMessage(msg: SignalingMessage & { type: string }): Promise<void> {
+    if (msg.senderId === this.localId) return;
+
+    switch (msg.type) {
+      case 'announce': {
+        const peerId = msg.senderId;
+        if (this.knownPeers.has(peerId) || this.pendingOffers.has(peerId)) return;
+        this.knownPeers.add(peerId);
+        // Deterministic initiator
+        if (this.localId < peerId) {
+          await this.initiateConnection(peerId);
+        }
+        break;
+      }
+
+      case 'peer-list': {
+        // Server sends us a list of existing peer IDs
+        const peerIds = msg.payload as string[];
+        if (Array.isArray(peerIds)) {
+          for (const peerId of peerIds) {
+            if (peerId === this.localId || this.knownPeers.has(peerId)) continue;
+            this.knownPeers.add(peerId);
+            if (this.localId < peerId) {
+              await this.initiateConnection(peerId);
+            }
+          }
+        }
+        break;
+      }
+
+      case 'offer': {
+        if (msg.targetId && msg.targetId !== this.localId) return;
+        try {
+          const offer = msg.payload as SignalData;
+          const answer = await this.p2p.acceptOffer(offer);
+          this.send({
+            type: 'answer',
+            senderId: this.localId,
+            targetId: msg.senderId,
+            payload: answer,
+            timestamp: Date.now(),
+          });
+        } catch (err) {
+          console.error('[WebSocketSignaling] Failed to accept offer:', err);
+        }
+        break;
+      }
+
+      case 'answer': {
+        if (msg.targetId && msg.targetId !== this.localId) return;
+        try {
+          const answer = msg.payload as SignalData;
+          await this.p2p.completeConnection(answer);
+          this.pendingOffers.delete(msg.senderId);
+        } catch (err) {
+          console.error('[WebSocketSignaling] Failed to complete connection:', err);
+          this.pendingOffers.delete(msg.senderId);
+        }
+        break;
+      }
+
+      case 'leave': {
+        this.knownPeers.delete(msg.senderId);
+        this.pendingOffers.delete(msg.senderId);
+        break;
+      }
+    }
+  }
+
+  private async initiateConnection(targetPeerId: string): Promise<void> {
+    if (this.pendingOffers.has(targetPeerId)) return;
+    this.pendingOffers.set(targetPeerId, true);
+
+    try {
+      const offer = await this.p2p.createOffer();
+      this.send({
+        type: 'offer',
+        senderId: this.localId,
+        targetId: targetPeerId,
+        payload: offer,
+        timestamp: Date.now(),
+      });
+    } catch (err) {
+      console.error('[WebSocketSignaling] Failed to create offer:', err);
+      this.pendingOffers.delete(targetPeerId);
+    }
+  }
+
+  private send(msg: SignalingMessage): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(msg));
+    }
+  }
+}
+
 // ─── SignalingManager ────────────────────────────────────
+
+export interface SignalingManagerStatus extends SignalingStatus {
+  websocket: {
+    active: boolean;
+    connected: boolean;
+    serverUrl: string | null;
+    reconnectAttempts: number;
+  };
+}
 
 export class SignalingManager {
   private local: LocalSignaling;
   private remote: RemoteSignaling | null = null;
+  private websocket: WebSocketSignaling | null = null;
   private p2p: CosmoP2P;
   private localId: string;
 
@@ -437,8 +667,13 @@ export class SignalingManager {
     this.local = new LocalSignaling(this.localId, p2p);
 
     // Auto-connect to Supabase Realtime if backend is available
-    if (signalingServerUrl || isBackendAvailable()) {
-      this.remote = new RemoteSignaling(signalingServerUrl || 'supabase', this.localId, p2p);
+    if (isBackendAvailable()) {
+      this.remote = new RemoteSignaling('supabase', this.localId, p2p);
+    }
+
+    // Connect to dedicated WebSocket signaling server if URL provided
+    if (signalingServerUrl) {
+      this.websocket = new WebSocketSignaling(signalingServerUrl, this.localId, p2p);
     }
   }
 
@@ -446,16 +681,18 @@ export class SignalingManager {
   start(): void {
     this.local.start();
     this.remote?.start();
+    this.websocket?.start();
   }
 
   /** Stop all signaling channels */
   stop(): void {
     this.local.stop();
     this.remote?.stop();
+    this.websocket?.stop();
   }
 
   /** Get status of all signaling channels */
-  getStatus(): SignalingStatus {
+  getStatus(): SignalingManagerStatus {
     return {
       local: {
         active: this.local.isActive,
@@ -466,6 +703,12 @@ export class SignalingManager {
         connected: this.remote?.isConnected ?? false,
         serverUrl: this.remote?.url ?? null,
         reconnectAttempts: this.remote?.attempts ?? 0,
+      },
+      websocket: {
+        active: this.websocket?.isActive ?? false,
+        connected: this.websocket?.isConnected ?? false,
+        serverUrl: this.websocket?.url ?? null,
+        reconnectAttempts: this.websocket?.attempts ?? 0,
       },
     };
   }
@@ -481,5 +724,18 @@ export class SignalingManager {
   disconnectRemote(): void {
     this.remote?.stop();
     this.remote = null;
+  }
+
+  /** Connect to a dedicated WebSocket signaling server */
+  connectWebSocket(serverUrl: string): void {
+    this.websocket?.stop();
+    this.websocket = new WebSocketSignaling(serverUrl, this.localId, this.p2p);
+    this.websocket.start();
+  }
+
+  /** Disconnect from WebSocket signaling server */
+  disconnectWebSocket(): void {
+    this.websocket?.stop();
+    this.websocket = null;
   }
 }

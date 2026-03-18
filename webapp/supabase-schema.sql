@@ -245,6 +245,41 @@ CREATE POLICY "Allow upload avatars" ON storage.objects FOR INSERT WITH CHECK (b
 CREATE POLICY "Allow update media" ON storage.objects FOR UPDATE USING (bucket_id = 'media');
 CREATE POLICY "Allow delete media" ON storage.objects FOR DELETE USING (bucket_id = 'media');
 
+-- ─── 12b. MESH PEERS (discovery registry, optional persistence) ──
+
+CREATE TABLE IF NOT EXISTS mesh_peers (
+  peer_id     TEXT PRIMARY KEY,
+  address     TEXT NOT NULL,
+  tx_count    INT DEFAULT 0,
+  tip_count   INT DEFAULT 0,
+  max_depth   INT DEFAULT 0,
+  layers      INT[] DEFAULT ARRAY[0,1,2],
+  max_peers   INT DEFAULT 20,
+  version     TEXT DEFAULT '2.0',
+  last_seen   BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  created_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+CREATE INDEX IF NOT EXISTS idx_mesh_peers_last_seen ON mesh_peers(last_seen DESC);
+CREATE INDEX IF NOT EXISTS idx_mesh_peers_address ON mesh_peers(address);
+
+ALTER TABLE mesh_peers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read mesh_peers" ON mesh_peers FOR SELECT USING (true);
+CREATE POLICY "Allow upsert mesh_peers" ON mesh_peers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update mesh_peers" ON mesh_peers FOR UPDATE USING (true);
+CREATE POLICY "Allow delete mesh_peers" ON mesh_peers FOR DELETE USING (true);
+
+-- Auto-cleanup stale peers (older than 5 minutes) via pg_cron or manual call
+CREATE OR REPLACE FUNCTION cleanup_stale_peers()
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  DELETE FROM mesh_peers
+  WHERE last_seen < (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT - 300000;
+END;
+$$;
+
 -- ─── 13. REALTIME (enable for key tables) ───────────────────
 
 ALTER PUBLICATION supabase_realtime ADD TABLE warts;
@@ -252,6 +287,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE transactions;
 ALTER PUBLICATION supabase_realtime ADD TABLE wart_comments;
 ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 ALTER PUBLICATION supabase_realtime ADD TABLE social_follows;
+ALTER PUBLICATION supabase_realtime ADD TABLE mesh_peers;
 
 -- ─── 14. FUNCTIONS ──────────────────────────────────────────
 
