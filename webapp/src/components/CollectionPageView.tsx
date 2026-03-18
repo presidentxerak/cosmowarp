@@ -20,14 +20,13 @@ interface CollectionInfo {
 }
 
 export default function CollectionPageView({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { wallet, warts } = useWallet();
+  const { warts } = useWallet();
   const [selectedCollection, setSelectedCollection] = useState<CollectionInfo | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recent' | 'price-asc' | 'price-desc'>('recent');
 
   // Parse which collection to show from sessionStorage
   const collectionKey = sessionStorage.getItem('strangrz_collection_key') || '';
-  const collectionType = (sessionStorage.getItem('strangrz_collection_type') || '1of1') as CollectionType;
 
   // Build all collections from warts
   const collections = useMemo(() => {
