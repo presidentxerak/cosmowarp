@@ -655,5 +655,54 @@ export async function fetchAllPosts(): Promise<Array<{
   }));
 }
 
+// ─── TOTP 2FA Configs ────────────────────────────────────────
+
+import type { TOTPConfig } from '../engine/totp';
+
+export async function upsertTOTPConfig(address: string, config: TOTPConfig): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('totp_configs').upsert({
+    address,
+    secret: config.secret,
+    username: config.username,
+    enabled: config.enabled,
+    enabled_at: config.enabledAt,
+    backup_codes: config.backupCodes,
+    used_backup_codes: config.usedBackupCodes,
+    updated_at: Date.now(),
+  }, { onConflict: 'address' });
+
+  if (error) console.error('[Supabase] upsertTOTPConfig:', error.message);
+  return !error;
+}
+
+export async function fetchTOTPConfig(address: string): Promise<TOTPConfig | null> {
+  if (!isBackendAvailable()) return null;
+  const { data, error } = await supabase!
+    .from('totp_configs')
+    .select('*')
+    .eq('address', address)
+    .single();
+
+  if (error || !data) return null;
+  return {
+    secret: data.secret,
+    username: data.username,
+    enabled: data.enabled,
+    enabledAt: Number(data.enabled_at),
+    backupCodes: data.backup_codes as string[],
+    usedBackupCodes: data.used_backup_codes as string[],
+  };
+}
+
+export async function deleteTOTPConfig(address: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!
+    .from('totp_configs')
+    .delete()
+    .eq('address', address);
+  return !error;
+}
+
 // ─── Export rowToWart for sync layer ─────────────────────────
 export { rowToWart };

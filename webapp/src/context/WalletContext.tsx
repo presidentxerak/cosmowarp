@@ -16,7 +16,7 @@ import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculate
 import { storeMedia } from '../engine/mediadb';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
-import { is2FAEnabled, verify2FALogin } from '../engine/totp';
+import { is2FAEnabled, verify2FALogin, pull2FAConfig } from '../engine/totp';
 import type { CosmoContract } from '../engine/cosmocontract';
 import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
 import { shortAddress } from '../engine/crypto';
@@ -624,6 +624,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const existingBefore = loadWallet();
       const w = await loginStrangrzID(username, password);
       const isNew = !existingBefore;
+
+      // Pull 2FA config from Supabase (ensures cross-device persistence)
+      await pull2FAConfig(w.address);
 
       // Check if 2FA is enabled for this address
       if (is2FAEnabled(w.address)) {

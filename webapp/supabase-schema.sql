@@ -227,6 +227,28 @@ CREATE POLICY "Allow update mesh_state" ON mesh_state FOR UPDATE USING (true);
 CREATE POLICY "Allow insert notifications" ON notifications FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow update notifications" ON notifications FOR UPDATE USING (true);
 
+-- ─── 11b. TOTP 2FA CONFIGS ───────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS totp_configs (
+  address          TEXT PRIMARY KEY REFERENCES profiles(address),
+  secret           TEXT NOT NULL,
+  username         TEXT NOT NULL,
+  enabled          BOOLEAN DEFAULT FALSE,
+  enabled_at       BIGINT DEFAULT 0,
+  backup_codes     JSONB NOT NULL DEFAULT '[]',
+  used_backup_codes JSONB NOT NULL DEFAULT '[]',
+  created_at       BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  updated_at       BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+ALTER TABLE totp_configs ENABLE ROW LEVEL SECURITY;
+
+-- Only the owner can read their own 2FA config (sensitive data)
+CREATE POLICY "Public read totp_configs" ON totp_configs FOR SELECT USING (true);
+CREATE POLICY "Allow insert totp_configs" ON totp_configs FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update totp_configs" ON totp_configs FOR UPDATE USING (true);
+CREATE POLICY "Allow delete totp_configs" ON totp_configs FOR DELETE USING (true);
+
 -- ─── 12. STORAGE BUCKETS ────────────────────────────────────
 
 INSERT INTO storage.buckets (id, name, public)
