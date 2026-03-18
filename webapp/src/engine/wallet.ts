@@ -578,6 +578,11 @@ export async function loginStrangrzID(
     if (existing.address === keyPair.address) {
       // Same wallet — just unlock it
       existing.privateKey = keyPair.privateKey;
+      // Ensure alias is set from username (cross-device: old wallet may lack alias)
+      if (!existing.alias || existing.alias === existing.address.slice(0, 10)) {
+        existing.alias = username.trim();
+        saveWallet(existing);
+      }
       enrichWalletWithHierarchy(existing);
       return existing;
     }

@@ -567,8 +567,32 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
     } catch { /* Pull failed — use local data */ }
 
+    // Sync social profile from Supabase (cross-device: pull remote alias, bio, links)
+    try {
+      const { fetchSocialProfile } = await import('../lib/supabase-db');
+      const remoteSocial = await fetchSocialProfile(w.address);
+      if (remoteSocial) {
+        const s = SocialEngine.load();
+        const bestAlias = (remoteSocial.alias && remoteSocial.alias !== w.address.slice(0, 10) && remoteSocial.alias !== shortAddress(w.address))
+          ? remoteSocial.alias
+          : w.alias || shortAddress(w.address);
+        s.ensureProfile(w.address, bestAlias);
+        if (remoteSocial.bio) s.updateBio(w.address, remoteSocial.bio);
+        if (remoteSocial.website || remoteSocial.instagram || remoteSocial.twitter) {
+          s.updateLinks(w.address, {
+            website: remoteSocial.website || '',
+            instagram: remoteSocial.instagram || '',
+            twitter: remoteSocial.twitter || '',
+          });
+        }
+      }
+    } catch { /* non-critical */ }
+
     sync.syncProfile(w);
     for (const tx of w.transactions) sync.syncTransaction(tx);
+    // Also sync local social profile to Supabase
+    const socialProfile = SocialEngine.load().getProfile(w.address);
+    if (socialProfile) sync.syncSocialProfile(socialProfile);
 
     // Auto-export Recovery Kit for new wallets
     if (isNew) {
@@ -740,6 +764,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       refreshWartsState(w.address);
+      // Sync social profile from Supabase for cross-device handle resolution
+      SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
+      const socialProfile = SocialEngine.load().getProfile(w.address);
+      if (socialProfile) sync.syncSocialProfile(socialProfile);
       return true;
     } catch {
       return false;
@@ -766,6 +794,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       refreshWartsState(w.address);
+      // Sync social profile from Supabase for cross-device handle resolution
+      SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
+      const socialProfile = SocialEngine.load().getProfile(w.address);
+      if (socialProfile) sync.syncSocialProfile(socialProfile);
       return true;
     } catch {
       return false;

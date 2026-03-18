@@ -35,7 +35,27 @@ function getHeroVideoNum(): number {
   return num;
 }
 
-type Tab = 'posts' | 'created' | 'collection' | 'curations' | 'media';
+type Tab = 'posts' | 'created' | 'collection' | 'curations' | 'media' | 'playlists';
+
+// ─── Playlist types (read-only for viewing other users) ─
+interface Playlist {
+  id: string;
+  title: string;
+  description: string;
+  type: 'music' | 'video';
+  wartIds: string[];
+  createdAt: number;
+  coverWartId?: string;
+}
+
+function loadUserPlaylists(address: string): Playlist[] {
+  try {
+    const raw = localStorage.getItem('strangrz_playlists');
+    if (!raw) return [];
+    const all = JSON.parse(raw) as (Playlist & { owner: string })[];
+    return all.filter(p => p.owner === address);
+  } catch { return []; }
+}
 
 export default function UserProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, warts } = useWallet();
@@ -51,6 +71,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   const [created, setCreated] = useState<Wart[]>([]);
   const [collection, setCollection] = useState<Wart[]>([]);
   const [mutualFollowers, setMutualFollowers] = useState<string[]>([]);
+  const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
   const [twitter, setTwitter] = useState('');
@@ -90,12 +111,18 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     setBannerImage(profile?.bannerImage || '');
     setProfileImage(profile?.profileImage || '');
 
+    const isAliasLikeAddress = (a: string) =>
+      !a || a === addr.slice(0, 10) || a === shortAddress(addr) || /^[0-9a-f]{10,}$/i.test(a);
+
     const applyProfile = (p: { alias?: string; bio?: string; followers?: string[]; following?: string[]; website?: string; instagram?: string; twitter?: string; bannerImage?: string; profileImage?: string } | null) => {
-      let resolvedAlias = shortAddress(addr);
+      // Start with best known alias: wallet.alias for own profile, else local profile alias
+      let resolvedAlias = (wallet && wallet.address === addr && wallet.alias)
+        ? wallet.alias
+        : shortAddress(addr);
+
       if (p) {
         const pa = p.alias || '';
-        const isTruncated = pa === addr.slice(0, 10) || pa === shortAddress(addr);
-        if (pa && !isTruncated) {
+        if (pa && !isAliasLikeAddress(pa)) {
           resolvedAlias = pa;
         } else if (wallet && wallet.address === addr && wallet.alias) {
           resolvedAlias = wallet.alias;
@@ -118,20 +145,23 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
 
     applyProfile(profile);
 
-    const localAlias = profile?.alias || '';
-    const isTruncated = !localAlias || localAlias === addr.slice(0, 10) || localAlias === shortAddress(addr);
-    if (isTruncated && !(wallet && wallet.address === addr)) {
+    // Always try to fetch from Supabase when alias looks like a truncated address
+    const currentAlias = profile?.alias || (wallet && wallet.address === addr ? wallet.alias : '') || '';
+    const needsRemoteFetch = isAliasLikeAddress(currentAlias);
+    if (needsRemoteFetch) {
       Promise.all([
         fetchSocialProfile(addr).catch(() => null),
         fetchProfile(addr).catch(() => null),
       ]).then(([remote, walletProfile]) => {
-        const resolvedAlias = (remote?.alias && remote.alias !== addr.slice(0, 10) && remote.alias !== shortAddress(addr))
+        const remoteAlias = (remote?.alias && !isAliasLikeAddress(remote.alias))
           ? remote.alias
-          : walletProfile?.alias || '';
+          : (walletProfile?.alias && !isAliasLikeAddress(walletProfile.alias))
+            ? walletProfile.alias
+            : '';
 
-        if (resolvedAlias) {
+        if (remoteAlias) {
           const s = SocialEngine.load();
-          s.ensureProfile(addr, resolvedAlias);
+          s.ensureProfile(addr, remoteAlias);
           if (remote?.bio) s.updateBio(addr, remote.bio);
           if (remote?.website || remote?.instagram || remote?.twitter) {
             s.updateLinks(addr, { website: remote?.website, instagram: remote?.instagram, twitter: remote?.twitter });
@@ -139,15 +169,18 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
           applyProfile(s.getProfile(addr));
         }
       }).catch(() => {});
-
-      Promise.all([
-        fetchFollowers(addr).catch(() => []),
-        fetchFollowing(addr).catch(() => []),
-      ]).then(([followers, following]) => {
-        setFollowersCount(followers.length);
-        setFollowingCount(following.length);
-      });
     }
+
+    // Always fetch follower/following counts from cloud for accuracy
+    Promise.all([
+      fetchFollowers(addr).catch(() => []),
+      fetchFollowing(addr).catch(() => []),
+    ]).then(([followers, following]) => {
+      if (followers.length > 0 || following.length > 0) {
+        setFollowersCount(prev => Math.max(prev, followers.length));
+        setFollowingCount(prev => Math.max(prev, following.length));
+      }
+    });
 
     if (wallet) {
       setIsFollowing(social.isFollowing(wallet.address, addr));
@@ -169,6 +202,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
 
     setCreated(warts.filter(w => w.creator === addr));
     setCollection(warts.filter(w => w.owner === addr));
+    setUserPlaylists(loadUserPlaylists(addr));
 
     Promise.all([
       sync.pullWarts({ creator: addr }).catch(() => []),
@@ -357,6 +391,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
     { id: 'collection', label: 'Collection', count: collection.length },
     { id: 'curations', label: 'Curations', count: curatorArticles.length },
     { id: 'posts', label: 'Posts', count: posts.length },
+    { id: 'playlists', label: 'Playlists', count: userPlaylists.length },
     { id: 'media', label: 'Media', count: mediaWarts.length },
   ];
 
@@ -708,6 +743,64 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
                         <span>{article.views || 0} views</span>
                       </div>
                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+        {/* Playlists */}
+        {tab === 'playlists' && (
+          userPlaylists.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-2xl mb-2 opacity-30">{'\u266B'}</p>
+              <p className="opacity-60 text-base">No playlists</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {userPlaylists.map(pl => {
+                const allWarts = [...created, ...collection];
+                const coverWart = pl.coverWartId ? allWarts.find(w => w.id === pl.coverWartId) : null;
+                const playlistWarts = pl.wartIds.map(id => allWarts.find(w => w.id === id)).filter(Boolean) as Wart[];
+
+                return (
+                  <div key={pl.id} className="glass-panel overflow-hidden">
+                    <div className="flex items-center gap-3 p-3">
+                      <div className="w-14 h-14 shrink-0 bg-current/5 overflow-hidden flex items-center justify-center">
+                        {(coverWart?.audioCover || coverWart?.imageData) ? (
+                          <img src={coverWart.audioCover || coverWart.imageData} alt={pl.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xl opacity-30">{pl.type === 'music' ? '\u266B' : '\u25B6'}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-bold opacity-90 truncate">{pl.title}</p>
+                        {pl.description && <p className="text-label opacity-50 truncate">{pl.description}</p>}
+                        <p className="text-label opacity-40">{playlistWarts.length} tracks · {pl.type === 'music' ? '\u266B Music' : '\u25B6 Video'}</p>
+                      </div>
+                    </div>
+                    {playlistWarts.length > 0 && (
+                      <div className="border-t border-current/10">
+                        {playlistWarts.map((w, idx) => (
+                          <div
+                            key={w.id}
+                            className="flex items-center gap-2 px-3 py-2 hover:bg-current/5 transition-colors cursor-pointer"
+                            onClick={() => handleViewWart(w)}
+                          >
+                            <span className="text-label opacity-40 w-5 text-right">{idx + 1}</span>
+                            <div className="w-8 h-8 shrink-0 bg-current/5 overflow-hidden">
+                              {(w.audioCover || w.imageData) ? (
+                                <img src={w.audioCover || w.imageData} alt={w.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center"><span className="text-xs opacity-40">{pl.type === 'music' ? '\u266B' : '\u25B6'}</span></div>
+                              )}
+                            </div>
+                            <p className="text-body-sm opacity-80 truncate flex-1">{w.title}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}

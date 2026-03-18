@@ -38,7 +38,39 @@ function getHeroVideoNum(): number {
 const MAX_PROFILE_IMAGE_SIZE = 100 * 1024; // 100 Ko
 const MAX_BANNER_SIZE = 200 * 1024;        // 200 Ko
 
-type Tab = 'warts' | 'collected' | 'curations' | 'posts' | 'followers' | 'following';
+type Tab = 'warts' | 'collected' | 'curations' | 'posts' | 'playlists' | 'followers' | 'following';
+
+// ─── Playlist types ─────────────────────────────────
+interface Playlist {
+  id: string;
+  title: string;
+  description: string;
+  type: 'music' | 'video';
+  wartIds: string[];
+  createdAt: number;
+  coverWartId?: string;
+}
+
+const PLAYLISTS_KEY = 'strangrz_playlists';
+
+function loadPlaylists(address: string): Playlist[] {
+  try {
+    const raw = localStorage.getItem(PLAYLISTS_KEY);
+    if (!raw) return [];
+    const all = JSON.parse(raw) as (Playlist & { owner: string })[];
+    return all.filter(p => p.owner === address);
+  } catch { return []; }
+}
+
+function savePlaylists(address: string, playlists: Playlist[]): void {
+  try {
+    const raw = localStorage.getItem(PLAYLISTS_KEY);
+    const all = raw ? JSON.parse(raw) as (Playlist & { owner: string })[] : [];
+    const others = all.filter(p => p.owner !== address);
+    const withOwner = playlists.map(p => ({ ...p, owner: address }));
+    localStorage.setItem(PLAYLISTS_KEY, JSON.stringify([...others, ...withOwner]));
+  } catch { /* ignore */ }
+}
 
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, unlocked, lock, signOut, myCreated, myCollection, toggleWartLike, toggleWartBookmark } = useWallet();
@@ -51,6 +83,11 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   const [followingCount, setFollowingCount] = useState(0);
   const [followersList, setFollowersList] = useState<{ address: string; alias: string }[]>([]);
   const [followingList, setFollowingList] = useState<{ address: string; alias: string }[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false);
+  const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
+  const [newPlaylistType, setNewPlaylistType] = useState<'music' | 'video'>('music');
+  const [newPlaylistDesc, setNewPlaylistDesc] = useState('');
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
   const [twitter, setTwitter] = useState('');
@@ -82,6 +119,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
 
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(wallet.address));
+    setPlaylists(loadPlaylists(wallet.address));
 
     fetchSocialProfile(wallet.address).then(remote => {
       if (!remote) return;
@@ -203,9 +241,61 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     { id: 'collected', label: 'Collection', count: myCollection.length },
     { id: 'curations', label: 'Curations', count: curatorArticles.length },
     { id: 'posts', label: 'Posts', count: posts.length },
+    { id: 'playlists', label: 'Playlists', count: playlists.length },
     { id: 'followers', label: 'Followers', count: followersCount },
     { id: 'following', label: 'Following', count: followingCount },
   ];
+
+  // ─── Playlist CRUD ──────────────────────────────
+  const handleCreatePlaylist = () => {
+    if (!wallet || !newPlaylistTitle.trim()) return;
+    const newPlaylist: Playlist = {
+      id: `PL_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      title: newPlaylistTitle.trim(),
+      description: newPlaylistDesc.trim(),
+      type: newPlaylistType,
+      wartIds: [],
+      createdAt: Date.now(),
+    };
+    const updated = [...playlists, newPlaylist];
+    setPlaylists(updated);
+    savePlaylists(wallet.address, updated);
+    setCreatingPlaylist(false);
+    setNewPlaylistTitle('');
+    setNewPlaylistDesc('');
+  };
+
+  const handleDeletePlaylist = (id: string) => {
+    if (!wallet) return;
+    const updated = playlists.filter(p => p.id !== id);
+    setPlaylists(updated);
+    savePlaylists(wallet.address, updated);
+  };
+
+  const handleAddToPlaylist = (playlistId: string, wartId: string) => {
+    if (!wallet) return;
+    const updated = playlists.map(p => {
+      if (p.id !== playlistId) return p;
+      if (p.wartIds.includes(wartId)) return p;
+      return { ...p, wartIds: [...p.wartIds, wartId], coverWartId: p.coverWartId || wartId };
+    });
+    setPlaylists(updated);
+    savePlaylists(wallet.address, updated);
+  };
+
+  const handleRemoveFromPlaylist = (playlistId: string, wartId: string) => {
+    if (!wallet) return;
+    const updated = playlists.map(p => {
+      if (p.id !== playlistId) return p;
+      return { ...p, wartIds: p.wartIds.filter(id => id !== wartId) };
+    });
+    setPlaylists(updated);
+    savePlaylists(wallet.address, updated);
+  };
+
+  // Media warts available for playlists
+  const musicWarts = [...myCreated, ...myCollection].filter(w => w.mediaType === 'audio');
+  const videoWarts = [...myCreated, ...myCollection].filter(w => w.mediaType === 'video');
 
   // ─── Wart Card reusable ──────────────────────────
   const WartCard = ({ wart }: { wart: Wart }) => (
@@ -556,6 +646,152 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
               })}
             </div>
           )
+        )}
+
+        {/* Playlists */}
+        {tab === 'playlists' && (
+          <div>
+            {/* Create playlist button */}
+            {!creatingPlaylist ? (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => setCreatingPlaylist(true)}
+                  className="warp-button text-body-sm px-4 py-2 flex items-center gap-2"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  New Playlist
+                </button>
+              </div>
+            ) : (
+              <div className="glass-panel p-4 mb-4 space-y-3">
+                <h3 className="text-base font-bold opacity-90">Create Playlist</h3>
+                <input
+                  className="warp-input text-body-sm py-1.5 w-full"
+                  value={newPlaylistTitle}
+                  onChange={e => setNewPlaylistTitle(e.target.value)}
+                  placeholder="Playlist title"
+                  maxLength={60}
+                  autoFocus
+                />
+                <input
+                  className="warp-input text-body-sm py-1.5 w-full"
+                  value={newPlaylistDesc}
+                  onChange={e => setNewPlaylistDesc(e.target.value)}
+                  placeholder="Description (optional)"
+                  maxLength={200}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setNewPlaylistType('music')}
+                    className={`flex-1 py-2 text-body-sm font-medium border cursor-pointer transition-all ${newPlaylistType === 'music' ? 'border-current/30 opacity-90 bg-current/5' : 'border-current/10 opacity-50'}`}
+                  >
+                    {'\u266B'} Music
+                  </button>
+                  <button
+                    onClick={() => setNewPlaylistType('video')}
+                    className={`flex-1 py-2 text-body-sm font-medium border cursor-pointer transition-all ${newPlaylistType === 'video' ? 'border-current/30 opacity-90 bg-current/5' : 'border-current/10 opacity-50'}`}
+                  >
+                    {'\u25B6'} Video
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleCreatePlaylist} className="warp-button text-body-sm px-4 py-1.5 flex-1" disabled={!newPlaylistTitle.trim()}>Create</button>
+                  <button onClick={() => setCreatingPlaylist(false)} className="text-body-sm opacity-60 cursor-pointer px-4">Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {playlists.length === 0 && !creatingPlaylist ? (
+              <div className="text-center py-12">
+                <p className="text-2xl mb-2 opacity-30">{'\u266B'}</p>
+                <p className="opacity-60 text-base">No playlists yet</p>
+                <p className="text-body-sm opacity-40 mt-1">Create playlists to organize your music and videos</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {playlists.map(pl => {
+                  const allWarts = [...myCreated, ...myCollection];
+                  const coverWart = pl.coverWartId ? allWarts.find(w => w.id === pl.coverWartId) : null;
+                  const playlistWarts = pl.wartIds.map(id => allWarts.find(w => w.id === id)).filter(Boolean) as Wart[];
+                  const availableWarts = pl.type === 'music' ? musicWarts : videoWarts;
+                  const notInPlaylist = availableWarts.filter(w => !pl.wartIds.includes(w.id));
+
+                  return (
+                    <div key={pl.id} className="glass-panel overflow-hidden">
+                      {/* Playlist header */}
+                      <div className="flex items-center gap-3 p-3">
+                        <div className="w-16 h-16 shrink-0 bg-current/5 overflow-hidden flex items-center justify-center">
+                          {coverWart?.imageData || coverWart?.audioCover ? (
+                            <img src={coverWart.audioCover || coverWart.imageData} alt={pl.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl opacity-30">{pl.type === 'music' ? '\u266B' : '\u25B6'}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-bold opacity-90 truncate">{pl.title}</p>
+                          {pl.description && <p className="text-label opacity-50 truncate">{pl.description}</p>}
+                          <p className="text-label opacity-40 mt-0.5">{playlistWarts.length} tracks · {pl.type === 'music' ? '\u266B' : '\u25B6'}</p>
+                        </div>
+                        <button
+                          onClick={() => handleDeletePlaylist(pl.id)}
+                          className="shrink-0 opacity-40 hover:opacity-70 cursor-pointer p-1"
+                          title="Delete playlist"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                      </div>
+
+                      {/* Playlist items */}
+                      {playlistWarts.length > 0 && (
+                        <div className="border-t border-current/10">
+                          {playlistWarts.map((w, idx) => (
+                            <div key={w.id} className="flex items-center gap-2 px-3 py-2 hover:bg-current/5 transition-colors">
+                              <span className="text-label opacity-40 w-5 text-right">{idx + 1}</span>
+                              <div className="w-8 h-8 shrink-0 bg-current/5 overflow-hidden">
+                                {(w.audioCover || w.imageData) ? (
+                                  <img src={w.audioCover || w.imageData} alt={w.title} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center"><span className="text-xs opacity-40">{pl.type === 'music' ? '\u266B' : '\u25B6'}</span></div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-body-sm opacity-80 truncate">{w.title}</p>
+                              </div>
+                              <button
+                                onClick={() => handleRemoveFromPlaylist(pl.id, w.id)}
+                                className="opacity-30 hover:opacity-60 cursor-pointer"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add tracks */}
+                      {notInPlaylist.length > 0 && (
+                        <div className="border-t border-current/10 p-2">
+                          <p className="text-label opacity-50 px-1 mb-1">Add tracks:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {notInPlaylist.slice(0, 6).map(w => (
+                              <button
+                                key={w.id}
+                                onClick={() => handleAddToPlaylist(pl.id, w.id)}
+                                className="flex items-center gap-1 px-2 py-1 text-label opacity-60 hover:opacity-80 border border-current/10 cursor-pointer transition-all hover:bg-current/5"
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                {w.title.slice(0, 20)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
 
         {/* Followers */}

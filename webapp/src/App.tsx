@@ -43,6 +43,7 @@ const DiscoverView = lazyRetry(() => import('./components/DiscoverView'));
 const VaultView = lazyRetry(() => import('./components/VaultView'));
 const FiatGatewayView = lazyRetry(() => import('./components/FiatGatewayView'));
 const PaymentSuccessView = lazyRetry(() => import('./components/PaymentSuccessView'));
+const CollectionPageView = lazyRetry(() => import('./components/CollectionPageView'));
 
 // ─── URL routing map ─────────────────────────────────────
 const ROUTE_MAP: Record<string, string> = {
@@ -64,6 +65,7 @@ const ROUTE_MAP: Record<string, string> = {
   '/curate': 'curate',
   '/trading': 'trading',
   '/user-profile': 'user-profile',
+  '/collections': 'collections',
   '/payment-success': 'payment-success',
   '/payment-cancel': 'payment-cancel',
 };
@@ -227,6 +229,9 @@ function App() {
               {/* Social */}
               {activeTab === 'user-profile' && <UserProfileView onNavigate={navigate} />}
               {activeTab === 'discover' && <DiscoverView onNavigate={navigate} />}
+
+              {/* Collections (Foundation-style pages) */}
+              {activeTab === 'collections' && <CollectionPageView onNavigate={navigate} />}
 
               {/* Fiat Gateway */}
               {activeTab === 'fiat-gateway' && <FiatGatewayView />}
