@@ -125,6 +125,25 @@ function queuePendingSync(type: string, id: string): void {
 }
 
 /**
+ * Sync a lazy listing template — metadata only, NO media upload.
+ * Media stays local until a buyer purchases and pays the storage fee.
+ * This ensures the platform never pays for storage — the collector does.
+ */
+export async function syncLazyTemplate(wart: Wart): Promise<void> {
+  if (!isBackendAvailable()) {
+    queuePendingSync('wart', wart.id);
+    return;
+  }
+  try {
+    // Upsert metadata WITHOUT uploading media to Supabase Storage.
+    // The media_path will be null — indicating no cloud media yet.
+    await db.upsertWart(wart, undefined, undefined);
+  } catch {
+    // Non-critical — will re-sync on next visit
+  }
+}
+
+/**
  * Sync wart state update (list, delist, transfer) — metadata only.
  */
 export async function syncWartMetadata(wart: Wart): Promise<void> {

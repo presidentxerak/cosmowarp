@@ -391,10 +391,10 @@ export default function MarketplaceView() {
 
         setUploadProgress(100);
         setUploadStatus('');
-        const fees = calculateBuyerTotal(priceVal);
+        const fees = calculateBuyerTotal(priceVal, imageData);
         setCreateSuccess(
           `"${template.title}" publié en lazy mint ! ` +
-          `L'acheteur paiera ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ frais). ` +
+          `L'acheteur paiera ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service + ${fees.storageFee} ⬣ stockage). ` +
           `Vous recevrez ${fees.price} ⬣ à chaque vente.`
         );
         setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
@@ -1763,7 +1763,7 @@ export default function MarketplaceView() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {lazyListings.map(template => {
-                      const fees = calculateBuyerTotal(template.price);
+                      const fees = calculateBuyerTotal(template.price, template.imageData);
                       const isOwn = template.creator === wallet?.address;
                       return (
                         <div key={template.id} className="glass-panel p-0 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
@@ -1780,7 +1780,8 @@ export default function MarketplaceView() {
                             <p className="text-[10px] opacity-40 truncate">{shortAddress(template.creator)}</p>
                             <div className="text-[10px] opacity-50 space-y-0.5">
                               <p>Prix : <strong>{template.price} {'\u2B23'}</strong></p>
-                              <p>+ frais : <strong>{fees.serviceFee} {'\u2B23'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
+                              <p>+ service : <strong>{fees.serviceFee} {'\u2B23'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
+                              <p>+ stockage : <strong>{fees.storageFee} {'\u2B23'}</strong></p>
                               <p className="font-bold opacity-80">Total : {fees.total} {'\u2B23'}</p>
                             </div>
                             {template.editionType !== 'unique' && (
@@ -2125,7 +2126,8 @@ export default function MarketplaceView() {
                 <div className="mt-2 p-3 border border-current/10 bg-current/5">
                   <p className="text-[10px] opacity-60 leading-relaxed">
                     <strong>Lazy Mint</strong> : Vous ne payez rien. Votre oeuvre est publi{'\u00E9'}e comme template.
-                    Le mint r{'\u00E9'}el ne se produit que lorsqu'un acheteur ach{'\u00E8'}te. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais de service.
+                    Le mint r{'\u00E9'}el ne se produit que lorsqu'un acheteur ach{'\u00E8'}te. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais de service + frais de stockage (selon la taille du fichier).
+                    Le stockage cloud (Supabase, IPFS) n'est activ{'\u00E9'} qu'au moment de l'achat — la plateforme ne paie rien.
                     Vous recevez 100% du prix affich{'\u00E9'}.
                   </p>
                 </div>
@@ -2282,11 +2284,14 @@ export default function MarketplaceView() {
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
-                {price && parseFloat(price) >= (mintChain === 'ethereum' ? 500 : 100) && lazyMintMode && (
-                  <p className="text-[10px] opacity-50 mt-1">
-                    L'acheteur paiera {calculateBuyerTotal(parseFloat(price)).total} {'\u2B23'} ({price} {'\u2B23'} + {calculateBuyerTotal(parseFloat(price)).serviceFee} {'\u2B23'} frais)
-                  </p>
-                )}
+                {price && parseFloat(price) >= (mintChain === 'ethereum' ? 500 : 100) && lazyMintMode && (() => {
+                  const fees = calculateBuyerTotal(parseFloat(price), imageData || undefined);
+                  return (
+                    <p className="text-[10px] opacity-50 mt-1">
+                      L'acheteur paiera {fees.total} {'\u2B23'} ({price} {'\u2B23'} + {fees.serviceFee} {'\u2B23'} service{fees.storageFee > 0 ? ` + ${fees.storageFee} \u2B23 stockage` : ''})
+                    </p>
+                  );
+                })()}
               </div>
               <div>
                 <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Royalty (%)</label>

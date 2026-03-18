@@ -77,6 +77,32 @@ export interface WartCertificate {
 /** Service fee charged to the buyer on top of the listed price (2.5%) */
 export const BUYER_SERVICE_FEE_PERCENT = 2.5;
 
+/**
+ * Storage fee tiers — the buyer pays for permanent storage.
+ * Based on media size in bytes. Covers Supabase + IPFS pinning costs.
+ *
+ * Rationale:
+ *   < 1MB  →  50 STZ  (€5)  — small images, SVGs
+ *   < 5MB  → 100 STZ (€10)  — standard images, short audio
+ *   < 25MB → 250 STZ (€25)  — high-res images, video clips
+ *   < 50MB → 500 STZ (€50)  — full videos, large audio
+ */
+export const STORAGE_FEE_TIERS: Array<{ maxBytes: number; fee: number }> = [
+  { maxBytes: 1 * 1024 * 1024,   fee: 50 },   // < 1MB
+  { maxBytes: 5 * 1024 * 1024,   fee: 100 },  // < 5MB
+  { maxBytes: 25 * 1024 * 1024,  fee: 250 },  // < 25MB
+  { maxBytes: 50 * 1024 * 1024,  fee: 500 },  // < 50MB
+];
+
+/** Calculate storage fee based on media data size */
+export function calculateStorageFee(mediaData: string): number {
+  const sizeBytes = new TextEncoder().encode(mediaData).length;
+  for (const tier of STORAGE_FEE_TIERS) {
+    if (sizeBytes <= tier.maxBytes) return tier.fee;
+  }
+  return STORAGE_FEE_TIERS[STORAGE_FEE_TIERS.length - 1].fee; // max tier
+}
+
 export interface LazyMintTemplate {
   id: string;                    // Template ID (LAZY_<hash>_<timestamp>)
   title: string;
@@ -100,10 +126,14 @@ export interface LazyMintTemplate {
   mintChain?: 'strangrz' | 'ethereum';
 }
 
-/** Calculate the total cost for the buyer (price + service fee) */
-export function calculateBuyerTotal(price: number): { price: number; serviceFee: number; total: number } {
+/** Calculate the total cost for the buyer (price + service fee + storage fee) */
+export function calculateBuyerTotal(
+  price: number,
+  mediaData?: string,
+): { price: number; serviceFee: number; storageFee: number; total: number } {
   const serviceFee = Math.round(price * BUYER_SERVICE_FEE_PERCENT / 100 * 100) / 100;
-  return { price, serviceFee, total: price + serviceFee };
+  const storageFee = mediaData ? calculateStorageFee(mediaData) : 0;
+  return { price, serviceFee, storageFee, total: price + serviceFee + storageFee };
 }
 
 export interface Wart {
@@ -1243,8 +1273,8 @@ export class WartEngine {
       return null;
     }
 
-    // Calculate buyer's total cost
-    const fees = calculateBuyerTotal(template.price);
+    // Calculate buyer's total cost (includes storage fee — buyer pays for all storage)
+    const fees = calculateBuyerTotal(template.price, template.imageData);
 
     // ─── ACTUAL MINT happens here (triggered by buyer) ───
     const wart = await this.mint(

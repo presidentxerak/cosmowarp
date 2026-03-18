@@ -156,7 +156,7 @@ interface WalletContextType {
     audioCover?: string; priceFiat?: number; fiatCurrency?: FiatCurrency;
     mintChain?: 'strangrz' | 'ethereum';
   }) => Promise<LazyMintTemplate>;
-  buyLazyMint: (templateId: string) => Promise<{ success: boolean; wart?: Wart; fees?: { price: number; serviceFee: number; total: number }; error?: string }>;
+  buyLazyMint: (templateId: string) => Promise<{ success: boolean; wart?: Wart; fees?: { price: number; serviceFee: number; storageFee: number; total: number }; error?: string }>;
   cancelLazyListing: (templateId: string) => boolean;
   refreshLazyListings: () => void;
 }
@@ -1216,8 +1216,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
 
-    // Sync template to Supabase
-    sync.syncWart({
+    // Sync template metadata to Supabase — NO media upload.
+    // Media stays local until a buyer purchases and pays the storage fee.
+    sync.syncLazyTemplate({
       id: template.id,
       title: template.title,
       description: template.description,
@@ -1244,7 +1245,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const doBuyLazyMint = useCallback(async (templateId: string): Promise<{
     success: boolean; wart?: Wart;
-    fees?: { price: number; serviceFee: number; total: number };
+    fees?: { price: number; serviceFee: number; storageFee: number; total: number };
     error?: string;
   }> => {
     if (!wallet || !wallet.privateKey) return { success: false, error: 'Wallet locked' };
@@ -1252,12 +1253,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const template = engine.getLazyTemplate(templateId);
     if (!template) return { success: false, error: 'Listing not found' };
 
-    // Calculate total cost for buyer (price + service fee)
-    const fees = calculateBuyerTotal(template.price);
+    // Calculate total cost for buyer (price + service fee + storage fee)
+    // The buyer pays for ALL storage — the platform pays nothing.
+    const fees = calculateBuyerTotal(template.price, template.imageData);
 
-    // Check buyer balance covers total (price + service fee)
+    // Check buyer balance covers total
     if (wallet.balance < fees.total) {
-      return { success: false, error: `Insufficient STZ. Need ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service fee)` };
+      return { success: false, error: `Insufficient STZ. Need ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service + ${fees.storageFee} ⬣ storage)` };
     }
 
     // Execute the lazy mint
@@ -1268,10 +1270,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const payResult = await sendWarps(wallet, template.creator, fees.price, `Strangrz lazy mint: ${template.title}`);
     if (!payResult.success) return { success: false, error: payResult.error };
 
-    // Pay service fee to platform (burn address or platform wallet)
+    // Pay service fee + storage fee to platform
+    // Storage fee covers: Supabase hosting, IPFS pinning, CDN bandwidth
     const PLATFORM_ADDRESS = 'STZ_PLATFORM_FEE';
-    if (fees.serviceFee > 0) {
-      await sendWarps(wallet, PLATFORM_ADDRESS, fees.serviceFee, `Service fee: ${template.title}`);
+    const platformTotal = fees.serviceFee + fees.storageFee;
+    if (platformTotal > 0) {
+      await sendWarps(wallet, PLATFORM_ADDRESS, platformTotal, `Fees: ${template.title} (service: ${fees.serviceFee} ⬣, storage: ${fees.storageFee} ⬣)`);
     }
 
     // Record transaction
@@ -1283,7 +1287,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       timestamp: Date.now(),
       signature: 'wart_buy',
       type: 'wart_buy',
-      memo: `Lazy mint purchase: ${template.title} (${fees.price} ⬣ + ${fees.serviceFee} ⬣ fee)`,
+      memo: `Lazy mint purchase: ${template.title} (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service + ${fees.storageFee} ⬣ storage)`,
     };
     const updatedWallet = { ...wallet, transactions: [buyTx, ...wallet.transactions] };
     saveWallet(updatedWallet);
@@ -1292,7 +1296,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
 
-    // Sync to Supabase
+    // NOW upload media to Supabase — buyer has paid for storage.
+    // This is the moment the media leaves the creator's local device
+    // and gets replicated to cloud storage.
     sync.syncWart(result.wart);
     sync.syncProfile(updatedWallet);
     sync.syncTransaction(buyTx);
@@ -1301,7 +1307,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       sender: wallet.address,
       type: 'sale',
       title: 'Artwork sold!',
-      body: `${template.title} was purchased for ${fees.price} ⬣ (buyer paid ${fees.total} ⬣ total)`,
+      body: `${template.title} was purchased for ${fees.price} ⬣ (buyer paid ${fees.total} ⬣ total incl. ${fees.storageFee} ⬣ storage)`,
       refId: result.wart.id,
     });
 
