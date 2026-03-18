@@ -513,7 +513,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           Lock Wallet
         </button>
         <button
-          onClick={() => { if (confirm('Sign out? Make sure you have a backup.')) signOut(); }}
+          onClick={() => { if (confirm('Sign out? Make sure you have a backup.')) { signOut(); onNavigate('wallet'); } }}
           className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-70/70">

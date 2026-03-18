@@ -13,6 +13,7 @@ import type { MiningProof } from '../engine/miner';
 import { generateStrangrzLink, parseStrangrzLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/strangrmesh';
 import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal } from '../engine/warts';
+import { storeMedia } from '../engine/mediadb';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
 import { is2FAEnabled, verify2FALogin } from '../engine/totp';
@@ -256,10 +257,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
               const local = engine.getWart(wartId);
               if (local) {
                 local.imageData = fullWart.imageData;
+                if (fullWart.audioCover) local.audioCover = fullWart.audioCover;
                 if (fullWart.contentFingerprint) {
                   WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
                 }
+                // Store in IndexedDB for persistence
+                storeMedia(wartId, fullWart.imageData, fullWart.audioCover);
                 engine.savePublic();
+                // Refresh React state so images appear
+                const currentWallet = loadWallet();
+                refreshWartsState(currentWallet?.address);
               }
             }
           });
@@ -643,6 +650,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setMarketplace([]);
     setMyCollection([]);
     setMyCreated([]);
+    // Navigate to wallet view to show auth modal for reconnection
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
   }, []);
 
   // ─── Delete account (permanently remove profile + reintegrate tokens) ──
@@ -664,6 +673,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setMyCollection([]);
     setMyCreated([]);
     setVaultStats(null);
+    // Navigate to wallet view to show auth modal for reconnection
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
   }, [wallet]);
 
   // ─── Migration ─────────────────────────────────────────

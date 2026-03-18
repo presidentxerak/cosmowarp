@@ -76,18 +76,15 @@ export default function MessageView() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [selectedThread?.messages.length, selectedChannel?.messages.length]);
 
+  // Redirect to wallet/auth view when not connected
+  useEffect(() => {
+    if (!wallet || !unlocked) {
+      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+    }
+  }, [wallet, unlocked]);
+
   if (!wallet || !unlocked) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
-        <div className="text-center px-6">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto opacity-30 mb-3">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          <p className="opacity-50 text-base">Débloquez votre wallet pour accéder aux messages</p>
-          <p className="opacity-30 text-body-sm mt-1">Messages directs chiffrés de bout en bout</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const handleSearch = (query: string) => {

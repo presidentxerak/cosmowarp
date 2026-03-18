@@ -83,6 +83,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
       return;
     }
     signOut();
+    onNavigate('wallet');
   };
 
   const settingsTabs: { id: SettingsTab; label: string }[] = [

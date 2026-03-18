@@ -120,20 +120,15 @@ export default function CosmoChatView() {
     social.ensureProfile(wallet.address, wallet.alias || shortAddress(wallet.address));
   }, [wallet?.address, wallet?.alias, unlocked]);
 
+  // Redirect to wallet/auth view when not connected
+  useEffect(() => {
+    if (!wallet || !unlocked) {
+      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+    }
+  }, [wallet, unlocked]);
+
   if (!wallet || !unlocked) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
-        <div className="text-center px-6">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto opacity-30 mb-3">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-          <h2 className="text-title-lg font-bold opacity-100 mb-1 font-title">Wall</h2>
-          <p className="opacity-50 text-base">Create and unlock your wallet to access the Wall.</p>
-          <p className="opacity-30 text-body-sm mt-1">Encrypted anonymous social network</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const alias = wallet.alias || shortAddress(wallet.address);

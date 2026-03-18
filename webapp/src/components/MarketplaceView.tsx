@@ -59,7 +59,7 @@ type SalesMarketFilter = '1st' | '2nd';
 
 export default function MarketplaceView() {
   const {
-    wallet, unlocked, marketplace, myCollection, myCreated,
+    wallet, unlocked, warts: allWartsRaw, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
     listWartFiat, buyWartFiat, getWartFiatPrice,
@@ -173,12 +173,13 @@ export default function MarketplaceView() {
   const [shareSuccess, setShareSuccess] = useState('');
   const [listSuccess, setListSuccess] = useState('');
 
-  // ─── All warts (marketplace + collections) ──────────────
+  // ─── All warts (all platform warts from cloud + local) ──────────────
   const allWarts = useMemo(() => {
-    const combined = [...marketplace, ...myCollection, ...myCreated];
+    // Use allWartsRaw (engine.getAll()) which includes cloud-synced warts from all users
+    const combined = [...allWartsRaw, ...marketplace, ...myCollection, ...myCreated];
     const unique = combined.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
     return unique.filter(w => !isExpired(w));
-  }, [marketplace, myCollection, myCreated]);
+  }, [allWartsRaw, marketplace, myCollection, myCreated]);
 
   // ─── RWA filter ───────────────────────────────────────
   const rwaWarts = useMemo(() => {
@@ -279,20 +280,15 @@ export default function MarketplaceView() {
     }
   }, [allWarts]);
 
-  if (!wallet) {
-    return (
-      <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Créez un portefeuille pour accéder à la marketplace Strangrz.</p>
-      </div>
-    );
-  }
+  // Redirect to wallet/auth view when not connected
+  useEffect(() => {
+    if (!wallet || !unlocked) {
+      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+    }
+  }, [wallet, unlocked]);
 
-  if (!unlocked) {
-    return (
-      <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Déverrouillez votre portefeuille pour accéder à la marketplace Strangrz.</p>
-      </div>
-    );
+  if (!wallet || !unlocked) {
+    return null;
   }
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
