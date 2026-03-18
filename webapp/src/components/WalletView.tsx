@@ -208,7 +208,7 @@ export default function WalletView() {
         <div className="flex justify-center mb-4">
           <Logo className="w-16 h-16 sm:w-20 sm:h-20 animate-float" />
         </div>
-        <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-title">{'\u30B9\u30C8\u30EC\u30F3\u30B8\u30E3\u30FC\u30BA'}</h2>
+        <h2 className="text-title-md sm:text-title-lg font-bold opacity-100 mb-1 font-logo">{'\u30B9\u30C8\u30EC\u30F3\u30B8\u30E3\u30FC\u30BA'}</h2>
         <p className="text-body-sm opacity-60 mb-1">Strangrz</p>
         <p className="text-body-sm opacity-40 mb-5">
           Protocole de certification pour objets rares

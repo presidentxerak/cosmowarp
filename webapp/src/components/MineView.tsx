@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, type ReactNode } from 'react';
 import { useWallet } from '../context/WalletContext';
 import InfoTooltip from './InfoTooltip';
 import {
@@ -25,11 +25,13 @@ function formatHashrate(h: number): string {
 type MiningPhase = 'config' | 'mining' | 'result';
 type EnergyLevel = 'low' | 'medium' | 'high' | 'max';
 
-const ENERGY_LEVELS: { id: EnergyLevel; label: string; desc: string; multiplier: number; icon: string }[] = [
-  { id: 'low', label: 'Basse', desc: 'Économe — hash lent, récompense x0.5', multiplier: 0.5, icon: '\u26A1' },
-  { id: 'medium', label: 'Normale', desc: 'Équilibré — hash standard, récompense x1', multiplier: 1.0, icon: '\u26A1\u26A1' },
-  { id: 'high', label: 'Élevée', desc: 'Intensif — hash rapide, récompense x1.5', multiplier: 1.5, icon: '\u26A1\u26A1\u26A1' },
-  { id: 'max', label: 'Maximum', desc: 'Pleine puissance — hash max, récompense x2', multiplier: 2.0, icon: '\u26A1\u26A1\u26A1\u26A1' },
+const BoltIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>;
+
+const ENERGY_LEVELS: { id: EnergyLevel; label: string; desc: string; multiplier: number; icon: ReactNode }[] = [
+  { id: 'low', label: 'Basse', desc: 'Économe — hash lent, récompense x0.5', multiplier: 0.5, icon: <BoltIcon /> },
+  { id: 'medium', label: 'Normale', desc: 'Équilibré — hash standard, récompense x1', multiplier: 1.0, icon: <><BoltIcon /><BoltIcon /></> },
+  { id: 'high', label: 'Élevée', desc: 'Intensif — hash rapide, récompense x1.5', multiplier: 1.5, icon: <><BoltIcon /><BoltIcon /><BoltIcon /></> },
+  { id: 'max', label: 'Maximum', desc: 'Pleine puissance — hash max, récompense x2', multiplier: 2.0, icon: <><BoltIcon /><BoltIcon /><BoltIcon /><BoltIcon /></> },
 ];
 
 export default function MineView() {
@@ -294,7 +296,7 @@ export default function MineView() {
             className="warp-button w-full py-4 font-bold"
             onClick={stopMining}
           >
-            {'\u25A0'} Arrêter le minage
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Arrêter le minage
           </button>
         </div>
       )}
@@ -310,7 +312,7 @@ export default function MineView() {
             </div>
             {levelUpMsg && (
               <div className="mt-4 p-3 bg-current/5 border border-current/15">
-                <p className="text-body-md font-bold opacity-80">{'\u2605'} LEVEL UP! {levelUpMsg}</p>
+                <p className="text-body-md font-bold opacity-80"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ display: 'inline', verticalAlign: 'middle' }}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> LEVEL UP! {levelUpMsg}</p>
               </div>
             )}
           </div>

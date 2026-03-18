@@ -64,7 +64,7 @@ export default function Header({ activeTab, setActiveTab }: {
           />
           <div className="hidden sm:block">
             <h1
-              className="text-base font-bold opacity-90 leading-tight cursor-pointer font-title"
+              className="text-base font-bold opacity-90 leading-tight cursor-pointer font-logo"
               onClick={() => selectTab('landing')}
             >
               Strangrz

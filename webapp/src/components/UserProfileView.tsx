@@ -31,7 +31,7 @@ type Tab = 'posts' | 'created' | 'collection' | 'media';
 export default function UserProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, warts } = useWallet();
   const [targetAddress, setTargetAddress] = useState('');
-  const [tab, setTab] = useState<Tab>('posts');
+  const [tab, setTab] = useState<Tab>('created');
   const [alias, setAlias] = useState('');
   const [bio, setBio] = useState('');
   const [followersCount, setFollowersCount] = useState(0);
@@ -351,10 +351,10 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
 
   const mediaWarts = [...created, ...collection].filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
   const tabList: { id: Tab; label: string; count: number }[] = [
-    { id: 'posts', label: 'Posts', count: posts.length },
-    { id: 'media', label: 'Media', count: mediaWarts.length },
     { id: 'created', label: 'Created', count: created.length },
     { id: 'collection', label: 'Collection', count: collection.length },
+    { id: 'posts', label: 'Posts', count: posts.length },
+    { id: 'media', label: 'Media', count: mediaWarts.length },
   ];
 
   // ─── Resolve creator alias ─────────────────────────────

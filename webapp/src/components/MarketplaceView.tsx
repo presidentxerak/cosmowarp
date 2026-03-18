@@ -358,9 +358,13 @@ export default function MarketplaceView() {
     const durH = durationHours ? parseFloat(durationHours) : null;
     if (durH !== null && durH <= 0) { setCreateError('Duration must be positive'); return; }
 
+    // ─── Minimum price validation (both modes) ───
+    const minPrice = mintChain === 'ethereum' ? 500 : 100;
+    const chainLabel = mintChain === 'ethereum' ? 'Ethereum' : 'Strangrz';
+
     // ─── Lazy Mint Mode: creator pays NOTHING ───
     if (lazyMintMode) {
-      if (!priceVal || priceVal < 100) { setCreateError('Le lazy mint nécessite un prix (min 100 ⬣)'); return; }
+      if (!priceVal || priceVal < minPrice) { setCreateError(`Le lazy mint sur ${chainLabel} nécessite un prix (min ${minPrice} ⬣)`); return; }
 
       setCreating(true);
       setCreateError('');
@@ -408,6 +412,10 @@ export default function MarketplaceView() {
     }
 
     // ─── Standard Mint (legacy) ───
+    if (!priceVal || priceVal < minPrice) {
+      setCreateError(`Le mint direct sur ${chainLabel} nécessite un prix (min ${minPrice} ⬣)`);
+      return;
+    }
     setCreating(true);
     setCreateError('');
     setUploadProgress(0);
@@ -640,7 +648,7 @@ export default function MarketplaceView() {
       return (
         <div className={`bg-current/5 flex items-center justify-center ${className}`}>
           <span className="text-2xl opacity-30">
-            {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : wart.mediaType === 'cards' ? '\uD83C\uDCCF' : '\u25C8'}
+            {wart.mediaType === 'video' ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> : wart.mediaType === 'audio' ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> : wart.mediaType === 'cards' ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="2" width="14" height="20" rx="2"/><rect x="7" y="2" width="14" height="20" rx="2"/></svg> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="m21 15-5-5L5 21"/></svg>}
           </span>
         </div>
       );
@@ -651,7 +659,7 @@ export default function MarketplaceView() {
           {wart.audioCover ? (
             <img src={wart.audioCover} alt={wart.title} className="w-full h-auto max-h-[200px] object-cover mb-2" />
           ) : (
-            <div className="text-4xl mb-2">{'\u266B'}</div>
+            <div className="text-4xl mb-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
           )}
           <audio controls className="w-full h-8" src={audioBlobUrl} />
         </div>
@@ -2263,18 +2271,18 @@ export default function MarketplaceView() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">
-                  {lazyMintMode ? 'Prix de vente en \u2B23' : 'Price in \u2B23'}
+                  Prix de vente en {'\u2B23'}
                 </label>
                 <input
                   className="warp-input w-full"
                   type="number"
-                  placeholder={lazyMintMode ? 'Min 100 \u2B23 (requis)' : 'Not for sale'}
-                  min={lazyMintMode ? '100' : '0'}
+                  placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23 (requis)`}
+                  min={mintChain === 'ethereum' ? '500' : '100'}
                   step="1"
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
-                {lazyMintMode && price && parseFloat(price) >= 100 && (
+                {price && parseFloat(price) >= (mintChain === 'ethereum' ? 500 : 100) && lazyMintMode && (
                   <p className="text-[10px] opacity-50 mt-1">
                     L'acheteur paiera {calculateBuyerTotal(parseFloat(price)).total} {'\u2B23'} ({price} {'\u2B23'} + {calculateBuyerTotal(parseFloat(price)).serviceFee} {'\u2B23'} frais)
                   </p>
@@ -2360,7 +2368,7 @@ export default function MarketplaceView() {
             <button
               className="warp-button w-full py-3.5 text-base font-bold"
               onClick={handleMint}
-              disabled={creating || !title || !imageData || (lazyMintMode && (!price || parseFloat(price) < 100))}
+              disabled={creating || !title || !imageData || !price || parseFloat(price) < (mintChain === 'ethereum' ? 500 : 100)}
             >
               {creating ? (
                 <span className="flex items-center justify-center gap-2">

@@ -199,9 +199,37 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setLazyListings(engine.getLazyListings());
     if (address) {
       setMyCollection(engine.getCollection(address));
-      setMyCreated(engine.getCreated(address));
+      // Include lazy listings in myCreated so they appear in the profile
+      const directCreated = engine.getCreated(address);
+      const lazyCreated = engine.getLazyListingsByCreator(address);
+      const directIds = new Set(directCreated.map(w => w.id));
+      const lazyAsWarts: Wart[] = lazyCreated
+        .filter(t => !directIds.has(t.id))
+        .map(t => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          imageData: t.imageData,
+          mediaType: t.mediaType,
+          creator: t.creator,
+          owner: t.creator,
+          price: t.price,
+          listed: t.active,
+          createdAt: t.createdAt,
+          history: [],
+          royaltyPercent: t.royaltyPercent,
+          comments: [],
+          editionType: t.editionType,
+          maxEditions: t.maxEditions,
+          editionNumber: 0,
+          availableUntil: t.availableUntil,
+          storageMode: 'local' as const,
+          vaultBackup: false,
+          audioCover: t.audioCover,
+        }));
+      setMyCreated([...directCreated, ...lazyAsWarts]);
       setVaultStats(engine.getVaultStats(address));
-      setMyLazyListings(engine.getLazyListingsByCreator(address));
+      setMyLazyListings(lazyCreated);
     }
   }
 
@@ -383,8 +411,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     refreshWartsState(w?.address);
 
     // Rehydrate media from IndexedDB (async — images appear after DB loads)
-    getWartEngine().rehydrateMedia().then(changed => {
-      if (changed) refreshWartsState(w?.address);
+    const engine = getWartEngine();
+    Promise.all([
+      engine.rehydrateMedia(),
+      engine.rehydrateLazyMedia(),
+    ]).then(([changed1, changed2]) => {
+      if (changed1 || changed2) refreshWartsState(w?.address);
     });
 
     // Start realtime subscriptions + wire up listener
