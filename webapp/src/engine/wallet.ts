@@ -184,7 +184,7 @@ export function startMeshNetwork(address: string): MeshNetwork {
   const network = getMeshNetwork(address);
   if (!network.isRunning) {
     network.start({
-      onTransactionReceived: (tx) => {
+      onTransactionReceived: () => {
         // Save mesh when remote TX is received
         saveMesh();
       },

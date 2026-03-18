@@ -659,7 +659,7 @@ export class StrangrzMesh {
 
   // ─── Gossip Internal Handlers ───────────────────────────
 
-  private async handleTxGossip(msg: GossipMessage, fromPeerId: string): Promise<void> {
+  private async handleTxGossip(msg: GossipMessage, _fromPeerId: string): Promise<void> {
     const tx = msg.payload as MeshTransaction;
     if (!tx || !tx.id) return;
 
@@ -743,8 +743,8 @@ export class StrangrzMesh {
     }
   }
 
-  private handleTipSync(msg: GossipMessage, fromPeerId: string): void {
-    const { tips, txCount } = msg.payload as { tips: Record<number, string[]>; txCount: number };
+  private handleTipSync(msg: GossipMessage, _fromPeerId: string): void {
+    const { tips } = msg.payload as { tips: Record<number, string[]>; txCount: number };
     if (!tips) return;
 
     // Collect TX IDs we don't have
@@ -763,7 +763,7 @@ export class StrangrzMesh {
     }
   }
 
-  private handleMeshSummary(msg: GossipMessage, fromPeerId: string): void {
+  private handleMeshSummary(msg: GossipMessage, _fromPeerId: string): void {
     const { txCount, genesisId } = msg.payload as {
       txCount: number;
       tipCount: number;

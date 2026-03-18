@@ -14,7 +14,7 @@
 
 import { CosmoP2P, type P2PEventHandlers } from './p2p';
 import type { StrangrzMesh, MeshTransaction, GossipMessage } from './strangrmesh';
-import { DiscoveryService, type PeerPresence } from './discovery';
+import { DiscoveryService } from './discovery';
 
 // ─── Config ──────────────────────────────────────────────
 
@@ -189,9 +189,7 @@ export class MeshNetwork {
       signaling: {
         local: sigStatus?.local?.active ?? false,
         supabase: sigStatus?.remote?.connected ?? false,
-        websocket: (sigStatus as Record<string, unknown>)?.websocket
-          ? ((sigStatus as Record<string, Record<string, boolean>>).websocket?.connected ?? false)
-          : false,
+        websocket: sigStatus?.websocket?.connected ?? false,
       },
       gossip: {
         attached: true,

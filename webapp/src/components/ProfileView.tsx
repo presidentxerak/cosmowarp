@@ -7,6 +7,7 @@ import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import { fetchSocialProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
 import * as sync from '../lib/supabase-sync';
+import { uploadAvatar, uploadBanner } from '../lib/supabase-storage';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 
@@ -25,7 +26,19 @@ function dataUrlToBlobUrl(dataUrl: string): string {
   }
 }
 
-type Tab = 'warts' | 'collected' | 'posts' | 'followers' | 'following';
+/** Pick a random hero video number (1-3) and keep it stable per session */
+function getHeroVideoNum(): number {
+  const stored = sessionStorage.getItem('strangrz_hero_video');
+  if (stored) return Number(stored);
+  const num = Math.floor(Math.random() * 3) + 1;
+  sessionStorage.setItem('strangrz_hero_video', String(num));
+  return num;
+}
+
+const MAX_PROFILE_IMAGE_SIZE = 100 * 1024; // 100 Ko
+const MAX_BANNER_SIZE = 200 * 1024;        // 200 Ko
+
+type Tab = 'warts' | 'collected' | 'curations' | 'posts' | 'followers' | 'following';
 
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, unlocked, lock, signOut, myCreated, myCollection, toggleWartLike, toggleWartBookmark } = useWallet();
@@ -38,7 +51,6 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   const [followingCount, setFollowingCount] = useState(0);
   const [followersList, setFollowersList] = useState<{ address: string; alias: string }[]>([]);
   const [followingList, setFollowingList] = useState<{ address: string; alias: string }[]>([]);
-  // Links
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
   const [twitter, setTwitter] = useState('');
@@ -46,8 +58,12 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   const [linkWebsite, setLinkWebsite] = useState('');
   const [linkInstagram, setLinkInstagram] = useState('');
   const [linkTwitter, setLinkTwitter] = useState('');
-  // Profile image upload
+  const [bannerImage, setBannerImage] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  const [uploadError, setUploadError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+  const heroVideoNum = useRef(getHeroVideoNum()).current;
 
   useEffect(() => {
     if (!wallet) return;
@@ -61,14 +77,14 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     setWebsite(profile.website);
     setInstagram(profile.instagram);
     setTwitter(profile.twitter);
+    setBannerImage(profile.bannerImage || '');
+    setProfileImage(profile.profileImage || '');
 
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(wallet.address));
 
-    // ── Fetch from Supabase for cross-device sync ──
     fetchSocialProfile(wallet.address).then(remote => {
       if (!remote) return;
-      // Use cloud data as source of truth — overwrite local if cloud has content
       if (remote.bio) { setBio(remote.bio); social.updateBio(wallet.address, remote.bio); }
       if (remote.website) { setWebsite(remote.website); }
       if (remote.instagram) { setInstagram(remote.instagram); }
@@ -86,13 +102,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       fetchFollowers(wallet.address).catch(() => []),
       fetchFollowing(wallet.address).catch(() => []),
     ]).then(([cloudFollowers, cloudFollowing]) => {
-      // Merge: use the larger count (local or cloud) as truth
-      if (cloudFollowers.length > profile.followers.length) {
-        setFollowersCount(cloudFollowers.length);
-      }
-      if (cloudFollowing.length > profile.following.length) {
-        setFollowingCount(cloudFollowing.length);
-      }
+      if (cloudFollowers.length > profile.followers.length) setFollowersCount(cloudFollowers.length);
+      if (cloudFollowing.length > profile.following.length) setFollowingCount(cloudFollowing.length);
     }).catch(() => {});
   }, [wallet]);
 
@@ -114,7 +125,6 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     social.updateBio(wallet.address, bioInput);
     setBio(bioInput);
     setEditingBio(false);
-    // Sync to Supabase
     const profile = social.getProfile(wallet.address);
     if (profile) sync.syncSocialProfile(profile);
   };
@@ -126,7 +136,6 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     setInstagram(linkInstagram);
     setTwitter(linkTwitter);
     setEditingLinks(false);
-    // Sync to Supabase
     const profile = social.getProfile(wallet.address);
     if (profile) sync.syncSocialProfile(profile);
   };
@@ -134,14 +143,37 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return; // Max 2MB
+    setUploadError('');
+    if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+      setUploadError(`Photo de profil trop lourde (${Math.round(file.size / 1024)} Ko). Max 100 Ko.`);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const data = reader.result as string;
       const social = SocialEngine.load();
       social.updateProfileImage(wallet.address, data);
-      // Force re-render by navigating to self
-      onNavigate('profile');
+      setProfileImage(data);
+      uploadAvatar(data, wallet.address).catch(() => {});
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError('');
+    if (file.size > MAX_BANNER_SIZE) {
+      setUploadError(`Banniere trop lourde (${Math.round(file.size / 1024)} Ko). Max 200 Ko.`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = reader.result as string;
+      const social = SocialEngine.load();
+      social.updateBannerImage(wallet.address, data);
+      setBannerImage(data);
+      uploadBanner(data, wallet.address).catch(() => {});
     };
     reader.readAsDataURL(file);
   };
@@ -152,30 +184,102 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   };
 
   const handleViewWart = (wart: Wart) => {
-    // Store the wart id so MarketplaceView can open it in detail mode
     sessionStorage.setItem('strangrz_open_wart', wart.id);
     onNavigate('gallery');
   };
 
+  // Load curator articles from localStorage
+  const curatorArticles = (() => {
+    try {
+      const raw = localStorage.getItem('strangrz_curator_articles');
+      if (!raw) return [];
+      const articles = JSON.parse(raw) as { id: string; authorAddress: string; title: string; subtitle: string; coverWartId: string; createdAt: number; likes: string[]; views: number }[];
+      return articles.filter(a => a.authorAddress === wallet.address);
+    } catch { return []; }
+  })();
+
   const tabList: { id: Tab; label: string; count?: number }[] = [
     { id: 'warts', label: 'Created', count: myCreated.length },
     { id: 'collected', label: 'Collection', count: myCollection.length },
+    { id: 'curations', label: 'Curations', count: curatorArticles.length },
     { id: 'posts', label: 'Posts', count: posts.length },
     { id: 'followers', label: 'Followers', count: followersCount },
     { id: 'following', label: 'Following', count: followingCount },
   ];
 
+  // ─── Wart Card reusable ──────────────────────────
+  const WartCard = ({ wart }: { wart: Wart }) => (
+    <div className="glass-panel overflow-hidden cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
+      <div className="aspect-square overflow-hidden bg-current/5">
+        {wart.mediaType === 'video' && wart.imageData ? (
+          <video src={wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+        ) : wart.mediaType === 'audio' && wart.audioCover ? (
+          <img src={wart.audioCover} alt={wart.title} className="w-full h-full object-cover" />
+        ) : wart.mediaType !== 'audio' && wart.imageData ? (
+          <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl opacity-30">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+          </div>
+        )}
+      </div>
+      <div className="p-2">
+        <p className="text-body-sm font-medium opacity-90 truncate">{wart.title}</p>
+        <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+        <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-current/10">
+          <button className={`opacity-${wart.likes?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+          <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+          <button className={`opacity-${wart.bookmarks?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-0 pb-4">
-      {/* Profile header */}
-      <div className="glass-panel p-5 sm:p-6">
-        {/* Wallet & Settings buttons */}
-        <div className="flex justify-end gap-2 mb-2">
+    <div className="pb-4">
+      {/* ─── Banner ───────────────────────────────────────── */}
+      <div className="relative w-full h-48 sm:h-64 overflow-hidden group">
+        {/* Banner content: custom image or hero video placeholder */}
+        {bannerImage ? (
+          <img src={bannerImage} alt="Banner" className="w-full h-full object-cover" />
+        ) : (
+          <video
+            src={`${import.meta.env.BASE_URL}strangrz-landing-hero-random-${heroVideoNum}.mp4`}
+            className="w-full h-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        )}
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+        {/* Banner edit button */}
+        <button
+          onClick={() => bannerRef.current?.click()}
+          className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-white/80 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+          title="Changer la banniere (max 200 Ko)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          Edit
+        </button>
+        <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+        {/* Top-right action buttons */}
+        <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onNavigate('wallet')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-body-sm opacity-60 hover:opacity-100 border border-current/10 hover:bg-current/5 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-white/80 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="2" y="4" width="20" height="16" rx="2" />
               <path d="M2 10h20" />
             </svg>
@@ -183,43 +287,58 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           </button>
           <button
             onClick={() => onNavigate('settings')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-body-sm opacity-60 hover:opacity-100 border border-current/10 hover:bg-current/5 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-white/80 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
           </button>
         </div>
-        <div className="flex flex-col items-center text-center">
-          {/* Avatar with upload */}
-          <div className="relative group mb-3">
-            <HexAvatar address={wallet.address} size={80} animate className="mx-auto" />
+      </div>
+
+      {/* ─── Profile Info (centered, overlapping banner) ──── */}
+      <div className="relative max-w-2xl mx-auto px-4">
+        {/* Avatar - overlapping the banner */}
+        <div className="flex flex-col items-center -mt-14 sm:-mt-16">
+          <div className="relative group">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--bg,#0a0a0f)] overflow-hidden bg-[var(--bg,#0a0a0f)]">
+              {profileImage ? (
+                <img src={profileImage} alt={alias} className="w-full h-full object-cover" />
+              ) : (
+                <HexAvatar address={wallet.address} size={128} animate />
+              )}
+            </div>
             <button
               onClick={() => fileRef.current?.click()}
-              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              title="Upload profile picture"
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              title="Changer la photo de profil (max 100 Ko)"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
               </svg>
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} />
           </div>
 
-          <h2 className="text-title-lg font-bold opacity-100 font-title">{alias}</h2>
+          {/* Upload error */}
+          {uploadError && (
+            <p className="text-[11px] mt-2 px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400">{uploadError}</p>
+          )}
+
+          {/* Name & address */}
+          <h2 className="text-title-lg font-bold opacity-100 font-title mt-3">{alias}</h2>
           <p className="text-[11px] opacity-40 font-mono mt-0.5">{wallet.address}</p>
 
           {/* Balance & Level */}
-          <div className="flex gap-4 mt-2 items-center">
+          <div className="flex gap-4 mt-2 items-center flex-wrap justify-center">
             <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u2B23'}</span>
-            <InfoTooltip text="Your STRNGRZ balance (⬣). Earn by mining, selling artworks, or receiving tips. Use it to buy digital art, tip creators, and trade on the marketplace." />
+            <InfoTooltip text="Your STRNGRZ balance (\u2B23). Earn by mining, selling artworks, or receiving tips." />
             <span className="text-body-sm opacity-40">|</span>
             <span className="text-base font-bold opacity-80">Lv.{wallet.level || 1}</span>
             <span className="text-label opacity-40">{wallet.levelName}</span>
-            <InfoTooltip text={`Your current level is Lv.${wallet.level || 1} ${wallet.levelName || 'Particle'}. Levels reflect your activity on Strangrz. Progress through 7 cosmic tiers — Particle, Wave, Atom, Molecule, Star, Galaxy, Universe — by making transactions and staying active. Higher levels unlock better mining rewards and exclusive features.`} />
+            <InfoTooltip text={`Level ${wallet.level || 1} ${wallet.levelName || 'Particle'}. Progress through 7 cosmic tiers by staying active.`} />
           </div>
 
           {/* Curator badge */}
@@ -229,12 +348,12 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 CURATOR
               </span>
-              <InfoTooltip text="You are a Curator! With 100+ collected works, you can create editorial articles, curate collections, and showcase artists. Visit the Curate page in Gallery to start curating." />
+              <InfoTooltip text="You are a Curator! With 100+ collected works, you can create editorial articles and curate collections." />
             </div>
           )}
 
           {/* Bio */}
-          <div className="mt-3 w-full max-w-sm">
+          <div className="mt-3 w-full max-w-sm text-center">
             {editingBio ? (
               <div className="flex gap-2">
                 <input
@@ -323,8 +442,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-current/10 overflow-x-auto">
+      {/* ─── Tabs ─────────────────────────────────────────── */}
+      <div className="flex border-b border-current/10 overflow-x-auto mt-4 max-w-2xl mx-auto">
         {tabList.map(t => (
           <button
             key={t.id}
@@ -341,8 +460,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         ))}
       </div>
 
-      {/* Tab content */}
-      <div className="px-0 pt-2">
+      {/* ─── Tab content ──────────────────────────────────── */}
+      <div className="px-0 pt-2 max-w-2xl mx-auto">
         {/* Posts */}
         {tab === 'posts' && (
           posts.length === 0 ? (
@@ -373,39 +492,12 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         {tab === 'warts' && (
           myCreated.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">Aucune Strangrz créée</p>
+              <p className="opacity-40 text-base">Aucune Strangrz creee</p>
               <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Go to Gallery</button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {myCreated.map((wart: Wart) => (
-                <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
-                  {wart.mediaType === 'video' && wart.imageData ? (
-                    <video src={wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
-                  ) : wart.mediaType !== 'audio' && wart.imageData ? (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  ) : wart.mediaType === 'audio' && wart.audioCover ? (
-                    <img src={wart.audioCover} alt={wart.title} className="w-full aspect-square object-cover" />
-                  ) : (
-                    <div className="w-full aspect-square bg-current/5 flex items-center justify-center">
-                      <span className="text-2xl opacity-30">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                    </div>
-                  )}
-                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
-                  <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-current/10">
-                    <button className={`opacity-${wart.likes?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    </button>
-                    <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                    </button>
-                    <button className={`opacity-${wart.bookmarks?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+              {myCreated.map((wart: Wart) => <WartCard key={wart.id} wart={wart} />)}
             </div>
           )
         )}
@@ -419,32 +511,48 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {myCollection.map((wart: Wart) => (
-                <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart)}>
-                  {wart.mediaType === 'video' && wart.imageData ? (
-                    <video src={wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
-                  ) : wart.mediaType !== 'audio' && wart.imageData ? (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  ) : (
-                    <div className="w-full aspect-square bg-current/5 flex items-center justify-center">
-                      <span className="text-2xl opacity-30">{wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+              {myCollection.map((wart: Wart) => <WartCard key={wart.id} wart={wart} />)}
+            </div>
+          )
+        )}
+
+        {/* Curations */}
+        {tab === 'curations' && (
+          curatorArticles.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="opacity-40 text-base">Aucune curation</p>
+              {myCollection.length >= 100 ? (
+                <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Creer un article</button>
+              ) : (
+                <p className="text-label opacity-30 mt-1">Collectionnez 100 oeuvres pour devenir Curateur</p>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {curatorArticles.map(article => {
+                const coverWart = myCreated.find(w => w.id === article.coverWartId) || myCollection.find(w => w.id === article.coverWartId);
+                return (
+                  <div key={article.id} className="glass-panel overflow-hidden cursor-pointer hover:border-current/20 transition-all" onClick={() => onNavigate('gallery')}>
+                    <div className="h-32 overflow-hidden bg-current/5">
+                      {coverWart?.imageData ? (
+                        <img src={coverWart.imageData} alt={article.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-20"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <p className="text-body-sm font-medium opacity-90 mt-1 truncate">{wart.title}</p>
-                  <p className="text-label opacity-40">by {shortAddress(wart.creator)}</p>
-                  <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-current/10">
-                    <button className={`opacity-${wart.likes?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartLike(wart.id); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    </button>
-                    <button className="opacity-40 hover:opacity-80 cursor-pointer" onClick={e => { e.stopPropagation(); navigator.share?.({ title: wart.title, text: `Check out ${wart.title} on Strangrz` }).catch(() => {}); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                    </button>
-                    <button className={`opacity-${wart.bookmarks?.includes(wallet.address) ? '80' : '40'} hover:opacity-80 cursor-pointer`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
+                    <div className="p-3">
+                      <p className="text-body-sm font-bold opacity-90 truncate">{article.title}</p>
+                      {article.subtitle && <p className="text-label opacity-40 truncate mt-0.5">{article.subtitle}</p>}
+                      <div className="flex gap-3 mt-2 text-label opacity-30">
+                        <span>{article.likes?.length || 0} likes</span>
+                        <span>{article.views || 0} views</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )
         )}
@@ -501,8 +609,8 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
         )}
       </div>
 
-      {/* Account actions */}
-      <div className="glass-panel p-4 space-y-2 mt-4">
+      {/* ─── Account actions ──────────────────────────────── */}
+      <div className="glass-panel p-4 space-y-2 mt-4 max-w-2xl mx-auto">
         <button
           onClick={lock}
           className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"

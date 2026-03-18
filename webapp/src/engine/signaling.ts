@@ -41,7 +41,7 @@ export interface SignalingStatus {
 }
 
 interface SignalingMessage {
-  type: 'announce' | 'offer' | 'answer' | 'ice-candidate' | 'leave';
+  type: 'announce' | 'offer' | 'answer' | 'ice-candidate' | 'leave' | 'peer-list';
   senderId: string;
   targetId?: string;
   payload: unknown;
