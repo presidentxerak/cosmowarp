@@ -389,7 +389,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       </div>
 
       {/* ─── Profile Info (centered, overlapping banner) ──── */}
-      <div className="relative max-w-2xl mx-auto px-3 sm:px-4">
+      <div className="relative px-3 sm:px-4">
         {/* Avatar - overlapping the banner */}
         <div className="flex flex-col items-center -mt-14 sm:-mt-16">
           <div className="relative group">
@@ -534,7 +534,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       </div>
 
       {/* ─── Tabs ─────────────────────────────────────────── */}
-      <div className="flex border-b border-current/10 overflow-x-auto mt-4 max-w-2xl mx-auto">
+      <div className="flex border-b border-current/10 overflow-x-auto mt-4">
         {tabList.map(t => (
           <button
             key={t.id}
@@ -552,7 +552,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       </div>
 
       {/* ─── Tab content ──────────────────────────────────── */}
-      <div className="px-0 pt-2 max-w-2xl mx-auto">
+      <div className="px-0 pt-2">
         {/* Posts */}
         {tab === 'posts' && (
           posts.length === 0 ? (
@@ -847,7 +847,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       </div>
 
       {/* ─── Account actions ──────────────────────────────── */}
-      <div className="glass-panel p-4 space-y-2 mt-4 max-w-2xl mx-auto">
+      <div className="glass-panel p-4 space-y-2 mt-4">
         <button
           onClick={lock}
           className="w-full text-left px-3 py-2.5 text-base opacity-70 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"

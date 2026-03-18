@@ -481,7 +481,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       </div>
 
       {/* ─── Profile Info (centered, overlapping banner) ──── */}
-      <div className="relative max-w-2xl mx-auto px-4">
+      <div className="relative px-4">
         <div className="flex flex-col items-center -mt-14 sm:-mt-16">
           {/* Avatar */}
           <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--bg,#0a0a0f)] overflow-hidden bg-[var(--bg,#0a0a0f)]">
@@ -637,7 +637,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       </div>
 
       {/* ─── Tabs ─────────────────────────────────────────── */}
-      <div className="flex border-b border-current/10 overflow-x-auto mt-4 max-w-2xl mx-auto">
+      <div className="flex border-b border-current/10 overflow-x-auto mt-4">
         {tabList.map(t => (
           <button
             key={t.id}
@@ -654,7 +654,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
       </div>
 
       {/* ─── Content ──────────────────────────────────────── */}
-      <div className="pt-2 max-w-2xl mx-auto">
+      <div className="pt-2">
         {tab === 'posts' && (
           posts.length === 0 ? (
             <div className="text-center py-12">
