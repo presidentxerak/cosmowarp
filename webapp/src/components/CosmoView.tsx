@@ -21,7 +21,7 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
-    keywords: ['wart', 'nft', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
+    keywords: ['wart', 'strangrz', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
     response: 'Les Strangrz sont des objets certifiés sur Strangrz. Chaque objet reçoit un certificat STCERT infalsifiable multi-chaîne (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 et signature Ed25519. Vous pouvez certifier des cartes, sneakers, vinyles, oeuvres d\'art... tout objet rare !',
     suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },

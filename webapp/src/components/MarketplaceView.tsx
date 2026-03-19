@@ -3,7 +3,7 @@ import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
 import type { Wart } from '../engine/warts';
-import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
+import { getCurrencySymbol, FiatGateway, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
@@ -57,12 +57,23 @@ type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'cards' | 'rwa' | 'phygita
 type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
 type SalesMarketFilter = '1st' | '2nd';
 
+/** Compute EUR price for any wart — uses explicit priceFiat or auto-converts from STZ */
+const _fiatGateway = new FiatGateway();
+function getEurPrice(wart: Wart): number {
+  if (wart.priceFiat && wart.fiatCurrency) return wart.priceFiat;
+  if (wart.price != null) return _fiatGateway.warpsToFiat(wart.price, 'EUR');
+  return 0;
+}
+function getEurSymbol(wart: Wart): string {
+  return getCurrencySymbol(wart.fiatCurrency || 'EUR');
+}
+
 export default function MarketplaceView() {
   const {
     wallet, unlocked, warts: allWartsRaw, marketplace, myCollection, myCreated,
     mintWart, buyWart, listWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
-    listWartFiat, buyWartFiat, getWartFiatPrice,
+    listWartFiat, buyWartFiat,
     lazyListings, createLazyListing, buyLazyMint, cancelLazyListing,
   } = useWallet();
 
@@ -765,17 +776,8 @@ export default function MarketplaceView() {
         <div className="flex items-center justify-between mt-2">
           {wart.listed && wart.price !== null ? (
             <div>
-              <span className="text-base font-bold opacity-80">{wart.price} {'\u2B23'}</span>
-              {wart.priceFiat && wart.fiatCurrency && (
-                <span className="text-[10px] opacity-50 text-current ml-1">
-                  ({getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)})
-                </span>
-              )}
-              {!wart.priceFiat && (
-                <span className="text-[10px] opacity-60 ml-1">
-                  ({getWartFiatPrice(wart.id) || ''})
-                </span>
-              )}
+              <span className="text-base font-bold opacity-80">{getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}</span>
+              <span className="text-[10px] opacity-40 ml-1">({wart.price} {'\u2B23'})</span>
             </div>
           ) : (
             <span className="text-body-sm opacity-60">Not listed</span>
@@ -819,33 +821,21 @@ export default function MarketplaceView() {
         </div>
         {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet.address && (
           <div className="flex gap-1 mt-2">
-            {wart.priceFiat && wart.fiatCurrency ? (
-              <>
-                <button
-                  className="warp-button flex-1 text-body-sm py-1.5"
-                  onClick={e => { e.stopPropagation(); handleBuyFiat(wart); }}
-                  disabled={buyingFiat}
-                >
-                  Collect {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)}
-                </button>
-                <button
-                  className="text-body-sm py-1.5 px-2 opacity-50 border border-current/10 hover:opacity-70 transition-colors cursor-pointer"
-                  onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-                  disabled={buying || wallet.balance < wart.price}
-                  title={`${wart.price} ⬣`}
-                >
-                  {wart.price} {'\u2B23'}
-                </button>
-              </>
-            ) : (
-              <button
-                className="warp-button flex-1 text-body-sm py-1.5"
-                onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-                disabled={buying || wallet.balance < wart.price}
-              >
-                Collect {wart.price} {'\u2B23'}
-              </button>
-            )}
+            <button
+              className="warp-button flex-1 text-body-sm py-1.5"
+              onClick={e => { e.stopPropagation(); handleBuyFiat(wart); }}
+              disabled={buyingFiat}
+            >
+              Collect {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
+            </button>
+            <button
+              className="text-body-sm py-1.5 px-2 opacity-40 border border-current/10 hover:opacity-60 transition-colors cursor-pointer"
+              onClick={e => { e.stopPropagation(); handleBuy(wart); }}
+              disabled={buying || wallet.balance < wart.price}
+              title={`Pay in tokens: ${wart.price} ⬣`}
+            >
+              {wart.price} {'\u2B23'}
+            </button>
           </div>
         )}
         {wart.owner === wallet.address && (
@@ -936,10 +926,10 @@ export default function MarketplaceView() {
             ) : (
               /* View Mode — Foundation-style */
               <>
-                {/* NFT Badge + Rarity */}
+                {/* Strangrz Badge + Rarity */}
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 px-4 py-1.5 border border-current/15 text-body-sm font-medium opacity-80">
-                    {'\u25CF'} NFT
+                    {'\u25CF'} Strangrz
                   </span>
                   <span className={`text-body-sm font-bold ${rarityCfg.color}`}>
                     {rarityCfg.badge} {rarityCfg.label}
@@ -987,23 +977,18 @@ export default function MarketplaceView() {
                   </div>
                 )}
 
-                {/* Price + Collect — Foundation-style prominent */}
+                {/* Price + Collect — EUR primary */}
                 {wart.listed && wart.price !== null && (
                   <div className="pt-2">
                     <p className="text-body-md opacity-50 mb-1">
                       {!isMine && !expired ? 'Buy Now' : 'Current Price'}
                     </p>
                     <p className="text-title-xl font-bold">
-                      {wart.price} <span className="text-title-md opacity-60">{'\u2B23'}</span>
+                      {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
                     </p>
-                    {wart.priceFiat && wart.fiatCurrency && (
-                      <p className="text-body-lg opacity-60 mt-0.5">
-                        {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)} {wart.fiatCurrency}
-                      </p>
-                    )}
-                    {!wart.priceFiat && (
-                      <p className="text-body-md opacity-50 mt-0.5">{getWartFiatPrice(wart.id)}</p>
-                    )}
+                    <p className="text-body-md opacity-40 mt-0.5">
+                      {wart.price} {'\u2B23'}
+                    </p>
                   </div>
                 )}
 
@@ -1016,32 +1001,20 @@ export default function MarketplaceView() {
                 {/* COLLECT BUTTON — EUR primary, crypto secondary */}
                 {!isMine && wart.listed && wart.price !== null && !expired && (
                   <div className="space-y-3">
-                    {wart.priceFiat && wart.fiatCurrency ? (
-                      <>
-                        <button
-                          className="collect-btn w-full py-5 text-title-sm font-bold tracking-wide"
-                          onClick={() => handleBuyFiat(wart)}
-                          disabled={buyingFiat}
-                        >
-                          {buyingFiat ? 'Processing...' : `Collect ${getCurrencySymbol(wart.fiatCurrency)}${wart.priceFiat.toFixed(2)}`}
-                        </button>
-                        <button
-                          className="w-full py-3 text-body-md opacity-50 border border-current/10 hover:opacity-70 transition-all cursor-pointer"
-                          onClick={() => handleBuy(wart)}
-                          disabled={buying || wallet.balance < wart.price}
-                        >
-                          {buying ? 'Processing...' : `Pay ${wart.price} ⬣`}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        className="collect-btn w-full py-5 text-title-sm font-bold tracking-wide"
-                        onClick={() => handleBuy(wart)}
-                        disabled={buying || wallet.balance < wart.price}
-                      >
-                        {buying ? 'Processing...' : `Collect ${wart.price} ⬣`}
-                      </button>
-                    )}
+                    <button
+                      className="collect-btn w-full py-5 text-title-sm font-bold tracking-wide"
+                      onClick={() => handleBuyFiat(wart)}
+                      disabled={buyingFiat}
+                    >
+                      {buyingFiat ? 'Processing...' : `Collect ${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}`}
+                    </button>
+                    <button
+                      className="w-full py-3 text-body-md opacity-40 border border-current/10 hover:opacity-60 transition-all cursor-pointer"
+                      onClick={() => handleBuy(wart)}
+                      disabled={buying || wallet.balance < wart.price}
+                    >
+                      {buying ? 'Processing...' : `Pay ${wart.price} ⬣`}
+                    </button>
                   </div>
                 )}
 

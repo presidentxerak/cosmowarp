@@ -1,5 +1,5 @@
 /**
- * Strangrz Wart Engine — NFT-like Digital Art on the Strangrz Protocol
+ * Strangrz Wart Engine — Certified Digital Art on the Strangrz Protocol
  *
  * Warts are unique digital artworks stored in the Strangrz protocol.
  * Anyone with a wallet can mint, list, buy, and transfer Warts.

@@ -21,7 +21,7 @@
  * Layer 7: SVG Filter Chains — encode transforms as reusable filter pipelines
  *
  * Combined, these 7 layers achieve ~5-30x effective compression
- * for typical blockchain data (transactions, NFTs, metadata).
+ * for typical blockchain data (transactions, artworks, metadata).
  */
 
 import { sha256 } from './crypto';
@@ -44,7 +44,7 @@ export interface StrangrzCodeContainer {
 export type StrangrzCodeType =
   | 'transaction'     // Transaction data encoded in SVG
   | 'block'           // Full block encoded in SVG
-  | 'wart'            // NFT/artwork stored as SVG on-chain
+  | 'wart'            // Strangrz/artwork stored as SVG on-chain
   | 'state'           // World state snapshot
   | 'metadata'        // Arbitrary metadata
   | 'media';          // Images/audio/video encoded in SVG

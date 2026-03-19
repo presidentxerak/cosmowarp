@@ -60,7 +60,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   },
   // Wart Market
   {
-    keywords: ['wart', 'warts', 'nft', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
+    keywords: ['wart', 'warts', 'strangrz', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
     response: {
       answer: "Les Strangrz, ce sont les objets rares certifiés — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat STCERT infalsifiable (SHA-256 + Ed25519). Tu choisis ta blockchain au moment du mint : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Dans les deux cas, Strangrz Safe protège ton œuvre et garantit la provenance. Tu peux uploader images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
       navigateTo: 'warts',
@@ -171,11 +171,11 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },
   },
-  // On-chain NFT
+  // On-chain Strangrz
   {
-    keywords: ['on-chain nft', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
+    keywords: ['on-chain strangrz', 'on-chain', 'full on-chain', 'image on chain', 'art on chain', 'ipfs', 'arweave', 'stored on chain'],
     response: {
-      answer: "Contrairement à Ethereum où ton image NFT vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur StrangrzCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 ⬣. GRATUIT.",
+      answer: "Contrairement à Ethereum où ton image vit sur IPFS (qui peut tomber hors ligne), StrangrzMesh stocke l'INTÉGRALITÉ de l'œuvre directement dans la blockchain. Le moteur StrangrzCode SVG compresse tes objets (5-30x pour les données structurées, ~1-2x pour les images), les enveloppe dans un conteneur SVG avec ta signature Ed25519, et les stocke dans un bloc de la couche GLYPH. Ça vit on-chain pour toujours. Si tu perds ta copie locale, tu peux la récupérer depuis n'importe quel nœud. Et ça coûte... roulement de tambour... 0 ⬣. GRATUIT.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzMesh',
     },

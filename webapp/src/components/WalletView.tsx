@@ -18,6 +18,104 @@ type WalletTab = 'overview' | 'send' | 'mine' | 'payment' | 'ethereum';
 type AuthTab = 'signup' | 'signin';
 type SignInMethod = 'strangrzid' | 'strangrzlink' | 'file';
 
+/** Welcome tutorial — shown on first sign-up */
+function WelcomeTutorial({ wallet, onNavigate, onSkip }: { wallet: { balance: number }; onNavigate: (tab: string) => void; onSkip: () => void }) {
+  const [step, setStep] = useState(0);
+
+  const steps = [
+    {
+      title: 'Bienvenue sur Strangrz !',
+      desc: 'Votre compte est prêt. Strangrz est une plateforme de certification pour objets rares : art, cartes, sneakers, vinyles, montres...',
+      icon: '\u2B21',
+    },
+    {
+      title: 'Publiez vos oeuvres',
+      desc: 'Chaque oeuvre reçoit un certificat d\'authenticité infalsifiable (STCERT). Fixez un prix en euros et recevez vos paiements directement sur votre compte bancaire.',
+      icon: '\u2B06',
+    },
+    {
+      title: 'Collectionnez',
+      desc: 'Parcourez la marketplace, achetez par carte bancaire en euros. Le protocole gère le certificat, la provenance et les royalties automatiquement.',
+      icon: '\u2B23',
+    },
+  ];
+
+  if (step < steps.length) {
+    return (
+      <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
+        <div className="text-4xl mb-4 opacity-60">{steps[step].icon}</div>
+        <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">{steps[step].title}</h2>
+        {step === 0 && (
+          <div className="text-body-sm opacity-50 mb-3">
+            <span className="opacity-80 font-bold">+{wallet.balance.toLocaleString()} {'\u2B23'}</span> airdrop received
+          </div>
+        )}
+        <p className="text-base opacity-60 mb-6 leading-relaxed">{steps[step].desc}</p>
+
+        {/* Step dots */}
+        <div className="flex justify-center gap-2 mb-5">
+          {steps.map((_, i) => (
+            <div key={i} className={`w-2 h-2 rounded-full transition-all ${i === step ? 'bg-current opacity-80 scale-125' : 'bg-current/20'}`} />
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onSkip}
+            className="flex-1 py-2.5 text-body-sm opacity-40 border border-current/10 hover:opacity-60 transition-all cursor-pointer"
+          >
+            Skip
+          </button>
+          <button
+            onClick={() => setStep(step + 1)}
+            className="warp-button flex-1 py-2.5 text-body-sm"
+          >
+            {step < steps.length - 1 ? 'Next' : 'Continue'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Final step: choose your path
+  return (
+    <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
+      <div className="text-4xl mb-4 opacity-60">{'\u2B21'}</div>
+      <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">Que souhaitez-vous faire ?</h2>
+      <p className="text-base opacity-50 mb-6">Vous pourrez toujours changer plus tard.</p>
+
+      <div className="space-y-3">
+        <button
+          onClick={() => onNavigate('gallery')}
+          className="warp-button w-full py-4 text-base"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 16V12M10 14l2-2 2 2" /></svg>
+            Publier une oeuvre
+          </span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('gallery')}
+          className="w-full py-4 text-base border border-current/15 opacity-70 hover:opacity-90 transition-all cursor-pointer"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+            Explorer et collectionner
+          </span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('profile')}
+          className="w-full py-2 text-body-sm opacity-40 hover:opacity-60 transition-all cursor-pointer"
+        >
+          Voir mon profil
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function WalletView() {
   const {
     wallet, unlocked, needsMigration,
@@ -127,8 +225,10 @@ export default function WalletView() {
       const result = await strangrzIDLogin(signInUsername.trim(), signInPassword);
       if (!result.success) {
         setSignInError(result.error || 'Sign in failed');
+      } else if (!result.needs2FA) {
+        // Navigate to profile after successful sign-in
+        window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'profile' }));
       }
-      // If needs2FA, the UI will show the 2FA prompt via pending2FA state
     } finally {
       setSigningIn(false);
     }
@@ -145,6 +245,7 @@ export default function WalletView() {
         setTwoFAError(result.error || 'Invalid code');
       } else {
         setTwoFACode('');
+        window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'profile' }));
       }
     } finally {
       setVerifying2FA(false);
@@ -466,50 +567,19 @@ export default function WalletView() {
   // ─── Welcome screen (after StrangrzID signup) ──────────────
   if (showWelcome && unlocked) {
     return (
-      <div className="glass-panel p-6 sm:p-8 text-center max-w-md mx-auto">
-        <div className="flex justify-center mb-4">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-        </div>
-        <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">Bienvenue sur Strangrz !</h2>
-        <p className="text-base opacity-70 mb-2">Your wallet is ready.</p>
-
-        <div className="p-4 bg-current/5 border border-current/10 mb-5 text-left space-y-3">
-          <div className="flex items-start gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-80 shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12" /></svg>
-            <div>
-              <p className="text-body-sm opacity-90 font-bold">StrangrzID Active</p>
-              <p className="text-label opacity-50">Your wallet is linked to your username + password. Sign in with the same credentials on any device to access the same wallet.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-80 shrink-0 mt-0.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-            <div>
-              <p className="text-body-sm opacity-90 font-bold">No backup file needed</p>
-              <p className="text-label opacity-50">Unlike traditional crypto wallets, you don't need to save a seed phrase or download a file. Just remember your username and password.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-80 shrink-0 mt-0.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-            <div>
-              <p className="text-body-sm opacity-90 font-bold">Quick device transfer</p>
-              <p className="text-label opacity-50">Need to transfer your local data? Generate a StrangrzLink in Settings and paste it on your other device.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-body-sm opacity-50 mb-5">
-          <span className="opacity-80 font-bold">+{wallet.balance.toLocaleString()} {'\u2B23'}</span> airdrop received
-        </div>
-
-        <button className="warp-button w-full py-3 text-base" onClick={() => setShowWelcome(false)}>
-          <span className="flex items-center justify-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>
-            Entrer dans Strangrz
-          </span>
-        </button>
-
-        <p className="text-label opacity-50 mt-3">Ed25519 + PBKDF2 (600K) + AES-256-GCM</p>
-      </div>
+      <WelcomeTutorial
+        wallet={wallet}
+        onNavigate={(tab: string) => {
+          setShowWelcome(false);
+          localStorage.setItem('strangrz_onboarded', '1');
+          window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: tab }));
+        }}
+        onSkip={() => {
+          setShowWelcome(false);
+          localStorage.setItem('strangrz_onboarded', '1');
+          window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'profile' }));
+        }}
+      />
     );
   }
 
@@ -1080,16 +1150,16 @@ export default function WalletView() {
                 <span className="text-lg shrink-0">{'\u039E'}</span>
                 <div>
                   <p className="opacity-70 font-bold mb-0.5">Ethereum (ERC-721)</p>
-                  <p className="opacity-60">Standard ERC-721 NFTs on Ethereum mainnet. Gas fees apply. Full Strangrz protection and cross-chain verification via the adapter system.</p>
+                  <p className="opacity-60">Standard ERC-721 Strangrz on Ethereum mainnet. Gas fees apply. Full Strangrz protection and cross-chain verification via the adapter system.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ETH NFTs */}
+          {/* ETH Strangrz */}
           <div className="glass-panel p-4">
-            <h3 className="text-base font-bold opacity-70 mb-3">Ethereum NFTs</h3>
-            <p className="text-body-sm opacity-60 text-center py-6">No Ethereum NFTs yet. Mint your first artwork on Ethereum from the Gallery.</p>
+            <h3 className="text-base font-bold opacity-70 mb-3">Ethereum Strangrz</h3>
+            <p className="text-body-sm opacity-60 text-center py-6">No Ethereum Strangrz yet. Mint your first artwork on Ethereum from the Gallery.</p>
           </div>
 
           {/* ETH Transactions */}

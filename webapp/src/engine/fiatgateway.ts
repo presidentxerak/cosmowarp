@@ -137,7 +137,7 @@ const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> 
  *
  * Utility check at €0.10/STZ:
  *   Airdrop (1,000 STZ)  = €100   — onboarding incentive ✓
- *   Min listing (100 STZ) = €10   — accessible NFT floor  ✓
+ *   Min listing (100 STZ) = €10   — accessible price floor ✓
  *   Mining reward (50 STZ) = €5   — motivating            ✓
  *   Streak (10,000 STZ)   = €1000 — yearly loyalty reward ✓
  *   Tip (1-10 STZ)        = €0.10-1.00 — micro-tip       ✓

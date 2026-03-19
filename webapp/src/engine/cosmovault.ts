@@ -1,7 +1,7 @@
 /**
  * CosmoVault — Encrypted Artwork Backup & Recovery System
  *
- * Solves the #1 problem with NFTs: "What happens if my computer crashes?"
+ * Solves the #1 problem with digital art: "What happens if my computer crashes?"
  *
  * ─── How It Works ────────────────────────────────────────────
  *
