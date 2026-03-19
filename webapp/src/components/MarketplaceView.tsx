@@ -68,6 +68,24 @@ function getEurSymbol(wart: Wart): string {
   return getCurrencySymbol(wart.fiatCurrency || 'EUR');
 }
 
+/** Generate a share URL for an artwork */
+function getShareUrl(wartId: string): string {
+  return `${window.location.origin}/gallery?wart=${wartId}`;
+}
+
+/** Share menu options */
+const SHARE_OPTIONS = [
+  { id: 'wall', label: 'Wall', icon: '\u270D' },
+  { id: 'dm', label: 'Message', icon: '\u2709' },
+  { id: 'copy', label: 'Copy link', icon: '\u2398' },
+  { id: 'x', label: 'X', icon: '\uD835\uDD4F' },
+  { id: 'instagram', label: 'Instagram', icon: '\uD83D\uDCF7' },
+  { id: 'facebook', label: 'Facebook', icon: '\uD83C\uDF10' },
+  { id: 'telegram', label: 'Telegram', icon: '\u2708' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: '\uD83D\uDCAC' },
+  { id: 'email', label: 'Email', icon: '\u2709' },
+] as const;
+
 export default function MarketplaceView() {
   const {
     wallet, unlocked, warts: allWartsRaw, marketplace, myCollection, myCreated,
@@ -188,6 +206,7 @@ export default function MarketplaceView() {
   // Transfer & list state (must be before early returns to respect hooks rules)
   const [transferError, setTransferError] = useState('');
   const [shareSuccess, setShareSuccess] = useState('');
+  const [shareMenuWart, setShareMenuWart] = useState<string | null>(null);
   const [listSuccess, setListSuccess] = useState('');
 
   // ─── All warts (all platform warts from cloud + local) ──────────────
@@ -536,6 +555,49 @@ export default function MarketplaceView() {
     }
   };
 
+  const handleShare = (wart: Wart, option: string) => {
+    const url = getShareUrl(wart.id);
+    const text = `${wart.title} on Strangrz`;
+    const creatorName = getCreatorName(wart.creator);
+
+    switch (option) {
+      case 'wall': {
+        const chatEngine = CosmoChatEngine.load();
+        chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, undefined, 'image', undefined, wart.id);
+        setShareSuccess('Shared to Wall!');
+        break;
+      }
+      case 'dm':
+        window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'message' }));
+        break;
+      case 'copy':
+        navigator.clipboard?.writeText(url).catch(() => {});
+        setShareSuccess('Link copied!');
+        break;
+      case 'x':
+        window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'telegram':
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank');
+        break;
+      case 'email':
+        window.open(`mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(`${text}\n\n${url}`)}`, '_blank');
+        break;
+      case 'instagram':
+        navigator.clipboard?.writeText(url).catch(() => {});
+        setShareSuccess('Link copied! Paste it on Instagram.');
+        break;
+    }
+    setShareMenuWart(null);
+    setTimeout(() => setShareSuccess(''), 3000);
+  };
+
   const handleList = (wart: Wart) => {
     let ok = false;
     if (pricingMode === 'fiat') {
@@ -796,12 +858,10 @@ export default function MarketplaceView() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length}{'\u2B23'}</span>}
           </button>
-          {/* Share to Wall */}
-          <button className="opacity-60 hover:opacity-80 cursor-pointer" title="Share to Wall" onClick={e => {
+          {/* Share */}
+          <button className="opacity-60 hover:opacity-80 cursor-pointer" title="Share" onClick={e => {
             e.stopPropagation();
-            const chatEngine = CosmoChatEngine.load();
-            const creatorName = getCreatorName(wart.creator);
-            chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, undefined, 'image', undefined, wart.id);
+            setShareMenuWart(shareMenuWart === wart.id ? null : wart.id);
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
@@ -854,6 +914,21 @@ export default function MarketplaceView() {
             >
               Transfer
             </button>
+          </div>
+        )}
+        {/* Share menu dropdown */}
+        {shareMenuWart === wart.id && (
+          <div className="mt-2 p-2 bg-current/5 border border-current/10 grid grid-cols-3 gap-1" onClick={e => e.stopPropagation()}>
+            {SHARE_OPTIONS.map(opt => (
+              <button
+                key={opt.id}
+                className="py-2 px-1 text-[10px] opacity-60 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer text-center"
+                onClick={() => handleShare(wart, opt.id)}
+              >
+                <div className="text-sm mb-0.5">{opt.icon}</div>
+                {opt.label}
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -1282,22 +1357,30 @@ export default function MarketplaceView() {
                   )}
                 </div>
 
-                {/* Share to Wall */}
-                <div className="flex items-center gap-3 pt-2">
+                {/* Share */}
+                <div className="pt-2">
                   <button
-                    className="warp-button flex-1 py-3 text-body-lg flex items-center justify-center gap-2"
-                    onClick={() => {
-                      const chatEngine = CosmoChatEngine.load();
-                      const creatorName = getCreatorName(wart.creator);
-                      const content = `${wart.title} by ${creatorName}`;
-                      chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), content, undefined, 'image', undefined, wart.id);
-                      setShareSuccess('Shared to Wall!');
-                      setTimeout(() => setShareSuccess(''), 3000);
-                    }}
+                    className="warp-button w-full py-3 text-body-lg flex items-center justify-center gap-2"
+                    onClick={() => setShareMenuWart(shareMenuWart === wart.id ? null : wart.id)}
                   >
-                    {'\u2197'} Share
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    Share
                   </button>
-                  {shareSuccess && <span className="text-body-md opacity-70">{'\u2714'} {shareSuccess}</span>}
+                  {shareSuccess && <p className="text-body-sm opacity-70 mt-2 text-center">{'\u2714'} {shareSuccess}</p>}
+                  {shareMenuWart === wart.id && (
+                    <div className="mt-2 p-3 bg-current/5 border border-current/10 grid grid-cols-3 gap-2">
+                      {SHARE_OPTIONS.map(opt => (
+                        <button
+                          key={opt.id}
+                          className="py-3 px-2 text-body-sm opacity-60 hover:opacity-90 hover:bg-current/5 border border-current/5 transition-all cursor-pointer text-center"
+                          onClick={() => handleShare(wart, opt.id)}
+                        >
+                          <div className="text-lg mb-1">{opt.icon}</div>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Owner actions */}

@@ -26,7 +26,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send, myCreated, myCollection, marketplace, buyWart } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection, marketplace, warts: allWarts, buyWart } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('timeline');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -259,17 +259,30 @@ export default function CosmoChatView() {
 
   // ─── Media Renderer ────────────────────────────────────
   const MediaContent = ({ post }: { post: ChatPost }) => {
-    // Resolve media: use inline mediaData, or look up wart image from marketplace
+    // Resolve media: use inline mediaData, or look up wart image from all available warts
     let mediaSrc = post.mediaData;
     let mediaType = post.mediaType;
     if (!mediaSrc && post.wartLink) {
-      const wart = [...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
+      const wart = [...allWarts, ...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
       if (wart) {
         mediaSrc = wart.imageData;
         mediaType = mediaType || (wart.mediaType === 'svg' ? 'image' : wart.mediaType) || 'image';
       }
     }
-    if (!mediaSrc) return null;
+    if (!mediaSrc) {
+      // Show placeholder if wart exists but image not loaded yet
+      if (post.wartLink) {
+        const wartExists = [...allWarts, ...marketplace, ...myCreated, ...myCollection].some(w => w.id === post.wartLink);
+        if (wartExists) {
+          return (
+            <div className="mt-2 aspect-square max-h-80 bg-current/5 flex items-center justify-center animate-pulse">
+              <span className="text-body-sm opacity-30">Loading artwork...</span>
+            </div>
+          );
+        }
+      }
+      return null;
+    }
     if (mediaType === 'audio') {
       return (
         <div className="mt-2 p-3 bg-current/5 flex items-center gap-3">
@@ -358,7 +371,7 @@ export default function CosmoChatView() {
         {/* Collect button (if post links to a wart with a price) */}
         {(() => {
           if (!post.wartLink) return null;
-          const linkedWart = [...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
+          const linkedWart = [...allWarts, ...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
           if (!linkedWart || linkedWart.price === null) return null;
           const isOwner = linkedWart.owner === wallet.address;
           if (isOwner) return null;

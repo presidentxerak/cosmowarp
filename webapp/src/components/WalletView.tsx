@@ -596,11 +596,11 @@ export default function WalletView() {
         <div className="max-w-xs mx-auto space-y-3">
           <input className="warp-input text-center" type="password" placeholder="Enter your password" value={unlockPassword}
             onChange={e => { setUnlockPassword(e.target.value); setUnlockError(''); }}
-            onKeyDown={e => { if (e.key === 'Enter' && unlockPassword) { setUnlocking(true); unlock(unlockPassword).then(ok => { if (!ok) setUnlockError('Wrong password'); setUnlocking(false); setUnlockPassword(''); }); } }}
+            onKeyDown={e => { if (e.key === 'Enter' && unlockPassword) { setUnlocking(true); unlock(unlockPassword).then(ok => { if (!ok) { setUnlockError('Wrong password'); } else { window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'profile' })); } setUnlocking(false); setUnlockPassword(''); }); } }}
             autoFocus
           />
           {unlockError && <p className="text-body-sm opacity-70">{unlockError}</p>}
-          <button className="warp-button w-full py-3 text-base" onClick={async () => { setUnlocking(true); const ok = await unlock(unlockPassword); if (!ok) setUnlockError('Wrong password'); setUnlocking(false); setUnlockPassword(''); }} disabled={!unlockPassword || unlocking}>
+          <button className="warp-button w-full py-3 text-base" onClick={async () => { setUnlocking(true); const ok = await unlock(unlockPassword); if (!ok) { setUnlockError('Wrong password'); } else { window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'profile' })); } setUnlocking(false); setUnlockPassword(''); }} disabled={!unlockPassword || unlocking}>
             {unlocking ? <span className="flex items-center justify-center gap-2"><Spinner />Unlocking...</span> : 'Unlock'}
           </button>
           <button
