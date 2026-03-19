@@ -249,6 +249,81 @@ CREATE POLICY "Allow insert totp_configs" ON totp_configs FOR INSERT WITH CHECK 
 CREATE POLICY "Allow update totp_configs" ON totp_configs FOR UPDATE USING (true);
 CREATE POLICY "Allow delete totp_configs" ON totp_configs FOR DELETE USING (true);
 
+-- ─── 11c. FIAT TRANSACTIONS ─────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS fiat_transactions (
+  tx_id           TEXT PRIMARY KEY,
+  buyer_address   TEXT NOT NULL,
+  seller_address  TEXT,
+  wart_id         TEXT,
+  amount_fiat     NUMERIC NOT NULL,
+  currency        TEXT DEFAULT 'eur',
+  amount_stz      NUMERIC NOT NULL,
+  status          TEXT DEFAULT 'pending', -- pending | completed | failed
+  processor_ref   TEXT,
+  error           TEXT,
+  created_at      BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  updated_at      BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+CREATE INDEX IF NOT EXISTS idx_fiat_tx_buyer ON fiat_transactions(buyer_address);
+CREATE INDEX IF NOT EXISTS idx_fiat_tx_status ON fiat_transactions(status);
+
+ALTER TABLE fiat_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read fiat_transactions" ON fiat_transactions FOR SELECT USING (true);
+CREATE POLICY "Allow insert fiat_transactions" ON fiat_transactions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update fiat_transactions" ON fiat_transactions FOR UPDATE USING (true);
+
+-- ─── 11d. STRIPE CONNECT ACCOUNTS ──────────────────────────
+
+CREATE TABLE IF NOT EXISTS stripe_connect_accounts (
+  seller_address       TEXT PRIMARY KEY REFERENCES profiles(address),
+  stripe_account_id    TEXT NOT NULL,
+  onboarding_complete  BOOLEAN DEFAULT FALSE,
+  created_at           BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  updated_at           BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+ALTER TABLE stripe_connect_accounts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read stripe_connect_accounts" ON stripe_connect_accounts FOR SELECT USING (true);
+CREATE POLICY "Allow upsert stripe_connect_accounts" ON stripe_connect_accounts FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update stripe_connect_accounts" ON stripe_connect_accounts FOR UPDATE USING (true);
+
+-- ─── 11e. CREDIT WARPS RPC (fiat gateway minting) ──────────
+
+CREATE OR REPLACE FUNCTION credit_warps(
+  p_address TEXT,
+  p_amount NUMERIC,
+  p_tx_id TEXT,
+  p_memo TEXT DEFAULT ''
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Idempotency: check if this tx was already processed
+  IF EXISTS (SELECT 1 FROM transactions WHERE id = p_tx_id) THEN
+    RETURN TRUE;
+  END IF;
+
+  -- Credit the address
+  UPDATE profiles SET balance = balance + p_amount,
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+  WHERE address = p_address;
+
+  IF NOT FOUND THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Record in transactions
+  INSERT INTO transactions (id, from_addr, to_addr, amount, tx_type, memo, created_at)
+  VALUES (p_tx_id, 'FIAT_GATEWAY', p_address, p_amount,
+    CASE WHEN p_amount >= 0 THEN 'airdrop' ELSE 'send' END,
+    p_memo, (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT);
+
+  RETURN TRUE;
+END;
+$$;
+
 -- ─── 12. STORAGE BUCKETS ────────────────────────────────────
 
 INSERT INTO storage.buckets (id, name, public)

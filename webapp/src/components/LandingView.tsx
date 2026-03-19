@@ -11,8 +11,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     protocol: 'Protocole',
     signIn: 'Se connecter',
     signUp: 'S\'inscrire',
-    heroSubtitle: 'Protocole et marketplace multi-chaîne de certification pour œuvres rares',
-    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur Strangrz (SZ-721) et Ethereum (ERC-721).',
+    heroSubtitle: 'Protocole et marketplace de certification pour oeuvres rares',
+    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Payez en euros par carte bancaire — le protocole gère la certification, la provenance et les royalties automatiquement.',
     mySpace: 'Mon Espace',
     createAccount: 'Créer un compte',
     learnMore: 'En savoir plus',
@@ -25,7 +25,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     publishTitle: 'Publier',
     publishDesc: 'Publiez vos créations — art numérique, photo, musique, objets physiques. Votre certificat prouve que vous en êtes l\'auteur et le premier propriétaire.',
     exchange: 'Échanger',
-    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement en Strangrz (⬣) ou en euros.',
+    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement par carte bancaire en euros — le protocole s\'occupe du reste.',
     forCreators: 'Pour les créateurs',
     publishWorks: 'Publiez vos oeuvres',
     step1: 'Créez votre profil',
@@ -35,7 +35,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step3: 'Certification automatique',
     step3Desc: 'Strangrz calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat STCERT est créé instantanément sur Strangrz (SZ-721) et Ethereum (ERC-721).',
     step4: 'Mise en vente',
-    step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Strangrz (⬣) ou via la passerelle de paiement en euros.',
+    step4Desc: 'Votre oeuvre apparaît sur la marketplace avec un prix en euros. Les collectionneurs paient par carte bancaire. Vous recevez vos euros directement sur votre compte bancaire.',
     publishWork: 'Publier une oeuvre',
     forCollectors: 'Pour les collectionneurs',
     collectCertified: 'Collectionnez des oeuvres certifiées',
@@ -43,7 +43,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     explore: 'Explorer',
     exploreDesc: 'Parcourez la marketplace et découvrez des oeuvres de créateurs du monde entier.',
     buy: 'Acheter',
-    buyDesc: 'Payez en Strangrz (⬣) ou en euros via la passerelle de paiement intégrée.',
+    buyDesc: 'Payez par carte bancaire en euros. Le protocole transfère le certificat et verse les royalties automatiquement.',
     own: 'Posséder',
     ownDesc: 'Chaque achat transfère le certificat STCERT sur votre wallet. Vous êtes le propriétaire vérifié.',
     resell: 'Revendre',
@@ -110,6 +110,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     whyCo2: 'CO₂/TX',
     whyOnChain: 'Stockage on-chain',
     whyFiat: 'Paiement fiat',
+    howPaymentWorks: 'Comment fonctionne l\'achat ?',
+    howPaymentDesc: 'Payez en euros, le protocole s\'occupe du reste',
+    howPayStep1: 'Vous payez en euros',
+    howPayStep1Desc: 'Carte bancaire, Apple Pay ou Google Pay. Paiement sécurisé par Stripe.',
+    howPayStep2: 'Le protocole certifie',
+    howPayStep2Desc: 'Le certificat STCERT est transféré atomiquement sur votre wallet. Impossible à falsifier.',
+    howPayStep3: 'Le créateur est payé',
+    howPayStep3Desc: 'Le vendeur reçoit ses euros sur son compte bancaire. Les royalties (5%) sont versées au créateur original.',
+    howPayStep4: 'Provenance garantie',
+    howPayStep4Desc: 'Chaque revente est tracée sur le protocole. Le certificat suit l\'oeuvre pour toujours.',
     ctaTitle: 'Prêt à certifier vos trésors ?',
     ctaDesc: 'Créez votre compte en 10 secondes. Pas d\'email, pas de tiers. Juste vous et le protocole.',
     ctaSignUp: 'Sign Up — Créer un compte',
@@ -127,8 +137,8 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     protocol: 'Protocol',
     signIn: 'Sign In',
     signUp: 'Sign Up',
-    heroSubtitle: 'Multi-chain certification protocol and marketplace for rare works',
-    heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on Strangrz (SZ-721) and Ethereum (ERC-721).',
+    heroSubtitle: 'Certification protocol and marketplace for rare works',
+    heroDesc: 'Publish, certify and collect digital and physical works. Pay with your credit card in euros — the protocol handles certification, provenance and royalties automatically.',
     mySpace: 'My Space',
     createAccount: 'Create Account',
     learnMore: 'Learn More',
@@ -141,7 +151,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     publishTitle: 'Publish',
     publishDesc: 'Publish your creations — digital art, photos, music, physical objects. Your certificate proves you are the author and first owner.',
     exchange: 'Exchange',
-    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay in Strangrz (⬣) or in euros.',
+    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay by credit card in euros — the protocol handles the rest.',
     forCreators: 'For creators',
     publishWorks: 'Publish your works',
     step1: 'Create your profile',
@@ -151,7 +161,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     step3: 'Automatic certification',
     step3Desc: 'Strangrz computes the SHA-256 fingerprint of the file and signs it with your private key. The STCERT certificate is minted instantly on Strangrz (SZ-721) and Ethereum (ERC-721).',
     step4: 'Listed for sale',
-    step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Strangrz (⬣) or via the integrated euro payment gateway.',
+    step4Desc: 'Your work appears on the marketplace with a price in euros. Collectors pay by credit card. You receive your euros directly to your bank account.',
     publishWork: 'Publish a work',
     forCollectors: 'For collectors',
     collectCertified: 'Collect certified works',
@@ -159,7 +169,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     explore: 'Explore',
     exploreDesc: 'Browse the marketplace and discover works from creators worldwide.',
     buy: 'Buy',
-    buyDesc: 'Pay in Strangrz (⬣) or in euros via the integrated payment gateway.',
+    buyDesc: 'Pay by credit card in euros. The protocol transfers the certificate and pays royalties automatically.',
     own: 'Own',
     ownDesc: 'Each purchase transfers the STCERT certificate to your wallet. You are the verified owner.',
     resell: 'Resell',
@@ -226,6 +236,16 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     whyCo2: 'CO₂/TX',
     whyOnChain: 'On-chain storage',
     whyFiat: 'Fiat payment',
+    howPaymentWorks: 'How does buying work?',
+    howPaymentDesc: 'Pay in euros, the protocol handles the rest',
+    howPayStep1: 'You pay in euros',
+    howPayStep1Desc: 'Credit card, Apple Pay or Google Pay. Secure payment powered by Stripe.',
+    howPayStep2: 'The protocol certifies',
+    howPayStep2Desc: 'The STCERT certificate is atomically transferred to your wallet. Tamper-proof.',
+    howPayStep3: 'The creator gets paid',
+    howPayStep3Desc: 'The seller receives euros to their bank account. Royalties (5%) go to the original creator.',
+    howPayStep4: 'Provenance guaranteed',
+    howPayStep4Desc: 'Every resale is tracked on the protocol. The certificate follows the work forever.',
     ctaTitle: 'Ready to certify your treasures?',
     ctaDesc: 'Create your account in 10 seconds. No email, no middleman. Just you and the protocol.',
     ctaSignUp: 'Sign Up — Create Account',
@@ -1101,6 +1121,37 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               </table>
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ─── How Payment Works ─────────────────────────────── */}
+      <section className="relative py-20 sm:py-28 px-4 sm:px-8">
+        <Reveal>
+          <div className="text-center mb-12">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-3">
+              {t('howPaymentWorks')}
+            </h2>
+            <p className="text-sm sm:text-base opacity-40 max-w-xl mx-auto">
+              {t('howPaymentDesc')}
+            </p>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {[
+            { num: '1', title: t('howPayStep1'), desc: t('howPayStep1Desc'), icon: '\u20AC' },
+            { num: '2', title: t('howPayStep2'), desc: t('howPayStep2Desc'), icon: '\u2B21' },
+            { num: '3', title: t('howPayStep3'), desc: t('howPayStep3Desc'), icon: '\u2192' },
+            { num: '4', title: t('howPayStep4'), desc: t('howPayStep4Desc'), icon: '\u2B23' },
+          ].map((step) => (
+            <Reveal key={step.num}>
+              <div className="glass-panel p-5 text-center h-full">
+                <div className="text-3xl mb-3 opacity-60">{step.icon}</div>
+                <p className="text-[10px] opacity-30 mb-1">STEP {step.num}</p>
+                <h3 className="text-base font-bold mb-2 opacity-90">{step.title}</h3>
+                <p className="text-body-sm opacity-40 leading-relaxed">{step.desc}</p>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 

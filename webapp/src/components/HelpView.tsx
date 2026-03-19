@@ -268,13 +268,40 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       tabLabel: 'Portefeuille → Aperçu',
     },
   },
-  // Paiement fiat
+  // Paiement fiat — flow complet
   {
-    keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement'],
+    keywords: ['paiement', 'payment', 'carte', 'card', 'paypal', 'sepa', 'fiat', 'euro', 'euros', 'eur', 'virement', 'acheter oeuvre', 'buy artwork', 'comment acheter', 'how to buy'],
     response: {
-      answer: "Strangrz intègre une passerelle de paiement fiat complète ! Tu peux acheter des Strangrz (⬣) ou des Strangrz directement par carte bancaire, PayPal ou virement SEPA. Pas besoin de passer par un exchange crypto compliqué. L'idée : rendre l'accès à la certification d'objets rares aussi simple qu'acheter sur n'importe quelle boutique en ligne. Le cosmos est décentralisé, mais le paiement reste simple.",
-      navigateTo: 'wallet',
-      tabLabel: 'Portefeuille → Paiement',
+      answer: "Acheter une oeuvre sur Strangrz, c'est aussi simple que sur n'importe quelle boutique en ligne ! Le prix est affiché en euros (€) directement sur chaque oeuvre. Clique sur « Collect €XX » — tu es redirigé vers un paiement sécurisé Stripe (carte bancaire, Apple Pay, Google Pay). Une fois le paiement confirmé, tout se passe automatiquement en arrière-plan : le protocole Strangrz transfère le certificat d'authenticité STCERT sur ton wallet, les royalties sont versées au créateur original, et le vendeur reçoit son paiement en euros sur son compte bancaire. Tu n'as jamais besoin de toucher à de la crypto — le protocole fonctionne en backend, invisible pour toi. Si tu es un crypto-enthousiaste, active le « Mode avancé » dans les Paramètres pour voir tes balances en ⬣ et payer directement en tokens.",
+      navigateTo: 'gallery',
+      tabLabel: 'Marketplace',
+    },
+  },
+  // Vendre et recevoir ses euros
+  {
+    keywords: ['vendre', 'sell', 'recevoir euros', 'receive money', 'payout', 'retrait', 'withdrawal', 'stripe connect', 'bank account', 'compte bancaire', 'comment vendre', 'how to sell'],
+    response: {
+      answer: "Pour vendre tes oeuvres et recevoir tes euros, voici le process : (1) Va dans Paramètres → Payouts et configure ton compte bancaire via Stripe Connect (vérification d'identité + IBAN, une seule fois). (2) Mets ton oeuvre en vente dans la Marketplace — fixe un prix en euros. (3) Quand quelqu'un achète, le paiement est traité automatiquement : l'acheteur paie en €, le protocole transfère le certificat STCERT, et toi tu reçois tes euros directement sur ton compte bancaire (moins 2,5% de frais plateforme). Les royalties de 5% sur les reventes sont aussi versées automatiquement au créateur original. Si tu n'as pas encore configuré Stripe Connect, tes gains restent en ⬣ dans ton wallet jusqu'à ce que tu le fasses.",
+      navigateTo: 'settings',
+      tabLabel: 'Paramètres → Payouts',
+    },
+  },
+  // Royalties
+  {
+    keywords: ['royalty', 'royalties', 'revente', 'resale', 'secondary', 'secondaire', 'créateur', 'creator earnings', 'revenus créateur'],
+    response: {
+      answer: "Les royalties sur Strangrz sont automatiques et impossibles à contourner — c'est le protocole qui les gère, pas un contrat qu'on peut ignorer. Par défaut, 5% du prix de chaque revente est versé au créateur original. Exemple : tu crées une oeuvre à 50€. Un collectionneur l'achète, puis la revend 200€. Tu reçois automatiquement 10€ (5% de 200€) directement sur ton compte bancaire, sans rien faire. Et ça marche à l'infini — 2ème revente, 3ème, 10ème... tu touches toujours tes royalties. Le taux est configurable entre 0% et 50% au moment de la création.",
+      navigateTo: 'gallery',
+      tabLabel: 'Marketplace → Créer',
+    },
+  },
+  // Mode avancé
+  {
+    keywords: ['mode avancé', 'advanced mode', 'crypto mode', 'token', 'strangrz coin', '⬣', 'afficher solde', 'show balance', 'mining visible'],
+    response: {
+      answer: "Par défaut, Strangrz affiche les prix en euros et masque les mécanismes crypto pour offrir une expérience simple aux collectionneurs. Si tu veux accéder aux fonctionnalités avancées — voir ton solde en ⬣, miner des tokens, faire des transferts P2P, ou consulter les détails du protocole — active le « Mode avancé » dans Paramètres → Advanced Mode. Ça débloque : le Wallet dans la sidebar, les balances en tokens, le minage, et les outils crypto. Tu peux basculer à tout moment entre les deux modes.",
+      navigateTo: 'settings',
+      tabLabel: 'Paramètres → Advanced Mode',
     },
   },
   // Profile features

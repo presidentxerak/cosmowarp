@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { useTheme } from '../context/ThemeContext';
 import { shortAddress } from '../engine/crypto';
@@ -21,12 +21,53 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
   const { theme, toggleTheme } = useTheme();
   const [cleared, setCleared] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [advancedMode, setAdvancedMode] = useState(() => localStorage.getItem('strangrz_advanced') === '1');
+  const [connectStatus, setConnectStatus] = useState<'none' | 'pending' | 'active' | 'loading'>('loading');
+  const [connectLoading, setConnectLoading] = useState(false);
   const [strangrzLink, setStrangrzLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [linkPassword, setLinkPassword] = useState('');
   const [linkError, setLinkError] = useState('');
   const [linkGenerating, setLinkGenerating] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+
+  const toggleAdvancedMode = () => {
+    const next = !advancedMode;
+    setAdvancedMode(next);
+    localStorage.setItem('strangrz_advanced', next ? '1' : '0');
+    window.dispatchEvent(new CustomEvent('strangrz-advanced-mode', { detail: next }));
+  };
+
+  // Check Stripe Connect status on mount
+  useEffect(() => {
+    if (!wallet?.address) return;
+    const apiBase = (import.meta as any).env?.VITE_API_URL || '';
+    fetch(`${apiBase}/api/connect/status?address=${encodeURIComponent(wallet.address)}`)
+      .then(r => r.json())
+      .then(data => setConnectStatus(data.status === 'active' ? 'active' : data.status === 'pending' ? 'pending' : 'none'))
+      .catch(() => setConnectStatus('none'));
+  }, [wallet?.address]);
+
+  const handleStartPayout = async () => {
+    if (!wallet?.address) return;
+    setConnectLoading(true);
+    try {
+      const apiBase = (import.meta as any).env?.VITE_API_URL || '';
+      const resp = await fetch(`${apiBase}/api/connect/onboard`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sellerAddress: wallet.address, returnUrl: window.location.origin }),
+      });
+      const data = await resp.json();
+      if (data.onboardingUrl) {
+        window.location.href = data.onboardingUrl;
+      } else if (data.status === 'active') {
+        setConnectStatus('active');
+      }
+    } catch { /* ignore */ } finally {
+      setConnectLoading(false);
+    }
+  };
 
   const handleExport = () => {
     const data = doExportWallet();
@@ -248,6 +289,78 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           </button>
         </div>
       </div>
+
+      {/* ─── Advanced Mode ───────────────────────────────────── */}
+      <div className="glass-panel p-4">
+        <h3 className="text-title-sm font-bold font-title mb-3 flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          Advanced Mode
+        </h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-body-sm opacity-90">Show crypto features</p>
+            <p className="text-label opacity-60">Wallet, mining, token balances, P2P transfers</p>
+          </div>
+          <button
+            onClick={toggleAdvancedMode}
+            className={`px-4 py-2 text-body-sm font-medium border transition-all cursor-pointer ${
+              advancedMode ? 'bg-current/10 border-current/20 opacity-90' : 'bg-current/5 border-current/10 opacity-50'
+            }`}
+          >
+            {advancedMode ? 'ON' : 'OFF'}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Payouts (Stripe Connect) ─────────────────────────── */}
+      {wallet && unlocked && (
+        <div className="glass-panel p-4">
+          <h3 className="text-title-sm font-bold font-title mb-2 flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
+              <rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            Payouts
+          </h3>
+          <p className="text-label opacity-60 mb-3">
+            Connect your bank account to receive EUR payouts when your artworks sell.
+          </p>
+
+          {connectStatus === 'loading' && (
+            <p className="text-body-sm opacity-40 animate-pulse">Checking payout status...</p>
+          )}
+
+          {connectStatus === 'active' && (
+            <div className="flex items-center gap-2 p-3 bg-current/5 border border-current/10">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-60"><polyline points="20 6 9 17 4 12" /></svg>
+              <span className="text-body-sm opacity-80">Bank account connected. Payouts are automatic.</span>
+            </div>
+          )}
+
+          {connectStatus === 'pending' && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-current/5 border border-current/10">
+                <span className="text-body-sm opacity-70">Onboarding started but not complete.</span>
+              </div>
+              <button onClick={handleStartPayout} className="warp-button w-full text-body-sm py-2" disabled={connectLoading}>
+                {connectLoading ? 'Loading...' : 'Complete Setup'}
+              </button>
+            </div>
+          )}
+
+          {connectStatus === 'none' && (
+            <button onClick={handleStartPayout} className="warp-button w-full text-body-sm py-2" disabled={connectLoading}>
+              {connectLoading ? 'Redirecting to Stripe...' : (
+                <span className="flex items-center justify-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>
+                  Connect Bank Account
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ─── StrangrzLink (Sync) ─────────────────────────────── */}
       {wallet && unlocked && (

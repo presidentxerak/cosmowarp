@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useWallet } from '../context/WalletContext';
 import Logo from './Logo';
@@ -70,6 +70,20 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { wallet } = useWallet();
+  const [advancedMode, setAdvancedMode] = useState(() => localStorage.getItem('strangrz_advanced') === '1');
+
+  // Listen for advanced mode changes from Settings
+  useEffect(() => {
+    const handler = (e: Event) => setAdvancedMode((e as CustomEvent).detail);
+    window.addEventListener('strangrz-advanced-mode', handler);
+    return () => window.removeEventListener('strangrz-advanced-mode', handler);
+  }, []);
+
+  // Filter menu items based on advanced mode
+  const visibleItems = menuItems.filter(item => {
+    if (!advancedMode && item.id === 'wallet') return false;
+    return true;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -98,7 +112,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
     <>
       {/* Desktop mini sidebar */}
       <div className="hidden sm:flex fixed top-[52px] left-0 bottom-0 z-40 w-[56px] flex-col items-center py-3 gap-1 glass-panel overflow-y-auto sidebar-mini">
-        {menuItems.map((item) => {
+        {visibleItems.map((item) => {
           if (item.id.startsWith('divider')) {
             return <div key={item.id} className="w-8 my-0.5 border-b border-current/10" />;
           }
@@ -181,7 +195,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
 
         {/* Menu */}
         <nav className="py-2">
-          {menuItems.map((item) => {
+          {visibleItems.map((item) => {
             if (item.id.startsWith('divider')) {
               return <div key={item.id} className="my-1 border-b border-current/10" />;
             }
