@@ -73,17 +73,32 @@ function getShareUrl(wartId: string): string {
   return `${window.location.origin}/gallery?wart=${wartId}`;
 }
 
-/** Share menu options */
-const SHARE_OPTIONS = [
-  { id: 'wall', label: 'Wall', icon: '\u270D' },
-  { id: 'dm', label: 'Message', icon: '\u2709' },
-  { id: 'copy', label: 'Copy link', icon: '\u2398' },
-  { id: 'x', label: 'X', icon: '\uD835\uDD4F' },
-  { id: 'instagram', label: 'Instagram', icon: '\uD83D\uDCF7' },
-  { id: 'facebook', label: 'Facebook', icon: '\uD83C\uDF10' },
-  { id: 'telegram', label: 'Telegram', icon: '\u2708' },
-  { id: 'whatsapp', label: 'WhatsApp', icon: '\uD83D\uDCAC' },
-  { id: 'email', label: 'Email', icon: '\u2709' },
+/** Share modal options — in-app first, then social, then utility */
+const SHARE_SECTIONS = [
+  {
+    title: 'In-app',
+    options: [
+      { id: 'wall', label: 'Wall', svg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' },
+      { id: 'dm', label: 'Message', svg: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>' },
+    ],
+  },
+  {
+    title: 'Social',
+    options: [
+      { id: 'x', label: 'X', text: '𝕏' },
+      { id: 'instagram', label: 'Instagram', text: 'IG' },
+      { id: 'facebook', label: 'Facebook', text: 'f' },
+      { id: 'telegram', label: 'Telegram', text: 'TG' },
+      { id: 'whatsapp', label: 'WhatsApp', text: 'WA' },
+      { id: 'email', label: 'Email', svg: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>' },
+    ],
+  },
+  {
+    title: '',
+    options: [
+      { id: 'copy', label: 'Copy link', svg: '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' },
+    ],
+  },
 ] as const;
 
 export default function MarketplaceView() {
@@ -206,7 +221,7 @@ export default function MarketplaceView() {
   // Transfer & list state (must be before early returns to respect hooks rules)
   const [transferError, setTransferError] = useState('');
   const [shareSuccess, setShareSuccess] = useState('');
-  const [shareMenuWart, setShareMenuWart] = useState<string | null>(null);
+  const [shareMenuWartId, setShareMenuWartId] = useState<string | null>(null);
   const [listSuccess, setListSuccess] = useState('');
 
   // ─── All warts (all platform warts from cloud + local) ──────────────
@@ -594,7 +609,7 @@ export default function MarketplaceView() {
         setShareSuccess('Link copied! Paste it on Instagram.');
         break;
     }
-    setShareMenuWart(null);
+    setShareMenuWartId(null);
     setTimeout(() => setShareSuccess(''), 3000);
   };
 
@@ -861,9 +876,9 @@ export default function MarketplaceView() {
           {/* Share */}
           <button className="opacity-60 hover:opacity-80 cursor-pointer" title="Share" onClick={e => {
             e.stopPropagation();
-            setShareMenuWart(shareMenuWart === wart.id ? null : wart.id);
+            setShareMenuWartId(wart.id);
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
           {/* Comment — go to detail + focus input */}
           <button className="flex items-center gap-1 opacity-60 hover:opacity-80 cursor-pointer" onClick={e => {
@@ -914,21 +929,6 @@ export default function MarketplaceView() {
             >
               Transfer
             </button>
-          </div>
-        )}
-        {/* Share menu dropdown */}
-        {shareMenuWart === wart.id && (
-          <div className="mt-2 p-2 bg-current/5 border border-current/10 grid grid-cols-3 gap-1" onClick={e => e.stopPropagation()}>
-            {SHARE_OPTIONS.map(opt => (
-              <button
-                key={opt.id}
-                className="py-2 px-1 text-[10px] opacity-60 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer text-center"
-                onClick={() => handleShare(wart, opt.id)}
-              >
-                <div className="text-sm mb-0.5">{opt.icon}</div>
-                {opt.label}
-              </button>
-            ))}
           </div>
         )}
       </div>
@@ -1361,26 +1361,12 @@ export default function MarketplaceView() {
                 <div className="pt-2">
                   <button
                     className="warp-button w-full py-3 text-body-lg flex items-center justify-center gap-2"
-                    onClick={() => setShareMenuWart(shareMenuWart === wart.id ? null : wart.id)}
+                    onClick={() => setShareMenuWartId(wart.id)}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                     Share
                   </button>
                   {shareSuccess && <p className="text-body-sm opacity-70 mt-2 text-center">{'\u2714'} {shareSuccess}</p>}
-                  {shareMenuWart === wart.id && (
-                    <div className="mt-2 p-3 bg-current/5 border border-current/10 grid grid-cols-3 gap-2">
-                      {SHARE_OPTIONS.map(opt => (
-                        <button
-                          key={opt.id}
-                          className="py-3 px-2 text-body-sm opacity-60 hover:opacity-90 hover:bg-current/5 border border-current/5 transition-all cursor-pointer text-center"
-                          onClick={() => handleShare(wart, opt.id)}
-                        >
-                          <div className="text-lg mb-1">{opt.icon}</div>
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Owner actions */}
@@ -2317,6 +2303,85 @@ export default function MarketplaceView() {
 
       {/* ─── Music Tab (embedded) ──────────────────────────── */}
       {tab === 'music' && !showEditionFilters && <MusicView />}
+
+      {/* ─── Share Modal (iOS-style bottom sheet) ──────────── */}
+      {shareMenuWartId && (() => {
+        const shareWart = [...allWartsRaw, ...marketplace, ...myCollection, ...myCreated].find(w => w.id === shareMenuWartId);
+        if (!shareWart) { setShareMenuWartId(null); return null; }
+        const shareUrl = getShareUrl(shareWart.id);
+
+        return (
+          <div className="fixed inset-0 z-[9999] flex items-end justify-center" onClick={() => setShareMenuWartId(null)}>
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+            {/* Bottom sheet */}
+            <div
+              className="relative w-full max-w-lg bg-[var(--bg-primary,#111)] border-t border-current/10 rounded-t-2xl pb-6 animate-slide-up"
+              onClick={e => e.stopPropagation()}
+              style={{ animation: 'slideUp 0.25s ease-out' }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-4">
+                <div className="w-10 h-1 rounded-full bg-current/20" />
+              </div>
+
+              {/* Artwork preview */}
+              <div className="flex items-center gap-3 px-5 pb-4 border-b border-current/10">
+                {shareWart.imageData && (
+                  <img
+                    src={shareWart.imageData}
+                    alt=""
+                    className="w-12 h-12 object-cover rounded"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-body-sm font-bold opacity-90 truncate">{shareWart.title}</p>
+                  <p className="text-[11px] opacity-50 truncate">{shareUrl}</p>
+                </div>
+              </div>
+
+              {/* Share sections */}
+              {SHARE_SECTIONS.map((section, si) => (
+                <div key={si}>
+                  {section.title && (
+                    <p className="text-[10px] opacity-30 uppercase tracking-wider px-5 pt-4 pb-2">{section.title}</p>
+                  )}
+                  <div className={`px-3 ${!section.title ? 'pt-2' : ''}`}>
+                    {section.options.map(opt => (
+                      <button
+                        key={opt.id}
+                        className="w-full flex items-center gap-3 px-3 py-3 opacity-70 hover:opacity-100 hover:bg-current/5 transition-all cursor-pointer rounded"
+                        onClick={() => handleShare(shareWart, opt.id)}
+                      >
+                        <div className="w-9 h-9 rounded-full bg-current/8 flex items-center justify-center shrink-0">
+                          {'svg' in opt ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" dangerouslySetInnerHTML={{ __html: opt.svg }} />
+                          ) : (
+                            <span className="text-sm font-bold opacity-80">{'text' in opt ? opt.text : ''}</span>
+                          )}
+                        </div>
+                        <span className="text-body-sm">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {si < SHARE_SECTIONS.length - 1 && <div className="mx-5 border-b border-current/8" />}
+                </div>
+              ))}
+
+              {/* Cancel */}
+              <div className="px-5 pt-4">
+                <button
+                  onClick={() => setShareMenuWartId(null)}
+                  className="w-full py-3 text-body-sm opacity-50 hover:opacity-80 border border-current/10 rounded transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -644,3 +644,9 @@ main > div > * {
   left: 8px;
   transform: none;
 }
+
+/* Share modal slide-up animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
