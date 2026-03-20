@@ -285,10 +285,13 @@ export class IPFSStorageProvider implements StorageProvider {
       if (!cid) return false;
 
       const gatewayUrl = this.config.gatewayUrl.replace(/\/$/, '');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(`${gatewayUrl}/${cid}`, {
         method: 'HEAD',
-        signal: AbortSignal.timeout(10000), // 10s timeout for IPFS gateways
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       return response.ok;
     } catch {
       return false;
