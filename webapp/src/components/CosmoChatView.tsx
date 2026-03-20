@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
@@ -10,6 +10,7 @@ import HexAvatar from './HexAvatar';
 import { copyToClipboard } from '../lib/clipboard';
 
 type Tab = 'timeline' | 'explore' | 'channels';
+type LeaderboardTab = 'artists' | 'buyers';
 
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
@@ -64,6 +65,8 @@ export default function CosmoChatView() {
   // Media upload state (must be before early return)
   const [mediaError, setMediaError] = useState('');
 
+  const [leaderboardTab, setLeaderboardTab] = useState<LeaderboardTab>('artists');
+
   const refresh = () => {
     const e = CosmoChatEngine.load();
     setPosts(e.getTimeline());
@@ -71,6 +74,29 @@ export default function CosmoChatView() {
   };
 
   useEffect(() => { refresh(); }, [tab]);
+
+  // ─── Leaderboard data (last 7 days) ─────────────────────
+  const sevenDaysAgo = Date.now() - 7 * 86400000;
+
+  const topArtists = useMemo(() => {
+    const map: Record<string, { address: string; count: number }> = {};
+    allWarts.filter(w => w.createdAt > sevenDaysAgo).forEach(w => {
+      if (!map[w.creator]) map[w.creator] = { address: w.creator, count: 0 };
+      map[w.creator].count++;
+    });
+    return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 3);
+  }, [allWarts]);
+
+  const topBuyers = useMemo(() => {
+    const map: Record<string, { address: string; spent: number }> = {};
+    allWarts.forEach(w => {
+      (w.history || []).filter(h => h.timestamp > sevenDaysAgo && h.price > 0).forEach(h => {
+        if (!map[h.to]) map[h.to] = { address: h.to, spent: 0 };
+        map[h.to].spent += h.price;
+      });
+    });
+    return Object.values(map).sort((a, b) => b.spent - a.spent).slice(0, 3);
+  }, [allWarts]);
 
   // Sync channels & posts from cloud on mount, rehydrate media from IndexedDB + Supabase Storage
   useEffect(() => {
@@ -751,6 +777,66 @@ export default function CosmoChatView() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── Leaderboard ───────────────────────────── */}
+          {(topArtists.length > 0 || topBuyers.length > 0) && (
+            <div className="glass-panel p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold opacity-90">Leaderboard</h3>
+                  <span className="text-[10px] opacity-40">Last 7 days</span>
+                </div>
+                <button className="text-[11px] opacity-60 hover:opacity-80 cursor-pointer" onClick={() => {
+                  window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'gallery' }));
+                  setTimeout(() => window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'top-creators' })), 100);
+                }}>View more</button>
+              </div>
+              <div className="flex gap-1">
+                <button
+                  className={`px-3 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${
+                    leaderboardTab === 'artists' ? 'bg-current/10 border border-current/20 opacity-80' : 'border border-current/10 opacity-50 hover:opacity-70'
+                  }`}
+                  onClick={() => setLeaderboardTab('artists')}
+                >
+                  Top artists
+                </button>
+                <button
+                  className={`px-3 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${
+                    leaderboardTab === 'buyers' ? 'bg-current/10 border border-current/20 opacity-80' : 'border border-current/10 opacity-50 hover:opacity-70'
+                  }`}
+                  onClick={() => setLeaderboardTab('buyers')}
+                >
+                  Top buyers
+                </button>
+              </div>
+              <div className="flex items-end justify-center gap-6 py-4">
+                {(leaderboardTab === 'artists' ? topArtists : topBuyers).map((entry, idx) => {
+                  const addr = entry.address;
+                  const badges = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+                  return (
+                    <div key={addr} className="flex flex-col items-center gap-2 cursor-pointer" onClick={() => handleViewUser(addr)}>
+                      <div className="relative">
+                        <HexAvatar address={addr} size={idx === 0 ? 56 : 48} />
+                        <span className="absolute -top-1 -right-1 text-sm">{badges[idx]}</span>
+                      </div>
+                      <span className="text-[11px] font-bold opacity-70 truncate max-w-[100px] text-center">
+                        {getHandle(addr)}
+                      </span>
+                      <span className="text-[10px] opacity-40">
+                        {leaderboardTab === 'artists'
+                          ? `${(entry as { count: number }).count} created`
+                          : `${(entry as { spent: number }).spent.toFixed(0)} \u2B23`
+                        }
+                      </span>
+                    </div>
+                  );
+                })}
+                {(leaderboardTab === 'artists' ? topArtists : topBuyers).length === 0 && (
+                  <p className="text-[11px] opacity-40 py-4">No activity in the last 7 days</p>
+                )}
               </div>
             </div>
           )}

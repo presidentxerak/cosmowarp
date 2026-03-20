@@ -279,6 +279,65 @@ export default function MarketplaceView() {
       .sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
   }, [allWarts]);
 
+  // ─── Featured: affordable warts for "Start Warping" ────
+  const affordableWarts = useMemo(() => {
+    return allWarts
+      .filter(w => w.listed && w.price !== null && w.price > 0 && getEurPrice(w) <= 3 && w.imageData)
+      .sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0))
+      .slice(0, 20);
+  }, [allWarts]);
+
+  // ─── Featured: "Last Editions" — limited warts almost gone
+  const lastEditions = useMemo(() => {
+    return allWarts
+      .filter(w => {
+        if (!w.imageData) return false;
+        if (w.editionType !== 'limited' || !w.maxEditions) return false;
+        const remaining = w.maxEditions - (w.editionNumber || 1);
+        return remaining >= 0 && remaining <= 3;
+      })
+      .sort((a, b) => {
+        const remA = (a.maxEditions || 0) - (a.editionNumber || 1);
+        const remB = (b.maxEditions || 0) - (b.editionNumber || 1);
+        return remA - remB;
+      })
+      .slice(0, 20);
+  }, [allWarts]);
+
+  // ─── Featured: latest activity (Created / Collected) ────
+  const latestActivity = useMemo(() => {
+    const events: Array<{ wart: Wart; type: 'Created' | 'Collected'; address: string; ts: number }> = [];
+    allWarts.forEach(w => {
+      if (!w.imageData) return;
+      events.push({ wart: w, type: 'Created', address: w.creator, ts: w.createdAt });
+      (w.history || []).forEach(h => {
+        if (h.price > 0) {
+          events.push({ wart: w, type: 'Collected', address: h.to, ts: h.timestamp });
+        }
+      });
+    });
+    return events.sort((a, b) => b.ts - a.ts).slice(0, 30);
+  }, [allWarts]);
+
+  // ─── Featured: "Creator Spotlight" — top performing creator
+  const spotlightCreator = useMemo(() => {
+    if (topCreators.length === 0) return null;
+    const creator = topCreators[0];
+    const wartsWithImages = creator.warts.filter(w => w.imageData);
+    if (wartsWithImages.length === 0) return null;
+    return { ...creator, wartsWithImages };
+  }, [topCreators]);
+
+  // ─── Scroll refs for carousels ───────────────────────────
+  const affordableScrollRef = useRef<HTMLDivElement>(null);
+  const lastEditionsScrollRef = useRef<HTMLDivElement>(null);
+  const activityScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollCarousel = (ref: React.RefObject<HTMLDivElement | null>, dir: 'left' | 'right') => {
+    if (!ref.current) return;
+    ref.current.scrollBy({ left: dir === 'left' ? -300 : 300, behavior: 'smooth' });
+  };
+
   // ─── Resolve creator alias ─────────────────────────────
   const getCreatorName = (address: string): string => {
     if (wallet && address === wallet.address) return 'you';
@@ -1596,6 +1655,225 @@ export default function MarketplaceView() {
                   {tab === 'phygital' && 'Oeuvres physiques authentifiées avec certificat digital.'}
                 </p>
               </div>
+
+              {/* ─── Featured Sections (Gallery 'all' tab only) ─────── */}
+              {tab === 'all' && (
+                <>
+                  {/* ─── Start Warping (affordable warts < €3) ──────── */}
+                  {affordableWarts.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h3 className="text-base font-bold opacity-90 flex items-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Start Warping
+                          </h3>
+                          <p className="text-[10px] opacity-50">Collect for under {'\u20AC'}3</p>
+                        </div>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => { setEditionFilter('all'); }}>View all</button>
+                      </div>
+                      <div className="relative group">
+                        <button className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(affordableScrollRef, 'left')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <div ref={affordableScrollRef} className="flex gap-3 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory">
+                          {affordableWarts.map(w => (
+                            <div key={w.id} className="shrink-0 w-[160px] sm:w-[180px] cursor-pointer snap-start" onClick={() => openDetail(w)}>
+                              <div className="aspect-[3/4] overflow-hidden bg-current/5 rounded-sm">
+                                <img src={w.imageData} alt={w.title} className="w-full h-full object-cover" loading="lazy" />
+                              </div>
+                              <p className="text-body-sm font-bold opacity-80 mt-1.5 truncate">{w.title}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <HexAvatar address={w.creator} size={14} />
+                                <span className="text-[10px] opacity-50 truncate">@{getCreatorName(w.creator)}</span>
+                              </div>
+                              {w.price !== null && w.owner !== wallet?.address && (
+                                <button
+                                  className="mt-1.5 w-full py-1.5 text-[11px] font-bold bg-red-500/90 text-white hover:bg-red-600 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                                  onClick={e => { e.stopPropagation(); handleBuyFiat(w); }}
+                                >
+                                  <span className="w-2 h-2 bg-white rounded-full inline-block" />
+                                  Collect {'\u00B7'} {getEurSymbol(w)}{getEurPrice(w).toFixed(2)}
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <button className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(affordableScrollRef, 'right')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Last Editions (almost gone) ──────────────── */}
+                  {lastEditions.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h3 className="text-base font-bold opacity-90 flex items-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Last Editions
+                          </h3>
+                          <p className="text-[10px] opacity-50">1-3 editions left</p>
+                        </div>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => setEditionFilter('limited')}>View all</button>
+                      </div>
+                      <div className="relative group">
+                        <button className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(lastEditionsScrollRef, 'left')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <div ref={lastEditionsScrollRef} className="flex gap-3 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory">
+                          {lastEditions.map(w => {
+                            const remaining = (w.maxEditions || 0) - (w.editionNumber || 1);
+                            return (
+                              <div key={w.id} className="shrink-0 w-[160px] sm:w-[180px] cursor-pointer snap-start" onClick={() => openDetail(w)}>
+                                <div className="aspect-[3/4] overflow-hidden bg-current/5 rounded-sm relative">
+                                  <img src={w.imageData} alt={w.title} className="w-full h-full object-cover" loading="lazy" />
+                                  <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold">
+                                    {remaining} left
+                                  </div>
+                                </div>
+                                <p className="text-body-sm font-bold opacity-80 mt-1.5 truncate">{w.title}</p>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <HexAvatar address={w.creator} size={14} />
+                                  <span className="text-[10px] opacity-50 truncate">@{getCreatorName(w.creator)}</span>
+                                </div>
+                                {w.listed && w.price !== null && w.owner !== wallet?.address && (
+                                  <button
+                                    className="mt-1.5 w-full py-1.5 text-[11px] font-bold border border-red-400/60 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                                    onClick={e => { e.stopPropagation(); handleBuyFiat(w); }}
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    Collect
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <button className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(lastEditionsScrollRef, 'right')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Latest Activity (Created / Collected) ────── */}
+                  {latestActivity.length > 0 && (
+                    <div className="glass-panel p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        <h3 className="text-base font-bold opacity-90">Latest Activity</h3>
+                      </div>
+                      <div className="relative group">
+                        <div ref={activityScrollRef} className="flex gap-3 overflow-x-auto scrollbar-none pb-1 snap-x snap-mandatory">
+                          {latestActivity.slice(0, 20).map((ev, i) => (
+                            <div key={`${ev.wart.id}-${ev.ts}-${i}`} className="shrink-0 w-[120px] cursor-pointer snap-start" onClick={() => openDetail(ev.wart)}>
+                              <div className="aspect-square overflow-hidden bg-current/5 rounded-sm">
+                                <img src={ev.wart.imageData} alt={ev.wart.title} className="w-full h-full object-cover" loading="lazy" />
+                              </div>
+                              <p className="text-[10px] font-bold opacity-70 mt-1">{ev.type}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <HexAvatar address={ev.address} size={12} />
+                                <span className="text-[9px] opacity-50 truncate">@{getCreatorName(ev.address)}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Top Collectors (ranked grid) ────────────── */}
+                  {topCollectors.length >= 2 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h3 className="text-title-sm font-bold opacity-90 font-title">Top Collectors</h3>
+                          <p className="text-[10px] opacity-50">Growing this month</p>
+                        </div>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => setTab('top-collectors')}>View all</button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {topCollectors.slice(0, 6).map((coll, idx) => {
+                          const collWarts = allWarts.filter(w => w.owner === coll.address && w.imageData);
+                          const thumbWart = collWarts[0];
+                          const recentCount = allWarts.filter(w => w.owner === coll.address && w.createdAt > Date.now() - 30 * 86400000).length;
+                          return (
+                            <div
+                              key={coll.address}
+                              className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors"
+                              onClick={() => navigateToProfile(coll.address)}
+                            >
+                              <div className="relative shrink-0">
+                                <span className="absolute -top-1 -left-1 w-5 h-5 bg-current/10 border border-current/20 flex items-center justify-center text-[9px] font-bold opacity-70 z-10">
+                                  {idx + 1}
+                                </span>
+                                {thumbWart ? (
+                                  <img src={thumbWart.imageData} alt="" className="w-12 h-12 object-cover rounded-sm" />
+                                ) : (
+                                  <div className="w-12 h-12 bg-current/5 rounded-sm" />
+                                )}
+                              </div>
+                              <HexAvatar address={coll.address} size={24} className="shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-body-sm font-bold opacity-80 truncate">
+                                  {coll.address === wallet?.address ? (wallet.alias || 'You') : getCreatorName(coll.address)}
+                                </p>
+                                <p className="text-[10px] opacity-50">@{shortAddress(coll.address)}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-body-sm font-bold opacity-70">{coll.count >= 1000 ? `${(coll.count / 1000).toFixed(1)}k` : coll.count} pieces</p>
+                                {recentCount > 0 && (
+                                  <p className="text-[10px] text-emerald-500 font-bold flex items-center justify-end gap-0.5">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                                    +{recentCount} this month
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right shrink-0 pl-2 border-l border-current/10">
+                                <p className="text-body-sm font-bold opacity-80">{coll.totalSpent >= 1000 ? `${(coll.totalSpent / 1000).toFixed(1)}k` : coll.totalSpent.toFixed(0)} {'\u2B23'}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Creator Spotlight ────────────────────────── */}
+                  {spotlightCreator && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <h3 className="text-title-sm font-bold opacity-90 font-title">
+                          Creator Spotlight {'\u2014'} {getCreatorName(spotlightCreator.address)}
+                        </h3>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => navigateToProfile(spotlightCreator.address)}>View all</button>
+                      </div>
+                      <div
+                        className="w-full aspect-[21/9] overflow-hidden bg-current/5 cursor-pointer relative"
+                        onClick={() => navigateToProfile(spotlightCreator.address)}
+                      >
+                        <img
+                          src={spotlightCreator.wartsWithImages[0].imageData}
+                          alt={spotlightCreator.wartsWithImages[0].title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="flex items-center gap-2">
+                            <HexAvatar address={spotlightCreator.address} size={28} />
+                            <div>
+                              <p className="text-body-sm font-bold text-white/90">@{getCreatorName(spotlightCreator.address)}</p>
+                              <p className="text-[10px] text-white/60">{spotlightCreator.count} artworks {'\u00B7'} {spotlightCreator.totalVolume.toFixed(0)} {'\u2B23'} volume</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* ─── Lazy Mint Listings ───────────────────── */}
               {lazyListings.length > 0 && (
