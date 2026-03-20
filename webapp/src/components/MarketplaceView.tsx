@@ -279,7 +279,7 @@ export default function MarketplaceView() {
       .sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
   }, [allWarts]);
 
-  // ─── Featured: affordable warts for "Start Warping" ────
+  // ─── Featured: affordable warts for "Start Collecting" ──
   const affordableWarts = useMemo(() => {
     return allWarts
       .filter(w => w.listed && w.price !== null && w.price > 0 && getEurPrice(w) <= 3 && w.imageData)
@@ -1659,16 +1659,16 @@ export default function MarketplaceView() {
               {/* ─── Featured Sections (Gallery 'all' tab only) ─────── */}
               {tab === 'all' && (
                 <>
-                  {/* ─── Start Warping (affordable warts < €3) ──────── */}
+                  {/* ─── Start Collecting (affordable warts < €3) ────── */}
                   {affordableWarts.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between px-1">
                         <div>
                           <h3 className="text-base font-bold opacity-90 flex items-center gap-2">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                            Start Warping
+                            Start Collecting
                           </h3>
-                          <p className="text-[10px] opacity-50">Collect for under {'\u20AC'}3</p>
+                          <p className="text-[10px] opacity-50">Support for under {'\u20AC'}3</p>
                         </div>
                         <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => { setEditionFilter('all'); }}>View all</button>
                       </div>
@@ -1689,7 +1689,7 @@ export default function MarketplaceView() {
                               </div>
                               {w.price !== null && w.owner !== wallet?.address && (
                                 <button
-                                  className="mt-1.5 w-full py-1.5 text-[11px] font-bold bg-red-500/90 text-white hover:bg-red-600 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                                  className="cta-gradient-btn mt-1.5 w-full py-1.5 text-[11px] font-bold flex items-center justify-center gap-1"
                                   onClick={e => { e.stopPropagation(); handleBuyFiat(w); }}
                                 >
                                   <span className="w-2 h-2 bg-white rounded-full inline-block" />
@@ -1741,7 +1741,7 @@ export default function MarketplaceView() {
                                 </div>
                                 {w.listed && w.price !== null && w.owner !== wallet?.address && (
                                   <button
-                                    className="mt-1.5 w-full py-1.5 text-[11px] font-bold border border-red-400/60 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                                    className="cta-gradient-btn mt-1.5 w-full py-1.5 text-[11px] font-bold flex items-center justify-center gap-1"
                                     onClick={e => { e.stopPropagation(); handleBuyFiat(w); }}
                                   >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
