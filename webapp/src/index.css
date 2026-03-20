@@ -26,6 +26,13 @@
     --color-cosmic-700: #131650;
     --color-cosmic-600: #1a1d6b;
     --color-cosmic-500: #2a2d8b;
+    /* Tailwind default palette oklch → hex fallbacks */
+    --color-red-400: #f87171;
+    --color-red-500: #ef4444;
+    --color-amber-400: #fbbf24;
+    --color-pink-600: #db2777;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
   }
 }
 
@@ -101,6 +108,29 @@
 [data-theme="light"] body {
   background-color: #ffffff;
   color: #000000;
+}
+
+/* ─── Safari < 16.2 fallback: color-mix() not supported ── */
+@supports not (color: color-mix(in oklab, red 50%, blue)) {
+  /* Ensure text remains visible when color-mix() opacity fails */
+  body { color: #ffffff !important; }
+  [data-theme="light"] body { color: #000000 !important; }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+  }
+  [data-theme="light"] .glass-panel {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+  }
+  .warp-button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+  .collect-btn {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
 }
 
 /* ─── Animations ─────────────────────────────────────── */
