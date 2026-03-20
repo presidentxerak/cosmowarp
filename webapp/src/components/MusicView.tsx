@@ -194,14 +194,16 @@ function TrackCard({ wart, onClick }: { wart: Wart; onClick: () => void }) {
 
 // ─── Main MusicView Component ────────────────────────────────
 export default function MusicView() {
-  const { wallet, unlocked, marketplace, myCollection, myCreated, buyWart } = useWallet();
+  const { wallet, unlocked, marketplace, myCollection, myCreated, warts: allWarts, buyWart } = useWallet();
   const [selectedTrack, setSelectedTrack] = useState<Wart | null>(null);
   const [filter, setFilter] = useState<'all' | 'on-sale' | 'my-tracks'>('all');
   const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  // Get all audio warts
-  const allMusic = marketplace.filter(w => w.mediaType === 'audio');
+  // Get all audio warts (global)
+  const allMusic = [...allWarts, ...marketplace, ...myCreated, ...myCollection]
+    .filter(w => w.mediaType === 'audio')
+    .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
   const myMusic = [...myCollection, ...myCreated]
     .filter(w => w.mediaType === 'audio')
     .filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);

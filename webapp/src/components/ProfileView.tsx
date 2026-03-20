@@ -74,7 +74,7 @@ function savePlaylists(address: string, playlists: Playlist[]): void {
 }
 
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { wallet, unlocked, lock, signOut, myCreated, myCollection, toggleWartLike, toggleWartBookmark } = useWallet();
+  const { wallet, unlocked, lock, signOut, myCreated, myCollection, warts: allWarts, marketplace, toggleWartLike, toggleWartBookmark } = useWallet();
   const [tab, setTab] = useState<Tab>('warts');
   const [posts, setPosts] = useState<ChatPost[]>([]);
   const [bio, setBio] = useState('');
@@ -295,9 +295,10 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     savePlaylists(wallet.address, updated);
   };
 
-  // Media warts available for playlists
-  const musicWarts = [...myCreated, ...myCollection].filter(w => w.mediaType === 'audio');
-  const videoWarts = [...myCreated, ...myCollection].filter(w => w.mediaType === 'video');
+  // Media warts available for playlists (global)
+  const allAvailableWarts = [...(allWarts || []), ...(marketplace || []), ...(myCreated || []), ...(myCollection || [])].filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
+  const musicWarts = allAvailableWarts.filter(w => w.mediaType === 'audio');
+  const videoWarts = allAvailableWarts.filter(w => w.mediaType === 'video');
 
   // ─── Wart Card reusable ──────────────────────────
   const WartCard = ({ wart }: { wart: Wart }) => (

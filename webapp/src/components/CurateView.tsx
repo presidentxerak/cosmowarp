@@ -581,10 +581,10 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             <div>
               <p className="text-body-sm font-medium opacity-70 mb-2">
                 Featured Artworks ({artFeaturedWarts.length} selected)
-                <InfoTooltip text="Select artworks from your collection to feature in this article. These will appear as a curated gallery within your article." />
+                <InfoTooltip text="Select artworks to feature in this article. These will appear as a curated gallery within your article." />
               </p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
-                {myCollection.map(wart => (
+                {allWarts.map(wart => (
                   <button
                     key={wart.id}
                     onClick={() => { toggleFeaturedWart(wart.id); if (!artCoverWartId && !artFeaturedWarts.includes(wart.id)) setArtCoverWartId(wart.id); }}
@@ -616,7 +616,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                 <InfoTooltip text="Highlight specific artists in your article. Their profiles will be linked and they'll be notified of the feature." />
               </p>
               <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                {[...new Set(myCollection.map(w => w.creator))].map(address => (
+                {[...new Set(allWarts.map(w => w.creator))].map(address => (
                   <button
                     key={address}
                     onClick={() => toggleFeaturedArtist(address)}
