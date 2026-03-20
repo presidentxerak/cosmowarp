@@ -12,7 +12,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -234,7 +234,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 /** Update fiat_transactions table status */
 async function updateFiatTx(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   txId: string,
   status: string,
   processorRef: string,
