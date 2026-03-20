@@ -493,6 +493,58 @@ export async function fetchBlockedBy(address: string): Promise<string[]> {
   return data.map((r: Record<string, unknown>) => r.follower_address as string);
 }
 
+// ─── Wart Likes & Bookmarks ──────────────────────────────────
+
+export async function insertWartLike(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_likes').upsert({
+    wart_id: wartId,
+    user_address: userAddress,
+    created_at: Date.now(),
+  }, { onConflict: 'wart_id,user_address' });
+  return !error;
+}
+
+export async function deleteWartLike(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_likes').delete()
+    .eq('wart_id', wartId).eq('user_address', userAddress);
+  return !error;
+}
+
+export async function fetchWartLikes(userAddress: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!.from('wart_likes')
+    .select('wart_id').eq('user_address', userAddress);
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.wart_id as string);
+}
+
+export async function insertWartBookmark(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_bookmarks').upsert({
+    wart_id: wartId,
+    user_address: userAddress,
+    created_at: Date.now(),
+  }, { onConflict: 'wart_id,user_address' });
+  return !error;
+}
+
+export async function deleteWartBookmark(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_bookmarks').delete()
+    .eq('wart_id', wartId).eq('user_address', userAddress);
+  return !error;
+}
+
+export async function fetchWartBookmarks(userAddress: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!.from('wart_bookmarks')
+    .select('wart_id').eq('user_address', userAddress);
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.wart_id as string);
+}
+
 // ─── Notifications ───────────────────────────────────────────
 
 export interface Notification {

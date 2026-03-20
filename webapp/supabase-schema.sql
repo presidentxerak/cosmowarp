@@ -324,6 +324,61 @@ BEGIN
 END;
 $$;
 
+-- ─── 11f. WART LIKES & BOOKMARKS ─────────────────────────────
+
+CREATE TABLE IF NOT EXISTS wart_likes (
+  wart_id     TEXT NOT NULL REFERENCES warts(id) ON DELETE CASCADE,
+  user_address TEXT NOT NULL,
+  created_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  PRIMARY KEY (wart_id, user_address)
+);
+
+CREATE INDEX IF NOT EXISTS idx_wart_likes_user ON wart_likes(user_address);
+CREATE INDEX IF NOT EXISTS idx_wart_likes_wart ON wart_likes(wart_id);
+
+ALTER TABLE wart_likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read wart_likes" ON wart_likes FOR SELECT USING (true);
+CREATE POLICY "Allow insert wart_likes" ON wart_likes FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow delete wart_likes" ON wart_likes FOR DELETE USING (true);
+
+CREATE TABLE IF NOT EXISTS wart_bookmarks (
+  wart_id     TEXT NOT NULL REFERENCES warts(id) ON DELETE CASCADE,
+  user_address TEXT NOT NULL,
+  created_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  PRIMARY KEY (wart_id, user_address)
+);
+
+CREATE INDEX IF NOT EXISTS idx_wart_bookmarks_user ON wart_bookmarks(user_address);
+CREATE INDEX IF NOT EXISTS idx_wart_bookmarks_wart ON wart_bookmarks(wart_id);
+
+ALTER TABLE wart_bookmarks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read wart_bookmarks" ON wart_bookmarks FOR SELECT USING (true);
+CREATE POLICY "Allow insert wart_bookmarks" ON wart_bookmarks FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow delete wart_bookmarks" ON wart_bookmarks FOR DELETE USING (true);
+
+-- ─── 11g. EXCHANGE RATES ─────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS exchange_rates (
+  currency    TEXT PRIMARY KEY,
+  warps_per_unit NUMERIC NOT NULL,
+  source      TEXT DEFAULT 'manual', -- manual | admin | oracle
+  updated_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+-- Seed default rates (1 STZ = €0.10)
+INSERT INTO exchange_rates (currency, warps_per_unit, source, updated_at) VALUES
+  ('EUR', 10, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('USD', 9.1, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('GBP', 11.7, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('JPY', 0.061, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('CHF', 10.3, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)
+ON CONFLICT (currency) DO NOTHING;
+
+ALTER TABLE exchange_rates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read exchange_rates" ON exchange_rates FOR SELECT USING (true);
+CREATE POLICY "Allow upsert exchange_rates" ON exchange_rates FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update exchange_rates" ON exchange_rates FOR UPDATE USING (true);
+
 -- ─── 12. STORAGE BUCKETS ────────────────────────────────────
 
 INSERT INTO storage.buckets (id, name, public)

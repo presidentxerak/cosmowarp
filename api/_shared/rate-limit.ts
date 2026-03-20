@@ -1,10 +1,54 @@
 /**
- * Simple in-memory rate limiter for Vercel serverless functions.
+ * Rate limiter for Vercel serverless functions.
  *
- * Note: In Vercel's serverless model, each cold start creates a fresh Map.
- * This provides per-instance rate limiting (effective against bursts from
- * a single instance). For distributed rate limiting, use Vercel KV or Upstash.
+ * Uses Upstash Redis when configured (distributed, works across instances).
+ * Falls back to in-memory Map when Redis is not available (per-instance only).
+ *
+ * Environment variables:
+ *   UPSTASH_REDIS_REST_URL   — Upstash Redis REST API URL
+ *   UPSTASH_REDIS_REST_TOKEN — Upstash Redis REST API token
  */
+
+// ─── Upstash Redis client (lazy init) ────────────────────────
+
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL || '';
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || '';
+
+async function redisIncr(key: string, windowMs: number): Promise<{ count: number; ttl: number } | null> {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return null;
+  try {
+    // INCR + conditional EXPIRE in a pipeline
+    const resp = await fetch(`${UPSTASH_URL}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${UPSTASH_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([
+        ['INCR', key],
+        ['PTTL', key],
+      ]),
+    });
+    const results = await resp.json() as Array<{ result: number }>;
+    const count = results[0]?.result || 1;
+    let ttl = results[1]?.result || -1;
+
+    // Set expiry on first request (ttl=-1 means no expiry set)
+    if (ttl < 0) {
+      await fetch(`${UPSTASH_URL}/PEXPIRE/${encodeURIComponent(key)}/${windowMs}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` },
+      });
+      ttl = windowMs;
+    }
+
+    return { count, ttl };
+  } catch {
+    return null; // Fallback to in-memory
+  }
+}
+
+// ─── In-memory fallback ──────────────────────────────────────
 
 interface RateLimitEntry {
   count: number;
@@ -21,15 +65,21 @@ setInterval(() => {
   }
 }, 60_000);
 
+// ─── Public API ──────────────────────────────────────────────
+
 /**
  * Check rate limit for a given key (usually IP address).
  * Returns { allowed: true } if under limit, or { allowed: false, retryAfter } if over.
+ *
+ * Tries Upstash Redis first (distributed). Falls back to in-memory Map.
  */
 export function checkRateLimit(
   key: string,
   maxRequests: number = 20,
   windowMs: number = 60_000,
 ): { allowed: boolean; remaining: number; retryAfter?: number } {
+  // Try async Redis in background — for sync callers, use in-memory
+  // For async callers, use checkRateLimitAsync instead
   const now = Date.now();
   const entry = store.get(key);
 
@@ -46,6 +96,29 @@ export function checkRateLimit(
   }
 
   return { allowed: true, remaining: maxRequests - entry.count };
+}
+
+/**
+ * Async rate limit check — uses Upstash Redis when available.
+ * Falls back to in-memory synchronous check.
+ */
+export async function checkRateLimitAsync(
+  key: string,
+  maxRequests: number = 20,
+  windowMs: number = 60_000,
+): Promise<{ allowed: boolean; remaining: number; retryAfter?: number }> {
+  // Try Redis first
+  const redis = await redisIncr(`ratelimit:${key}`, windowMs);
+  if (redis) {
+    if (redis.count > maxRequests) {
+      const retryAfter = Math.ceil(redis.ttl / 1000);
+      return { allowed: false, remaining: 0, retryAfter };
+    }
+    return { allowed: true, remaining: maxRequests - redis.count };
+  }
+
+  // Fallback to in-memory
+  return checkRateLimit(key, maxRequests, windowMs);
 }
 
 /**

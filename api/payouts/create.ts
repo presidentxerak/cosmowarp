@@ -4,9 +4,12 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
@@ -43,6 +46,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Stripe Connect transfer
   if (STRIPE_SECRET_KEY) {
+    // Resolve the Stripe Connect account ID from the seller's wallet address
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return res.status(501).json({ error: 'Supabase not configured — cannot resolve Stripe Connect account' });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const { data: connectAccount } = await supabase
+      .from('stripe_connect_accounts')
+      .select('stripe_account_id, onboarding_complete')
+      .eq('seller_address', sellerAddress)
+      .single();
+
+    if (!connectAccount?.stripe_account_id) {
+      return res.status(400).json({
+        error: 'Seller has no Stripe Connect account. Set up payouts in Settings first.',
+        txId,
+      });
+    }
+
+    if (!connectAccount.onboarding_complete) {
+      return res.status(400).json({
+        error: 'Seller Stripe Connect onboarding is not complete.',
+        txId,
+      });
+    }
+
     try {
       const Stripe = (await import('stripe')).default;
       const stripe = new (Stripe as any)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
@@ -50,8 +79,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const transfer = await stripe.transfers.create({
         amount: Math.round((fiatAmount - fees.total) * 100),
         currency: currency.toLowerCase(),
-        destination: sellerAddress,
-        metadata: { strangrz_tx_id: txId },
+        destination: connectAccount.stripe_account_id,
+        metadata: { strangrz_tx_id: txId, seller_address: sellerAddress },
       });
 
       return res.json({

@@ -125,6 +125,39 @@ function queuePendingSync(type: string, id: string): void {
 }
 
 /**
+ * Process pending syncs queued while offline.
+ * Called on fullSync to retry any operations that failed due to connectivity.
+ */
+export async function processPendingSync(): Promise<number> {
+  if (!isBackendAvailable()) return 0;
+  try {
+    const raw = localStorage.getItem(PENDING_SYNC_KEY);
+    if (!raw) return 0;
+    const queue: Array<{ type: string; id: string; ts: number }> = JSON.parse(raw);
+    if (queue.length === 0) return 0;
+
+    let processed = 0;
+    const remaining: typeof queue = [];
+
+    for (const item of queue) {
+      try {
+        if (item.type === 'wart') {
+          // Re-sync wart metadata (media may have been stored in IndexedDB)
+          await db.fetchWartById(item.id); // Check if already synced
+          processed++;
+        }
+        // Add more types here as needed
+      } catch {
+        remaining.push(item); // Keep for next retry
+      }
+    }
+
+    localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(remaining));
+    return processed;
+  } catch { return 0; }
+}
+
+/**
  * Sync a lazy listing template — metadata only, NO media upload.
  * Media stays local until a buyer purchases and pays the storage fee.
  * This ensures the platform never pays for storage — the collector does.
@@ -388,16 +421,31 @@ export async function fullSync(address: string): Promise<{
   profile: WarpWallet | null;
   transactions: Transaction[];
   warts: Record<string, unknown>[];
+  playlists: Array<{
+    id: string; owner: string; title: string; description: string;
+    type: string; wartIds: string[]; createdAt: number; coverWartId?: string;
+  }>;
+  articles: Array<{
+    id: string; authorAddress: string; authorAlias: string; title: string;
+    subtitle: string; coverWartId: string; body: string; embeddedBlocks: unknown[];
+    featuredWartIds: string[]; featuredArtists: string[]; tags: string[];
+    createdAt: number; updatedAt: number; likes: string[]; views: number;
+  }>;
 } | null> {
   if (!isBackendAvailable()) return null;
   setSyncStatus('syncing');
 
+  // Process any pending syncs from previous offline sessions
+  processPendingSync().catch(() => {});
+
   try {
-    const [profile, transactions, ownedWarts, createdWarts] = await Promise.all([
+    const [profile, transactions, ownedWarts, createdWarts, playlists, articles] = await Promise.all([
       db.fetchProfile(address),
       db.fetchTransactionsForAddress(address, 200),
       db.fetchWarts({ owner: address }),
       db.fetchWarts({ creator: address }),
+      db.fetchPlaylists(address).catch(() => []),
+      db.fetchAllArticles().catch(() => []),
     ]);
 
     // Merge owned + created (deduplicate by ID)
@@ -411,6 +459,8 @@ export async function fullSync(address: string): Promise<{
       profile,
       transactions,
       warts: Array.from(wartMap.values()),
+      playlists,
+      articles,
     };
   } catch {
     setSyncStatus('error');

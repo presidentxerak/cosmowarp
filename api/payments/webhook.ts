@@ -13,6 +13,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { SELLER_COMMISSION_PERCENT } from '../_shared/rates';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -155,8 +156,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (connectAccount?.onboarding_complete && connectAccount.stripe_account_id) {
           try {
             const sellerFiatAmount = (session.amount_total || 0); // in cents
-            // Deduct platform fee (2.5%) — seller gets the rest
-            const platformFeeCents = Math.round(sellerFiatAmount * 0.025);
+            // Deduct platform commission — seller gets the rest
+            const platformFeeCents = Math.round(sellerFiatAmount * SELLER_COMMISSION_PERCENT / 100);
             const sellerReceivesCents = sellerFiatAmount - platformFeeCents;
 
             if (sellerReceivesCents > 0) {

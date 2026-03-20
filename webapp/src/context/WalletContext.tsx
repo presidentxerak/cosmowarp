@@ -25,6 +25,7 @@ import { SocialEngine } from '../engine/social';
 import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
 import { isBackendAvailable } from '../lib/supabase';
+import { insertWartLike, deleteWartLike, fetchWartLikes, insertWartBookmark, deleteWartBookmark, fetchWartBookmarks } from '../lib/supabase-db';
 
 // ─── Recovery Kit reminder ────────────────────────────────
 const RECOVERY_REMINDER_KEY = 'strangrz_recovery_reminder';
@@ -400,6 +401,58 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           if (cloudData.warts && cloudData.warts.length > 0) {
             mergeCloudWarts(cloudData.warts);
             refreshWartsState(w.address);
+          }
+
+          // Sync wart likes/bookmarks from cloud
+          Promise.all([
+            fetchWartLikes(w.address).catch(() => []),
+            fetchWartBookmarks(w.address).catch(() => []),
+          ]).then(([cloudLikes, cloudBookmarks]) => {
+            const engine = getWartEngine();
+            let changed = false;
+            for (const wartId of cloudLikes) {
+              const wart = engine.getWart(wartId);
+              if (wart && (!wart.likes || !wart.likes.includes(w.address))) {
+                engine.toggleLike(wartId, w.address); // adds like + saves
+                changed = true;
+              }
+            }
+            for (const wartId of cloudBookmarks) {
+              const wart = engine.getWart(wartId);
+              if (wart && (!wart.bookmarks || !wart.bookmarks.includes(w.address))) {
+                engine.toggleBookmark(wartId, w.address); // adds bookmark + saves
+                changed = true;
+              }
+            }
+            if (changed) refreshWartsState(w.address);
+          }).catch(() => {});
+
+          // Sync playlists: merge cloud playlists into localStorage
+          if (cloudData.playlists && cloudData.playlists.length > 0) {
+            try {
+              const raw = storage.getItem('strangrz_playlists');
+              const localAll = raw ? JSON.parse(raw) as Array<{ id: string; owner: string }> : [];
+              const localIds = new Set(localAll.map(p => p.id));
+              const newPls = cloudData.playlists
+                .filter(p => !localIds.has(p.id))
+                .map(p => ({ ...p, owner: p.owner || w.address }));
+              if (newPls.length > 0) {
+                storage.setItem('strangrz_playlists', JSON.stringify([...localAll, ...newPls]));
+              }
+            } catch { /* ignore */ }
+          }
+
+          // Sync articles: merge cloud articles into localStorage
+          if (cloudData.articles && cloudData.articles.length > 0) {
+            try {
+              const raw = storage.getItem('strangrz_curator_articles');
+              const localArticles = raw ? JSON.parse(raw) as Array<{ id: string }> : [];
+              const localIds = new Set(localArticles.map(a => a.id));
+              const newArticles = cloudData.articles.filter(a => !localIds.has(a.id));
+              if (newArticles.length > 0) {
+                storage.setItem('strangrz_curator_articles', JSON.stringify([...localArticles, ...newArticles]));
+              }
+            } catch { /* ignore */ }
           }
         }).catch(() => { /* Sync failed — continue in offline mode */ });
 
@@ -1132,6 +1185,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const liked = engine.toggleLike(wartId, wallet.address);
     refreshWartsState(wallet.address);
+    if (liked) { insertWartLike(wartId, wallet.address).catch(() => {}); }
+    else { deleteWartLike(wartId, wallet.address).catch(() => {}); }
     return liked;
   }, [wallet]);
 
@@ -1140,6 +1195,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const bookmarked = engine.toggleBookmark(wartId, wallet.address);
     refreshWartsState(wallet.address);
+    if (bookmarked) { insertWartBookmark(wartId, wallet.address).catch(() => {}); }
+    else { deleteWartBookmark(wartId, wallet.address).catch(() => {}); }
     return bookmarked;
   }, [wallet]);
 
