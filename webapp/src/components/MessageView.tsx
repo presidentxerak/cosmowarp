@@ -111,12 +111,14 @@ export default function MessageView() {
       const updatedThreads = CosmoChatEngine.load().getThreads(wallet.address);
       const updated = updatedThreads.find(t => t.id === selectedThread.id);
       if (updated) setSelectedThread(updated);
+      e.syncDMsToCloud().catch(() => {});
     } else if (view === 'channel' && selectedChannel) {
       e.sendChannelMessage(selectedChannel.id, wallet.address, alias, dmText.trim());
       setDmText('');
       refresh();
       const updatedChannel = CosmoChatEngine.load().getChannel(selectedChannel.id);
       if (updatedChannel) setSelectedChannel(updatedChannel);
+      e.syncChannelsToCloud().catch(() => {});
     }
   };
 

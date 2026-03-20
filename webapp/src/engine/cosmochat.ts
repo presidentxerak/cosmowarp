@@ -1,6 +1,6 @@
 import { storage } from './storage';
 import { storeMedia, retrieveMedia } from './mediadb';
-import { upsertChannel, fetchAllChannels, upsertPost, fetchAllPosts } from '../lib/supabase-db';
+import { upsertChannel, fetchAllChannels, upsertPost, fetchAllPosts, upsertDMThread, fetchDMThreads, upsertChannelMessages, fetchChannelMessages } from '../lib/supabase-db';
 import { downloadMediaAsDataUrl } from '../lib/supabase-storage';
 
 // ─── Types ─────────────────────────────────────────────
@@ -361,6 +361,10 @@ export class CosmoChatEngine {
         createdBy: ch.createdBy, createdByAlias: ch.createdByAlias,
         members: ch.members, createdAt: ch.createdAt, isPublic: ch.isPublic,
       });
+      // Sync channel messages
+      if (ch.messages.length > 0) {
+        await upsertChannelMessages(ch.id, ch.messages);
+      }
     }
   }
 
@@ -369,15 +373,27 @@ export class CosmoChatEngine {
     const localIds = new Set(this.channels.map(c => c.id));
     for (const cc of cloudChannels) {
       if (!localIds.has(cc.id)) {
+        // Pull messages for this channel
+        const cloudMessages = await fetchChannelMessages(cc.id).catch(() => []);
         this.channels.push({
           ...cc,
-          messages: [],
+          messages: (cloudMessages || []) as ChatMessage[],
         });
       } else {
         // Merge members
         const local = this.channels.find(c => c.id === cc.id)!;
         const allMembers = new Set([...local.members, ...cc.members]);
         local.members = [...allMembers];
+        // Merge messages from cloud
+        const cloudMessages = await fetchChannelMessages(cc.id).catch(() => []);
+        if (cloudMessages && Array.isArray(cloudMessages)) {
+          const localMsgIds = new Set(local.messages.map(m => m.id));
+          for (const cm of cloudMessages as ChatMessage[]) {
+            if (!localMsgIds.has(cm.id)) local.messages.push(cm);
+          }
+          local.messages.sort((a, b) => a.timestamp - b.timestamp);
+          if (local.messages.length > 500) local.messages = local.messages.slice(-500);
+        }
       }
     }
     this.saveChannels();
@@ -454,12 +470,56 @@ export class CosmoChatEngine {
     this.savePosts();
   }
 
-  async fullSync(): Promise<void> {
+  // ─── DM Cloud Sync ───────────────────────────────────────
+
+  async syncDMsToCloud(): Promise<void> {
+    for (const thread of this.dms.slice(0, 50)) {
+      await upsertDMThread({
+        id: thread.id,
+        participants: thread.participants,
+        messages: thread.messages,
+        lastActivity: thread.lastActivity,
+      });
+    }
+  }
+
+  async syncDMsFromCloud(userAddress: string): Promise<void> {
+    const cloudThreads = await fetchDMThreads(userAddress);
+    const localIds = new Set(this.dms.map(t => t.id));
+    for (const ct of cloudThreads) {
+      if (!localIds.has(ct.id)) {
+        this.dms.push({
+          id: ct.id,
+          participants: ct.participants as [string, string],
+          messages: (ct.messages || []) as ChatMessage[],
+          lastActivity: ct.lastActivity,
+        });
+      } else {
+        // Merge messages
+        const local = this.dms.find(t => t.id === ct.id);
+        if (local && ct.messages && Array.isArray(ct.messages)) {
+          const localMsgIds = new Set(local.messages.map(m => m.id));
+          for (const cm of ct.messages as ChatMessage[]) {
+            if (!localMsgIds.has(cm.id)) local.messages.push(cm);
+          }
+          local.messages.sort((a, b) => a.timestamp - b.timestamp);
+          if (local.messages.length > 200) local.messages = local.messages.slice(-200);
+          local.lastActivity = Math.max(local.lastActivity, ct.lastActivity);
+        }
+      }
+    }
+    this.dms.sort((a, b) => b.lastActivity - a.lastActivity);
+    this.saveDMs();
+  }
+
+  async fullSync(userAddress?: string): Promise<void> {
     // Pull from cloud first, then push local changes to avoid overwriting newer cloud data
     await this.syncChannelsFromCloud();
     await this.syncPostsFromCloud();
+    if (userAddress) await this.syncDMsFromCloud(userAddress);
     // Push local data to cloud (merge — cloud already has latest from pull above)
     await this.syncChannelsToCloud();
     await this.syncPostsToCloud();
+    await this.syncDMsToCloud();
   }
 }

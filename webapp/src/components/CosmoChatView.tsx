@@ -77,7 +77,7 @@ export default function CosmoChatView() {
     const e = CosmoChatEngine.load();
     e.rehydratePostMedia().then(() => {
       setPosts(e.getTimeline());
-      return e.fullSync();
+      return e.fullSync(wallet?.address);
     }).then(() => {
       refresh();
       // For posts with mediaType but no mediaData, try fetching from Supabase Storage

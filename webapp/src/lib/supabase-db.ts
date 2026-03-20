@@ -735,6 +735,122 @@ export async function deleteArticleCloud(articleId: string): Promise<boolean> {
   return !error;
 }
 
+// ─── Direct Messages (Global Sync) ──────────────────────────
+
+export async function upsertDMThread(thread: {
+  id: string; participants: string[]; messages: unknown[]; lastActivity: number;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('chat_dms').upsert({
+    id: thread.id,
+    participants: JSON.stringify(thread.participants),
+    messages_json: JSON.stringify(thread.messages.slice(-200)),
+    last_activity: thread.lastActivity,
+    updated_at: Date.now(),
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertDMThread:', error.message);
+  return !error;
+}
+
+export async function fetchDMThreads(userAddress: string): Promise<Array<{
+  id: string; participants: string[]; messages: unknown[]; lastActivity: number;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('chat_dms')
+    .select('*')
+    .or(`participants.cs.["${userAddress}"],id.like.%${userAddress}%`)
+    .order('last_activity', { ascending: false })
+    .limit(100);
+  if (error || !data) return [];
+  const parse = (v: unknown) => typeof v === 'string' ? JSON.parse(v) : (v || []);
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    participants: parse(row.participants),
+    messages: parse(row.messages_json),
+    lastActivity: Number(row.last_activity),
+  }));
+}
+
+// ─── Channel Messages (Global Sync) ─────────────────────────
+
+export async function upsertChannelMessages(channelId: string, messages: unknown[]): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('chat_channel_messages').upsert({
+    channel_id: channelId,
+    messages_json: JSON.stringify(messages.slice(-500)),
+    updated_at: Date.now(),
+  }, { onConflict: 'channel_id' });
+  if (error) console.error('[Supabase] upsertChannelMessages:', error.message);
+  return !error;
+}
+
+export async function fetchChannelMessages(channelId: string): Promise<unknown[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('chat_channel_messages')
+    .select('messages_json')
+    .eq('channel_id', channelId)
+    .single();
+  if (error || !data) return [];
+  const raw = data.messages_json;
+  return typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+}
+
+// ─── Playlists (Global Sync) ────────────────────────────────
+
+export async function upsertPlaylist(playlist: {
+  id: string; owner: string; title: string; description: string;
+  type: string; wartIds: string[]; createdAt: number; coverWartId?: string;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('playlists').upsert({
+    id: playlist.id,
+    owner: playlist.owner,
+    title: playlist.title,
+    description: playlist.description,
+    type: playlist.type,
+    wart_ids: JSON.stringify(playlist.wartIds),
+    created_at: playlist.createdAt,
+    cover_wart_id: playlist.coverWartId || null,
+    updated_at: Date.now(),
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertPlaylist:', error.message);
+  return !error;
+}
+
+export async function fetchPlaylists(owner: string): Promise<Array<{
+  id: string; owner: string; title: string; description: string;
+  type: string; wartIds: string[]; createdAt: number; coverWartId?: string;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('playlists')
+    .select('*')
+    .eq('owner', owner)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error || !data) return [];
+  const parse = (v: unknown) => typeof v === 'string' ? JSON.parse(v) : (v || []);
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    owner: row.owner as string,
+    title: (row.title as string) || '',
+    description: (row.description as string) || '',
+    type: (row.type as string) || 'music',
+    wartIds: parse(row.wart_ids),
+    createdAt: Number(row.created_at),
+    coverWartId: (row.cover_wart_id as string) || undefined,
+  }));
+}
+
+export async function deletePlaylistCloud(playlistId: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('playlists').delete().eq('id', playlistId);
+  if (error) console.error('[Supabase] deletePlaylist:', error.message);
+  return !error;
+}
+
 // ─── TOTP 2FA Configs ────────────────────────────────────────
 
 import type { TOTPConfig } from '../engine/totp';

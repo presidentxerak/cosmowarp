@@ -205,3 +205,33 @@ export async function downloadMediaAsDataUrl(path: string): Promise<string | nul
     return null;
   }
 }
+
+/**
+ * Download avatar or banner from Supabase Storage and return as data URL.
+ * Tries common extensions (png, jpg, jpeg, webp, gif).
+ */
+export async function downloadProfileImageAsDataUrl(address: string, type: 'avatar' | 'banner'): Promise<string | null> {
+  if (!isBackendAvailable() || !address) return null;
+
+  const extensions = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+  for (const ext of extensions) {
+    try {
+      const path = `profiles/${address}/${type}.${ext}`;
+      const { data, error } = await supabase!.storage
+        .from(BUCKETS.AVATARS)
+        .download(path);
+
+      if (error || !data) continue;
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        const timeout = setTimeout(() => { reader.abort(); resolve(null); }, 15000);
+        reader.onload = () => { clearTimeout(timeout); resolve(reader.result as string ?? null); };
+        reader.onerror = () => { clearTimeout(timeout); resolve(null); };
+        reader.onabort = () => { clearTimeout(timeout); resolve(null); };
+        reader.readAsDataURL(data);
+      });
+    } catch { continue; }
+  }
+  return null;
+}

@@ -7,7 +7,8 @@ import type { ChatPost } from '../engine/cosmochat';
 import type { Wart } from '../engine/warts';
 import { fetchSocialProfile, fetchFollowers, fetchFollowing } from '../lib/supabase-db';
 import * as sync from '../lib/supabase-sync';
-import { uploadAvatar, uploadBanner } from '../lib/supabase-storage';
+import { uploadAvatar, uploadBanner, downloadProfileImageAsDataUrl } from '../lib/supabase-storage';
+import { upsertPlaylist, fetchPlaylists, deletePlaylistCloud } from '../lib/supabase-db';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 import ShareModal from './ShareModal';
@@ -71,6 +72,10 @@ function savePlaylists(address: string, playlists: Playlist[]): void {
     const withOwner = playlists.map(p => ({ ...p, owner: address }));
     localStorage.setItem(PLAYLISTS_KEY, JSON.stringify([...others, ...withOwner]));
   } catch { /* ignore */ }
+  // Push to cloud
+  for (const pl of playlists) {
+    upsertPlaylist({ ...pl, owner: address }).catch(() => {});
+  }
 }
 
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
@@ -119,9 +124,43 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     setBannerImage(profile.bannerImage || '');
     setProfileImage(profile.profileImage || '');
 
+    // If avatar/banner missing locally, try downloading from cloud
+    if (!profile.profileImage) {
+      downloadProfileImageAsDataUrl(wallet.address, 'avatar').then(data => {
+        if (data) {
+          setProfileImage(data);
+          const s = SocialEngine.load();
+          s.updateProfileImage(wallet.address, data);
+        }
+      }).catch(() => {});
+    }
+    if (!profile.bannerImage) {
+      downloadProfileImageAsDataUrl(wallet.address, 'banner').then(data => {
+        if (data) {
+          setBannerImage(data);
+          const s = SocialEngine.load();
+          s.updateBannerImage(wallet.address, data);
+        }
+      }).catch(() => {});
+    }
+
     const chatEngine = CosmoChatEngine.load();
     setPosts(chatEngine.getUserPosts(wallet.address));
-    setPlaylists(loadPlaylists(wallet.address));
+    const localPl = loadPlaylists(wallet.address);
+    setPlaylists(localPl);
+    // Merge playlists from cloud
+    fetchPlaylists(wallet.address).then(cloudPl => {
+      if (!cloudPl || cloudPl.length === 0) return;
+      const localIds = new Set(localPl.map(p => p.id));
+      const merged = [...localPl];
+      for (const cp of cloudPl) {
+        if (!localIds.has(cp.id)) merged.push(cp as Playlist);
+      }
+      if (merged.length > localPl.length) {
+        savePlaylists(wallet.address, merged);
+        setPlaylists(merged);
+      }
+    }).catch(() => {});
 
     fetchSocialProfile(wallet.address).then(remote => {
       if (!remote) return;
@@ -272,6 +311,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
     const updated = playlists.filter(p => p.id !== id);
     setPlaylists(updated);
     savePlaylists(wallet.address, updated);
+    deletePlaylistCloud(id).catch(() => {});
   };
 
   const handleAddToPlaylist = (playlistId: string, wartId: string) => {
