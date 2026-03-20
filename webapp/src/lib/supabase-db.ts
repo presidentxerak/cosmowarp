@@ -469,6 +469,30 @@ export async function fetchFollowing(address: string): Promise<string[]> {
   return data.map((r: Record<string, unknown>) => r.following_address as string);
 }
 
+/** Fetch all addresses with a given relationship type from a user */
+export async function fetchRelationships(address: string, relationship: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('social_follows')
+    .select('following_address')
+    .eq('follower_address', address)
+    .eq('relationship', relationship);
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.following_address as string);
+}
+
+/** Fetch who blocked this address */
+export async function fetchBlockedBy(address: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('social_follows')
+    .select('follower_address')
+    .eq('following_address', address)
+    .eq('relationship', 'block');
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.follower_address as string);
+}
+
 // ─── Notifications ───────────────────────────────────────────
 
 export interface Notification {

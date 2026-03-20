@@ -162,6 +162,17 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
       }
     }).catch(() => {});
 
+    // Sync social relationships from cloud (follows, blocks, close friends, etc.)
+    social.syncFromCloud(wallet.address).then(() => {
+      const updatedProfile = social.getProfile(wallet.address);
+      if (updatedProfile) {
+        setFollowersCount(updatedProfile.followers.length);
+        setFollowingCount(updatedProfile.following.length);
+        setFollowersList(social.getFollowers(wallet.address).map(p => ({ address: p.address, alias: p.alias })));
+        setFollowingList(social.getFollowing(wallet.address).map(p => ({ address: p.address, alias: p.alias })));
+      }
+    }).catch(() => {});
+
     fetchSocialProfile(wallet.address).then(remote => {
       if (!remote) return;
       if (remote.bio) { setBio(remote.bio); social.updateBio(wallet.address, remote.bio); }

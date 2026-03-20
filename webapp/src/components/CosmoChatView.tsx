@@ -113,11 +113,12 @@ export default function CosmoChatView() {
     }
   }, [selectedChannel?.messages.length]);
 
-  // Ensure social profile exists
+  // Ensure social profile exists + sync relationships from cloud
   useEffect(() => {
     if (!wallet || !unlocked) return;
     const social = SocialEngine.load();
     social.ensureProfile(wallet.address, wallet.alias || shortAddress(wallet.address));
+    social.syncFromCloud(wallet.address).catch(() => {});
   }, [wallet?.address, wallet?.alias, unlocked]);
 
   // Redirect to wallet/auth view when not connected
