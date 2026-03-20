@@ -9,6 +9,14 @@ import { storage } from '../engine/storage';
 
 // ─── Types ────────────────────────────────────────────────
 
+interface EmbeddedBlock {
+  type: 'artwork' | 'collection-link' | 'text';
+  wartId?: string;
+  collectionCreator?: string;
+  collectionName?: string;
+  content?: string;
+}
+
 interface CuratorArticle {
   id: string;
   authorAddress: string;
@@ -17,6 +25,7 @@ interface CuratorArticle {
   subtitle: string;
   coverWartId: string;
   body: string;
+  embeddedBlocks: EmbeddedBlock[];
   featuredWartIds: string[];
   featuredArtists: string[];
   tags: string[];
@@ -70,8 +79,12 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
   const [artFeaturedWarts, setArtFeaturedWarts] = useState<string[]>([]);
   const [artFeaturedArtists, setArtFeaturedArtists] = useState<string[]>([]);
   const [artCoverWartId, setArtCoverWartId] = useState('');
+  const [artEmbeddedBlocks, setArtEmbeddedBlocks] = useState<EmbeddedBlock[]>([]);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
+  const [showEmbedPicker, setShowEmbedPicker] = useState(false);
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [shareArticle, setShareArticle] = useState<CuratorArticle | null>(null);
 
   // All warts combined
   const allWarts = useMemo(() => {
@@ -80,8 +93,8 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
   }, [marketplace, myCollection, myCreated]);
 
   // Check if user qualifies as curator (100+ collected)
-  const isCurator = myCollection.length >= 100;
-  const progressToCurator = Math.min(100, Math.round((myCollection.length / 100) * 100));
+  const isCurator = myCollection.length >= 10;
+  const progressToCurator = Math.min(100, Math.round((myCollection.length / 10) * 100));
 
   useEffect(() => {
     setArticles(loadArticles());
@@ -138,6 +151,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
       subtitle: artSubtitle.trim(),
       coverWartId: artCoverWartId || artFeaturedWarts[0],
       body: artBody.trim(),
+      embeddedBlocks: artEmbeddedBlocks,
       featuredWartIds: artFeaturedWarts,
       featuredArtists: artFeaturedArtists,
       tags: artTags.split(',').map(t => t.trim()).filter(Boolean),
@@ -157,6 +171,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
     setArtFeaturedWarts([]);
     setArtFeaturedArtists([]);
     setArtCoverWartId('');
+    setArtEmbeddedBlocks([]);
     setCreateError('');
     setCreateSuccess('Article published successfully!');
     setTimeout(() => setCreateSuccess(''), 3000);
@@ -216,6 +231,53 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
     onNavigate('gallery');
   };
 
+  // ─── Embed / Collection helpers ────────────────────────
+
+  const addEmbedBlock = (wartId: string) => {
+    setArtEmbeddedBlocks(prev => [...prev, { type: 'artwork', wartId }]);
+    if (!artFeaturedWarts.includes(wartId)) setArtFeaturedWarts(prev => [...prev, wartId]);
+    setShowEmbedPicker(false);
+  };
+
+  const addCollectionLink = (creator: string, name: string) => {
+    setArtEmbeddedBlocks(prev => [...prev, { type: 'collection-link', collectionCreator: creator, collectionName: name }]);
+    setShowCollectionPicker(false);
+  };
+
+  const removeEmbedBlock = (index: number) => {
+    setArtEmbeddedBlocks(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleShareArticle = (article: CuratorArticle) => {
+    setShareArticle(article);
+  };
+
+  const shareVia = (method: 'copy' | 'x' | 'email' | 'native', article: CuratorArticle) => {
+    const text = `${article.title} — Curated on Strangrz by @${article.authorAlias}`;
+    if (method === 'copy') {
+      navigator.clipboard?.writeText(text).catch(() => {});
+    } else if (method === 'x') {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    } else if (method === 'email') {
+      window.open(`mailto:?subject=${encodeURIComponent(article.title)}&body=${encodeURIComponent(text)}`, '_blank');
+    } else if (method === 'native') {
+      navigator.share?.({ title: article.title, text }).catch(() => {});
+    }
+    setShareArticle(null);
+  };
+
+  // Collection rankings for embed picker
+  const collectionsList = useMemo(() => {
+    const collMap: Record<string, { name: string; creator: string; count: number }> = {};
+    allWarts.forEach(w => {
+      const baseName = w.title.replace(/\s*#\d+$/, '');
+      const key = `${w.creator}::${baseName}`;
+      if (!collMap[key]) collMap[key] = { name: baseName, creator: w.creator, count: 0 };
+      collMap[key].count++;
+    });
+    return Object.values(collMap).filter(c => c.count >= 2).sort((a, b) => b.count - a.count);
+  }, [allWarts]);
+
   // ─── Magazine Cover Card ───────────────────────────────
 
   const MagazineCover = ({ article, featured }: { article: CuratorArticle; featured?: boolean }) => {
@@ -257,6 +319,13 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
               <span className="text-[11px] opacity-60" style={{ color: '#ffffff' }}>{new Date(article.createdAt).toLocaleDateString()}</span>
               <span className="text-[11px] opacity-50" style={{ color: '#ffffff' }}>{'\u2022'}</span>
               <span className="text-[11px] opacity-60" style={{ color: '#ffffff' }}>{'\u2665'} {article.likes.length}</span>
+              <button
+                className="text-[11px] opacity-50 hover:opacity-80 cursor-pointer ml-1"
+                style={{ color: '#ffffff' }}
+                onClick={e => { e.stopPropagation(); handleShareArticle(article); }}
+              >
+                {'\u2B06'}
+              </button>
             </div>
           </div>
         </div>
@@ -277,7 +346,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
         <p className="text-body-sm opacity-60 mt-1 max-w-md mx-auto">
           The art magazine for collectors and curators
         </p>
-        <InfoTooltip text="Curate is Strangrz's editorial platform. Collectors who own 100+ artworks become Curators and can write articles, highlight artists, and curate collections like an art magazine." align="center" />
+        <InfoTooltip text="Curate is Strangrz's editorial platform. Collectors who own 10+ artworks become Curators and can write articles, highlight artists, and curate collections like an art magazine." align="center" />
       </div>
 
       {/* Tabs */}
@@ -314,7 +383,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
               <p className="text-body-sm opacity-50 max-w-sm mx-auto">
                 {isCurator
                   ? 'Be the first to publish a curated article! Highlight your favorite artists and artworks.'
-                  : `Collect ${100 - myCollection.length} more artworks to become a Curator and start publishing.`
+                  : `Collect ${10 - myCollection.length} more artworks to become a Curator and start publishing.`
                 }
               </p>
               {!isCurator && (
@@ -322,7 +391,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${progressToCurator}%`, background: 'linear-gradient(90deg, #d4af37, #c0a030)' }} />
                   </div>
-                  <p className="text-[10px] opacity-50 mt-1">{myCollection.length}/100 artworks collected</p>
+                  <p className="text-[10px] opacity-50 mt-1">{myCollection.length}/10 artworks collected</p>
                 </div>
               )}
             </div>
@@ -420,7 +489,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
         <div className="pt-4 space-y-4 max-w-2xl mx-auto">
           <div className="glass-panel p-4 sm:p-6 space-y-4">
             <h3 className="text-title-sm font-title font-bold opacity-90">New Curated Article</h3>
-            <p className="text-body-sm opacity-60">Share your perspective on the art world. Feature artists and artworks from your collection.</p>
+            <p className="text-body-sm opacity-60">Share your perspective. Embed artworks, link collections, and feature artists.</p>
 
             {createError && <p className="text-body-sm" style={{ color: '#ff6b6b' }}>{createError}</p>}
             {createSuccess && <p className="text-body-sm" style={{ color: '#51cf66' }}>{createSuccess}</p>}
@@ -439,13 +508,67 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
               placeholder="Subtitle (optional)"
               maxLength={200}
             />
-            <textarea
-              className="warp-input text-body-sm py-2 min-h-[200px] resize-y"
-              value={artBody}
-              onChange={e => setArtBody(e.target.value)}
-              placeholder="Write your article... Share your insights about the artists, their vision, and why these works matter."
-              maxLength={5000}
-            />
+
+            {/* Body editor with embed toolbar */}
+            <div>
+              <div className="flex items-center gap-2 mb-1 pb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span className="text-[10px] opacity-50 uppercase tracking-wider mr-auto">Article Body</span>
+                <button
+                  onClick={() => setShowEmbedPicker(true)}
+                  className="text-[11px] opacity-60 hover:opacity-80 cursor-pointer px-2 py-1 flex items-center gap-1"
+                  style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  {'\u2B22'} Insert Artwork
+                </button>
+                <button
+                  onClick={() => setShowCollectionPicker(true)}
+                  className="text-[11px] opacity-60 hover:opacity-80 cursor-pointer px-2 py-1 flex items-center gap-1"
+                  style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  {'\u2630'} Link Collection
+                </button>
+              </div>
+              <textarea
+                className="warp-input text-body-sm py-2 min-h-[200px] resize-y"
+                value={artBody}
+                onChange={e => setArtBody(e.target.value)}
+                placeholder="Write your article... Share your insights about the artists, their vision, and why these works matter."
+                maxLength={5000}
+              />
+            </div>
+
+            {/* Embedded blocks preview */}
+            {artEmbeddedBlocks.length > 0 && (
+              <div>
+                <p className="text-[10px] tracking-[0.15em] uppercase opacity-50 mb-2">Embedded Content ({artEmbeddedBlocks.length})</p>
+                <div className="space-y-2">
+                  {artEmbeddedBlocks.map((block, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-2" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      {block.type === 'artwork' && (() => {
+                        const w = getWartById(block.wartId!);
+                        return w ? (
+                          <>
+                            {w.imageData && w.mediaType !== 'audio' && <img src={w.imageData} alt="" className="w-10 h-10 object-cover shrink-0" />}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-body-sm opacity-80 truncate">{'\u2B22'} {w.title}</p>
+                              <p className="text-label opacity-50">by @{getCreatorName(w.creator)}</p>
+                            </div>
+                          </>
+                        ) : <span className="text-body-sm opacity-50">Artwork not found</span>;
+                      })()}
+                      {block.type === 'collection-link' && (
+                        <div className="flex-1 min-w-0">
+                          <p className="text-body-sm opacity-80 truncate">{'\u2630'} Collection: {block.collectionName}</p>
+                          <p className="text-label opacity-50">by @{getCreatorName(block.collectionCreator!)}</p>
+                        </div>
+                      )}
+                      <button onClick={() => removeEmbedBlock(idx)} className="text-label opacity-50 hover:opacity-70 cursor-pointer shrink-0">{'\u2716'}</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <input
               className="warp-input text-body-sm py-2"
               value={artTags}
@@ -507,6 +630,14 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
               </div>
             </div>
 
+            {/* Sharing options info */}
+            <div className="p-3" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+              <p className="text-[10px] tracking-[0.15em] uppercase opacity-60 mb-1" style={{ color: '#d4af37' }}>Sharing</p>
+              <p className="text-body-sm opacity-60">
+                Once published, your article can be shared via X, Email, or direct link. Embedded artworks and collection links will be interactive for readers.
+              </p>
+            </div>
+
             <button
               onClick={handleCreateArticle}
               className="warp-button w-full py-3 text-base font-medium"
@@ -514,6 +645,66 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
               Publish Article
             </button>
           </div>
+
+          {/* Embed artwork picker modal */}
+          {showEmbedPicker && (
+            <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setShowEmbedPicker(false)}>
+              <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <h3 className="text-base font-bold opacity-90 mb-3">Embed an Artwork</h3>
+                <p className="text-body-sm opacity-50 mb-3">Select an artwork to embed in your article. Readers will see it inline with your text.</p>
+                {allWarts.length === 0 ? (
+                  <p className="text-body-sm opacity-60 text-center py-6">No artworks available.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {allWarts.slice(0, 30).map(w => (
+                      <button key={w.id} className="cursor-pointer overflow-hidden transition-all hover:opacity-80" style={{ border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => addEmbedBlock(w.id)}>
+                        {w.imageData && w.mediaType !== 'audio' ? (
+                          <img src={w.imageData} alt={w.title || ''} className="w-full aspect-square object-cover" />
+                        ) : (
+                          <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                            <span className="text-lg opacity-40">{'\u25C8'}</span>
+                          </div>
+                        )}
+                        <p className="text-label opacity-60 p-1 truncate">{w.title}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button className="text-body-sm opacity-60 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowEmbedPicker(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Collection link picker modal */}
+          {showCollectionPicker && (
+            <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setShowCollectionPicker(false)}>
+              <div className="glass-panel p-5 max-w-md w-full max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <h3 className="text-base font-bold opacity-90 mb-3">Link a Collection</h3>
+                <p className="text-body-sm opacity-50 mb-3">Add a link to a collection. Readers can click to explore the full collection.</p>
+                {collectionsList.length === 0 ? (
+                  <p className="text-body-sm opacity-60 text-center py-6">No collections found.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {collectionsList.slice(0, 20).map(c => (
+                      <button
+                        key={`${c.creator}-${c.name}`}
+                        className="w-full text-left p-3 hover:bg-current/5 transition-colors cursor-pointer flex items-center gap-3"
+                        style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                        onClick={() => addCollectionLink(c.creator, c.name)}
+                      >
+                        <HexAvatar address={c.creator} size={24} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-body-sm font-medium opacity-80 truncate">{c.name}</p>
+                          <p className="text-label opacity-50">by @{getCreatorName(c.creator)} &middot; {c.count} items</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button className="text-body-sm opacity-60 hover:opacity-70 cursor-pointer w-full text-center mt-3" onClick={() => setShowCollectionPicker(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -524,13 +715,28 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             <div className="text-4xl opacity-40 mb-4">{'\u2B21'}</div>
             <h3 className="text-title-sm font-title font-bold opacity-80 mb-2">Become a Curator</h3>
             <p className="text-body-sm opacity-60 mb-4">
-              Collect 100 artworks to unlock Curator status. Curators can write editorial articles, feature artists, and create curated collections.
+              Collect 10 artworks to unlock Curator status. Curators can write editorial articles, feature artists, and create curated collections.
             </p>
             <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
               <div className="h-full rounded-full transition-all" style={{ width: `${progressToCurator}%`, background: 'linear-gradient(90deg, #d4af37, #c0a030)' }} />
             </div>
-            <p className="text-label opacity-60">{myCollection.length}/100 artworks collected ({progressToCurator}%)</p>
+            <p className="text-label opacity-60">{myCollection.length}/10 artworks collected ({progressToCurator}%)</p>
             <button onClick={() => onNavigate('gallery')} className="warp-button px-6 py-2 mt-4 text-body-sm">Browse Gallery</button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Share Modal ───────────────────────────────────── */}
+      {shareArticle && (
+        <div className="fixed inset-0 sm:left-[56px] bg-black/60 z-50 flex items-center justify-center p-[10px]" onClick={() => setShareArticle(null)}>
+          <div className="glass-panel p-5 max-w-sm w-full space-y-3" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-bold opacity-90">Share Article</h3>
+            <p className="text-body-sm opacity-50 truncate">{shareArticle.title}</p>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => shareVia('copy', shareArticle)}>{'\u2398'} Copy Link</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => shareVia('x', shareArticle)}>Share on X</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => shareVia('email', shareArticle)}>{'\u2709'} Email</button>
+            <button className="warp-button w-full text-body-sm py-2" onClick={() => shareVia('native', shareArticle)}>{'\u2B06'} More options...</button>
+            <button className="text-body-sm opacity-60 hover:opacity-70 cursor-pointer w-full text-center" onClick={() => setShareArticle(null)}>Cancel</button>
           </div>
         </div>
       )}
@@ -570,7 +776,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
             <div className="flex items-center gap-3 mt-4">
               <HexAvatar address={selectedArticle.authorAddress} size={28} />
               <div>
-                <button onClick={() => navigateToProfile(selectedArticle.authorAddress)} className="text-body-sm font-medium opacity-80 hover:opacity-100 cursor-pointer">{selectedArticle.authorAlias}</button>
+                <button onClick={() => navigateToProfile(selectedArticle.authorAddress)} className="text-body-sm font-medium opacity-80 hover:opacity-100 hover:underline cursor-pointer">@{getCreatorName(selectedArticle.authorAddress)}</button>
                 <div className="flex gap-3 text-label opacity-50">
                   <span>{new Date(selectedArticle.createdAt).toLocaleDateString()}</span>
                   <span>{selectedArticle.views} views</span>
@@ -585,8 +791,9 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   {selectedArticle.likes.length}
                 </button>
                 <button
-                  onClick={() => navigator.share?.({ title: selectedArticle.title, text: `${selectedArticle.title} — Curated on Strangrz` }).catch(() => {})}
+                  onClick={() => handleShareArticle(selectedArticle)}
                   className="opacity-50 hover:opacity-80 cursor-pointer"
+                  title="Share"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                 </button>
@@ -598,6 +805,58 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
           <div className="px-0 sm:px-4 text-base opacity-70 leading-relaxed whitespace-pre-wrap mb-8" style={{ fontFamily: 'Georgia, serif', fontSize: '1.05rem', lineHeight: '1.8' }}>
             {selectedArticle.body}
           </div>
+
+          {/* Embedded blocks (artworks & collection links inline) */}
+          {selectedArticle.embeddedBlocks && selectedArticle.embeddedBlocks.length > 0 && (
+            <div className="px-0 sm:px-4 mb-8 space-y-4">
+              {selectedArticle.embeddedBlocks.map((block, idx) => {
+                if (block.type === 'artwork') {
+                  const wart = getWartById(block.wartId!);
+                  if (!wart) return null;
+                  return (
+                    <div key={idx} className="cursor-pointer group" onClick={() => handleViewWart(block.wartId!)}>
+                      <div className="relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        {wart.imageData && wart.mediaType !== 'audio' ? (
+                          <img src={wart.imageData} alt={wart.title} className="w-full max-h-[400px] object-contain group-hover:scale-[1.02] transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-48 flex items-center justify-center">
+                            <span className="text-3xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mt-2 px-1">
+                        <div>
+                          <p className="text-body-sm font-medium opacity-80">{wart.title}</p>
+                          <p className="text-label opacity-50">by <button className="hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button></p>
+                        </div>
+                        {wart.price !== null && <p className="text-body-sm font-bold opacity-70">{wart.price} {'\u2B23'}</p>}
+                      </div>
+                    </div>
+                  );
+                }
+                if (block.type === 'collection-link') {
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => navigateToProfile(block.collectionCreator!)}
+                      className="w-full text-left p-4 flex items-center gap-3 hover:bg-current/5 transition-colors cursor-pointer"
+                      style={{ background: 'rgba(212,175,55,0.03)', border: '1px solid rgba(212,175,55,0.15)' }}
+                    >
+                      <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)' }}>
+                        <span className="text-lg" style={{ color: '#d4af37' }}>{'\u2630'}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-body-sm font-medium opacity-80">Collection: {block.collectionName}</p>
+                        <p className="text-label opacity-50">by @{getCreatorName(block.collectionCreator!)} &middot; Tap to view</p>
+                      </div>
+                      <span className="text-label opacity-40">{'\u2192'}</span>
+                    </button>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          )}
 
           {/* Featured artworks gallery */}
           {selectedArticle.featuredWartIds.length > 0 && (
@@ -619,7 +878,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                         )}
                       </div>
                       <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
-                      <p className="text-label opacity-50">by {getCreatorName(wart.creator)}</p>
+                      <button className="text-label opacity-50 hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button>
                       {wart.price !== null && <p className="text-label opacity-60">{wart.price} {'\u2B23'}</p>}
                     </div>
                   );
@@ -641,14 +900,24 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   >
                     <HexAvatar address={address} size={28} />
                     <div className="text-left">
-                      <p className="text-body-sm font-medium opacity-80">{getCreatorName(address)}</p>
-                      <p className="text-label opacity-50">{shortAddress(address)}</p>
+                      <p className="text-body-sm font-medium opacity-80">@{getCreatorName(address)}</p>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Share bar at bottom */}
+          <div className="px-0 sm:px-4 mb-8 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-3">Share this article</p>
+            <div className="flex gap-2">
+              <button onClick={() => shareVia('copy', selectedArticle)} className="flex-1 text-body-sm py-2 opacity-60 hover:opacity-80 cursor-pointer" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{'\u2398'} Copy</button>
+              <button onClick={() => shareVia('x', selectedArticle)} className="flex-1 text-body-sm py-2 opacity-60 hover:opacity-80 cursor-pointer" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>X</button>
+              <button onClick={() => shareVia('email', selectedArticle)} className="flex-1 text-body-sm py-2 opacity-60 hover:opacity-80 cursor-pointer" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{'\u2709'} Email</button>
+              <button onClick={() => shareVia('native', selectedArticle)} className="flex-1 text-body-sm py-2 opacity-60 hover:opacity-80 cursor-pointer" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>{'\u2B06'} More</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

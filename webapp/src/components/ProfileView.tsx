@@ -441,7 +441,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 CURATOR
               </span>
-              <InfoTooltip text="You are a Curator! With 100+ collected works, you can create editorial articles and curate collections." />
+              <InfoTooltip text="You are a Curator! With 10+ collected works, you can create editorial articles and curate collections." />
             </div>
           )}
 
@@ -614,10 +614,10 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           curatorArticles.length === 0 ? (
             <div className="text-center py-12">
               <p className="opacity-60 text-base">Aucune curation</p>
-              {myCollection.length >= 100 ? (
+              {myCollection.length >= 10 ? (
                 <button onClick={() => onNavigate('gallery')} className="text-body-sm opacity-80 mt-2 cursor-pointer">Creer un article</button>
               ) : (
-                <p className="text-label opacity-50 mt-1">Collectionnez 100 œuvres pour devenir Curateur</p>
+                <p className="text-label opacity-50 mt-1">Collectionnez 10 œuvres pour devenir Curateur</p>
               )}
             </div>
           ) : (

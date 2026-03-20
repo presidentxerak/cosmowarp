@@ -133,6 +133,15 @@ export default function CosmoChatView() {
 
   const alias = wallet.alias || shortAddress(wallet.address);
 
+  // Resolve display handle for any address (prefer social profile alias)
+  const getHandle = (address: string, fallbackAlias?: string): string => {
+    const social = SocialEngine.load();
+    const profile = social.getProfile(address);
+    if (profile?.alias) return profile.alias;
+    if (fallbackAlias && fallbackAlias !== address && fallbackAlias.length <= 30) return fallbackAlias;
+    return shortAddress(address);
+  };
+
   const handleViewUser = (address: string) => {
     sessionStorage.setItem('strangrz_view_user', address);
     // Navigate to user-profile - we need a way to do this
@@ -330,7 +339,7 @@ export default function CosmoChatView() {
       return (
         <div className="glass-panel p-3">
           <p className="text-label opacity-60 mb-2">
-            {'\u21C4'} <span className="opacity-80">@{post.authorAlias}</span> ReCosmo
+            {'\u21C4'} <span className="opacity-80 cursor-pointer hover:underline" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>@{getHandle(post.author, post.authorAlias)}</span> ReCosmo
           </p>
           {original ? <PostCard post={original} /> : (
             <p className="text-body-sm opacity-60 italic">Publication originale supprimée</p>
@@ -347,7 +356,7 @@ export default function CosmoChatView() {
             <HexAvatar address={post.author} size={32} className="cursor-pointer" />
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-base font-bold opacity-90 cursor-pointer hover:opacity-80" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>@{post.authorAlias}</span>
+            <span className="text-base font-bold opacity-90 cursor-pointer hover:opacity-80 hover:underline" onClick={e => { e.stopPropagation(); handleViewUser(post.author); }}>@{getHandle(post.author, post.authorAlias)}</span>
             <span className="text-label opacity-60 ml-2">{timeAgo(post.timestamp)}</span>
           </div>
           {isMine && (
@@ -459,7 +468,7 @@ export default function CosmoChatView() {
               <HexAvatar address={post.author} size={40} />
             </div>
             <div>
-              <p className="text-base font-bold opacity-90 cursor-pointer hover:opacity-80" onClick={() => handleViewUser(post.author)}>@{post.authorAlias}</p>
+              <p className="text-base font-bold opacity-90 cursor-pointer hover:opacity-80 hover:underline" onClick={() => handleViewUser(post.author)}>@{getHandle(post.author, post.authorAlias)}</p>
               <p className="text-label opacity-60">{new Date(post.timestamp).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</p>
             </div>
           </div>
@@ -520,7 +529,7 @@ export default function CosmoChatView() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-body-sm font-bold opacity-90">@{c.authorAlias}</span>
+                      <span className="text-body-sm font-bold opacity-90 cursor-pointer hover:underline" onClick={() => handleViewUser(c.author)}>@{getHandle(c.author, c.authorAlias)}</span>
                       <span className="text-label opacity-60">{timeAgo(c.timestamp)}</span>
                     </div>
                     <p className="text-body-sm opacity-50">{c.content}</p>
@@ -535,7 +544,7 @@ export default function CosmoChatView() {
   }
 
   // ─── Computed values for modals ────────────────────────
-  const allPickerWarts = [...(myCreated || []), ...(myCollection || [])].filter(
+  const allPickerWarts = [...(allWarts || []), ...(marketplace || []), ...(myCreated || []), ...(myCollection || [])].filter(
     (w, i, arr) => arr.findIndex(x => x.id === w.id) === i
   );
 
@@ -574,7 +583,7 @@ export default function CosmoChatView() {
                       ? 'bg-current/5 border border-current/10 opacity-90'
                       : 'bg-current/5 border border-current/10 opacity-70'
                   }`}>
-                    <span className="text-label font-bold opacity-80">@{m.fromAlias}</span>
+                    <span className="text-label font-bold opacity-80 cursor-pointer hover:underline" onClick={e => { e.stopPropagation(); handleViewUser(m.from); }}>@{getHandle(m.from, m.fromAlias)}</span>
                     <p className="mt-0.5">{m.content}</p>
                     <span className="text-label opacity-50 block text-right mt-1">{timeAgo(m.timestamp)}</span>
                   </div>
@@ -695,7 +704,7 @@ export default function CosmoChatView() {
                     </div>
                   )}
                   {!composeMedia && composeWartLink && (() => {
-                    const linkedWart = marketplace.find(w => w.id === composeWartLink);
+                    const linkedWart = [...allWarts, ...marketplace, ...myCreated, ...myCollection].find(w => w.id === composeWartLink);
                     return linkedWart ? (
                       <div className="relative inline-block">
                         <img src={linkedWart.imageData} alt={linkedWart.title || ''} className="max-h-32 object-cover" />

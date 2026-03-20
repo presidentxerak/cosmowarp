@@ -362,7 +362,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['curate', 'curator', 'curateur', 'magazine', 'article', 'editorial', 'éditorial', 'mise en valeur', 'highlight', 'badge curator', 'badge curateur'],
     response: {
-      answer: "Curate, c'est le Vogue de Strangrz ! Un magazine d'art intégré où les collectionneurs deviennent des curateurs. Comment ça marche ? Collectionne 100 œuvres certifiées et tu débloques le statut Curateur — un badge doré apparaît sur ton profil. Ensuite tu peux : écrire des articles éditoriaux, mettre en avant tes artistes préférés, créer des sélections curatées, et apparaître dans le classement Top Curators. C'est comme être rédacteur en chef de ton propre magazine d'art numérique. Va dans Gallery → Curate pour explorer les articles publiés ou commencer à écrire le tien !",
+      answer: "Curate, c'est le Vogue de Strangrz ! Un magazine d'art intégré où les collectionneurs deviennent des curateurs. Comment ça marche ? Collectionne 10 œuvres certifiées et tu débloques le statut Curateur — un badge doré apparaît sur ton profil. Ensuite tu peux : écrire des articles éditoriaux, mettre en avant tes artistes préférés, créer des sélections curatées, et apparaître dans le classement Top Curators. C'est comme être rédacteur en chef de ton propre magazine d'art numérique. Va dans Gallery → Curate pour explorer les articles publiés ou commencer à écrire le tien !",
       navigateTo: 'gallery',
       tabLabel: 'Gallery → Curate',
     },
@@ -581,7 +581,7 @@ const FAQ_SECTIONS = [
     icon: 'Curate — Magazine & Curateurs',
     items: [
       { q: `Qu'est-ce que Curate ?`, a: `Curate est la plateforme éditoriale de Strangrz. C'est un magazine d'art intégré où les collectionneurs-curateurs publient des articles, mettent en valeur des artistes et partagent leurs collections.` },
-      { q: `Comment devenir Curateur ?`, a: `Collectionnez 100 oeuvres certifiées sur la Marketplace. Une fois le seuil atteint, vous débloquez le statut Curateur et un badge doré apparaît sur votre profil. Vous pouvez alors publier des articles dans Curate.` },
+      { q: `Comment devenir Curateur ?`, a: `Collectionnez 10 oeuvres certifiées sur la Marketplace. Une fois le seuil atteint, vous débloquez le statut Curateur et un badge doré apparaît sur votre profil. Vous pouvez alors publier des articles dans Curate.` },
       { q: `Que peut faire un Curateur ?`, a: `Les Curateurs peuvent : (1) Écrire des articles éditoriaux, (2) Mettre en avant des artistes et des oeuvres de leur collection, (3) Créer des sélections curatoriales, (4) Apparaître dans le classement Top Curators, (5) Partager leurs articles avec la communauté.` },
       { q: `Comment écrire un article ?`, a: `Allez dans Gallery → Curate → New Article. Donnez un titre, un sous-titre, rédigez votre article, sélectionnez les oeuvres à mettre en avant depuis votre collection, taguez les artistes, et publiez.` },
       { q: `Comment apparaître dans Top Curators ?`, a: `Le classement se base sur le nombre d'articles publiés, les likes reçus et les vues totales. Plus vos articles sont appréciés, plus vous montez dans le classement.` },

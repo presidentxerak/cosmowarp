@@ -4,11 +4,12 @@ import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { SocialEngine } from '../engine/social';
+import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 
 // ─── Types ────────────────────────────────────────────────
 
-type TradingTab = 'overview' | 'live-listings' | 'activity' | 'collections' | 'portfolio';
+type TradingTab = 'overview' | 'live-listings' | 'activity' | 'collections' | 'portfolio' | 'wart-detail';
 type SortBy = 'price-asc' | 'price-desc' | 'recent' | 'popular' | 'volume';
 type TimeRange = '1h' | '24h' | '7d' | '30d' | 'all';
 
@@ -25,6 +26,8 @@ export default function TradingView() {
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
   const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
+  const [listPrice, setListPrice] = useState('');
 
   // All warts
   const allWarts = useMemo(() => {
@@ -133,9 +136,11 @@ export default function TradingView() {
   };
 
   const handleViewWart = (wartId: string) => {
-    sessionStorage.setItem('strangrz_open_wart', wartId);
-    sessionStorage.setItem('strangrz_gallery_tab', 'detail');
-    window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
+    const wart = allWarts.find(w => w.id === wartId);
+    if (wart) {
+      setSelectedWart(wart);
+      setTab('wart-detail');
+    }
   };
 
   const navigateToProfile = (address: string) => {
@@ -221,7 +226,7 @@ export default function TradingView() {
                   )}
                   <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                   <div className="flex justify-between items-center mt-0.5">
-                    <p className="text-label opacity-60">{getCreatorName(wart.creator)}</p>
+                    <button className="text-label opacity-60 hover:opacity-80 hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button>
                     <p className="text-body-sm font-bold opacity-70">{wart.price} {'\u2B23'}</p>
                   </div>
                   <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/5">
@@ -244,7 +249,11 @@ export default function TradingView() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-body-sm font-medium opacity-80 truncate">{act.wart.title}</p>
-                    <p className="text-label opacity-50">{getCreatorName(act.transfer.from)} {'\u2192'} {getCreatorName(act.transfer.to)}</p>
+                    <p className="text-label opacity-50">
+                      <button className="hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(act.transfer.from); }}>@{getCreatorName(act.transfer.from)}</button>
+                      {' \u2192 '}
+                      <button className="hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(act.transfer.to); }}>@{getCreatorName(act.transfer.to)}</button>
+                    </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-body-sm font-bold opacity-80">{act.transfer.price.toFixed(1)} {'\u2B23'}</p>
@@ -304,7 +313,7 @@ export default function TradingView() {
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleViewWart(wart.id)}>
                     <p className="text-base font-medium opacity-90 truncate">{wart.title}</p>
                     <div className="flex items-center gap-2 text-label opacity-60">
-                      <span>{getCreatorName(wart.creator)}</span>
+                      <button className="hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button>
                       <span className={`px-1 py-0.5 text-[9px] ${RARITY_CONFIG[computeRarity(wart)].color}`}>{computeRarity(wart)}</span>
                       <span>{'\u2665'} {wart.likes?.length || 0}</span>
                     </div>
@@ -373,7 +382,9 @@ export default function TradingView() {
                       <span className="opacity-50"> — {act.type === 'sale' ? 'Sold' : act.type === 'mint' ? 'Minted' : 'Transferred'}</span>
                     </p>
                     <p className="text-label opacity-50">
-                      {getCreatorName(act.transfer.from)} {'\u2192'} {getCreatorName(act.transfer.to)}
+                      <button className="hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(act.transfer.from); }}>@{getCreatorName(act.transfer.from)}</button>
+                      {' \u2192 '}
+                      <button className="hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(act.transfer.to); }}>@{getCreatorName(act.transfer.to)}</button>
                     </p>
                   </div>
                   <div className="text-right shrink-0">
@@ -485,6 +496,213 @@ export default function TradingView() {
           </div>
         </div>
       )}
+
+      {/* ─── Wart Detail (Trading View) ──────────────────────── */}
+      {tab === 'wart-detail' && selectedWart && (() => {
+        const wart = selectedWart;
+        const history = wart.history || [];
+        const isOwner = wart.owner === wallet.address;
+        const rarity = computeRarity(wart);
+        const totalVolume = history.reduce((s, h) => s + h.price, 0);
+        const highestSale = history.length > 0 ? Math.max(...history.map(h => h.price)) : 0;
+        const lastSale = history.filter(h => h.price > 0).slice(-1)[0];
+        const priceChangePct = lastSale && history.length >= 2
+          ? (() => { const prev = history.filter(h => h.price > 0).slice(-2)[0]; return prev ? ((lastSale.price - prev.price) / prev.price * 100) : 0; })()
+          : 0;
+
+        return (
+          <div className="pt-4 space-y-4">
+            {/* Back button */}
+            <button onClick={() => { setSelectedWart(null); setTab('overview'); }} className="text-body-sm opacity-50 hover:opacity-90 cursor-pointer">
+              {'\u2190'} Back to Trading Floor
+            </button>
+
+            {/* Main layout: artwork + info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Artwork image */}
+              <div className="glass-panel p-3">
+                {wart.imageData && wart.mediaType !== 'audio' ? (
+                  <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-contain" />
+                ) : (
+                  <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <span className="text-5xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Info panel */}
+              <div className="space-y-3">
+                <div className="glass-panel p-4">
+                  <h2 className="text-title-sm font-bold opacity-95 font-title">{wart.title}</h2>
+                  <div className="flex items-center gap-2 mt-2">
+                    <HexAvatar address={wart.creator} size={24} />
+                    <button onClick={() => navigateToProfile(wart.creator)} className="text-body-sm opacity-70 hover:opacity-100 hover:underline cursor-pointer">
+                      @{getCreatorName(wart.creator)}
+                    </button>
+                    <span className={`text-[10px] px-1.5 py-0.5 ${RARITY_CONFIG[rarity].color}`}>{rarity}</span>
+                  </div>
+                  {wart.description && <p className="text-body-sm opacity-50 mt-2">{wart.description}</p>}
+                </div>
+
+                {/* Price & Action */}
+                <div className="glass-panel p-4">
+                  <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-1">Current Price</p>
+                  <p className="text-title-lg font-bold opacity-95">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+                  {priceChangePct !== 0 && (
+                    <p className="text-body-sm mt-0.5" style={{ color: priceChangePct >= 0 ? '#51cf66' : '#ff6b6b' }}>
+                      {priceChangePct >= 0 ? '+' : ''}{priceChangePct.toFixed(1)}% from last sale
+                    </p>
+                  )}
+                  <div className="mt-3 space-y-2">
+                    {isOwner ? (
+                      wart.listed ? (
+                        <button onClick={() => delistWart(wart.id)} className="warp-button w-full py-2.5 text-body-sm">
+                          Delist from Market
+                        </button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            className="warp-input flex-1 text-body-sm py-2"
+                            placeholder="Price in STRNGRZ"
+                            value={listPrice}
+                            onChange={e => setListPrice(e.target.value)}
+                            type="number"
+                            min="0"
+                          />
+                          <button onClick={() => { if (listPrice) { listWart(wart.id, parseFloat(listPrice)); setListPrice(''); } }} className="warp-button px-4 py-2 text-body-sm" disabled={!listPrice}>
+                            List
+                          </button>
+                        </div>
+                      )
+                    ) : wart.listed && wart.price !== null ? (
+                      <button
+                        onClick={() => handleBuy(wart)}
+                        disabled={buying || wallet.balance < (wart.price || 0)}
+                        className="warp-button w-full py-2.5 text-base font-medium"
+                      >
+                        {buying ? 'Processing...' : `Buy Now for ${wart.price} \u2B23`}
+                      </button>
+                    ) : (
+                      <p className="text-body-sm opacity-50 text-center py-2">This artwork is not currently for sale</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Artwork details */}
+                <div className="glass-panel p-4">
+                  <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-2">Details</p>
+                  <div className="space-y-1.5 text-body-sm">
+                    <div className="flex justify-between">
+                      <span className="opacity-50">Owner</span>
+                      <button onClick={() => navigateToProfile(wart.owner)} className="opacity-70 hover:opacity-100 hover:underline cursor-pointer">@{getCreatorName(wart.owner)}</button>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="opacity-50">Creator</span>
+                      <button onClick={() => navigateToProfile(wart.creator)} className="opacity-70 hover:opacity-100 hover:underline cursor-pointer">@{getCreatorName(wart.creator)}</button>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="opacity-50">Edition</span>
+                      <span className="opacity-70">{wart.editionType}{wart.editionType === 'limited' && wart.maxEditions ? ` (${wart.editionNumber || 1}/${wart.maxEditions})` : ''}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="opacity-50">Created</span>
+                      <span className="opacity-70">{new Date(wart.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="opacity-50">Likes</span>
+                      <span className="opacity-70">{'\u2665'} {wart.likes?.length || 0}</span>
+                    </div>
+                    {wart.royaltyPercent !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="opacity-50">Royalty</span>
+                        <span className="opacity-70">{wart.royaltyPercent}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Price chart area */}
+            <div className="glass-panel p-4">
+              <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-3">Price History</p>
+              {history.filter(h => h.price > 0).length > 0 ? (
+                <div className="space-y-1">
+                  {/* Simple bar chart of price history */}
+                  <div className="flex items-end gap-1 h-32 px-2">
+                    {history.filter(h => h.price > 0).slice(-20).map((h, i) => {
+                      const maxP = Math.max(...history.filter(x => x.price > 0).map(x => x.price));
+                      const heightPct = maxP > 0 ? (h.price / maxP) * 100 : 0;
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center justify-end" title={`${h.price} \u2B23 — ${new Date(h.timestamp).toLocaleDateString()}`}>
+                          <div className="w-full min-w-[4px] transition-all" style={{ height: `${heightPct}%`, background: 'linear-gradient(to top, rgba(212,175,55,0.4), rgba(212,175,55,0.8))' }} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between text-[10px] opacity-40 px-2">
+                    <span>{new Date(history.filter(h => h.price > 0).slice(-20)[0]?.timestamp || 0).toLocaleDateString()}</span>
+                    <span>Now</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-32 flex items-center justify-center border border-dashed border-current/10">
+                  <p className="text-body-sm opacity-40">No price data yet — this chart will populate after sales</p>
+                </div>
+              )}
+            </div>
+
+            {/* Market stats for this wart */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Total Volume', value: `${totalVolume.toFixed(1)} \u2B23` },
+                { label: 'Highest Sale', value: highestSale > 0 ? `${highestSale.toFixed(1)} \u2B23` : '—' },
+                { label: 'Total Sales', value: `${history.filter(h => h.price > 0).length}` },
+                { label: 'Transfers', value: `${history.length}` },
+              ].map(stat => (
+                <div key={stat.label} className="glass-panel p-3 text-center">
+                  <p className="text-[10px] opacity-50 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-base font-bold opacity-90 mt-0.5">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Transfer history */}
+            <div className="glass-panel p-4">
+              <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-3">Activity Log</p>
+              {history.length > 0 ? (
+                <div className="space-y-1">
+                  {[...history].reverse().map((h, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-2 hover:bg-current/5 transition-colors">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{
+                        background: h.price > 0 ? '#51cf66' : i === history.length - 1 ? '#339af0' : '#fcc419',
+                      }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-body-sm opacity-80">
+                          <span className="font-medium">{h.price > 0 ? 'Sold' : i === history.length - 1 ? 'Minted' : 'Transferred'}</span>
+                        </p>
+                        <p className="text-label opacity-50">
+                          <button onClick={() => navigateToProfile(h.from)} className="hover:underline cursor-pointer">@{getCreatorName(h.from)}</button>
+                          {' \u2192 '}
+                          <button onClick={() => navigateToProfile(h.to)} className="hover:underline cursor-pointer">@{getCreatorName(h.to)}</button>
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        {h.price > 0 && <p className="text-body-sm font-bold opacity-70">{h.price.toFixed(1)} {'\u2B23'}</p>}
+                        <p className="text-[10px] opacity-40">{new Date(h.timestamp).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center border border-dashed border-current/10">
+                  <p className="text-body-sm opacity-40">No activity yet — transactions will appear here</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Buy result toast */}
       {buyResult && (
