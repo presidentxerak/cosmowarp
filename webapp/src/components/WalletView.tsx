@@ -325,7 +325,7 @@ export default function WalletView() {
             color: '#000',
           }}
         >
-          {'\u2B50'} 100 premiers inscrits : 300 {'\u2B23'} offerts (30{'\u20AC'}) = 3 oeuvres gratuites !
+          100 premiers inscrits : 300 {'\u2B23'} offerts (30{'\u20AC'}) = 3 oeuvres gratuites !
         </div>
         <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
 

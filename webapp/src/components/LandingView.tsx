@@ -539,9 +539,23 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
   return (
     <div className="min-h-screen relative text-white" style={{ background: '#000' }}>
 
+      {/* ─── Promo Banner ────────────────────────────────── */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[60] text-center py-1.5 px-3 text-[11px] font-medium tracking-wide"
+        style={{
+          background: 'linear-gradient(90deg, #d4af37, #e91e8c, #339af0, #51cf66, #d4af37)',
+          backgroundSize: '300% 100%',
+          animation: 'promoBannerScroll 6s linear infinite',
+          color: '#000',
+        }}
+      >
+        First 100 signups: 300 {'\u2B23'} free airdrop (30{'\u20AC'}) = 3 free artworks!
+      </div>
+      <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
+
       {/* ─── Header ─────────────────────────────────────── */}
       <header
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        className="fixed top-[28px] left-0 right-0 z-50 transition-all duration-300"
         style={{
           background: `rgba(0,0,0,${headerBgOpacity})`,
           backdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
