@@ -315,6 +315,20 @@ export default function WalletView() {
           Protocole de certification pour objets rares
         </p>
 
+        {/* Promo banner */}
+        <div
+          className="max-w-xs mx-auto mb-4 py-2 px-3 text-[11px] font-bold tracking-wide"
+          style={{
+            background: 'linear-gradient(90deg, #d4af37, #e91e8c, #339af0, #51cf66, #d4af37)',
+            backgroundSize: '300% 100%',
+            animation: 'promoBannerScroll 6s linear infinite',
+            color: '#000',
+          }}
+        >
+          {'\u2B50'} 100 premiers inscrits : 300 {'\u2B23'} offerts (30{'\u20AC'}) = 3 oeuvres gratuites !
+        </div>
+        <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
+
         {/* ─── Sign Up / Sign In tabs ──────────────────── */}
         <div className="flex max-w-xs mx-auto mb-5 border border-current/15 overflow-hidden">
           <button
@@ -342,7 +356,7 @@ export default function WalletView() {
         {authTab === 'signup' ? (
           <div className="max-w-xs mx-auto space-y-3">
             <p className="text-base opacity-50 mb-1">
-              Create your wallet and receive 1,000 {'\u2B23'} airdrop.
+              Create your wallet and receive 300 {'\u2B23'} airdrop (30{'\u20AC'}).
             </p>
 
             <div className="p-3 bg-current/5 border border-current/10 text-left">

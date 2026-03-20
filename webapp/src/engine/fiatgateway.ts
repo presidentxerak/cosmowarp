@@ -136,7 +136,7 @@ const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> 
  * Circulating at launch (~11M via airdrops+mining): ~€1,100,000
  *
  * Utility check at €0.10/STZ:
- *   Airdrop (1,000 STZ)  = €100   — onboarding incentive ✓
+ *   Airdrop (300 STZ)    = €30    — 3 free artworks at 100 STZ ✓
  *   Min listing (100 STZ) = €10   — accessible price floor ✓
  *   Mining reward (50 STZ) = €5   — motivating            ✓
  *   Streak (10,000 STZ)   = €1000 — yearly loyalty reward ✓

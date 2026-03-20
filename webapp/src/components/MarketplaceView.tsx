@@ -129,6 +129,12 @@ export default function MarketplaceView() {
   const [durationHours, setDurationHours] = useState('');
   const [mintChain, setMintChain] = useState<'strangrz' | 'ethereum'>('strangrz');
   const [lazyMintMode, setLazyMintMode] = useState(true); // Default: lazy mint (buyer pays all)
+  const [saleMode, setSaleMode] = useState<'fixed' | 'auction'>('fixed');
+  const [auctionType, setAuctionType] = useState<'no-reserve' | 'minimum' | 'reserve' | 'dutch'>('no-reserve');
+  const [auctionStartPrice, setAuctionStartPrice] = useState('');
+  const [auctionReservePrice, setAuctionReservePrice] = useState('');
+  const [auctionEndPrice, setAuctionEndPrice] = useState('');
+  const [auctionDurationHours, setAuctionDurationHours] = useState('24');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
@@ -2162,6 +2168,156 @@ export default function MarketplaceView() {
                 </p>
               )}
             </div>
+
+            {/* ─── Sale Mode: Fixed Price or Auction ──── */}
+            <div>
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Sale Mode</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setSaleMode('fixed')}
+                  className={`p-3 text-center transition-all cursor-pointer ${
+                    saleMode === 'fixed'
+                      ? 'bg-current/10 border border-current/20 opacity-90'
+                      : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
+                  }`}
+                >
+                  <div className="text-base mb-1">{'\u2B23'}</div>
+                  <div className="text-[11px] font-medium">Prix fixe</div>
+                  <div className="text-[9px] opacity-60 mt-0.5">Vente imm{'\u00E9'}diate au prix affich{'\u00E9'}</div>
+                </button>
+                <button
+                  onClick={() => setSaleMode('auction')}
+                  className={`p-3 text-center transition-all cursor-pointer ${
+                    saleMode === 'auction'
+                      ? 'bg-current/10 border border-current/20 opacity-90'
+                      : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
+                  }`}
+                >
+                  <div className="text-base mb-1">{'\u2696'}</div>
+                  <div className="text-[11px] font-medium">Ench{'\u00E8'}res</div>
+                  <div className="text-[9px] opacity-60 mt-0.5">Les acheteurs se disputent le prix</div>
+                </button>
+              </div>
+            </div>
+
+            {saleMode === 'auction' && (
+              <div className="space-y-4 p-4 border border-current/10 bg-current/5">
+                <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Type d'ench{'\u00E8'}res</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { id: 'no-reserve' as const, label: 'Sans r\u00E9serve', icon: '\u2B06', desc: 'Le plus haut ench\u00E9risseur gagne' },
+                    { id: 'minimum' as const, label: 'Prix minimum', icon: '\u2B23', desc: 'Ench\u00E8re minimale requise' },
+                    { id: 'reserve' as const, label: 'Prix de r\u00E9serve', icon: '\u2B21', desc: 'Prix cach\u00E9 \u00E0 atteindre' },
+                    { id: 'dutch' as const, label: 'Dutch Auction', icon: '\u2B07', desc: 'Le prix baisse avec le temps' },
+                  ]).map(at => (
+                    <button
+                      key={at.id}
+                      onClick={() => setAuctionType(at.id)}
+                      className={`p-2.5 text-center transition-all cursor-pointer ${
+                        auctionType === at.id
+                          ? 'bg-current/10 border border-current/20 opacity-90'
+                          : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
+                      }`}
+                    >
+                      <div className="text-base mb-0.5">{at.icon}</div>
+                      <div className="text-[10px] font-medium">{at.label}</div>
+                      <div className="text-[9px] opacity-50 mt-0.5">{at.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Auction explanation */}
+                <div className="p-3 border border-current/10" style={{ background: 'rgba(212,175,55,0.03)' }}>
+                  {auctionType === 'no-reserve' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Ench{'\u00E8'}res sans prix de r{'\u00E9'}serve</p>
+                      <p>L'oeuvre est vendue au plus offrant, quel que soit le prix final. Les ench{'\u00E9'}risseurs placent des offres croissantes pendant la dur{'\u00E9'}e de l'ench{'\u00E8'}re. {'\u00C0'} la fin, le dernier ench{'\u00E9'}risseur remporte l'oeuvre. Id{'\u00E9'}al pour maximiser la visibilit{'\u00E9'} et laisser le march{'\u00E9'} d{'\u00E9'}cider du prix.</p>
+                    </div>
+                  )}
+                  {auctionType === 'minimum' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Ench{'\u00E8'}res {'\u00E0'} prix minimum</p>
+                      <p>Vous d{'\u00E9'}finissez un prix de d{'\u00E9'}part minimum. Les offres doivent {'\u00EA'}tre sup{'\u00E9'}rieures ou {'\u00E9'}gales {'\u00E0'} ce montant. Le plus offrant remporte l'oeuvre {'\u00E0'} la fin. Si aucune offre n'atteint le minimum, l'oeuvre n'est pas vendue. Id{'\u00E9'}al pour fixer un prix plancher tout en laissant le march{'\u00E9'} surench{'\u00E9'}rir.</p>
+                    </div>
+                  )}
+                  {auctionType === 'reserve' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Ench{'\u00E8'}res avec prix de r{'\u00E9'}serve</p>
+                      <p>Vous fixez un prix de r{'\u00E9'}serve secret (non visible par les ench{'\u00E9'}risseurs). Les offres montent librement. Si la meilleure offre atteint ou d{'\u00E9'}passe le prix de r{'\u00E9'}serve, l'oeuvre est vendue. Sinon, la vente est annul{'\u00E9'}e. Prot{'\u00E8'}ge contre une vente {'\u00E0'} prix trop bas tout en cr{'\u00E9'}ant de la comp{'\u00E9'}tition.</p>
+                    </div>
+                  )}
+                  {auctionType === 'dutch' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Dutch Auction (ench{'\u00E8'}res hollandaises)</p>
+                      <p>Le prix commence haut et descend progressivement dans le temps. Le premier acheteur qui accepte le prix en cours remporte l'oeuvre imm{'\u00E9'}diatement. Pas de surench{'\u00E8'}re : c'est une course {'\u00E0'} la d{'\u00E9'}cision. Id{'\u00E9'}al pour une vente rapide avec un prix d{'\u00E9'}gressif.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Auction fields */}
+                <div className="space-y-3">
+                  {auctionType === 'no-reserve' && (
+                    <div>
+                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (optionnel, en {'\u2B23'})</label>
+                      <input className="warp-input w-full" type="number" placeholder="1 \u2B23 minimum" min="1" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      <p className="text-[9px] opacity-40 mt-1">Laisser vide pour d{'\u00E9'}marrer {'\u00E0'} 1 {'\u2B23'}</p>
+                    </div>
+                  )}
+                  {auctionType === 'minimum' && (
+                    <div>
+                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix minimum (en {'\u2B23'})</label>
+                      <input className="warp-input w-full" type="number" placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23`} min={mintChain === 'ethereum' ? '500' : '100'} value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                    </div>
+                  )}
+                  {auctionType === 'reserve' && (
+                    <>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part visible (en {'\u2B23'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Ex: 50 \u2B23" min="1" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de r{'\u00E9'}serve secret (en {'\u2B23'})</label>
+                        <input className="warp-input w-full" type="number" placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23`} min={mintChain === 'ethereum' ? '500' : '100'} value={auctionReservePrice} onChange={e => setAuctionReservePrice(e.target.value)} />
+                        <p className="text-[9px] opacity-40 mt-1">Ce prix ne sera pas visible par les ench{'\u00E9'}risseurs</p>
+                      </div>
+                    </>
+                  )}
+                  {auctionType === 'dutch' && (
+                    <>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (haut, en {'\u2B23'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Ex: 1000 \u2B23" min="1" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix final minimum (en {'\u2B23'})</label>
+                        <input className="warp-input w-full" type="number" placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23`} min={mintChain === 'ethereum' ? '500' : '100'} value={auctionEndPrice} onChange={e => setAuctionEndPrice(e.target.value)} />
+                        <p className="text-[9px] opacity-40 mt-1">Le prix descend lin{'\u00E9'}airement du prix de d{'\u00E9'}part au prix final pendant la dur{'\u00E9'}e</p>
+                      </div>
+                    </>
+                  )}
+
+                  <div>
+                    <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Dur{'\u00E9'}e de l'ench{'\u00E8'}re (heures)</label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {['6', '12', '24', '48'].map(h => (
+                        <button
+                          key={h}
+                          onClick={() => setAuctionDurationHours(h)}
+                          className={`py-2 text-[11px] font-medium transition-all cursor-pointer ${
+                            auctionDurationHours === h
+                              ? 'bg-current/10 border border-current/20 opacity-90'
+                              : 'border border-current/10 opacity-60 hover:opacity-60'
+                          }`}
+                        >
+                          {h}h
+                        </button>
+                      ))}
+                    </div>
+                    <input className="warp-input w-full mt-2" type="number" placeholder="Ou saisir une dur\u00E9e personnalis\u00E9e" min="1" value={auctionDurationHours} onChange={e => setAuctionDurationHours(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ─── Rarity Preview ──────────────────────── */}
             <div className="p-3 border border-current/10 bg-current/5 flex items-center justify-between">

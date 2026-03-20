@@ -26,20 +26,20 @@ for (const [oldKey, newKey] of Object.entries(MIGRATION_MAP)) {
   }
 }
 
-// Cap existing wallets that had the old 1,000,000 admin bonus to 1,000
+// Cap existing wallets that had the old 1,000,000 admin bonus to 300
 const walletKey = 'strangrz_wallet';
 const walletRaw = localStorage.getItem(walletKey);
 if (walletRaw) {
   try {
     const w = JSON.parse(walletRaw);
     if (w.balance >= 1_000_000) {
-      w.balance = 1_000;
+      w.balance = 300;
       // Remove the admin grant transaction and fix airdrop amount
       if (Array.isArray(w.transactions)) {
         w.transactions = w.transactions.filter((tx: { type?: string }) => tx && tx.type !== 'genesis');
         w.transactions = w.transactions.map((tx: { type?: string; amount?: number }) => {
-          if (tx.type === 'airdrop' && tx.amount && tx.amount > 1_000) {
-            return { ...tx, amount: 1_000 };
+          if (tx.type === 'airdrop' && tx.amount && tx.amount > 300) {
+            return { ...tx, amount: 300 };
           }
           return tx;
         });

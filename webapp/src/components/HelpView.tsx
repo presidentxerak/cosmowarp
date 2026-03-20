@@ -468,7 +468,7 @@ const FAQ_SECTIONS = [
       { q: `Combien vaut 1 STZ ?`, a: `Valeur de référence : 1 STZ = 0,10 € (10 centimes d'euro). Les taux fiat sont calculés à partir du forex réel : 1 € = 10 STZ, 1 $ ≈ 9,1 STZ, 1 £ ≈ 11,7 STZ, 1 ¥ ≈ 0,061 STZ, 1 ETH ≈ 22 750 STZ.` },
       { q: `Comment obtenir des STZ ?`, a: `3 façons : (1) Miner — exécute des calculs de preuve de calcul (CosmoASM) dans Portefeuille → Miner. (2) Airdrop — chaque nouveau compte reçoit 1 000 STZ. (3) Achat fiat — carte bancaire, PayPal ou virement SEPA via la passerelle intégrée.` },
       { q: `C'est quoi la Décroissance par Résonance ?`, a: `La courbe de minage du STZ. Formule : récompense = 50 × φ^(-totalMiné / 5M), où φ = 1,618 (nombre d'or). Démarre à 50 STZ/bloc, descend progressivement sans jamais atteindre zéro (plancher : 0,1 STZ). Plus doux et prévisible que le halving de Bitcoin.` },
-      { q: `Quelle est la répartition du supply ?`, a: `Sur les 69M de STZ : 58M (84 %) pour le minage, 10M (14,5 %) pour les airdrops (1 000 STZ par compte), et 1M (1,5 %) verrouillé pour le créateur (déverrouillable par l'admin). La supply est fixe — aucun nouveau STZ ne sera jamais créé au-delà.` },
+      { q: `Quelle est la répartition du supply ?`, a: `Sur les 69M de STZ : 58M (84 %) pour le minage, 10M (14,5 %) pour les airdrops (300 STZ par compte), et 1M (1,5 %) verrouillé pour le créateur (déverrouillable par l'admin). La supply est fixe — aucun nouveau STZ ne sera jamais créé au-delà.` },
       { q: `Les transactions STZ coûtent-elles quelque chose ?`, a: `Non ! Toutes les transactions sur StrangrzMesh sont 100 % gratuites. Zéro gas, zéro frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de facturer les utilisateurs.` },
     ],
   },

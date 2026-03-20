@@ -5,7 +5,7 @@ import { storage } from './storage';
  *
  * Total Supply: 69,000,000 STZ (Strangrz)
  * Creator Lock: 1,000,000 STZ (unlockable by admin)
- * Airdrop: 1,000 STZ per new account
+ * Airdrop: 300 STZ per new account (first 100 signups promo)
  * Mining: Resonance Decay (better than halving)
  * Streak Rewards: 10,000 STZ for 365-day daily TX streak
  *
@@ -26,7 +26,7 @@ import { storage } from './storage';
 
 export const TOTAL_SUPPLY = 69_000_000;
 export const CREATOR_LOCKED = 1_000_000;
-export const AIRDROP_AMOUNT = 1_000;
+export const AIRDROP_AMOUNT = 300;
 export const AIRDROP_POOL = 10_000_000;       // Reserved for airdrops
 export const MINING_POOL = TOTAL_SUPPLY - CREATOR_LOCKED - AIRDROP_POOL; // 58M
 export const BASE_MINING_REWARD = 50;          // Starting reward per mine

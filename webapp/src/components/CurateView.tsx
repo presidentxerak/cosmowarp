@@ -356,8 +356,8 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
           { id: 'curators' as CurateTab, label: 'Top Curators' },
           ...(isCurator ? [
             { id: 'my-articles' as CurateTab, label: 'My Articles' },
-            { id: 'create' as CurateTab, label: '+ New Article' },
           ] : []),
+          { id: 'create' as CurateTab, label: '+ New Article' },
         ]).map(t => (
           <button
             key={t.id}
@@ -710,18 +710,23 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
 
       {/* ─── Not a Curator Yet ─────────────────────────────── */}
       {tab === 'create' && wallet && !isCurator && (
-        <div className="text-center py-16 px-4">
-          <div className="max-w-md mx-auto glass-panel p-6 sm:p-8">
+        <div className="pt-4 space-y-4 max-w-2xl mx-auto">
+          <div className="glass-panel p-6 sm:p-8 text-center">
             <div className="text-4xl opacity-40 mb-4">{'\u2B21'}</div>
-            <h3 className="text-title-sm font-title font-bold opacity-80 mb-2">Become a Curator</h3>
+            <h3 className="text-title-sm font-title font-bold opacity-80 mb-2">Create Article</h3>
             <p className="text-body-sm opacity-60 mb-4">
-              Collect 10 artworks to unlock Curator status. Curators can write editorial articles, feature artists, and create curated collections.
+              Write curated articles, feature artists and embed artworks from your collection.
             </p>
-            <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
-              <div className="h-full rounded-full transition-all" style={{ width: `${progressToCurator}%`, background: 'linear-gradient(90deg, #d4af37, #c0a030)' }} />
+            <div className="p-3 mb-4" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}>
+              <p className="text-body-sm opacity-70">
+                {'\u2B22'} Curation is available from <strong>10 collected artworks</strong>. You currently have <strong>{myCollection.length}</strong>.
+              </p>
+              <div className="h-2 rounded-full overflow-hidden mt-2 mb-1" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${progressToCurator}%`, background: 'linear-gradient(90deg, #d4af37, #c0a030)' }} />
+              </div>
+              <p className="text-label opacity-60">{myCollection.length}/10 artworks ({progressToCurator}%)</p>
             </div>
-            <p className="text-label opacity-60">{myCollection.length}/10 artworks collected ({progressToCurator}%)</p>
-            <button onClick={() => onNavigate('gallery')} className="warp-button px-6 py-2 mt-4 text-body-sm">Browse Gallery</button>
+            <button onClick={() => onNavigate('gallery')} className="warp-button px-6 py-2 text-body-sm">Collect Artworks to Unlock</button>
           </div>
         </div>
       )}

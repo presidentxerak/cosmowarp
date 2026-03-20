@@ -133,7 +133,7 @@ cosmo.on('balance_changed', (event) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm">
         {[
           ['Total Supply', '69,000,000 STZ'],
-          ['Airdrop/Wallet', '1,000 STZ'],
+          ['Airdrop/Wallet', '300 STZ'],
           ['Base Mining Reward', '50 STZ'],
           ['Decay Constant', '5,000,000'],
           ['Golden Ratio', '1.618033...'],
@@ -321,7 +321,7 @@ function ExtensionTab() {
 
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Features</h3>
       <ul className="text-body-sm opacity-50 space-y-1 list-disc list-inside">
-        <li>Ed25519 wallet creation with 1,000 STZ airdrop</li>
+        <li>Ed25519 wallet creation with 300 STZ airdrop</li>
         <li>Send transactions with recipient validation</li>
         <li>Balance display with hierarchy level</li>
         <li>Transaction history</li>
