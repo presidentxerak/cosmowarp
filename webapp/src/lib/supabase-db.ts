@@ -607,6 +607,7 @@ export async function upsertPost(post: {
   id: string; author: string; authorAlias: string; content: string;
   mediaType?: string; mediaPath?: string; wartLink?: string; timestamp: number;
   tipCount: number; rewarpCount: number; views: number;
+  comments?: unknown[]; tips?: Record<string, boolean>; rewarps?: string[]; bookmarkedBy?: string[];
 }): Promise<boolean> {
   if (!isBackendAvailable()) return false;
   const row: Record<string, unknown> = {
@@ -623,6 +624,10 @@ export async function upsertPost(post: {
     updated_at: Date.now(),
   };
   if (post.mediaPath) row.media_path = post.mediaPath;
+  if (post.comments) row.comments_json = JSON.stringify(post.comments);
+  if (post.tips) row.tips_json = JSON.stringify(post.tips);
+  if (post.rewarps) row.rewarps_json = JSON.stringify(post.rewarps);
+  if (post.bookmarkedBy) row.bookmarked_by_json = JSON.stringify(post.bookmarkedBy);
   const { error } = await supabase!.from('chat_posts').upsert(row, { onConflict: 'id' });
   if (error) console.error('[Supabase] upsertPost:', error.message);
   return !error;
@@ -632,6 +637,7 @@ export async function fetchAllPosts(): Promise<Array<{
   id: string; author: string; authorAlias: string; content: string;
   mediaType?: string; mediaPath?: string; wartLink?: string; timestamp: number;
   tipCount: number; rewarpCount: number; views: number;
+  comments?: unknown[]; tips?: Record<string, boolean>; rewarps?: string[]; bookmarkedBy?: string[];
 }>> {
   if (!isBackendAvailable()) return [];
   const { data, error } = await supabase!
@@ -652,7 +658,81 @@ export async function fetchAllPosts(): Promise<Array<{
     tipCount: Number(row.tip_count) || 0,
     rewarpCount: Number(row.rewarp_count) || 0,
     views: Number(row.views) || 0,
+    comments: row.comments_json ? (typeof row.comments_json === 'string' ? JSON.parse(row.comments_json) : row.comments_json) as unknown[] : undefined,
+    tips: row.tips_json ? (typeof row.tips_json === 'string' ? JSON.parse(row.tips_json) : row.tips_json) as Record<string, boolean> : undefined,
+    rewarps: row.rewarps_json ? (typeof row.rewarps_json === 'string' ? JSON.parse(row.rewarps_json) : row.rewarps_json) as string[] : undefined,
+    bookmarkedBy: row.bookmarked_by_json ? (typeof row.bookmarked_by_json === 'string' ? JSON.parse(row.bookmarked_by_json) : row.bookmarked_by_json) as string[] : undefined,
   }));
+}
+
+// ─── Curator Articles (Global Sync) ─────────────────────────
+
+export async function upsertArticle(article: {
+  id: string; authorAddress: string; authorAlias: string; title: string;
+  subtitle: string; coverWartId: string; body: string; embeddedBlocks: unknown[];
+  featuredWartIds: string[]; featuredArtists: string[]; tags: string[];
+  createdAt: number; updatedAt: number; likes: string[]; views: number;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('curator_articles').upsert({
+    id: article.id,
+    author_address: article.authorAddress,
+    author_alias: article.authorAlias,
+    title: article.title,
+    subtitle: article.subtitle,
+    cover_wart_id: article.coverWartId,
+    body: article.body,
+    embedded_blocks: JSON.stringify(article.embeddedBlocks),
+    featured_wart_ids: JSON.stringify(article.featuredWartIds),
+    featured_artists: JSON.stringify(article.featuredArtists),
+    tags: JSON.stringify(article.tags),
+    created_at: article.createdAt,
+    updated_at: article.updatedAt,
+    likes: JSON.stringify(article.likes),
+    views: article.views,
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertArticle:', error.message);
+  return !error;
+}
+
+export async function fetchAllArticles(): Promise<Array<{
+  id: string; authorAddress: string; authorAlias: string; title: string;
+  subtitle: string; coverWartId: string; body: string; embeddedBlocks: unknown[];
+  featuredWartIds: string[]; featuredArtists: string[]; tags: string[];
+  createdAt: number; updatedAt: number; likes: string[]; views: number;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('curator_articles')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error || !data) return [];
+  const parse = (v: unknown) => typeof v === 'string' ? JSON.parse(v) : (v || []);
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    authorAddress: row.author_address as string,
+    authorAlias: (row.author_alias as string) || '',
+    title: (row.title as string) || '',
+    subtitle: (row.subtitle as string) || '',
+    coverWartId: (row.cover_wart_id as string) || '',
+    body: (row.body as string) || '',
+    embeddedBlocks: parse(row.embedded_blocks),
+    featuredWartIds: parse(row.featured_wart_ids),
+    featuredArtists: parse(row.featured_artists),
+    tags: parse(row.tags),
+    createdAt: Number(row.created_at),
+    updatedAt: Number(row.updated_at),
+    likes: parse(row.likes),
+    views: Number(row.views) || 0,
+  }));
+}
+
+export async function deleteArticleCloud(articleId: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('curator_articles').delete().eq('id', articleId);
+  if (error) console.error('[Supabase] deleteArticle:', error.message);
+  return !error;
 }
 
 // ─── TOTP 2FA Configs ────────────────────────────────────────

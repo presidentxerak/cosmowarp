@@ -391,6 +391,7 @@ export class CosmoChatEngine {
         mediaPath: post.mediaType ? `warts/post_${post.id}/main` : undefined,
         wartLink: post.wartLink, timestamp: post.timestamp,
         tipCount: post.tipCount, rewarpCount: post.rewarpCount, views: post.views,
+        comments: post.comments, tips: post.tips, rewarps: post.rewarps, bookmarkedBy: post.bookmarkedBy,
       });
     }
   }
@@ -403,10 +404,10 @@ export class CosmoChatEngine {
         const post: ChatPost = {
           ...cp,
           mediaType: cp.mediaType as ChatPost['mediaType'],
-          tips: {},
-          rewarps: [],
-          comments: [],
-          bookmarkedBy: [],
+          tips: cp.tips || {},
+          rewarps: cp.rewarps || [],
+          comments: (cp.comments || []) as ChatComment[],
+          bookmarkedBy: cp.bookmarkedBy || [],
           isRewarp: false,
         };
         this.posts.push(post);
@@ -420,6 +421,32 @@ export class CosmoChatEngine {
               storeMedia(`post_${post.id}`, dataUrl).catch(() => {});
             }
           }).catch(() => {});
+        }
+      } else {
+        // Merge cloud interactions into existing local post
+        const local = this.posts.find(p => p.id === cp.id);
+        if (local) {
+          // Merge comments (union by id)
+          if (cp.comments && Array.isArray(cp.comments)) {
+            const localCommentIds = new Set(local.comments.map(c => c.id));
+            for (const cc of cp.comments as ChatComment[]) {
+              if (!localCommentIds.has(cc.id)) local.comments.push(cc);
+            }
+          }
+          // Merge tips
+          if (cp.tips) Object.assign(local.tips, cp.tips);
+          local.tipCount = Object.keys(local.tips).length;
+          // Merge rewarps
+          if (cp.rewarps) {
+            for (const r of cp.rewarps) { if (!local.rewarps.includes(r)) local.rewarps.push(r); }
+            local.rewarpCount = local.rewarps.length;
+          }
+          // Merge bookmarks
+          if (cp.bookmarkedBy) {
+            for (const b of cp.bookmarkedBy) { if (!local.bookmarkedBy.includes(b)) local.bookmarkedBy.push(b); }
+          }
+          // Use max views
+          local.views = Math.max(local.views, cp.views);
         }
       }
     }

@@ -7,6 +7,43 @@ import { SocialEngine } from '../engine/social';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 
+// ─── Helpers ─────────────────────────────────────────────────
+
+function dataUrlToBlobUrl(dataUrl: string): string {
+  try {
+    const [header, base64] = dataUrl.split(',');
+    if (!header || !base64) return dataUrl;
+    const mime = header.match(/:(.*?);/)?.[1] || 'video/mp4';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  } catch { return dataUrl; }
+}
+
+/** Render wart media (image or video) with proper tag */
+function WartMedia({ wart, className }: { wart: Wart; className?: string }) {
+  if (!wart.imageData) {
+    return (
+      <div className={`flex items-center justify-center ${className || ''}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+        <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+      </div>
+    );
+  }
+  if (wart.mediaType === 'video') {
+    const src = wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData;
+    return <video src={src} className={className || ''} muted playsInline preload="metadata" />;
+  }
+  if (wart.mediaType === 'audio') {
+    return (
+      <div className={`flex items-center justify-center ${className || ''}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+        <span className="text-2xl opacity-40">{'\u266B'}</span>
+      </div>
+    );
+  }
+  return <img src={wart.imageData} alt={wart.title} className={className || ''} />;
+}
+
 // ─── Types ────────────────────────────────────────────────
 
 type TradingTab = 'overview' | 'live-listings' | 'activity' | 'collections' | 'portfolio' | 'wart-detail';
@@ -217,13 +254,7 @@ export default function TradingView() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {sortedListings.slice(0, 8).map(wart => (
                 <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart.id)}>
-                  {wart.imageData && wart.mediaType !== 'audio' ? (
-                    <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                  ) : (
-                    <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                    </div>
-                  )}
+                  <WartMedia wart={wart} className="w-full aspect-square object-cover" />
                   <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                   <div className="flex justify-between items-center mt-0.5">
                     <button className="text-label opacity-60 hover:opacity-80 hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button>
@@ -302,13 +333,7 @@ export default function TradingView() {
               {sortedListings.map(wart => (
                 <div key={wart.id} className="glass-panel p-3 flex items-center gap-3 hover:bg-current/5 transition-colors">
                   <div className="w-14 h-14 shrink-0 overflow-hidden cursor-pointer" onClick={() => handleViewWart(wart.id)}>
-                    {wart.imageData && wart.mediaType !== 'audio' ? (
-                      <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <span className="text-lg opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                      </div>
-                    )}
+                    <WartMedia wart={wart} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleViewWart(wart.id)}>
                     <p className="text-base font-medium opacity-90 truncate">{wart.title}</p>
@@ -470,13 +495,7 @@ export default function TradingView() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {allWarts.filter(w => w.owner === wallet.address).map(wart => (
                   <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart.id)}>
-                    {wart.imageData && wart.mediaType !== 'audio' ? (
-                      <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
-                    ) : (
-                      <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                      </div>
-                    )}
+                    <WartMedia wart={wart} className="w-full aspect-square object-cover" />
                     <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                     <div className="flex justify-between items-center mt-0.5">
                       <span className={`text-[10px] px-1 py-0.5 ${RARITY_CONFIG[computeRarity(wart)].color}`}>{computeRarity(wart)}</span>
@@ -521,13 +540,7 @@ export default function TradingView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Artwork image */}
               <div className="glass-panel p-3">
-                {wart.imageData && wart.mediaType !== 'audio' ? (
-                  <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-contain" />
-                ) : (
-                  <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <span className="text-5xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                  </div>
-                )}
+                <WartMedia wart={wart} className="w-full aspect-square object-contain" />
               </div>
 
               {/* Info panel */}

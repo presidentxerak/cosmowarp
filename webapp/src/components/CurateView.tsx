@@ -6,6 +6,44 @@ import type { Wart } from '../engine/warts';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 import { storage } from '../engine/storage';
+import { upsertArticle, fetchAllArticles, deleteArticleCloud } from '../lib/supabase-db';
+
+// ─── Helpers ─────────────────────────────────────────────────
+
+function dataUrlToBlobUrl(dataUrl: string): string {
+  try {
+    const [header, base64] = dataUrl.split(',');
+    if (!header || !base64) return dataUrl;
+    const mime = header.match(/:(.*?);/)?.[1] || 'video/mp4';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: mime }));
+  } catch { return dataUrl; }
+}
+
+/** Render wart media — handles video, audio, image */
+function WartMedia({ wart, className }: { wart: Wart; className?: string }) {
+  if (!wart.imageData) {
+    return (
+      <div className={`flex items-center justify-center ${className || ''}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+        <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+      </div>
+    );
+  }
+  if (wart.mediaType === 'video') {
+    const src = wart.imageData.startsWith('data:') ? dataUrlToBlobUrl(wart.imageData) : wart.imageData;
+    return <video src={src} className={className || ''} muted playsInline preload="metadata" />;
+  }
+  if (wart.mediaType === 'audio') {
+    return (
+      <div className={`flex items-center justify-center ${className || ''}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+        <span className="text-2xl opacity-40">{'\u266B'}</span>
+      </div>
+    );
+  }
+  return <img src={wart.imageData} alt={wart.title} className={className || ''} />;
+}
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -52,7 +90,7 @@ type CurateTab = 'magazine' | 'curators' | 'my-articles' | 'create' | 'article-d
 
 const ARTICLES_KEY = 'strangrz_curator_articles';
 
-function loadArticles(): CuratorArticle[] {
+function loadArticlesLocal(): CuratorArticle[] {
   try {
     const raw = storage.getItem(ARTICLES_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -61,6 +99,33 @@ function loadArticles(): CuratorArticle[] {
 
 function saveArticles(articles: CuratorArticle[]): void {
   storage.setItem(ARTICLES_KEY, JSON.stringify(articles));
+}
+
+/** Sync articles: merge local + cloud, push local to cloud */
+async function syncArticles(localArticles: CuratorArticle[]): Promise<CuratorArticle[]> {
+  // Push local articles to cloud
+  for (const a of localArticles.slice(0, 50)) {
+    await upsertArticle(a).catch(() => {});
+  }
+  // Pull from cloud and merge
+  const cloudArticles = await fetchAllArticles().catch(() => []);
+  const localIds = new Set(localArticles.map(a => a.id));
+  const merged = [...localArticles];
+  for (const ca of cloudArticles) {
+    if (!localIds.has(ca.id)) {
+      merged.push(ca as CuratorArticle);
+    } else {
+      // Merge likes/views from cloud
+      const local = merged.find(a => a.id === ca.id);
+      if (local) {
+        for (const l of ca.likes) { if (!local.likes.includes(l)) local.likes.push(l); }
+        local.views = Math.max(local.views, ca.views);
+      }
+    }
+  }
+  merged.sort((a, b) => b.createdAt - a.createdAt);
+  saveArticles(merged);
+  return merged;
 }
 
 // ─── Component ────────────────────────────────────────────
@@ -97,7 +162,10 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
   const progressToCurator = Math.min(100, Math.round((myCollection.length / 10) * 100));
 
   useEffect(() => {
-    setArticles(loadArticles());
+    const local = loadArticlesLocal();
+    setArticles(local);
+    // Sync with cloud in background
+    syncArticles(local).then(merged => setArticles(merged)).catch(() => {});
   }, []);
 
   // ─── Curator rankings ──────────────────────────────────
@@ -164,6 +232,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
     const updated = [article, ...articles];
     saveArticles(updated);
     setArticles(updated);
+    upsertArticle(article).catch(() => {});
     setArtTitle('');
     setArtSubtitle('');
     setArtBody('');
@@ -187,15 +256,19 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
     });
     saveArticles(updated);
     setArticles(updated);
+    const likedArticle = updated.find(a => a.id === articleId);
+    if (likedArticle) upsertArticle(likedArticle).catch(() => {});
   };
 
   const handleViewArticle = (article: CuratorArticle) => {
     // Increment view count
-    const updated = articles.map(a => a.id === article.id ? { ...a, views: a.views + 1 } : a);
+    const viewedArticle = { ...article, views: article.views + 1 };
+    const updated = articles.map(a => a.id === article.id ? viewedArticle : a);
     saveArticles(updated);
     setArticles(updated);
-    setSelectedArticle({ ...article, views: article.views + 1 });
+    setSelectedArticle(viewedArticle);
     setTab('article-detail');
+    upsertArticle(viewedArticle).catch(() => {});
   };
 
   const handleDeleteArticle = (articleId: string) => {
@@ -203,6 +276,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
     const updated = articles.filter(a => a.id !== articleId);
     saveArticles(updated);
     setArticles(updated);
+    deleteArticleCloud(articleId).catch(() => {});
     if (selectedArticle?.id === articleId) {
       setSelectedArticle(null);
       setTab('magazine');
@@ -288,8 +362,8 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
         onClick={() => handleViewArticle(article)}
       >
         <div className={`relative overflow-hidden ${featured ? 'aspect-[21/9]' : 'aspect-[4/3]'}`} style={{ background: 'rgba(255,255,255,0.02)' }}>
-          {coverWart?.imageData && coverWart.mediaType !== 'audio' ? (
-            <img src={coverWart.imageData} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+          {coverWart ? (
+            <WartMedia wart={coverWart} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(100,50,150,0.1))' }}>
               <span className="text-4xl opacity-40">{'\u2B21'}</span>
@@ -591,13 +665,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                     className={`relative aspect-square overflow-hidden cursor-pointer transition-all ${artFeaturedWarts.includes(wart.id) ? 'ring-2' : 'opacity-50 hover:opacity-80'}`}
                     style={artFeaturedWarts.includes(wart.id) ? { boxShadow: '0 0 0 2px #d4af37' } : {}}
                   >
-                    {wart.imageData && wart.mediaType !== 'audio' ? (
-                      <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                        <span className="text-lg opacity-50">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                      </div>
-                    )}
+                    <WartMedia wart={wart} className="w-full h-full object-cover" />
                     {artFeaturedWarts.includes(wart.id) && (
                       <div className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px]" style={{ background: '#d4af37', color: '#000' }}>{'\u2713'}</div>
                     )}
@@ -658,13 +726,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   <div className="grid grid-cols-3 gap-2">
                     {allWarts.slice(0, 30).map(w => (
                       <button key={w.id} className="cursor-pointer overflow-hidden transition-all hover:opacity-80" style={{ border: '1px solid rgba(255,255,255,0.1)' }} onClick={() => addEmbedBlock(w.id)}>
-                        {w.imageData && w.mediaType !== 'audio' ? (
-                          <img src={w.imageData} alt={w.title || ''} className="w-full aspect-square object-cover" />
-                        ) : (
-                          <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                            <span className="text-lg opacity-40">{'\u25C8'}</span>
-                          </div>
-                        )}
+                        <WartMedia wart={w} className="w-full aspect-square object-cover" />
                         <p className="text-label opacity-60 p-1 truncate">{w.title}</p>
                       </button>
                     ))}
@@ -757,9 +819,9 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
           {/* Article cover */}
           {(() => {
             const coverWart = getWartById(selectedArticle.coverWartId);
-            return coverWart?.imageData && coverWart.mediaType !== 'audio' ? (
+            return coverWart?.imageData ? (
               <div className="relative aspect-[21/9] overflow-hidden mb-6">
-                <img src={coverWart.imageData} alt={selectedArticle.title} className="w-full h-full object-cover" />
+                <WartMedia wart={coverWart} className="w-full h-full object-cover" />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)' }} />
               </div>
             ) : null;
@@ -821,13 +883,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   return (
                     <div key={idx} className="cursor-pointer group" onClick={() => handleViewWart(block.wartId!)}>
                       <div className="relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        {wart.imageData && wart.mediaType !== 'audio' ? (
-                          <img src={wart.imageData} alt={wart.title} className="w-full max-h-[400px] object-contain group-hover:scale-[1.02] transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-48 flex items-center justify-center">
-                            <span className="text-3xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                          </div>
-                        )}
+                        <WartMedia wart={wart} className="w-full max-h-[400px] object-contain group-hover:scale-[1.02] transition-transform duration-500" />
                       </div>
                       <div className="flex items-center justify-between mt-2 px-1">
                         <div>
@@ -874,13 +930,7 @@ export default function CurateView({ onNavigate }: { onNavigate: (tab: string) =
                   return (
                     <div key={wartId} className="cursor-pointer group" onClick={() => handleViewWart(wartId)}>
                       <div className="relative aspect-square overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                        {wart.imageData && wart.mediaType !== 'audio' ? (
-                          <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
-                          </div>
-                        )}
+                        <WartMedia wart={wart} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
                       <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                       <button className="text-label opacity-50 hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button>
