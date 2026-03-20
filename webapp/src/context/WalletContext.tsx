@@ -124,7 +124,7 @@ interface WalletContextType {
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
   transferWart: (wartId: string, toAddress: string) => Promise<{ success: boolean; error?: string }>;
-  deleteWart: (wartId: string) => boolean;
+  deleteWart: (wartId: string) => Promise<boolean>;
   editWart: (wartId: string, updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number }) => boolean;
   addWartComment: (wartId: string, content: string) => boolean;
   toggleWartLike: (wartId: string) => boolean;
@@ -233,13 +233,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Track locally-deleted wart IDs so cloud sync doesn't resurrect them
+  const deletedWartIdsKey = 'strangrz_deleted_warts';
+  function getDeletedWartIds(): Set<string> {
+    try {
+      const raw = storage.getItem(deletedWartIdsKey);
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+    } catch { return new Set(); }
+  }
+  function markWartDeleted(wartId: string) {
+    const ids = getDeletedWartIds();
+    ids.add(wartId);
+    storage.setItem(deletedWartIdsKey, JSON.stringify([...ids]));
+  }
+
   function mergeCloudWarts(cloudWarts: Record<string, unknown>[]) {
     const engine = getWartEngine();
     const localWarts = engine.getAll();
     const localIds = new Set(localWarts.map(w => w.id));
+    const deletedIds = getDeletedWartIds();
 
     for (const row of cloudWarts) {
       const wartId = row.id as string;
+      // Skip warts we've locally deleted — don't resurrect them
+      if (deletedIds.has(wartId)) continue;
       if (localIds.has(wartId)) {
         const local = engine.getWart(wartId);
         if (local) {
@@ -1059,13 +1076,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, [wallet]);
 
-  const doDeleteWart = useCallback((wartId: string): boolean => {
+  const doDeleteWart = useCallback(async (wartId: string): Promise<boolean> => {
     if (!wallet) return false;
     const engine = getWartEngine();
     const ok = engine.delete(wartId, wallet.address);
     if (ok) {
+      markWartDeleted(wartId);
       refreshWartsState(wallet.address);
-      sync.syncWartDelete(wartId);
+      await sync.syncWartDelete(wartId);
     }
     return ok;
   }, [wallet]);

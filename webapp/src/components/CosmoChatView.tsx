@@ -363,9 +363,6 @@ export default function CosmoChatView() {
 
         {/* Content */}
         {post.content && <p className="text-base opacity-70 mb-1 whitespace-pre-wrap">{post.content}</p>}
-        {post.wartLink && (
-          <p className="text-body-sm opacity-80 mb-1">{'\u2B22'} Strangrz: {post.wartLink}</p>
-        )}
         <MediaContent post={post} />
 
         {/* Collect button (if post links to a wart with a price) */}
@@ -468,7 +465,6 @@ export default function CosmoChatView() {
           </div>
 
           {post.content && <p className="text-base opacity-70 whitespace-pre-wrap mb-3">{post.content}</p>}
-          {post.wartLink && <p className="text-body-sm opacity-80 mb-2">{'\u2B22'} Strangrz: {post.wartLink}</p>}
           <MediaContent post={post} />
 
           {/* Stats bar */}

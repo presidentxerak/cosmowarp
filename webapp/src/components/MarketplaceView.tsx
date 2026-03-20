@@ -592,8 +592,8 @@ export default function MarketplaceView() {
     }
   };
 
-  const handleDelete = (wart: Wart) => {
-    deleteWart(wart.id);
+  const handleDelete = async (wart: Wart) => {
+    await deleteWart(wart.id);
     setSelectedWart(null);
     setConfirmDelete(false);
     setTab('all');

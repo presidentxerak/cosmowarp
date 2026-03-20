@@ -977,7 +977,16 @@ export class WartEngine {
   }): Promise<{ success: boolean; fiatTx?: FiatTransaction; error?: string }> {
     const wart = this.warts.get(params.wartId);
     if (!wart || !wart.listed) return { success: false, error: 'Not for sale' };
-    if (!wart.priceFiat || !wart.fiatCurrency) return { success: false, error: 'No fiat price set' };
+
+    // Auto-derive fiat price from STZ price if not explicitly set
+    if (!wart.priceFiat || !wart.fiatCurrency) {
+      if (wart.price != null && wart.price > 0) {
+        wart.fiatCurrency = 'EUR';
+        wart.priceFiat = this.fiatGateway.warpsToFiat(wart.price, 'EUR');
+      } else {
+        return { success: false, error: 'No price set' };
+      }
+    }
 
     try {
       // Create fiat transaction record
