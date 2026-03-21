@@ -674,7 +674,7 @@ export default function MarketplaceView() {
 
   const handleSaveEdit = (wart: Wart) => {
     const priceVal = editPrice ? parseFloat(editPrice) : null;
-    if (priceVal !== null && (isNaN(priceVal) || priceVal <= 0)) return;
+    if (priceVal !== null && (isNaN(priceVal) || priceVal < 100)) return;
     const royaltyVal = parseFloat(editRoyalty);
     if (isNaN(royaltyVal) || royaltyVal < 0 || royaltyVal > 50) return;
 
@@ -752,10 +752,11 @@ export default function MarketplaceView() {
     if (wart.mediaType === 'video') {
       return (
         <video
-          controls
+          controls={className.includes('object-contain')}
           playsInline
-          preload="auto"
-          className={`w-full bg-black ${className}`}
+          muted
+          preload="metadata"
+          className={`w-full h-full object-cover bg-black ${className}`}
           src={videoBlobUrl}
         />
       );
@@ -836,7 +837,7 @@ export default function MarketplaceView() {
         >
           <HexAvatar address={wart.creator} size={16} />
           <p className="text-[10px] opacity-60 truncate">
-            {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
+            {getCreatorName(wart.creator)}
           </p>
         </div>
         <EditionInfo wart={wart} compact />
@@ -844,7 +845,6 @@ export default function MarketplaceView() {
           {wart.listed && wart.price !== null ? (
             <div>
               <span className="text-base font-bold opacity-80">{getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}</span>
-              <span className="text-[10px] opacity-40 ml-1">({wart.price} {'\u2B23'})</span>
             </div>
           ) : (
             <span className="text-body-sm opacity-60">Not listed</span>
@@ -893,14 +893,16 @@ export default function MarketplaceView() {
             >
               Collect {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
             </button>
-            <button
-              className="text-body-sm py-1.5 px-2 opacity-40 border border-current/10 hover:opacity-60 transition-colors cursor-pointer"
-              onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-              disabled={buying || wallet.balance < wart.price}
-              title={`Pay in tokens: ${wart.price} ⬣`}
-            >
-              {wart.price} {'\u2B23'}
-            </button>
+            {wart.mintChain === 'ethereum' && (
+              <button
+                className="text-body-sm py-1.5 px-2 opacity-60 border border-current/10 hover:opacity-80 transition-colors cursor-pointer"
+                onClick={e => { e.stopPropagation(); handleBuy(wart); }}
+                disabled={buying || wallet.balance < wart.price}
+                title="Pay with Ethereum"
+              >
+                {'\u039E'} ETH
+              </button>
+            )}
           </div>
         )}
         {wart.owner === wallet.address && (
@@ -974,8 +976,8 @@ export default function MarketplaceView() {
                   <textarea className="warp-input min-h-[100px] resize-y text-body-md" value={editDescription} onChange={e => setEditDescription(e.target.value)} maxLength={500} />
                 </div>
                 <div>
-                  <label className="text-label opacity-50 text-current block mb-2">PRICE IN {'\u2B23'} (empty = not for sale)</label>
-                  <input className="warp-input text-body-lg" type="number" placeholder="0" min="0" step="1" value={editPrice} onChange={e => setEditPrice(e.target.value)} />
+                  <label className="text-label opacity-50 text-current block mb-2">PRICE IN {'\u2B23'} (empty = not for sale, min 100)</label>
+                  <input className="warp-input text-body-lg" type="number" placeholder="Min 100 ⬣" min="100" step="1" value={editPrice} onChange={e => setEditPrice(e.target.value)} />
                 </div>
                 {isCreator && (
                   <div>
@@ -1012,7 +1014,7 @@ export default function MarketplaceView() {
                 >
                   <HexAvatar address={wart.creator} size={28} />
                   <span className="text-body-lg opacity-60">
-                    @{isCreator ? (wallet.alias || 'you') : (getCreatorName(wart.creator) || shortAddress(wart.creator))}
+                    @{isCreator ? (wallet.alias || 'you') : getCreatorName(wart.creator)}
                   </span>
                 </div>
 
@@ -1073,13 +1075,15 @@ export default function MarketplaceView() {
                     >
                       {buyingFiat ? 'Processing...' : `Collect ${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}`}
                     </button>
-                    <button
-                      className="w-full py-3 text-body-md opacity-40 border border-current/10 hover:opacity-60 transition-all cursor-pointer"
-                      onClick={() => handleBuy(wart)}
-                      disabled={buying || wallet.balance < wart.price}
-                    >
-                      {buying ? 'Processing...' : `Pay ${wart.price} ⬣`}
-                    </button>
+                    {wart.mintChain === 'ethereum' && (
+                      <button
+                        className="w-full py-3 text-body-md opacity-60 border border-current/10 hover:opacity-80 transition-all cursor-pointer"
+                        onClick={() => handleBuy(wart)}
+                        disabled={buying || wallet.balance < wart.price}
+                      >
+                        {buying ? 'Processing...' : `Pay with Ethereum \u039E`}
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -1099,7 +1103,7 @@ export default function MarketplaceView() {
                         <span className="opacity-60">Owner</span>
                         <span className={`opacity-80 inline-flex items-center gap-2 ${!isMine ? 'cursor-pointer hover:opacity-100' : ''}`} onClick={() => { if (!isMine) navigateToProfile(wart.owner); }}>
                           <HexAvatar address={wart.owner} size={20} />
-                          {isMine ? 'You' : (getCreatorName(wart.owner) || shortAddress(wart.owner))}
+                          {isMine ? 'You' : getCreatorName(wart.owner)}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -1251,7 +1255,7 @@ export default function MarketplaceView() {
                               onClick={() => {
                                 const lastTx = wart.history.length > 0 ? wart.history[wart.history.length - 1] : null;
                                 const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
-                                const artistName = isCreator ? (wallet.alias || shortAddress(wallet.address)) : shortAddress(wart.creator);
+                                const artistName = isCreator ? (wallet.alias || 'you') : getCreatorName(wart.creator);
                                 generateSignaturePDF({ artworkName: wart.title, artistName, transactionId: txId });
                               }}
                             >
@@ -1300,7 +1304,7 @@ export default function MarketplaceView() {
                         <div key={i} className="flex items-center gap-4 py-2 text-body-md">
                           <span className="opacity-60">{'\u21C4'}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="opacity-70 truncate">{shortAddress(h.from)} {'\u2192'} {shortAddress(h.to)}</p>
+                            <p className="opacity-70 truncate">{getCreatorName(h.from)} {'\u2192'} {getCreatorName(h.to)}</p>
                             <p className="text-body-sm opacity-60">{formatDateFR(h.timestamp)}</p>
                           </div>
                           <span className="font-bold opacity-80 shrink-0 text-body-lg">{h.price > 0 ? `${h.price} \u2B23` : 'Gift'}</span>
@@ -1364,10 +1368,18 @@ export default function MarketplaceView() {
                   <div className="space-y-4 pt-4 border-t border-current/10">
                     <div className="flex gap-3">
                       <button className="warp-button flex-1 py-3 text-body-lg" onClick={() => startEditing(wart)}>{'\u270E'} Edit</button>
-                      {!confirmDelete ? (
-                        <button className="flex-1 py-3 text-body-lg font-bold border border-current/15 opacity-60 hover:opacity-90 transition-all cursor-pointer" onClick={() => setConfirmDelete(true)}>{'\u2716'} Delete</button>
+                      {wart.history.length > 0 || wart.creator !== wart.owner ? (
+                        /* Purchased artwork — cannot delete, only hide (delist) */
+                        wart.listed ? null : (
+                          <span className="flex-1 py-3 text-body-lg text-center opacity-40 border border-current/10">Cannot delete (sold)</span>
+                        )
                       ) : (
-                        <button className="flex-1 py-3 text-body-lg font-bold border border-current/20 opacity-70 hover:opacity-100 transition-all cursor-pointer" onClick={() => handleDelete(wart)}>Confirm Delete?</button>
+                        /* Unsold artwork — can delete */
+                        !confirmDelete ? (
+                          <button className="flex-1 py-3 text-body-lg font-bold border border-current/15 opacity-60 hover:opacity-90 transition-all cursor-pointer" onClick={() => setConfirmDelete(true)}>{'\u2716'} Delete</button>
+                        ) : (
+                          <button className="flex-1 py-3 text-body-lg font-bold border border-current/20 opacity-70 hover:opacity-100 transition-all cursor-pointer" onClick={() => handleDelete(wart)}>Confirm Delete?</button>
+                        )
                       )}
                     </div>
 
@@ -1516,7 +1528,7 @@ export default function MarketplaceView() {
               <div className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigateToProfile(wart.creator)}>
                 <HexAvatar address={wart.creator} size={16} />
                 <p className="text-[10px] opacity-60 truncate">
-                  {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
+                  {getCreatorName(wart.creator)}
                 </p>
               </div>
               <EditionInfo wart={wart} compact />
@@ -1771,7 +1783,7 @@ export default function MarketplaceView() {
                           {latestActivity.slice(0, 20).map((ev, i) => (
                             <div key={`${ev.wart.id}-${ev.ts}-${i}`} className="shrink-0 w-[120px] cursor-pointer snap-start" onClick={() => openDetail(ev.wart)}>
                               <div className="aspect-square overflow-hidden bg-current/5 rounded-sm">
-                                <img src={ev.wart.imageData} alt={ev.wart.title} className="w-full h-full object-cover" loading="lazy" />
+                                <WartMedia wart={ev.wart} className="w-full h-full object-cover" />
                               </div>
                               <p className="text-[10px] font-bold opacity-70 mt-1">{ev.type}</p>
                               <div className="flex items-center gap-1 mt-0.5">
@@ -1811,7 +1823,7 @@ export default function MarketplaceView() {
                                   {idx + 1}
                                 </span>
                                 {thumbWart ? (
-                                  <img src={thumbWart.imageData} alt="" className="w-12 h-12 object-cover rounded-sm" />
+                                  <WartMedia wart={thumbWart} className="w-12 h-12 object-cover rounded-sm" />
                                 ) : (
                                   <div className="w-12 h-12 bg-current/5 rounded-sm" />
                                 )}
@@ -1821,7 +1833,7 @@ export default function MarketplaceView() {
                                 <p className="text-body-sm font-bold opacity-80 truncate">
                                   {coll.address === wallet?.address ? (wallet.alias || 'You') : getCreatorName(coll.address)}
                                 </p>
-                                <p className="text-[10px] opacity-50">@{shortAddress(coll.address)}</p>
+                                <p className="text-[10px] opacity-50">@{coll.address === wallet?.address ? (wallet.alias || 'You') : getCreatorName(coll.address)}</p>
                               </div>
                               <div className="text-right shrink-0">
                                 <p className="text-body-sm font-bold opacity-70">{coll.count >= 1000 ? `${(coll.count / 1000).toFixed(1)}k` : coll.count} pieces</p>
@@ -1897,7 +1909,7 @@ export default function MarketplaceView() {
                               <p className="text-body-sm font-bold opacity-80 truncate">{template.title}</p>
                               <span className="text-[9px] px-1.5 py-0.5 bg-current/10 border border-current/20 opacity-60">LAZY</span>
                             </div>
-                            <p className="text-[10px] opacity-60 truncate">{shortAddress(template.creator)}</p>
+                            <p className="text-[10px] opacity-60 truncate">{getCreatorName(template.creator)}</p>
                             <div className="text-[10px] opacity-50 space-y-0.5">
                               <p>Prix : <strong>{template.price} {'\u2B23'}</strong></p>
                               <p>+ service : <strong>{fees.serviceFee} {'\u2B23'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
@@ -1990,7 +2002,7 @@ export default function MarketplaceView() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
-                      {creator.address === wallet.address ? (wallet.alias || 'You') : shortAddress(creator.address)}
+                      {creator.address === wallet.address ? (wallet.alias || 'You') : getCreatorName(creator.address)}
                     </p>
                     <p className="text-[10px] opacity-60">
                       {creator.count} artwork{creator.count > 1 ? 's' : ''} created
@@ -2027,7 +2039,7 @@ export default function MarketplaceView() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
-                      {collector.address === wallet.address ? (wallet.alias || 'You') : shortAddress(collector.address)}
+                      {collector.address === wallet.address ? (wallet.alias || 'You') : getCreatorName(collector.address)}
                     </p>
                     <p className="text-[10px] opacity-60">
                       {collector.count} artwork{collector.count > 1 ? 's' : ''} owned
@@ -2074,7 +2086,7 @@ export default function MarketplaceView() {
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">{sale.wart.title}</p>
                     <p className="text-[10px] opacity-60">
-                      {shortAddress(sale.transfer.from)} {'\u2192'} {shortAddress(sale.transfer.to)}
+                      {getCreatorName(sale.transfer.from)} {'\u2192'} {getCreatorName(sale.transfer.to)}
                     </p>
                     <p className="text-[10px] opacity-50">{formatDateFR(sale.transfer.timestamp)}</p>
                   </div>

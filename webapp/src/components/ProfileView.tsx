@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
+import { copyToClipboard } from '../lib/clipboard';
 import { SocialEngine } from '../engine/social';
 import { CosmoChatEngine } from '../engine/cosmochat';
 import type { ChatPost } from '../engine/cosmochat';
@@ -81,6 +82,7 @@ function savePlaylists(address: string, playlists: Playlist[]): void {
 export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { wallet, unlocked, lock, signOut, myCreated, myCollection, warts: allWarts, marketplace, toggleWartLike, toggleWartBookmark } = useWallet();
   const [tab, setTab] = useState<Tab>('warts');
+  const [copiedAddress, setCopiedAddress] = useState(false);
   const [posts, setPosts] = useState<ChatPost[]>([]);
   const [bio, setBio] = useState('');
   const [editingBio, setEditingBio] = useState(false);
@@ -474,7 +476,20 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
 
           {/* Name & address */}
           <h2 className="text-title-lg font-bold opacity-100 font-title mt-3">{alias}</h2>
-          <p className="text-[11px] opacity-60 font-mono mt-0.5">{wallet.address}</p>
+          <div className="flex items-center gap-1.5 mt-0.5 justify-center">
+            <p className="text-[11px] opacity-60 font-mono">{wallet.address}</p>
+            <button
+              className="opacity-40 hover:opacity-80 cursor-pointer transition-opacity"
+              title="Copy address"
+              onClick={() => { copyToClipboard(wallet.address); setCopiedAddress(true); setTimeout(() => setCopiedAddress(false), 2000); }}
+            >
+              {copiedAddress ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              )}
+            </button>
+          </div>
 
           {/* Balance & Level */}
           <div className="flex gap-4 mt-2 items-center flex-wrap justify-center">
