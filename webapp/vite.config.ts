@@ -71,9 +71,11 @@ export default defineConfig({
     target: ['es2020', 'safari14'],
     rollupOptions: {
       output: {
-        manualChunks: {
-          three: ['three'],
-          react: ['react', 'react-dom'],
+        manualChunks(id) {
+          if (id.includes('node_modules/three/')) return 'three';
+          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) return 'react';
+          if (id.includes('node_modules/@supabase/') || id.includes('node_modules/@noble/')) return 'vendor';
+          if (id.includes('node_modules/')) return 'vendor';
         },
       },
     },
