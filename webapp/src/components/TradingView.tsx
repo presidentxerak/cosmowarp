@@ -4,8 +4,19 @@ import { shortAddress } from '../engine/crypto';
 import { computeRarity, RARITY_CONFIG, isExpired } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { SocialEngine } from '../engine/social';
+import { FiatGateway, getCurrencySymbol } from '../engine/fiatgateway';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
+
+const _fiatGw = new FiatGateway();
+function getEurPrice(wart: Wart): number {
+  if (wart.priceFiat && wart.fiatCurrency) return wart.priceFiat;
+  if (wart.price != null) return _fiatGw.warpsToFiat(wart.price, 'EUR');
+  return 0;
+}
+function getEurSymbol(wart: Wart): string {
+  return getCurrencySymbol(wart.fiatCurrency || 'EUR');
+}
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -258,7 +269,7 @@ export default function TradingView() {
                   <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                   <div className="flex justify-between items-center mt-0.5">
                     <button className="text-label opacity-60 hover:opacity-80 hover:underline cursor-pointer" onClick={e => { e.stopPropagation(); navigateToProfile(wart.creator); }}>@{getCreatorName(wart.creator)}</button>
-                    <p className="text-body-sm font-bold opacity-70">{wart.price} {'\u2B23'}</p>
+                    <p className="text-body-sm font-bold opacity-70">{getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}</p>
                   </div>
                   <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/5">
                     <span className="text-[10px] opacity-50">{'\u2665'} {wart.likes?.length || 0}</span>
@@ -344,7 +355,7 @@ export default function TradingView() {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-90">{wart.price} {'\u2B23'}</p>
+                    <p className="text-base font-bold opacity-90">{getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}</p>
                     {wart.owner !== wallet.address ? (
                       <button
                         onClick={() => handleBuy(wart)}
@@ -499,7 +510,7 @@ export default function TradingView() {
                     <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                     <div className="flex justify-between items-center mt-0.5">
                       <span className={`text-[10px] px-1 py-0.5 ${RARITY_CONFIG[computeRarity(wart)].color}`}>{computeRarity(wart)}</span>
-                      <span className="text-body-sm font-bold opacity-70">{wart.price !== null ? `${wart.price} \u2B23` : '—'}</span>
+                      <span className="text-body-sm font-bold opacity-70">{wart.price !== null ? `${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}` : '—'}</span>
                     </div>
                     <div className="flex gap-1 mt-1.5 pt-1.5 border-t border-current/5">
                       {wart.listed ? (
@@ -560,7 +571,8 @@ export default function TradingView() {
                 {/* Price & Action */}
                 <div className="glass-panel p-4">
                   <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-1">Current Price</p>
-                  <p className="text-title-lg font-bold opacity-95">{wart.price !== null ? `${wart.price} \u2B23` : 'Not listed'}</p>
+                  <p className="text-title-lg font-bold opacity-95">{wart.price !== null ? `${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}` : 'Not listed'}</p>
+                  {wart.price !== null && <p className="text-body-sm opacity-40">{wart.price} {'\u2B23'}</p>}
                   {priceChangePct !== 0 && (
                     <p className="text-body-sm mt-0.5" style={{ color: priceChangePct >= 0 ? '#51cf66' : '#ff6b6b' }}>
                       {priceChangePct >= 0 ? '+' : ''}{priceChangePct.toFixed(1)}% from last sale
@@ -576,11 +588,11 @@ export default function TradingView() {
                         <div className="flex gap-2">
                           <input
                             className="warp-input flex-1 text-body-sm py-2"
-                            placeholder="Price in STRNGRZ"
+                            placeholder="Min 100 STRNGRZ"
                             value={listPrice}
                             onChange={e => setListPrice(e.target.value)}
                             type="number"
-                            min="0"
+                            min="100"
                           />
                           <button onClick={() => { if (listPrice) { listWart(wart.id, parseFloat(listPrice)); setListPrice(''); } }} className="warp-button px-4 py-2 text-body-sm" disabled={!listPrice}>
                             List
@@ -593,7 +605,7 @@ export default function TradingView() {
                         disabled={buying || wallet.balance < (wart.price || 0)}
                         className="warp-button w-full py-2.5 text-base font-medium"
                       >
-                        {buying ? 'Processing...' : `Buy Now for ${wart.price} \u2B23`}
+                        {buying ? 'Processing...' : `Buy Now for ${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}`}
                       </button>
                     ) : (
                       <p className="text-body-sm opacity-50 text-center py-2">This artwork is not currently for sale</p>

@@ -323,7 +323,7 @@ export default function MarketplaceView() {
   const spotlightCreator = useMemo(() => {
     if (topCreators.length === 0) return null;
     const creator = topCreators[0];
-    const wartsWithImages = creator.warts.filter(w => w.imageData);
+    const wartsWithImages = creator.warts.filter(w => w.imageData && (!w.mediaType || w.mediaType === 'image' || w.mediaType === 'svg'));
     if (wartsWithImages.length === 0) return null;
     return { ...creator, wartsWithImages };
   }, [topCreators]);
@@ -1822,11 +1822,13 @@ export default function MarketplaceView() {
                                 <span className="absolute -top-1 -left-1 w-5 h-5 bg-current/10 border border-current/20 flex items-center justify-center text-[9px] font-bold opacity-70 z-10">
                                   {idx + 1}
                                 </span>
-                                {thumbWart ? (
-                                  <WartMedia wart={thumbWart} className="w-12 h-12 object-cover rounded-sm" />
-                                ) : (
-                                  <div className="w-12 h-12 bg-current/5 rounded-sm" />
-                                )}
+                                <div className="w-12 h-12 overflow-hidden rounded-sm bg-current/5">
+                                  {thumbWart ? (
+                                    <img src={thumbWart.mediaType === 'video' || thumbWart.mediaType === 'audio' ? '' : thumbWart.imageData} alt="" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  ) : (
+                                    <div className="w-full h-full bg-current/5" />
+                                  )}
+                                </div>
                               </div>
                               <HexAvatar address={coll.address} size={24} className="shrink-0" />
                               <div className="flex-1 min-w-0">
@@ -1997,8 +1999,8 @@ export default function MarketplaceView() {
             <div className="space-y-2">
               {topCreators.slice(0, 50).map((creator, idx) => (
                 <div key={creator.address} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(creator.address)}>
-                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
-                    #{idx + 1}
+                  <div className={`w-8 h-8 flex items-center justify-center text-base font-bold shrink-0 rounded-full border ${idx === 0 ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' : idx === 1 ? 'bg-gray-400/20 border-gray-400/40 text-gray-300' : idx === 2 ? 'bg-amber-700/20 border-amber-700/40 text-amber-600' : 'opacity-50 border-current/10'}`}>
+                    {idx < 3 ? idx + 1 : `#${idx + 1}`}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
@@ -2034,8 +2036,8 @@ export default function MarketplaceView() {
             <div className="space-y-2">
               {topCollectors.slice(0, 50).map((collector, idx) => (
                 <div key={collector.address} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(collector.address)}>
-                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
-                    #{idx + 1}
+                  <div className={`w-8 h-8 flex items-center justify-center text-base font-bold shrink-0 rounded-full border ${idx === 0 ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' : idx === 1 ? 'bg-gray-400/20 border-gray-400/40 text-gray-300' : idx === 2 ? 'bg-amber-700/20 border-amber-700/40 text-amber-600' : 'opacity-50 border-current/10'}`}>
+                    {idx < 3 ? idx + 1 : `#${idx + 1}`}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
@@ -2077,8 +2079,8 @@ export default function MarketplaceView() {
                   className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-all"
                   onClick={() => openDetail(sale.wart)}
                 >
-                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
-                    #{idx + 1}
+                  <div className={`w-8 h-8 flex items-center justify-center text-base font-bold shrink-0 rounded-full border ${idx === 0 ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' : idx === 1 ? 'bg-gray-400/20 border-gray-400/40 text-gray-300' : idx === 2 ? 'bg-amber-700/20 border-amber-700/40 text-amber-600' : 'opacity-50 border-current/10'}`}>
+                    {idx < 3 ? idx + 1 : `#${idx + 1}`}
                   </div>
                   <div className="w-12 h-12 bg-current/5 overflow-hidden shrink-0">
                     <WartMedia wart={sale.wart} className="w-full h-full object-cover" />

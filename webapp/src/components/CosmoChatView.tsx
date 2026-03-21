@@ -815,12 +815,15 @@ export default function CosmoChatView() {
               <div className="flex items-end justify-center gap-6 py-4">
                 {(leaderboardTab === 'artists' ? topArtists : topBuyers).map((entry, idx) => {
                   const addr = entry.address;
-                  const badges = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+                  const badgeColors = ['bg-yellow-500/20 border-yellow-500/40 text-yellow-400', 'bg-gray-400/20 border-gray-400/40 text-gray-300', 'bg-amber-700/20 border-amber-700/40 text-amber-600'];
+                  const badgeLabels = ['1st', '2nd', '3rd'];
                   return (
                     <div key={addr} className="flex flex-col items-center gap-2 cursor-pointer" onClick={() => handleViewUser(addr)}>
                       <div className="relative">
                         <HexAvatar address={addr} size={idx === 0 ? 56 : 48} />
-                        <span className="absolute -top-1 -right-1 text-sm">{badges[idx]}</span>
+                        <span className={`absolute -top-2 -right-2 w-7 h-7 flex items-center justify-center text-[10px] font-bold border rounded-full ${badgeColors[idx]}`}>
+                          {badgeLabels[idx]}
+                        </span>
                       </div>
                       <span className="text-[11px] font-bold opacity-70 truncate max-w-[100px] text-center">
                         {getHandle(addr)}
