@@ -178,39 +178,97 @@ const PREVIEW_MAX_WIDTH = 400;
 const PREVIEW_MAX_HEIGHT = 400;
 const PREVIEW_QUALITY = 0.6;
 
+/** Scale dimensions to fit within max bounds, preserving aspect ratio */
+function scaleToFit(w: number, h: number): { w: number; h: number } {
+  if (w > PREVIEW_MAX_WIDTH) { h = Math.round(h * PREVIEW_MAX_WIDTH / w); w = PREVIEW_MAX_WIDTH; }
+  if (h > PREVIEW_MAX_HEIGHT) { w = Math.round(w * PREVIEW_MAX_HEIGHT / h); h = PREVIEW_MAX_HEIGHT; }
+  return { w, h };
+}
+
+/** Draw source onto a canvas and return JPEG data URL */
+function canvasToJpeg(source: CanvasImageSource, srcW: number, srcH: number): string | null {
+  const { w, h } = scaleToFit(srcW, srcH);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.drawImage(source, 0, 0, w, h);
+  return canvas.toDataURL('image/jpeg', PREVIEW_QUALITY);
+}
+
 /**
  * Generate a compressed JPEG preview from a data URL.
- * Works for image types only (png, jpg, gif, webp, svg).
- * For video/audio, returns null (no visual preview generated).
+ * Supports images (png, jpg, gif, webp, svg), video (captures frame at 1s),
+ * and audio (uses audioCover if provided).
  *
+ * @param dataUrl - The media data URL
+ * @param audioCover - Optional cover image data URL for audio files
  * @returns A small JPEG data URL (~30-100 KB), or null if unsupported
  */
-export function generatePreview(dataUrl: string): Promise<string | null> {
+export function generatePreview(dataUrl: string, audioCover?: string): Promise<string | null> {
   return new Promise((resolve) => {
     if (!dataUrl) { resolve(null); return; }
 
-    // Skip non-image media (video, audio)
+    // ─── Video: capture a frame at 1 second ───
+    if (dataUrl.startsWith('data:video/')) {
+      const video = document.createElement('video');
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+
+      const cleanup = () => {
+        try { URL.revokeObjectURL(video.src); } catch {}
+      };
+
+      video.onloadeddata = () => {
+        // Seek to 1s (or 0 if shorter)
+        video.currentTime = Math.min(1, video.duration || 0);
+      };
+      video.onseeked = () => {
+        try {
+          const jpeg = canvasToJpeg(video, video.videoWidth, video.videoHeight);
+          cleanup();
+          resolve(jpeg);
+        } catch { cleanup(); resolve(null); }
+      };
+      video.onerror = () => { cleanup(); resolve(null); };
+
+      // Timeout: if video doesn't load in 10s, give up
+      setTimeout(() => { cleanup(); resolve(null); }, 10000);
+
+      // Convert data URL to blob URL for better memory handling
+      try {
+        const [header, base64] = dataUrl.split(',');
+        const mime = header?.match(/:(.*?);/)?.[1] || 'video/mp4';
+        const bytes = Uint8Array.from(atob(base64!), c => c.charCodeAt(0));
+        const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mime });
+        video.src = URL.createObjectURL(blob);
+      } catch { resolve(null); }
+      return;
+    }
+
+    // ─── Audio: use cover image if provided ───
+    if (dataUrl.startsWith('data:audio/')) {
+      if (audioCover) {
+        // Recursively generate preview from cover image
+        generatePreview(audioCover).then(resolve);
+      } else {
+        resolve(null);
+      }
+      return;
+    }
+
+    // ─── Image / SVG ───
     const isImage = dataUrl.startsWith('data:image/') ||
       dataUrl.trimStart().startsWith('<svg') ||
       dataUrl.trimStart().startsWith('<?xml');
-    if (!isImage && !dataUrl.startsWith('data:image')) { resolve(null); return; }
+    if (!isImage) { resolve(null); return; }
 
     const img = new Image();
     img.onload = () => {
       try {
-        // Calculate scaled dimensions preserving aspect ratio
-        let w = img.naturalWidth;
-        let h = img.naturalHeight;
-        if (w > PREVIEW_MAX_WIDTH) { h = Math.round(h * PREVIEW_MAX_WIDTH / w); w = PREVIEW_MAX_WIDTH; }
-        if (h > PREVIEW_MAX_HEIGHT) { w = Math.round(w * PREVIEW_MAX_HEIGHT / h); h = PREVIEW_MAX_HEIGHT; }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { resolve(null); return; }
-        ctx.drawImage(img, 0, 0, w, h);
-        const jpeg = canvas.toDataURL('image/jpeg', PREVIEW_QUALITY);
+        const jpeg = canvasToJpeg(img, img.naturalWidth, img.naturalHeight);
         resolve(jpeg);
       } catch { resolve(null); }
     };
@@ -221,6 +279,40 @@ export function generatePreview(dataUrl: string): Promise<string | null> {
     } else {
       img.src = dataUrl;
     }
+  });
+}
+
+/** Maximum video duration in seconds */
+export const MAX_VIDEO_DURATION_SECONDS = 30;
+
+/**
+ * Validate video duration from a data URL.
+ * @returns Duration in seconds, or null if not a video / couldn't read
+ */
+export function getVideoDuration(dataUrl: string): Promise<number | null> {
+  return new Promise((resolve) => {
+    if (!dataUrl || !dataUrl.startsWith('data:video/')) { resolve(null); return; }
+
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+
+    const cleanup = () => { try { URL.revokeObjectURL(video.src); } catch {} };
+
+    video.onloadedmetadata = () => {
+      const duration = video.duration;
+      cleanup();
+      resolve(isFinite(duration) ? duration : null);
+    };
+    video.onerror = () => { cleanup(); resolve(null); };
+    setTimeout(() => { cleanup(); resolve(null); }, 5000);
+
+    try {
+      const [header, base64] = dataUrl.split(',');
+      const mime = header?.match(/:(.*?);/)?.[1] || 'video/mp4';
+      const bytes = Uint8Array.from(atob(base64!), c => c.charCodeAt(0));
+      const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mime });
+      video.src = URL.createObjectURL(blob);
+    } catch { resolve(null); }
   });
 }
 

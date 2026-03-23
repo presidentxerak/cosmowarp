@@ -398,6 +398,36 @@ export default function MarketplaceView() {
     else if (['svg'].includes(ext)) mType = 'svg';
     else if (mediaType !== 'cards') mType = 'image';
 
+    // Validate video duration (max 30s) before reading full file
+    if (mType === 'video') {
+      setUploadProgress(0);
+      setUploadStatus('Vérification de la durée...');
+      const videoEl = document.createElement('video');
+      videoEl.preload = 'metadata';
+      const objectUrl = URL.createObjectURL(file);
+      videoEl.onloadedmetadata = () => {
+        URL.revokeObjectURL(objectUrl);
+        if (isFinite(videoEl.duration) && videoEl.duration > 30) {
+          setUploadStatus('');
+          setCreateError(`Vidéo trop longue (${Math.round(videoEl.duration)}s). Maximum : 30 secondes.`);
+          return;
+        }
+        // Duration OK — proceed to read
+        readFileAsDataUrl(file, mType);
+      };
+      videoEl.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        // Can't read duration — allow upload anyway
+        readFileAsDataUrl(file, mType);
+      };
+      videoEl.src = objectUrl;
+      return;
+    }
+
+    readFileAsDataUrl(file, mType);
+  };
+
+  const readFileAsDataUrl = (file: File, mType: 'image' | 'audio' | 'video' | 'svg' | 'cards') => {
     setUploadProgress(0);
     setUploadStatus(`Lecture de ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)...`);
 
@@ -2207,7 +2237,7 @@ export default function MarketplaceView() {
                 >
                   <div className="text-2xl mb-1">{'\u2B06'}</div>
                   <div className="text-[11px]">Click to upload (max 50MB)</div>
-                  <div className="text-[10px] opacity-60 mt-1">.gif .jpeg .png .svg .mp3 .mp4 .mov</div>
+                  <div className="text-[10px] opacity-60 mt-1">.gif .jpeg .png .svg .mp3 .mp4 .mov (video max 30s)</div>
                 </button>
               )}
             </div>

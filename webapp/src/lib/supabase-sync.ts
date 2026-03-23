@@ -294,7 +294,7 @@ export async function syncWartWithPreview(wart: Wart): Promise<void> {
   try {
     // 1. Generate a compressed thumbnail preview (~30-100 KB vs up to 50 MB)
     const { generatePreview, uploadPreview } = await import('./supabase-storage');
-    const preview = await generatePreview(wart.imageData);
+    const preview = await generatePreview(wart.imageData, wart.audioCover);
     let previewPath: string | undefined;
 
     if (preview) {
