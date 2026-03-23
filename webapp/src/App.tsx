@@ -36,7 +36,6 @@ const SignetsView = lazyRetry(() => import('./components/SignetsView'));
 const WhitepaperView = lazyRetry(() => import('./components/WhitepaperView'));
 const AdminView = lazyRetry(() => import('./components/AdminView'));
 const SettingsView = lazyRetry(() => import('./components/SettingsView'));
-const LandingView = lazyRetry(() => import('./components/LandingView'));
 const DevView = lazyRetry(() => import('./components/DevView'));
 const UserProfileView = lazyRetry(() => import('./components/UserProfileView'));
 const DiscoverView = lazyRetry(() => import('./components/DiscoverView'));
@@ -47,7 +46,7 @@ const CollectionPageView = lazyRetry(() => import('./components/CollectionPageVi
 
 // ─── URL routing map ─────────────────────────────────────
 const ROUTE_MAP: Record<string, string> = {
-  '/': 'landing',
+  '/': 'wall',
   '/wall': 'wall',
   '/gallery': 'gallery',
   '/messages': 'message',
@@ -77,7 +76,7 @@ for (const [path, tab] of Object.entries(ROUTE_MAP)) {
 
 function getTabFromPath(): string {
   const path = window.location.pathname;
-  return ROUTE_MAP[path] || 'landing';
+  return ROUTE_MAP[path] || 'wall';
 }
 
 // ─── Error Boundaries ────────────────────────────────────
@@ -182,21 +181,6 @@ function App() {
     window.addEventListener('strangrz-navigate', handler);
     return () => window.removeEventListener('strangrz-navigate', handler);
   }, [navigate]);
-
-  // Landing page renders full-screen without app chrome
-  if (activeTab === 'landing') {
-    return (
-      <AppErrorBoundary>
-        <ThemeProvider>
-        <WalletProvider>
-          <Suspense fallback={<ViewLoader />}>
-            <LandingView onNavigate={navigate} />
-          </Suspense>
-        </WalletProvider>
-        </ThemeProvider>
-      </AppErrorBoundary>
-    );
-  }
 
   return (
     <AppErrorBoundary>

@@ -1,8 +1,18 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import { CosmoChatEngine } from '../engine/cosmochat';
 import { SocialEngine } from '../engine/social';
+import { FiatGateway, getCurrencySymbol } from '../engine/fiatgateway';
+import type { Wart } from '../engine/warts';
+
+const _fg = new FiatGateway();
+function getEurPrice(wart: Wart): number {
+  if (wart.priceFiat && wart.fiatCurrency) return wart.priceFiat;
+  if (wart.price != null) return _fg.warpsToFiat(wart.price, 'EUR');
+  return 0;
+}
+function getEurSym(wart: Wart): string { return getCurrencySymbol(wart.fiatCurrency || 'EUR'); }
 import type { ChatPost, ChatChannel } from '../engine/cosmochat';
 import { uploadMedia as uploadMediaToStorage, downloadMediaAsDataUrl } from '../lib/supabase-storage';
 import { isBackendAvailable } from '../lib/supabase';
@@ -147,15 +157,152 @@ export default function CosmoChatView() {
     social.syncFromCloud(wallet.address).catch(() => {});
   }, [wallet?.address, wallet?.alias, unlocked]);
 
-  // Redirect to wallet/auth view when not connected
-  useEffect(() => {
-    if (!wallet || !unlocked) {
-      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
-    }
-  }, [wallet, unlocked]);
+  // ─── TikTok-style feed for unauthenticated users ─────
+  const feedWarts = useMemo(() => {
+    const all = [...allWarts].filter(w => w.imageData && w.listed && w.price !== null);
+    // Sort by newest first, then shuffle slightly for variety
+    return all.sort((a, b) => b.createdAt - a.createdAt);
+  }, [allWarts]);
 
+  const feedScrollRef = useRef<HTMLDivElement>(null);
+  const [currentFeedIdx, setCurrentFeedIdx] = useState(0);
+
+  const handleFeedScroll = useCallback(() => {
+    const el = feedScrollRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollTop / el.clientHeight);
+    setCurrentFeedIdx(idx);
+  }, []);
+
+  const getCreatorNameForFeed = (address: string): string => {
+    const social = SocialEngine.load();
+    const profile = social.getProfile(address);
+    return profile?.alias || shortAddress(address);
+  };
+
+  const requireAuth = () => {
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+  };
+
+  // Show TikTok feed for unauthenticated users
   if (!wallet || !unlocked) {
-    return null;
+    return (
+      <div className="fixed inset-0 z-40 bg-black" style={{ top: 0, bottom: 0 }}>
+        {feedWarts.length === 0 ? (
+          /* Empty state — invite to sign up */
+          <div className="h-full flex flex-col items-center justify-center px-6 text-center text-white">
+            <p className="text-5xl mb-4">{'\u2B21'}</p>
+            <h2 className="text-title-lg font-bold font-title mb-3">Bienvenue sur Strangrz</h2>
+            <p className="text-base opacity-60 mb-8 max-w-sm">Découvrez, achetez et collectionnez des oeuvres d'art uniques. Connectez-vous avec les artistes.</p>
+            <button onClick={requireAuth} className="cta-gradient-btn px-8 py-4 text-base font-bold">
+              Créer un compte gratuit
+            </button>
+            <button onClick={requireAuth} className="mt-3 text-body-sm opacity-50 cursor-pointer hover:opacity-80">
+              Déjà un compte ? Se connecter
+            </button>
+          </div>
+        ) : (
+          /* TikTok-style vertical scroll feed */
+          <div
+            ref={feedScrollRef}
+            className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-none"
+            onScroll={handleFeedScroll}
+          >
+            {feedWarts.map((wart, idx) => (
+              <div key={wart.id} className="h-screen w-full snap-start relative flex items-end">
+                {/* Full-screen media background */}
+                {wart.mediaType === 'video' ? (
+                  <video
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src={wart.imageData}
+                    autoPlay={idx === currentFeedIdx}
+                    muted
+                    loop
+                    playsInline
+                    preload={Math.abs(idx - currentFeedIdx) <= 1 ? 'auto' : 'none'}
+                  />
+                ) : (
+                  <img
+                    src={wart.imageData}
+                    alt={wart.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading={Math.abs(idx - currentFeedIdx) <= 2 ? 'eager' : 'lazy'}
+                  />
+                )}
+
+                {/* Gradient overlay bottom */}
+                <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)' }} />
+
+                {/* Right side actions */}
+                <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5 z-10">
+                  {/* Artist avatar */}
+                  <button onClick={requireAuth} className="flex flex-col items-center gap-1 cursor-pointer">
+                    <HexAvatar address={wart.creator} size={40} />
+                    <span className="text-[9px] text-white/70 font-bold">+</span>
+                  </button>
+                  {/* Like */}
+                  <button onClick={requireAuth} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span className="text-[10px] text-white/80">{wart.likes?.length || 0}</span>
+                  </button>
+                  {/* Comments */}
+                  <button onClick={requireAuth} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span className="text-[10px] text-white/80">{wart.comments?.length || 0}</span>
+                  </button>
+                  {/* Share */}
+                  <button onClick={requireAuth} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                  </button>
+                  {/* Bookmark */}
+                  <button onClick={requireAuth} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                </div>
+
+                {/* Bottom info overlay */}
+                <div className="relative w-full px-4 pb-24 pr-16 z-10">
+                  {/* Artist */}
+                  <button onClick={requireAuth} className="flex items-center gap-2 mb-2 cursor-pointer">
+                    <span className="text-white text-sm font-bold">@{getCreatorNameForFeed(wart.creator)}</span>
+                  </button>
+                  {/* Title */}
+                  <h3 className="text-white text-lg font-bold mb-1">{wart.title}</h3>
+                  {/* Price + edition */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-white font-bold text-base">{getEurSym(wart)}{getEurPrice(wart).toFixed(2)}</span>
+                    {wart.editionType === 'limited' && wart.maxEditions && (
+                      <span className="text-white/60 text-xs px-2 py-0.5 border border-white/20">
+                        {wart.editionNumber}/{wart.maxEditions}
+                      </span>
+                    )}
+                    {wart.editionType === 'unique' && (
+                      <span className="text-white/60 text-xs px-2 py-0.5 border border-white/20">1/1</span>
+                    )}
+                  </div>
+                  {/* CTAs */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={requireAuth}
+                      className="flex-1 py-3 text-sm font-bold text-center cursor-pointer"
+                      style={{ background: 'linear-gradient(135deg, #e91e8c 0%, #d4af37 100%)', color: '#fff' }}
+                    >
+                      Collect {getEurSym(wart)}{getEurPrice(wart).toFixed(2)}
+                    </button>
+                    <button
+                      onClick={requireAuth}
+                      className="py-3 px-4 text-sm text-white/70 cursor-pointer border border-white/20 hover:bg-white/10 transition-colors"
+                    >
+                      Voir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   const alias = wallet.alias || shortAddress(wallet.address);

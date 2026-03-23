@@ -160,7 +160,21 @@ export default function TopBar({ onNavigate }: TopBarProps) {
   const collectionResults = results.filter(r => r.type === 'collection');
 
   return (
-    <header className="sticky top-0 z-50 glass-panel">
+    <header className="sticky top-0 z-50">
+      {/* Promo banner */}
+      <div
+        className="text-center py-1 px-3 text-[10px] sm:text-[11px] font-medium tracking-wide"
+        style={{
+          background: 'linear-gradient(90deg, #d4af37, #e91e8c, #339af0, #51cf66, #d4af37)',
+          backgroundSize: '300% 100%',
+          animation: 'promoBannerScroll 6s linear infinite',
+          color: '#000',
+        }}
+      >
+        First 100 signups: 30{'\u20AC'} credit = 3 free artworks!
+      </div>
+      <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
+      <div className="glass-panel">
       <div className="flex items-center gap-2 px-3 py-2 sm:px-[10px]">
         {/* Search bar */}
         <div className="flex-1 relative" ref={containerRef}>
@@ -327,6 +341,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             </span>
           )}
         </button>
+      </div>
       </div>
     </header>
   );
