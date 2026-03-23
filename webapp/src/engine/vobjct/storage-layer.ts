@@ -334,13 +334,36 @@ export class IPFSStorageProvider implements StorageProvider {
 export interface ArweaveConfig {
   gatewayUrl: string;           // e.g. "https://arweave.net"
   walletJWK?: object;           // Arweave wallet JWK for uploads
-  bundlerUrl?: string;          // e.g. "https://node1.bundlr.network" for Bundlr/Irys
+  bundlerUrl?: string;          // e.g. "https://node1.irys.xyz" for Irys
   bundlerToken?: string;
+  /**
+   * Optional Irys SDK uploader instance (browser-side).
+   * When provided, uploads use the Irys SDK with wallet signing
+   * instead of raw HTTP POST. Set via `setIrysUploader()`.
+   */
+  irysUploader?: IrysUploaderLike | null;
+  /**
+   * Optional server-side upload function.
+   * When provided, uploads are delegated to the platform API.
+   */
+  serverUploadFn?: (data: string, wartId: string) => Promise<{ txId: string } | null>;
+}
+
+/** Minimal interface for an Irys uploader (avoids coupling to SDK types) */
+export interface IrysUploaderLike {
+  upload(data: Buffer | Uint8Array, opts?: { tags?: Array<{ name: string; value: string }> }): Promise<{ id: string }>;
+  getPrice(bytes: number): Promise<bigint | { toString(): string }>;
+  fund(amount: unknown): Promise<{ id: string }>;
+  utils: {
+    toAtomic(value: string | number): unknown;
+    fromAtomic(value: unknown): { toString(): string };
+  };
+  token: string;
 }
 
 export class ArweaveStorageProvider implements StorageProvider {
   readonly network: StorageNetwork = 'arweave';
-  readonly name = 'Arweave (Permanent Storage)';
+  readonly name = 'Arweave (Permanent Storage via Irys)';
 
   private config: ArweaveConfig;
 
@@ -348,13 +371,66 @@ export class ArweaveStorageProvider implements StorageProvider {
     this.config = config;
   }
 
+  /** Attach an Irys uploader after wallet connection */
+  setIrysUploader(uploader: IrysUploaderLike | null): void {
+    this.config.irysUploader = uploader;
+  }
+
+  /** Attach a server-side upload function */
+  setServerUploadFn(fn: (data: string, wartId: string) => Promise<{ txId: string } | null>): void {
+    this.config.serverUploadFn = fn;
+  }
+
   /**
-   * Upload data to Arweave via a bundler/upload service.
+   * Upload data to Arweave via Irys.
+   * Priority: 1) Irys SDK uploader 2) Server API 3) Raw HTTP fallback
    * Returns locator: "ar://<txId>"
    */
-  async upload(data: string, _path: string): Promise<string | null> {
+  async upload(data: string, path: string): Promise<string | null> {
+    // 1) Irys SDK (browser, wallet-connected)
+    if (this.config.irysUploader) {
+      return this.uploadViaIrysSDK(data);
+    }
+
+    // 2) Server-side API (platform-funded)
+    if (this.config.serverUploadFn) {
+      return this.uploadViaServer(data, path);
+    }
+
+    // 3) Raw HTTP fallback (legacy)
+    return this.uploadViaHTTP(data);
+  }
+
+  private async uploadViaIrysSDK(data: string): Promise<string | null> {
+    try {
+      const blob = dataToBlob(data);
+      const buffer = new Uint8Array(await blob.arrayBuffer());
+
+      const tags = [
+        { name: 'App-Name', value: 'Strangrz' },
+        { name: 'Content-Type', value: blob.type },
+      ];
+
+      const receipt = await this.config.irysUploader!.upload(buffer, { tags });
+      return receipt.id ? `ar://${receipt.id}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async uploadViaServer(data: string, path: string): Promise<string | null> {
+    try {
+      const wartId = path.split('/').filter(Boolean).pop() || path;
+      const result = await this.config.serverUploadFn!(data, wartId);
+      return result?.txId ? `ar://${result.txId}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async uploadViaHTTP(data: string): Promise<string | null> {
     if (!this.config.bundlerUrl || !this.config.bundlerToken) {
-      return null; // No upload service configured — read-only gateway mode
+      return null;
     }
 
     try {
@@ -373,10 +449,7 @@ export class ArweaveStorageProvider implements StorageProvider {
       if (!response.ok) return null;
 
       const result = await response.json();
-      const txId = result.id;
-      if (!txId) return null;
-
-      return `ar://${txId}`;
+      return result.id ? `ar://${result.id}` : null;
     } catch {
       return null;
     }
