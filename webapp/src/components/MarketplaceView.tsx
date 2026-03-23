@@ -448,13 +448,12 @@ export default function MarketplaceView() {
     const durH = durationHours ? parseFloat(durationHours) : null;
     if (durH !== null && durH <= 0) { setCreateError('Duration must be positive'); return; }
 
-    // ─── Minimum price validation (both modes) ───
-    const minPrice = mintChain === 'ethereum' ? 500 : 100;
-    const chainLabel = mintChain === 'ethereum' ? 'Ethereum' : 'Strangrz';
+    // ─── Minimum price validation ───
+    const minPrice = 1;
 
-    // ─── Lazy Mint Mode: creator pays NOTHING ───
+    // ─── Publish Mode: creator pays NOTHING ───
     if (lazyMintMode) {
-      if (!priceVal || priceVal < minPrice) { setCreateError(`Le lazy mint sur ${chainLabel} nécessite un prix (min ${minPrice} ⬣)`); return; }
+      if (!priceVal || priceVal < minPrice) { setCreateError(`Un prix est requis (min ${minPrice} \u20AC)`); return; }
 
       setCreating(true);
       setCreateError('');
@@ -483,9 +482,9 @@ export default function MarketplaceView() {
         setUploadStatus('');
         const fees = calculateBuyerTotal(priceVal, imageData);
         setCreateSuccess(
-          `"${template.title}" publié en lazy mint ! ` +
-          `L'acheteur paiera ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service + ${fees.storageFee} ⬣ stockage). ` +
-          `Vous recevrez ${fees.price} ⬣ à chaque vente.`
+          `"${template.title}" publi\u00E9 ! ` +
+          `L'acheteur paiera ${fees.total} \u20AC (${fees.price} \u20AC + ${fees.serviceFee} \u20AC service + ${fees.storageFee} \u20AC stockage). ` +
+          `Vous recevrez ${fees.price} \u20AC \u00E0 chaque vente.`
         );
         setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
         setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
@@ -503,7 +502,7 @@ export default function MarketplaceView() {
 
     // ─── Standard Mint (legacy) ───
     if (!priceVal || priceVal < minPrice) {
-      setCreateError(`Le mint direct sur ${chainLabel} nécessite un prix (min ${minPrice} ⬣)`);
+      setCreateError(`Un prix est requis (min ${minPrice} \u20AC)`);
       return;
     }
     setCreating(true);
@@ -523,22 +522,20 @@ export default function MarketplaceView() {
       setUploadProgress(50);
       await new Promise(r => setTimeout(r, 100));
 
-      setUploadStatus(mintChain === 'ethereum'
-        ? 'Inscription ERC-721 sur Ethereum...'
-        : 'Inscription sur le protocole Strangrz...');
+      setUploadStatus('Certification en cours...');
       setUploadProgress(70);
 
       const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined, mintChain);
 
       setUploadProgress(100);
       setUploadStatus('');
-      setCreateSuccess(`"${wart.title}" certifié avec succès sur ${mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (SZ-721)'} (Édition #${wart.editionNumber}) !`);
+      setCreateSuccess(`"${wart.title}" certifi\u00E9 avec succ\u00E8s (\u00C9dition #${wart.editionNumber}) !`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
       setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
       setMediaType('image'); setAudioCover('');
       setTimeout(() => { setCreateSuccess(''); setUploadProgress(0); }, 5000);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Échec du minting');
+      setCreateError(err instanceof Error ? err.message : '\u00C9chec de la publication');
       setUploadProgress(0);
       setUploadStatus('');
     } finally {
@@ -554,7 +551,7 @@ export default function MarketplaceView() {
       if (result.success && result.fees) {
         setBuyLazyResult({
           success: true,
-          message: `Acheté pour ${result.fees.total} ⬣ (${result.fees.price} ⬣ + ${result.fees.serviceFee} ⬣ frais de service)`,
+          message: `Achet\u00E9 pour ${result.fees.total} \u20AC (${result.fees.price} \u20AC + ${result.fees.serviceFee} \u20AC frais de service)`,
         });
       } else {
         setBuyLazyResult({ success: false, message: result.error || 'Échec de l\'achat' });
@@ -618,8 +615,8 @@ export default function MarketplaceView() {
       setFiatPriceInput('');
     } else {
       const p = parseFloat(listPrice);
-      if (isNaN(p) || p < 100) {
-        setListSuccess('Prix minimum : 100 \u2B23');
+      if (isNaN(p) || p < 1) {
+        setListSuccess('Prix minimum : 1 \u20AC');
         setTimeout(() => setListSuccess(''), 3000);
         return;
       }
@@ -867,7 +864,7 @@ export default function MarketplaceView() {
             onClick={e => { e.stopPropagation(); if (!wart.likes?.includes(wallet.address) && wart.creator !== wallet.address) { send(wart.creator, 1, `Tip for ${wart.title}`); } toggleWartLike(wart.id); }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length}{'\u2B23'}</span>}
+            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length} {'\u2764'}</span>}
           </button>
           {/* Share */}
           <button className="opacity-60 hover:opacity-80 cursor-pointer" title="Share" onClick={e => {
@@ -899,16 +896,6 @@ export default function MarketplaceView() {
             >
               Collect {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
             </button>
-            {wart.mintChain === 'ethereum' && (
-              <button
-                className="text-body-sm py-1.5 px-2 opacity-60 border border-current/10 hover:opacity-80 transition-colors cursor-pointer"
-                onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-                disabled={buying || wallet.balance < wart.price}
-                title="Pay with Ethereum"
-              >
-                {'\u039E'} ETH
-              </button>
-            )}
           </div>
         )}
         {wart.owner === wallet.address && (
@@ -982,8 +969,8 @@ export default function MarketplaceView() {
                   <textarea className="warp-input min-h-[100px] resize-y text-body-md" value={editDescription} onChange={e => setEditDescription(e.target.value)} maxLength={500} />
                 </div>
                 <div>
-                  <label className="text-label opacity-50 text-current block mb-2">PRICE IN {'\u2B23'} (empty = not for sale, min 100)</label>
-                  <input className="warp-input text-body-lg" type="number" placeholder="Min 100 ⬣" min="100" step="1" value={editPrice} onChange={e => setEditPrice(e.target.value)} />
+                  <label className="text-label opacity-50 text-current block mb-2">PRIX EN {'\u20AC'} (vide = pas en vente, min 1)</label>
+                  <input className="warp-input text-body-lg" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)} />
                 </div>
                 {isCreator && (
                   <div>
@@ -1059,9 +1046,6 @@ export default function MarketplaceView() {
                     <p className="text-title-xl font-bold">
                       {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
                     </p>
-                    <p className="text-body-md opacity-40 mt-0.5">
-                      {wart.price} {'\u2B23'}
-                    </p>
                   </div>
                 )}
 
@@ -1081,15 +1065,6 @@ export default function MarketplaceView() {
                     >
                       {buyingFiat ? 'Processing...' : `Collect ${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}`}
                     </button>
-                    {wart.mintChain === 'ethereum' && (
-                      <button
-                        className="w-full py-3 text-body-md opacity-60 border border-current/10 hover:opacity-80 transition-all cursor-pointer"
-                        onClick={() => handleBuy(wart)}
-                        disabled={buying || wallet.balance < wart.price}
-                      >
-                        {buying ? 'Processing...' : `Pay with Ethereum \u039E`}
-                      </button>
-                    )}
                   </div>
                 )}
 
@@ -1111,10 +1086,6 @@ export default function MarketplaceView() {
                           <HexAvatar address={wart.owner} size={20} />
                           {isMine ? 'You' : getCreatorName(wart.owner)}
                         </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="opacity-60">Chain</span>
-                        <span className="opacity-80">{wart.mintChain === 'ethereum' ? 'Ethereum' : 'Strangrz'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="opacity-60">Royalty</span>
@@ -1313,7 +1284,7 @@ export default function MarketplaceView() {
                             <p className="opacity-70 truncate">{getCreatorName(h.from)} {'\u2192'} {getCreatorName(h.to)}</p>
                             <p className="text-body-sm opacity-60">{formatDateFR(h.timestamp)}</p>
                           </div>
-                          <span className="font-bold opacity-80 shrink-0 text-body-lg">{h.price > 0 ? `${h.price} \u2B23` : 'Gift'}</span>
+                          <span className="font-bold opacity-80 shrink-0 text-body-lg">{h.price > 0 ? `${h.price} \u20AC` : 'Gift'}</span>
                         </div>
                       ))}
                     </div>
@@ -1393,28 +1364,11 @@ export default function MarketplaceView() {
                       <button className="warp-button w-full py-3 text-body-lg" onClick={() => handleDelist(wart)}>Remove from Sale</button>
                     ) : (
                       <div className="space-y-3">
-                        <div className="flex gap-1">
-                          <button className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${pricingMode === 'crypto' ? 'bg-current/5 opacity-80 border border-current/10' : 'opacity-60 border border-current/8 hover:bg-current/5'}`} onClick={() => setPricingMode('crypto')}>{'\u2B23'} Crypto</button>
-                          <button className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${pricingMode === 'fiat' ? 'bg-current/5 opacity-80 border border-current/10' : 'opacity-60 border border-current/8 hover:bg-current/5'}`} onClick={() => setPricingMode('fiat')}>{'\u20AC'} Fiat</button>
+                        <div className="flex gap-3">
+                          <input className="warp-input flex-1 text-body-lg" type="number" placeholder="Prix en \u20AC" min="1" step="0.01" value={fiatPriceInput} onChange={e => setFiatPriceInput(e.target.value)} />
+                          <button className="collect-btn text-body-lg px-6" onClick={() => handleList(wart)} disabled={!fiatPriceInput}>Vendre</button>
                         </div>
-
-                        {pricingMode === 'crypto' ? (
-                          <div className="flex gap-3">
-                            <input className="warp-input flex-1 text-body-lg" type="number" placeholder="Price in \u2B23" value={listPrice} onChange={e => setListPrice(e.target.value)} />
-                            <button className="collect-btn text-body-lg px-6" onClick={() => handleList(wart)} disabled={!listPrice}>List</button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-3">
-                            <select className="warp-input text-body-lg w-24" value={fiatCurrency} onChange={e => setFiatCurrency(e.target.value as FiatCurrency)}>
-                              <option value="EUR">{'\u20AC'} EUR</option>
-                              <option value="USD">$ USD</option>
-                              <option value="GBP">{'\u00A3'} GBP</option>
-                            </select>
-                            <input className="warp-input flex-1 text-body-lg" type="number" placeholder="Price" value={fiatPriceInput} onChange={e => setFiatPriceInput(e.target.value)} />
-                            <button className="collect-btn text-body-lg px-6" onClick={() => handleList(wart)} disabled={!fiatPriceInput}>List</button>
-                          </div>
-                        )}
-                        <p className="text-body-sm opacity-60">{pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Strangrz (\u2B23)'}</p>
+                        <p className="text-body-sm opacity-60">Paiement par carte, PayPal ou virement</p>
                       </div>
                     )}
 
@@ -1853,7 +1807,7 @@ export default function MarketplaceView() {
                                 )}
                               </div>
                               <div className="text-right shrink-0 pl-2 border-l border-current/10">
-                                <p className="text-body-sm font-bold opacity-80">{coll.totalSpent >= 1000 ? `${(coll.totalSpent / 1000).toFixed(1)}k` : coll.totalSpent.toFixed(0)} {'\u2B23'}</p>
+                                <p className="text-body-sm font-bold opacity-80">{coll.totalSpent >= 1000 ? `${(coll.totalSpent / 1000).toFixed(1)}k` : coll.totalSpent.toFixed(0)} {'\u20AC'}</p>
                               </div>
                             </div>
                           );
@@ -1885,7 +1839,7 @@ export default function MarketplaceView() {
                             <HexAvatar address={spotlightCreator.address} size={28} />
                             <div>
                               <p className="text-body-sm font-bold text-white/90">@{getCreatorName(spotlightCreator.address)}</p>
-                              <p className="text-[10px] text-white/60">{spotlightCreator.count} artworks {'\u00B7'} {spotlightCreator.totalVolume.toFixed(0)} {'\u2B23'} volume</p>
+                              <p className="text-[10px] text-white/60">{spotlightCreator.count} artworks {'\u00B7'} {spotlightCreator.totalVolume.toFixed(0)} {'\u20AC'} volume</p>
                             </div>
                           </div>
                         </div>
@@ -1895,11 +1849,11 @@ export default function MarketplaceView() {
                 </>
               )}
 
-              {/* ─── Lazy Mint Listings ───────────────────── */}
+              {/* ─── Listings ───────────────────── */}
               {lazyListings.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 px-1">
-                    <span className="text-[10px] opacity-60 uppercase tracking-wider">{'\u2728'} Lazy Mint — L'acheteur paie tout</span>
+                    <span className="text-[10px] opacity-60 uppercase tracking-wider">{'\u2728'} En vente</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {lazyListings.map(template => {
@@ -1915,18 +1869,18 @@ export default function MarketplaceView() {
                           <div className="p-3 space-y-2">
                             <div className="flex items-center justify-between">
                               <p className="text-body-sm font-bold opacity-80 truncate">{template.title}</p>
-                              <span className="text-[9px] px-1.5 py-0.5 bg-current/10 border border-current/20 opacity-60">LAZY</span>
+                              <span className="text-[9px] px-1.5 py-0.5 bg-current/10 border border-current/20 opacity-60">{'\u20AC'}</span>
                             </div>
                             <p className="text-[10px] opacity-60 truncate">{getCreatorName(template.creator)}</p>
                             <div className="text-[10px] opacity-50 space-y-0.5">
-                              <p>Prix : <strong>{template.price} {'\u2B23'}</strong></p>
-                              <p>+ service : <strong>{fees.serviceFee} {'\u2B23'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
-                              <p>+ stockage : <strong>{fees.storageFee} {'\u2B23'}</strong></p>
-                              <p className="font-bold opacity-80">Total : {fees.total} {'\u2B23'}</p>
+                              <p>Prix : <strong>{template.price} {'\u20AC'}</strong></p>
+                              <p>+ service : <strong>{fees.serviceFee} {'\u20AC'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
+                              <p>+ stockage : <strong>{fees.storageFee} {'\u20AC'}</strong></p>
+                              <p className="font-bold opacity-80">Total : {fees.total} {'\u20AC'}</p>
                             </div>
                             {template.editionType !== 'unique' && (
                               <p className="text-[9px] opacity-60">
-                                {template.mintedEditions}/{template.maxEditions || '\u221E'} mint{'\u00E9'}(s)
+                                {template.mintedEditions}/{template.maxEditions || '\u221E'} vendu(s)
                               </p>
                             )}
                             {template.availableUntil && (
@@ -1938,7 +1892,7 @@ export default function MarketplaceView() {
                                 onClick={() => handleBuyLazyMint(template.id)}
                                 disabled={buyingLazy || (wallet?.balance || 0) < fees.total}
                               >
-                                {buyingLazy ? 'Achat...' : `Acheter ${fees.total} \u2B23`}
+                                {buyingLazy ? 'Achat...' : `Acheter ${fees.total} \u20AC`}
                               </button>
                             )}
                             {isOwn && (
@@ -2017,7 +1971,7 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u2B23'}</p>
+                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u20AC'}</p>
                     <p className="text-[10px] opacity-60">total volume</p>
                   </div>
                 </div>
@@ -2054,7 +2008,7 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u2B23'}</p>
+                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u20AC'}</p>
                     <p className="text-[10px] opacity-60">total spent</p>
                   </div>
                 </div>
@@ -2099,7 +2053,7 @@ export default function MarketplaceView() {
                     <p className="text-[10px] opacity-50">{formatDateFR(sale.transfer.timestamp)}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u2B23'}</p>
+                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u20AC'}</p>
                     <p className="text-[10px] opacity-60">{sale.isFirstSale ? '1st market' : '2nd market'}</p>
                   </div>
                 </div>
@@ -2139,8 +2093,8 @@ export default function MarketplaceView() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u2B23'}</p>
-                    <p className="text-[10px] opacity-60">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u2B23` : 'Not listed'}</p>
+                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u20AC'}</p>
+                    <p className="text-[10px] opacity-60">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u20AC` : 'Not listed'}</p>
                   </div>
                 </div>
               ))}
@@ -2203,75 +2157,12 @@ export default function MarketplaceView() {
               </div>
             </div>
 
-            {/* ─── Chain Selection ──────────────────────── */}
-            <div>
-              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Blockchain</label>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'SZ-721 \u00B7 0 gas', icon: '\u2B22' },
-                  { id: 'ethereum' as const, label: 'Ethereum', sub: 'ERC-721 \u00B7 Gas fees', icon: '\u039E' },
-                ]).map(ch => (
-                  <button
-                    key={ch.id}
-                    onClick={() => setMintChain(ch.id)}
-                    className={`p-3 text-center transition-all cursor-pointer ${
-                      mintChain === ch.id
-                        ? 'bg-current/10 border border-current/20 opacity-90'
-                        : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
-                    }`}
-                  >
-                    <div className="text-base mb-1">{ch.icon}</div>
-                    <div className="text-[11px] font-medium">{ch.label}</div>
-                    <div className="text-[9px] opacity-60 mt-0.5">{ch.sub}</div>
-                  </button>
-                ))}
-              </div>
-              <p className="text-[10px] opacity-50 mt-1.5">
-                {mintChain === 'strangrz'
-                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Strangrz Safe inclus.'
-                  : 'Mint sur Ethereum via ERC-721. N\u00E9cessite un wallet Ethereum connect\u00E9 (MetaMask). Gas fees requis.'}
+            {/* ─── Publication Info ─────────────────────── */}
+            <div className="p-3 border border-current/10 bg-current/5">
+              <p className="text-[10px] opacity-60 leading-relaxed">
+                La publication est gratuite. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais plateforme.
+                Vous recevez 100% du prix affich{'\u00E9'}.
               </p>
-            </div>
-
-            {/* ─── Mint Mode Toggle ─────────────────────── */}
-            <div>
-              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Mint Mode</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setLazyMintMode(true)}
-                  className={`p-3 text-center transition-all cursor-pointer ${
-                    lazyMintMode
-                      ? 'bg-current/10 border border-current/20 opacity-90'
-                      : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
-                  }`}
-                >
-                  <div className="text-base mb-1">{'\u2728'}</div>
-                  <div className="text-[11px] font-medium">Lazy Mint</div>
-                  <div className="text-[9px] opacity-60 mt-0.5">L'acheteur paie tout</div>
-                </button>
-                <button
-                  onClick={() => setLazyMintMode(false)}
-                  className={`p-3 text-center transition-all cursor-pointer ${
-                    !lazyMintMode
-                      ? 'bg-current/10 border border-current/20 opacity-90'
-                      : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
-                  }`}
-                >
-                  <div className="text-base mb-1">{'\u2B22'}</div>
-                  <div className="text-[11px] font-medium">Mint Direct</div>
-                  <div className="text-[9px] opacity-60 mt-0.5">Mint imm{'\u00E9'}diat classique</div>
-                </button>
-              </div>
-              {lazyMintMode && (
-                <div className="mt-2 p-3 border border-current/10 bg-current/5">
-                  <p className="text-[10px] opacity-60 leading-relaxed">
-                    <strong>Lazy Mint</strong> : Vous ne payez rien. Votre oeuvre est publi{'\u00E9'}e comme template.
-                    Le mint r{'\u00E9'}el ne se produit que lorsqu'un acheteur ach{'\u00E8'}te. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais plateforme (1er march{'\u00E9'}) + frais de stockage (selon la taille du fichier).
-                    Le stockage cloud (Supabase, IPFS) n'est activ{'\u00E9'} qu'au moment de l'achat — la plateforme ne paie rien.
-                    Vous recevez 100% du prix affich{'\u00E9'}.
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* ─── Media Upload ─────────────────────────── */}
@@ -2413,22 +2304,22 @@ export default function MarketplaceView() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">
-                  Prix de vente en {'\u2B23'}
+                  Prix de vente en {'\u20AC'}
                 </label>
                 <input
                   className="warp-input w-full"
                   type="number"
-                  placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23 (requis)`}
-                  min={mintChain === 'ethereum' ? '500' : '100'}
-                  step="1"
+                  placeholder="Min 1 \u20AC (requis)"
+                  min="1"
+                  step="0.01"
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
-                {price && parseFloat(price) >= (mintChain === 'ethereum' ? 500 : 100) && lazyMintMode && (() => {
+                {price && parseFloat(price) >= 1 && (() => {
                   const fees = calculateBuyerTotal(parseFloat(price), imageData || undefined);
                   return (
                     <p className="text-[10px] opacity-50 mt-1">
-                      L'acheteur paiera {fees.total} {'\u2B23'} ({price} {'\u2B23'} + {fees.serviceFee} {'\u2B23'} service{fees.storageFee > 0 ? ` + ${fees.storageFee} \u2B23 stockage` : ''})
+                      L'acheteur paiera {fees.total} {'\u20AC'} ({price} {'\u20AC'} + {fees.serviceFee} {'\u20AC'} service{fees.storageFee > 0 ? ` + ${fees.storageFee} \u20AC stockage` : ''})
                     </p>
                   );
                 })()}
@@ -2479,7 +2370,7 @@ export default function MarketplaceView() {
                       : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
                   }`}
                 >
-                  <div className="text-base mb-1">{'\u2B23'}</div>
+                  <div className="text-base mb-1">{'\u20AC'}</div>
                   <div className="text-[11px] font-medium">Prix fixe</div>
                   <div className="text-[9px] opacity-60 mt-0.5">Vente imm{'\u00E9'}diate au prix affich{'\u00E9'}</div>
                 </button>
@@ -2504,7 +2395,7 @@ export default function MarketplaceView() {
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     { id: 'no-reserve' as const, label: 'Sans r\u00E9serve', icon: '\u2B06', desc: 'Le plus haut ench\u00E9risseur gagne' },
-                    { id: 'minimum' as const, label: 'Prix minimum', icon: '\u2B23', desc: 'Ench\u00E8re minimale requise' },
+                    { id: 'minimum' as const, label: 'Prix minimum', icon: '\u20AC', desc: 'Ench\u00E8re minimale requise' },
                     { id: 'reserve' as const, label: 'Prix de r\u00E9serve', icon: '\u2B21', desc: 'Prix cach\u00E9 \u00E0 atteindre' },
                     { id: 'dutch' as const, label: 'Dutch Auction', icon: '\u2B07', desc: 'Le prix baisse avec le temps' },
                   ]).map(at => (
@@ -2556,26 +2447,26 @@ export default function MarketplaceView() {
                 <div className="space-y-3">
                   {auctionType === 'no-reserve' && (
                     <div>
-                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (optionnel, en {'\u2B23'})</label>
-                      <input className="warp-input w-full" type="number" placeholder="1 \u2B23 minimum" min="1" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
-                      <p className="text-[9px] opacity-40 mt-1">Laisser vide pour d{'\u00E9'}marrer {'\u00E0'} 1 {'\u2B23'}</p>
+                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (optionnel, en {'\u20AC'})</label>
+                      <input className="warp-input w-full" type="number" placeholder="1 \u20AC minimum" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      <p className="text-[9px] opacity-40 mt-1">Laisser vide pour d{'\u00E9'}marrer {'\u00E0'} 1 {'\u20AC'}</p>
                     </div>
                   )}
                   {auctionType === 'minimum' && (
                     <div>
-                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix minimum (en {'\u2B23'})</label>
-                      <input className="warp-input w-full" type="number" placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23`} min={mintChain === 'ethereum' ? '500' : '100'} value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix minimum (en {'\u20AC'})</label>
+                      <input className="warp-input w-full" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
                     </div>
                   )}
                   {auctionType === 'reserve' && (
                     <>
                       <div>
-                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part visible (en {'\u2B23'})</label>
-                        <input className="warp-input w-full" type="number" placeholder="Ex: 50 \u2B23" min="1" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part visible (en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Ex: 50 \u20AC" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
                       </div>
                       <div>
-                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de r{'\u00E9'}serve secret (en {'\u2B23'})</label>
-                        <input className="warp-input w-full" type="number" placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23`} min={mintChain === 'ethereum' ? '500' : '100'} value={auctionReservePrice} onChange={e => setAuctionReservePrice(e.target.value)} />
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de r{'\u00E9'}serve secret (en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={auctionReservePrice} onChange={e => setAuctionReservePrice(e.target.value)} />
                         <p className="text-[9px] opacity-40 mt-1">Ce prix ne sera pas visible par les ench{'\u00E9'}risseurs</p>
                       </div>
                     </>
@@ -2583,12 +2474,12 @@ export default function MarketplaceView() {
                   {auctionType === 'dutch' && (
                     <>
                       <div>
-                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (haut, en {'\u2B23'})</label>
-                        <input className="warp-input w-full" type="number" placeholder="Ex: 1000 \u2B23" min="1" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (haut, en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Ex: 1000 \u20AC" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
                       </div>
                       <div>
-                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix final minimum (en {'\u2B23'})</label>
-                        <input className="warp-input w-full" type="number" placeholder={`Min ${mintChain === 'ethereum' ? '500' : '100'} \u2B23`} min={mintChain === 'ethereum' ? '500' : '100'} value={auctionEndPrice} onChange={e => setAuctionEndPrice(e.target.value)} />
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix final minimum (en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={auctionEndPrice} onChange={e => setAuctionEndPrice(e.target.value)} />
                         <p className="text-[9px] opacity-40 mt-1">Le prix descend lin{'\u00E9'}airement du prix de d{'\u00E9'}part au prix final pendant la dur{'\u00E9'}e</p>
                       </div>
                     </>
@@ -2659,21 +2550,19 @@ export default function MarketplaceView() {
               <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-80">{'\u2713'} {createSuccess}</div>
             )}
 
-            {/* ─── Mint Button ─────────────────────────── */}
+            {/* ─── Sell Button ─────────────────────────── */}
             <button
               className="warp-button w-full py-3.5 text-base font-bold"
               onClick={handleMint}
-              disabled={creating || !title || !imageData || !price || parseFloat(price) < (mintChain === 'ethereum' ? 500 : 100)}
+              disabled={creating || !title || !imageData || !price || parseFloat(price) < 1}
             >
               {creating ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
-                  {uploadStatus || (lazyMintMode ? 'Publication...' : 'Minting...')}
+                  {uploadStatus || 'Publication...'}
                 </span>
-              ) : lazyMintMode ? (
-                `Publier en Lazy Mint (gratuit)`
               ) : (
-                mintChain === 'ethereum' ? 'Certifier & Mint (Ethereum)' : 'Certifier & Mint (Strangrz)'
+                'Vendre'
               )}
             </button>
           </div>
