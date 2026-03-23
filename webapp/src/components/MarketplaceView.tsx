@@ -343,7 +343,7 @@ export default function MarketplaceView() {
 
   // ─── Resolve creator alias ─────────────────────────────
   const getCreatorName = (address: string): string => {
-    if (wallet && address === wallet.address) return 'you';
+    if (wallet && address === wallet?.address) return 'you';
     const social = SocialEngine.load();
     const profile = social.getProfile(address);
     return profile?.alias || shortAddress(address);
@@ -368,14 +368,17 @@ export default function MarketplaceView() {
   }, [allWarts]);
 
   // Redirect to wallet/auth view when not connected
-  useEffect(() => {
-    if (!wallet || !unlocked) {
-      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
-    }
-  }, [wallet, unlocked]);
+  const isAuth = !!(wallet && unlocked);
+  const requireAuth = () => {
+    if (isAuth) return true;
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+    return false;
+  };
 
-  if (!wallet || !unlocked) {
-    return null;
+  // Redirect auth-only tabs to 'all' for unauthenticated users
+  const authOnlyTabs: GalleryTab[] = ['create', 'curate', 'trading'];
+  if (!isAuth && authOnlyTabs.includes(tab)) {
+    setTab('all');
   }
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -609,7 +612,7 @@ export default function MarketplaceView() {
       setTransferError('Invalid address — must start with STZ');
       return;
     }
-    if (addr === wallet.address) {
+    if (addr === wallet?.address) {
       setTransferError('Cannot transfer to yourself');
       return;
     }
@@ -657,7 +660,7 @@ export default function MarketplaceView() {
       description: editDescription,
       price: priceVal,
       listed: priceVal !== null,
-      royaltyPercent: wart.creator === wallet.address ? royaltyVal : wart.royaltyPercent,
+      royaltyPercent: wart.creator === wallet?.address ? royaltyVal : wart.royaltyPercent,
     });
   };
 
@@ -673,6 +676,7 @@ export default function MarketplaceView() {
   };
 
   const handleAddComment = (wartId: string) => {
+    if (!requireAuth()) return;
     if (!commentText.trim()) return;
     addWartComment(wartId, commentText);
     setCommentText('');
@@ -799,7 +803,7 @@ export default function MarketplaceView() {
         <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
         <div
           className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={(e) => { e.stopPropagation(); if (wart.creator !== wallet.address) navigateToProfile(wart.creator); }}
+          onClick={(e) => { e.stopPropagation(); if (wart.creator !== wallet?.address) navigateToProfile(wart.creator); }}
         >
           <HexAvatar address={wart.creator} size={16} />
           <p className="text-[10px] opacity-60 truncate">
@@ -823,10 +827,10 @@ export default function MarketplaceView() {
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
           {/* Tip 1 STRNGRZ */}
           <button
-            className={`flex items-center gap-1 cursor-pointer transition-all ${wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-60 hover:opacity-80'}`}
-            onClick={e => { e.stopPropagation(); if (!wart.likes?.includes(wallet.address) && wart.creator !== wallet.address) { send(wart.creator, 1, `Tip for ${wart.title}`); } toggleWartLike(wart.id); }}
+            className={`flex items-center gap-1 cursor-pointer transition-all ${wallet?.address && wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-60 hover:opacity-80'}`}
+            onClick={e => { e.stopPropagation(); if (!requireAuth()) return; if (!wart.likes?.includes(wallet!.address) && wart.creator !== wallet!.address) { send(wart.creator, 1, `Tip for ${wart.title}`); } toggleWartLike(wart.id); }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={wallet?.address && wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length} {'\u2764'}</span>}
           </button>
           {/* Share */}
@@ -839,6 +843,7 @@ export default function MarketplaceView() {
           {/* Comment — go to detail + focus input */}
           <button className="flex items-center gap-1 opacity-60 hover:opacity-80 cursor-pointer" onClick={e => {
             e.stopPropagation();
+            if (!requireAuth()) return;
             openDetail(wart);
             setTimeout(() => commentInputRef.current?.focus(), 300);
           }}>
@@ -846,22 +851,22 @@ export default function MarketplaceView() {
             {wart.comments?.length > 0 && <span className="text-[10px]">{wart.comments.length}</span>}
           </button>
           {/* Bookmark */}
-          <button className={`cursor-pointer transition-all ${wart.bookmarks?.includes(wallet.address) ? 'opacity-90' : 'opacity-60 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <button className={`cursor-pointer transition-all ${wallet?.address && wart.bookmarks?.includes(wallet.address) ? 'opacity-90' : 'opacity-60 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); if (!requireAuth()) return; toggleWartBookmark(wart.id); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={wallet?.address && wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
-        {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet.address && (
+        {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet?.address && (
           <div className="flex gap-1 mt-2">
             <button
               className="warp-button flex-1 text-body-sm py-1.5"
-              onClick={e => { e.stopPropagation(); handleBuyFiat(wart); }}
+              onClick={e => { e.stopPropagation(); if (!requireAuth()) return; handleBuyFiat(wart); }}
               disabled={buyingFiat}
             >
               Collect {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
             </button>
           </div>
         )}
-        {wart.owner === wallet.address && (
+        {wart.owner === wallet?.address && (
           <div className="flex gap-1 mt-2">
             {!wart.listed && (
               <button
@@ -884,10 +889,10 @@ export default function MarketplaceView() {
   };
 
   // ─── Detail View ───────────────────────────────────────
-  if (tab === 'detail' && selectedWart && wallet) {
+  if (tab === 'detail' && selectedWart) {
     const wart = selectedWart;
-    const isMine = wart.owner === wallet.address;
-    const isCreator = wart.creator === wallet.address;
+    const isMine = isAuth && wart.owner === wallet?.address;
+    const isCreator = isAuth && wart.creator === wallet?.address;
     const expired = isExpired(wart);
     const rarity = computeRarity(wart);
     const rarityCfg = RARITY_CONFIG[rarity];
@@ -970,7 +975,7 @@ export default function MarketplaceView() {
                 >
                   <HexAvatar address={wart.creator} size={28} />
                   <span className="text-body-lg opacity-60">
-                    @{isCreator ? (wallet.alias || 'you') : getCreatorName(wart.creator)}
+                    @{isCreator ? (wallet?.alias || 'you') : getCreatorName(wart.creator)}
                   </span>
                 </div>
 
@@ -1023,7 +1028,7 @@ export default function MarketplaceView() {
                   <div className="space-y-3">
                     <button
                       className="collect-btn w-full py-5 text-title-sm font-bold tracking-wide"
-                      onClick={() => handleBuyFiat(wart)}
+                      onClick={() => { if (!requireAuth()) return; handleBuyFiat(wart); }}
                       disabled={buyingFiat}
                     >
                       {buyingFiat ? 'Processing...' : `Collect ${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}`}
@@ -1195,7 +1200,7 @@ export default function MarketplaceView() {
                               onClick={() => {
                                 const lastTx = wart.history.length > 0 ? wart.history[wart.history.length - 1] : null;
                                 const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
-                                const artistName = isCreator ? (wallet.alias || 'you') : getCreatorName(wart.creator);
+                                const artistName = isCreator ? (wallet?.alias || 'you') : getCreatorName(wart.creator);
                                 generateSignaturePDF({ artworkName: wart.title, artistName, transactionId: txId });
                               }}
                             >
@@ -1625,7 +1630,7 @@ export default function MarketplaceView() {
                               {w.price !== null && w.owner !== wallet?.address && (
                                 <button
                                   className="cta-gradient-btn mt-1.5 w-full py-1.5 text-[11px] font-bold flex items-center justify-center gap-1"
-                                  onClick={e => { e.stopPropagation(); handleBuyFiat(w); }}
+                                  onClick={e => { e.stopPropagation(); if (!requireAuth()) return; handleBuyFiat(w); }}
                                 >
                                   <span className="w-2 h-2 bg-white rounded-full inline-block" />
                                   Collect {'\u00B7'} {getEurSymbol(w)}{getEurPrice(w).toFixed(2)}
@@ -1677,7 +1682,7 @@ export default function MarketplaceView() {
                                 {w.listed && w.price !== null && w.owner !== wallet?.address && (
                                   <button
                                     className="cta-gradient-btn mt-1.5 w-full py-1.5 text-[11px] font-bold flex items-center justify-center gap-1"
-                                    onClick={e => { e.stopPropagation(); handleBuyFiat(w); }}
+                                    onClick={e => { e.stopPropagation(); if (!requireAuth()) return; handleBuyFiat(w); }}
                                   >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                     Collect
@@ -1756,9 +1761,9 @@ export default function MarketplaceView() {
                               <HexAvatar address={coll.address} size={24} className="shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <p className="text-body-sm font-bold opacity-80 truncate">
-                                  {coll.address === wallet?.address ? (wallet.alias || 'You') : getCreatorName(coll.address)}
+                                  {coll.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(coll.address)}
                                 </p>
-                                <p className="text-[10px] opacity-50">@{coll.address === wallet?.address ? (wallet.alias || 'You') : getCreatorName(coll.address)}</p>
+                                <p className="text-[10px] opacity-50">@{coll.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(coll.address)}</p>
                               </div>
                               <div className="text-right shrink-0">
                                 <p className="text-body-sm font-bold opacity-70">{coll.count >= 1000 ? `${(coll.count / 1000).toFixed(1)}k` : coll.count} pieces</p>
@@ -1927,7 +1932,7 @@ export default function MarketplaceView() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
-                      {creator.address === wallet.address ? (wallet.alias || 'You') : getCreatorName(creator.address)}
+                      {creator.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(creator.address)}
                     </p>
                     <p className="text-[10px] opacity-60">
                       {creator.count} artwork{creator.count > 1 ? 's' : ''} created
@@ -1964,7 +1969,7 @@ export default function MarketplaceView() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
-                      {collector.address === wallet.address ? (wallet.alias || 'You') : getCreatorName(collector.address)}
+                      {collector.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(collector.address)}
                     </p>
                     <p className="text-[10px] opacity-60">
                       {collector.count} artwork{collector.count > 1 ? 's' : ''} owned
@@ -2545,8 +2550,8 @@ export default function MarketplaceView() {
         return (
           <ShareModal
             wart={shareWart}
-            walletAddress={wallet.address}
-            walletAlias={wallet.alias}
+            walletAddress={wallet?.address ?? ''}
+            walletAlias={wallet?.alias ?? ''}
             onClose={() => setShareMenuWartId(null)}
             onSuccess={msg => { setShareSuccess(msg); setTimeout(() => setShareSuccess(''), 3000); }}
           />

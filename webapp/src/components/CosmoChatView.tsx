@@ -156,8 +156,8 @@ export default function CosmoChatView() {
   useEffect(() => {
     if (!wallet || !unlocked) return;
     const social = SocialEngine.load();
-    social.ensureProfile(wallet.address, wallet.alias || shortAddress(wallet.address));
-    social.syncFromCloud(wallet.address).catch(() => {});
+    social.ensureProfile(wallet?.address, wallet?.alias || shortAddress(wallet?.address));
+    social.syncFromCloud(wallet?.address).catch(() => {});
   }, [wallet?.address, wallet?.alias, unlocked]);
 
   // ─── TikTok-style feed for unauthenticated users ─────
@@ -183,16 +183,14 @@ export default function CosmoChatView() {
     return profile?.alias || shortAddress(address);
   };
 
-  const requireAuth = () => {
+  const requireAuth = (): boolean => {
+    if (wallet && unlocked) return true;
     window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+    return false;
   };
 
   const isAuth = !!(wallet && unlocked);
 
-  // Redirect to auth only when trying to use authenticated features
-  if (!isAuth && tab !== 'feed') {
-    setTab('feed');
-  }
 
   // ─── Render TikTok Feed ──────────────────────────────
   const renderFeed = () => {
@@ -257,7 +255,7 @@ export default function CosmoChatView() {
           onScroll={handleFeedScroll}
         >
           {feedWarts.map((wart, idx) => {
-            const liked = isAuth && wart.likes?.includes(wallet!.address);
+            const liked = isAuth && wart.likes?.includes(wallet?.address);
             return (
               <div key={wart.id} className="h-screen w-full snap-start relative flex items-end">
                 {/* Full-screen media */}
@@ -304,7 +302,7 @@ export default function CosmoChatView() {
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                   </button>
                   <button onClick={() => handleFeedAction(() => { if (wallet) toggleWartBookmark(wart.id); })} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill={wallet && wart.bookmarks?.includes(wallet.address) ? 'white' : 'none'} stroke="white" strokeWidth="1.8"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill={wallet && wart.bookmarks?.includes(wallet?.address) ? 'white' : 'none'} stroke="white" strokeWidth="1.8"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                   </button>
                 </div>
 
@@ -355,12 +353,7 @@ export default function CosmoChatView() {
     return renderFeed();
   }
 
-  // Below this point: authenticated Wall only
-  if (!isAuth) {
-    return renderFeed();
-  }
-
-  const alias = wallet.alias || shortAddress(wallet.address);
+  const alias = wallet ? (wallet?.alias || shortAddress(wallet?.address)) : '';
 
   // Resolve display handle for any address (prefer social profile alias)
   const getHandle = (address: string, fallbackAlias?: string): string => {
@@ -409,10 +402,11 @@ export default function CosmoChatView() {
 
   // ─── Post Actions ──────────────────────────────────────
   const handlePost = async () => {
+    if (!requireAuth()) return;
     if (!composeText.trim() && !composeMedia) return;
     setPosting(true);
     const post = engine.createPost(
-      wallet.address, alias, composeText,
+      wallet!.address, alias, composeText,
       composeMedia || undefined,
       composeMediaType || undefined,
       composeAudioCover || undefined,
@@ -431,7 +425,8 @@ export default function CosmoChatView() {
   };
 
   const handleTip = async (post: ChatPost) => {
-    const ok = engine.tipPost(post.id, wallet.address);
+    if (!requireAuth()) return;
+    const ok = engine.tipPost(post.id, wallet!.address);
     if (ok) {
       await send(post.author, 1, `Wall tip for post`);
       refresh();
@@ -440,26 +435,30 @@ export default function CosmoChatView() {
   };
 
   const handleRewarp = (post: ChatPost) => {
-    engine.rewarpPost(post.id, wallet.address, alias);
+    if (!requireAuth()) return;
+    engine.rewarpPost(post.id, wallet!.address, alias);
     refresh();
   };
 
   const handleBookmark = (post: ChatPost) => {
-    engine.bookmarkPost(post.id, wallet.address);
+    if (!requireAuth()) return;
+    engine.bookmarkPost(post.id, wallet!.address);
     refresh();
     if (selectedPost?.id === post.id) setSelectedPost(engine.getPost(post.id));
   };
 
   const handleComment = (postId: string) => {
+    if (!requireAuth()) return;
     if (!commentText.trim()) return;
-    engine.addComment(postId, wallet.address, alias, commentText);
+    engine.addComment(postId, wallet!.address, alias, commentText);
     setCommentText('');
     setSelectedPost(engine.getPost(postId));
     refresh();
   };
 
   const handleDeletePost = (post: ChatPost) => {
-    engine.deletePost(post.id, wallet.address);
+    if (!requireAuth()) return;
+    engine.deletePost(post.id, wallet!.address);
     setSelectedPost(null);
     refresh();
   };
@@ -475,8 +474,9 @@ export default function CosmoChatView() {
 
   // ─── Channel actions ───────────────────────────────────
   const handleCreateChannel = () => {
+    if (!requireAuth()) return;
     if (!newChannelName.trim()) return;
-    engine.createChannel(newChannelName, newChannelDesc, wallet.address, alias);
+    engine.createChannel(newChannelName, newChannelDesc, wallet!.address, alias);
     setNewChannelName(''); setNewChannelDesc('');
     setShowCreateChannel(false);
     refresh();
@@ -484,14 +484,16 @@ export default function CosmoChatView() {
   };
 
   const handleSendChannelMsg = () => {
+    if (!requireAuth()) return;
     if (!channelMsg.trim() || !selectedChannel) return;
-    engine.sendChannelMessage(selectedChannel.id, wallet.address, alias, channelMsg);
+    engine.sendChannelMessage(selectedChannel.id, wallet!.address, alias, channelMsg);
     setChannelMsg('');
     setSelectedChannel(engine.getChannel(selectedChannel.id));
   };
 
   const handleJoinChannel = (ch: ChatChannel) => {
-    engine.joinChannel(ch.id, wallet.address);
+    if (!requireAuth()) return;
+    engine.joinChannel(ch.id, wallet!.address);
     refresh();
   };
 
@@ -555,9 +557,9 @@ export default function CosmoChatView() {
 
   // ─── Post Card (X-style) ──────────────────────────────
   const PostCard = ({ post }: { post: ChatPost }) => {
-    const isMine = post.author === wallet.address;
-    const hasTipped = post.tips[wallet.address];
-    const hasBookmarked = post.bookmarkedBy.includes(wallet.address);
+    const isMine = isAuth && post.author === wallet?.address;
+    const hasTipped = wallet?.address ? post.tips[wallet.address] : false;
+    const hasBookmarked = wallet?.address ? post.bookmarkedBy.includes(wallet.address) : false;
 
     // Increment views
     useEffect(() => { engine.incrementViews(post.id); }, [post.id]);
@@ -608,13 +610,13 @@ export default function CosmoChatView() {
           if (!post.wartLink) return null;
           const linkedWart = [...allWarts, ...marketplace, ...myCreated, ...myCollection].find(w => w.id === post.wartLink);
           if (!linkedWart || linkedWart.price === null) return null;
-          const isOwner = linkedWart.owner === wallet.address;
+          const isOwner = isAuth && linkedWart.owner === wallet?.address;
           if (isOwner) return null;
           return (
             <button
               className="warp-button w-full text-body-sm py-2 mt-2"
               onClick={e => { e.stopPropagation(); buyWart(linkedWart.id); }}
-              disabled={wallet.balance < linkedWart.price}
+              disabled={!wallet || wallet.balance < linkedWart.price}
             >
               Collect {linkedWart.price} {'\u2B23'}
             </button>
@@ -632,7 +634,7 @@ export default function CosmoChatView() {
           {/* ReCosmo */}
           <button
             className={`flex items-center gap-1 cursor-pointer ${
-              post.rewarps.includes(wallet.address) ? 'opacity-80' : 'opacity-60 hover:opacity-80'
+              wallet?.address && post.rewarps.includes(wallet.address) ? 'opacity-80' : 'opacity-60 hover:opacity-80'
             }`}
             onClick={e => { e.stopPropagation(); handleRewarp(post); }}
           >
@@ -682,8 +684,8 @@ export default function CosmoChatView() {
   // ─── Post Detail (with comments) ──────────────────────
   if (selectedPost) {
     const post = selectedPost;
-    const hasTipped = post.tips[wallet.address];
-    const hasBookmarked = post.bookmarkedBy.includes(wallet.address);
+    const hasTipped = wallet?.address ? post.tips[wallet.address] : false;
+    const hasBookmarked = wallet?.address ? post.bookmarkedBy.includes(wallet.address) : false;
 
     return (
       <div className="space-y-4">
@@ -780,7 +782,7 @@ export default function CosmoChatView() {
   // ─── Channel Detail ────────────────────────────────────
   if (selectedChannel) {
     const ch = selectedChannel;
-    const isMember = ch.members.includes(wallet.address);
+    const isMember = wallet?.address ? ch.members.includes(wallet.address) : false;
 
     return (
       <div className="space-y-4">
@@ -806,9 +808,9 @@ export default function CosmoChatView() {
               <p className="text-body-sm opacity-50 text-center py-8">No messages yet. Start the conversation!</p>
             ) : (
               ch.messages.map(m => (
-                <div key={m.id} className={`flex gap-2 ${m.from === wallet.address ? 'justify-end' : ''}`}>
+                <div key={m.id} className={`flex gap-2 ${m.from === wallet?.address ? 'justify-end' : ''}`}>
                   <div className={`max-w-[80%] p-2 text-body-sm ${
-                    m.from === wallet.address
+                    m.from === wallet?.address
                       ? 'bg-current/5 border border-current/10 opacity-90'
                       : 'bg-current/5 border border-current/10 opacity-70'
                   }`}>
@@ -908,10 +910,10 @@ export default function CosmoChatView() {
       {(tab === 'timeline' || tab === 'explore') && (
         <>
           {/* Compose */}
-          {(
+          {isAuth && (
             <div className="glass-panel p-4">
               <div className="flex gap-3">
-                <HexAvatar address={wallet.address} size={32} className="shrink-0" />
+                <HexAvatar address={wallet?.address ?? ''} size={32} className="shrink-0" />
                 <div className="flex-1 space-y-2">
                   <textarea
                     className="warp-input min-h-[60px] resize-y text-base"
