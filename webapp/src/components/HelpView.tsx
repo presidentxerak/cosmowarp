@@ -16,86 +16,69 @@ interface KnowledgeEntry {
 }
 
 const KNOWLEDGE_BASE: KnowledgeEntry[] = [
-  // Wallet
+  // Account
   {
     keywords: ['wallet', 'portefeuille', 'create', 'creer', 'créer', 'account', 'compte', 'sign up', 'inscription'],
     response: {
-      answer: "Ah, un nouveau voyageur dans le cosmos ! Créer un portefeuille, c'est plus simple que d'expliquer la physique quantique à un chat. Va dans la section Portefeuille, choisis un mot de passe (pas 'motdepasse123' s'il te plaît — le cosmos observe), et hop — te voilà Particle. Tout le monde commence Particle. Même moi. Enfin, moi c'est Doctor Strangrz, donc techniquement j'ai commencé en tant qu'univers entier. Mais c'est une autre histoire.",
+      answer: "Ah, un nouveau voyageur dans le cosmos ! Créer un compte, c'est plus simple que d'expliquer la physique quantique à un chat. Va dans la section Mon Compte, choisis un nom d'utilisateur et un mot de passe, et hop — te voilà prêt. Aucun email requis. 30 secondes, top chrono. Conseil : choisis un mot de passe solide — le cosmos observe.",
       navigateTo: 'wallet',
-      tabLabel: 'Portefeuille',
+      tabLabel: 'Mon Compte',
     },
   },
   {
     keywords: ['balance', 'solde', 'warp', 'warps', 'zero', '0', 'argent', 'money'],
     response: {
-      answer: "Ton solde affiche 0 ? Pas de panique — tu n'es pas cassé, tu es juste... cosmiquement nouveau. Va dans l'onglet Miner de ton Portefeuille et commence à miner ! Chaque calcul rapporte des Strangrz (⬣). Dis-toi que l'univers ne te donne pas de poussière d'étoile gratuitement, il faut l'extraire du vide. Aussi, chaque appareil a son propre portefeuille local — donc ton ordi et ton téléphone ne partagent pas le même solde sauf si tu exportes/importes.",
-      navigateTo: 'wallet',
-      tabLabel: 'Portefeuille → Miner',
+      answer: "Tu es nouveau sur la plateforme ? Bienvenue ! Tu peux commencer à explorer la galerie immédiatement et acheter des oeuvres par carte bancaire, Apple Pay ou Google Pay. Les prix sont affichés en euros, pas besoin de conversion. Si tu veux vendre, publie ton oeuvre et fixe ton prix en euros — les acheteurs paient directement.",
+      navigateTo: 'gallery',
+      tabLabel: 'Galerie',
     },
   },
   {
     keywords: ['send', 'envoyer', 'transfer', 'transferer', 'transférer', 'payer', 'pay'],
     response: {
-      answer: "Envoyer des Strangrz, c'est comme lancer une étoile filante à travers le mesh — magnifique ET rapide. Ouvre ton Portefeuille, va dans l'onglet Envoyer, entre l'adresse Strangrz du destinataire et le montant. Ajoute un mémo si tu te sens poétique. Conseil de pro : vérifie l'adresse deux fois. Le cosmos pardonne, mais les fautes de frappe non.",
-      navigateTo: 'wallet',
-      tabLabel: 'Portefeuille → Envoyer',
+      answer: "Envie d'offrir une oeuvre ou de transférer une pièce de ta collection ? Ouvre ta collection, sélectionne l'oeuvre et utilise l'option « Transférer ». Entre le pseudo du destinataire et c'est parti. Simple, rapide, cosmiquement élégant.",
+      navigateTo: 'gallery',
+      tabLabel: 'Ma Collection',
     },
   },
   {
     keywords: ['backup', 'recovery', 'key', 'clé', 'cle', 'sauvegarde', 'récupération', 'recuperation', 'lost', 'perdu'],
     response: {
-      answer: "Ta clé de récupération, c'est ton assurance cosmique ! Va dans Portefeuille → Aperçu et tu verras l'option pour télécharger ta sauvegarde. GARDE-LA EN LIEU SÛR. Tatoue-la à l'intérieur de tes paupières si besoin. Je plaisante. Mais sérieusement — perds la clé, perds le portefeuille. L'univers est décentralisé, ce qui veut dire que personne ne peut réinitialiser ton mot de passe. Pas même moi. Et je suis littéralement l'oracle.",
+      answer: "Ta sauvegarde, c'est ton assurance cosmique ! Va dans Mon Compte → Aperçu et télécharge ta sauvegarde de récupération. GARDE-LA EN LIEU SÛR. Si tu perds ton mot de passe, c'est le seul moyen de retrouver ton compte et ta collection. Personne ne peut réinitialiser ton mot de passe — même Doctor Strangrz, l'oracle lui-même.",
       navigateTo: 'wallet',
-      tabLabel: 'Portefeuille → Aperçu',
+      tabLabel: 'Mon Compte → Aperçu',
     },
   },
-  // Mining
+  // Artworks / Gallery
   {
-    keywords: ['mine', 'miner', 'mining', 'minage', 'earn', 'gagner', 'difficulty', 'difficulté'],
+    keywords: ['wart', 'warts', 'strangrz', 'art', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches', 'galerie', 'gallery'],
     response: {
-      answer: "Miner sur Strangrz, ce n'est pas faire bouillir les océans ! Tu exécutes des programmes CosmoASM de preuve de calcul. Choisis ta difficulté : Léger (petit en-cas), Moyen (bon steak), ou Intense (escalader l'Everest en tongs). Plus c'est difficile = plus de Strangrz. La récompense suit la courbe de Décroissance par Résonance — une formule basée sur le nombre d'or (φ) bien plus douce que les halvings capricieux de Bitcoin. Va miner de la poussière d'étoile !",
-      navigateTo: 'wallet',
-      tabLabel: 'Portefeuille → Miner',
-    },
-  },
-  // Wart Market
-  {
-    keywords: ['wart', 'warts', 'strangrz', 'art', 'mint', 'create art', 'créer art', 'marketplace', 'marché', 'objet', 'rare', 'certifier', 'certification', 'pokemon', 'sneaker', 'sneakers', 'vinyle', 'montre', 'watches'],
-    response: {
-      answer: "Les Strangrz, ce sont les objets rares certifiés — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque Strangrz reçoit un Certificat STCERT infalsifiable (SHA-256 + Ed25519). Tu choisis ta blockchain au moment du mint : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Dans les deux cas, Strangrz Safe protège ton œuvre et garantit la provenance. Tu peux uploader images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Direction la Marketplace pour certifier ton premier objet rare !",
-      navigateTo: 'warts',
-      tabLabel: 'Marketplace',
-    },
-  },
-  {
-    keywords: ['ethereum', 'eth', 'erc-721', 'erc721', 'metamask', 'gas', 'multi-chain', 'multichain', 'walletconnect', 'evm', 'chain', 'blockchain ethereum', 'minter ethereum', 'mint ethereum'],
-    response: {
-      answer: "Strangrz supporte le minting multi-chain ! Tu peux mint sur StrangrzChain (SZ-721, gratuit, sans gas) ou sur Ethereum (ERC-721, nécessite MetaMask + gas fees). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Strangrz Safe. Pour Ethereum : connecte ton wallet MetaMask, choisis 'Ethereum' dans le sélecteur de blockchain lors du mint, et confirme la transaction. Les royalties et la provenance sont garanties sur les deux chaînes via le système Strangrz.",
-      navigateTo: 'warts',
-      tabLabel: 'Marketplace → Create',
+      answer: "La Galerie, c'est le coeur de Strangrz ! Tu y trouves des oeuvres d'art uniques, des objets de collection certifiés — cartes Pokémon, sneakers, vinyles, montres, art numérique... Chaque oeuvre est automatiquement certifiée avec un certificat d'authenticité infalsifiable. Tu peux publier images, GIF, audio (MP3 avec pochette), et vidéo (MP4/MOV), le tout jusqu'à 50 Mo. Explore, achète par carte bancaire, et constitue ta collection !",
+      navigateTo: 'gallery',
+      tabLabel: 'Galerie',
     },
   },
   {
     keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace'],
     response: {
-      answer: "Tu veux acheter une Strangrz ? Parcours la Marketplace, trouve un objet rare qui parle à ton âme cosmique, et clique sur Acheter. Le créateur est payé, et en cas de revente, il touche encore des royalties (5 % par défaut). Tu veux vendre ? Va dans ta collection, fixe un prix, et mets en vente. L'univers s'occupe du reste. Rappelle-toi : le goût est subjectif, mais les maths non — vérifie le certificat STCERT avant d'acheter !",
-      navigateTo: 'warts',
-      tabLabel: 'Marketplace',
+      answer: "Tu veux acheter une oeuvre ? Parcours la Galerie, trouve une pièce qui parle à ton âme cosmique, et clique sur « Collect ». Paie par carte bancaire, Apple Pay ou Google Pay — c'est aussi simple qu'un achat en ligne classique. Tu veux vendre ? Publie ton oeuvre, fixe un prix en euros, et mets en vente. Les acheteurs paient par carte, tu reçois tes euros directement. En cas de revente, tu touches encore des royalties (5%) automatiquement !",
+      navigateTo: 'gallery',
+      tabLabel: 'Galerie',
     },
   },
   {
     keywords: ['certificate', 'certificat', 'authenticity', 'authenticité', 'stcert', 'crcert', 'cwcert', 'fingerprint', 'empreinte', 'verify', 'vérifier'],
     response: {
-      answer: "Chaque Strangrz certifiée possède un STCERT — un Certificat d'Authenticité infalsifiable. C'est un hash SHA-256 de l'adresse Strangrz du créateur + empreinte du contenu + horodatage + titre, signé avec la clé privée Ed25519 du créateur. Traduction : c'est mathématiquement impossible à falsifier. Clique sur « Vérifier » sur n'importe quelle Strangrz pour lancer une vérification d'intégrité complète. Si ça affiche « ✔ Authentique » — tu es tranquille. Sinon... quelqu'un a fait des bêtises.",
-      navigateTo: 'warts',
-      tabLabel: 'Marketplace → Détail',
+      answer: "Chaque oeuvre sur Strangrz possède un certificat d'authenticité (STCERT) — infalsifiable et vérifiable par tous. Il contient une empreinte numérique unique du contenu, la signature du créateur et un horodatage. Clique sur « Vérifier » sur n'importe quelle oeuvre pour lancer une vérification d'intégrité complète. Si ça affiche « Authentique » — tu es tranquille !",
+      navigateTo: 'gallery',
+      tabLabel: 'Galerie → Détail',
     },
   },
   // Mur (ex-CosmoChat)
   {
     keywords: ['mur', 'cosmochat', 'chat', 'social', 'message', 'messages', 'dm', 'channel', 'canal', 'post', 'publier'],
     response: {
-      answer: "Le Mur, c'est ton réseau social chiffré et décentralisé ! Imagine Telegram + Instagram + Discord, mais dans l'espace. Publie sur la timeline, crée des canaux, envoie des DM, et donne des pourboires en Strangrz au lieu de likes (parce que mettre ton argent là où tu parles > un emoji cœur). Partage des liens vers des Strangrz, des actus, des pensées cosmiques... l'univers est ton fil. Chiffré. Anonyme. Sécurisé.",
+      answer: "Le Mur, c'est ton réseau social intégré ! Imagine Instagram + Discord, mais dédié à l'art. Publie sur la timeline, crée des canaux, envoie des messages directs aux artistes et aux collectionneurs. Partage des liens vers des oeuvres, des actus, des pensées créatives... la communauté est ton fil.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -103,7 +86,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['tip', 'tips', 'pourboire', 'like', 'aimer', 'rewarp', 'retweet', 'share', 'partager'],
     response: {
-      answer: "Oublie les likes — sur le Mur, tu donnes des POURBOIRES de 1 Strangrz (⬣) par post. Un seul pourboire par utilisateur par post, pas de spam. C'est comme dire « j'approuve ce message » mais en y mettant de la vraie valeur. Tu peux aussi ReStrangrz (partager à tes abonnés) ou Partager en externe. Chaque post affiche le nombre de pourboires, ReStrangrzs, vues et favoris. C'est comme X, mais avec une âme.",
+      answer: "Sur le Mur, tu peux liker les posts pour soutenir les artistes. Tu peux aussi repartager (RePost) ou Partager en externe. Chaque post affiche le nombre de likes, reposts, vues et favoris. C'est une communauté d'artistes et de collectionneurs passionnés.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -220,7 +203,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['what is', 'qu\'est-ce', 'c\'est quoi', 'explain', 'expliquer', 'strangrz', 'cosmowarp', 'about'],
     response: {
-      answer: "Strangrz est une plateforme de certification d'objets rares. Imagine si Bitcoin, Telegram et une maison de vente aux enchères avaient eu un bébé dans l'espace. Tu obtiens un réseau DAG transactionnel (StrangrzMesh — 7 couches parallèles, pas une seule chaîne lente), un réseau social chiffré (le Mur), une marketplace d'objets rares certifiés (les Strangrz), une passerelle de paiement fiat (carte, PayPal, SEPA), et tout ça sécurisé par de la vraie cryptographie (Ed25519 + SHA-256 + AES-GCM). Pas d'intermédiaires. Pas de banques. Pas de surveillance. Juste de l'échange de valeur cosmique pur.",
+      answer: "Strangrz est une plateforme sociale pour l'art et les objets de collection. Imagine une galerie d'art en ligne + un réseau social + un certificat d'authenticité infalsifiable, le tout dans une app. Tu y trouves : une galerie d'oeuvres certifiées, un réseau social dédié aux artistes et collectionneurs (le Mur), un système de paiement simple (carte bancaire, Apple Pay, Google Pay), et des royalties automatiques pour les créateurs. Pas de complication technique — juste de l'art, de la confiance et de la communauté.",
       navigateTo: 'landing',
       tabLabel: 'Accueil',
     },
@@ -229,7 +212,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['help', 'aide', 'assist', 'guide', 'support', 'hello', 'bonjour', 'salut', 'hi', 'hey'],
     response: {
-      answer: "Bonjour, voyageur cosmique ! Je suis Doctor Strangrz, ton oracle et guide dans l'univers Strangrz. Je sais tout sur cet écosystème (modeste, je sais). Pose-moi des questions sur les portefeuilles, le minage, les Strangrz, le Mur, la sécurité, la tokenomics, le paiement par carte, ou littéralement n'importe quoi d'autre. Je promets que mes réponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
+      answer: "Bonjour, voyageur cosmique ! Je suis Doctor Strangrz, ton guide dans l'univers Strangrz. Je sais tout sur la plateforme (modeste, je sais). Pose-moi des questions sur ton compte, la galerie, les oeuvres, le Mur, la sécurité, le paiement, les royalties, ou littéralement n'importe quoi d'autre. Je promets que mes réponses sont plus utiles qu'un trou noir et significativement moins denses. Que veux-tu savoir ?",
       navigateTo: 'help',
       tabLabel: 'Aide',
     },
@@ -429,13 +412,18 @@ interface ChatMsg {
 
 const FAQ_ICONS: Record<string, ReactNode> = {
   'Pour commencer': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>,
+  'Publier & Vendre': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
   'Minage & Strangrz': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
+  'Galerie & Oeuvres': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Marketplace (Strangrz)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
+  'Technologie & Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
   'StrangrzMesh & StrangrzCode': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>,
   'Paiement': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
   'Strangrz & Protection des actifs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><circle cx="12" cy="16" r="1" /></svg>,
   'Sécurité': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+  'Marché secondaire': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+  'Prix & Impact': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
   'Ethereum & Multi-Chain': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2L4 12l8 5 8-5L12 2z" /><path d="M4 12l8 10 8-10-8 5-8-5z" /></svg>,
   'Curate — Magazine & Curateurs': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
   'Trading Floor': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
@@ -446,72 +434,56 @@ const FAQ_SECTIONS = [
     title: 'Pour commencer',
     icon: 'Pour commencer',
     items: [
-      { q: `Comment créer un portefeuille ?`, a: `Va dans l'onglet Portefeuille et clique sur « Créer un portefeuille ». Choisis un mot de passe solide et sauvegarde ta clé de récupération en lieu sûr.` },
-      { q: `Pourquoi mon solde est à 0 ?`, a: `Les nouveaux portefeuilles démarrent à 0. Tu dois miner des Strangrz en allant dans Portefeuille → Miner. Chaque appareil a son propre portefeuille local.` },
-      { q: `Comment sauvegarder mon portefeuille ?`, a: `Dans Portefeuille → Aperçu, télécharge ta clé de récupération. Garde-la en lieu sûr — il n'y a pas de réinitialisation de mot de passe !` },
+      { q: `Comment créer un compte ?`, a: `Va dans Mon Compte et choisis un nom d'utilisateur et un mot de passe. Aucun email requis. Tu es prêt en 30 secondes.` },
+      { q: `Comment acheter une oeuvre ?`, a: `Parcours la Galerie, clique sur une oeuvre et appuie sur « Collect ». Paie par carte bancaire, Apple Pay ou Google Pay. C'est tout !` },
+      { q: `Comment sauvegarder mon compte ?`, a: `Dans Mon Compte → Aperçu, télécharge ta sauvegarde de récupération. Garde-la en lieu sûr — il n'y a pas de réinitialisation de mot de passe !` },
     ],
   },
   {
-    title: 'Minage & Strangrz',
+    title: 'Publier & Vendre',
     icon: 'Minage & Strangrz',
     items: [
-      { q: `Comment miner ?`, a: `Va dans Portefeuille → Miner, choisis la difficulté et clique sur Miner. Plus la difficulté est élevée = plus de Strangrz.` },
-      { q: `Qu'est-ce que la Décroissance par Résonance ?`, a: `Une courbe de minage progressive basée sur le nombre d'or (φ). Contrairement au halving brutal de Bitcoin, les récompenses diminuent graduellement et de façon prévisible.` },
-      { q: `Quel est le supply total ?`, a: `69 millions de Strangrz. 84 % pour le minage, 14,5 % pour les airdrops, 1,5 % verrouillage créateur.` },
+      { q: `Comment publier une oeuvre ?`, a: `Va dans la Galerie et clique sur « + Créer ». Uploade ton média (image, vidéo, musique), ajoute un titre, une description et un prix en euros. Publie et c'est en ligne !` },
+      { q: `Comment fixer le prix ?`, a: `Le prix minimum est de 10€ par oeuvre. Fixe ton prix en euros — les acheteurs paient par carte bancaire, et tu reçois tes euros directement.` },
+      { q: `Comment recevoir mes paiements ?`, a: `Quand un collectionneur achète ton oeuvre, le paiement est traité automatiquement via Stripe. Tu reçois tes euros sur ton compte bancaire.` },
     ],
   },
   {
-    title: 'Le token STZ (⬣)',
-    icon: 'Minage & Strangrz',
-    items: [
-      { q: `C'est quoi le STZ ?`, a: `Le Strangrz (⬣), ticker STZ, est la monnaie native de l'écosystème Strangrz. Il sert à certifier des objets rares, tipper les publications sur le Mur, acheter sur la Marketplace, et payer les royalties. Supply fixe : 69 millions.` },
-      { q: `Combien vaut 1 STZ ?`, a: `Valeur de référence : 1 STZ = 0,10 € (10 centimes d'euro). Les taux fiat sont calculés à partir du forex réel : 1 € = 10 STZ, 1 $ ≈ 9,1 STZ, 1 £ ≈ 11,7 STZ, 1 ¥ ≈ 0,061 STZ, 1 ETH ≈ 22 750 STZ.` },
-      { q: `Comment obtenir des STZ ?`, a: `3 façons : (1) Miner — exécute des calculs de preuve de calcul (CosmoASM) dans Portefeuille → Miner. (2) Airdrop — chaque nouveau compte reçoit 1 000 STZ. (3) Achat fiat — carte bancaire, PayPal ou virement SEPA via la passerelle intégrée.` },
-      { q: `C'est quoi la Décroissance par Résonance ?`, a: `La courbe de minage du STZ. Formule : récompense = 50 × φ^(-totalMiné / 5M), où φ = 1,618 (nombre d'or). Démarre à 50 STZ/bloc, descend progressivement sans jamais atteindre zéro (plancher : 0,1 STZ). Plus doux et prévisible que le halving de Bitcoin.` },
-      { q: `Quelle est la répartition du supply ?`, a: `Sur les 69M de STZ : 58M (84 %) pour le minage, 10M (14,5 %) pour les airdrops (300 STZ par compte), et 1M (1,5 %) verrouillé pour le créateur (déverrouillable par l'admin). La supply est fixe — aucun nouveau STZ ne sera jamais créé au-delà.` },
-      { q: `Les transactions STZ coûtent-elles quelque chose ?`, a: `Non ! Toutes les transactions sur StrangrzMesh sont 100 % gratuites. Zéro gas, zéro frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de facturer les utilisateurs.` },
-    ],
-  },
-  {
-    title: 'Marketplace (Strangrz)',
+    title: 'Galerie & Oeuvres',
     icon: 'Marketplace (Strangrz)',
     items: [
-      { q: `Qu'est-ce qu'une Strangrz ?`, a: `Un objet rare certifié (carte Pokémon, sneaker, vinyle, montre, art numérique) avec un Certificat d'Authenticité infalsifiable (STCERT) sur le protocole Strangrz.` },
+      { q: `Qu'est-ce qu'on peut acheter ?`, a: `Art numérique, photographies, musique, vidéos, objets physiques certifiés (sneakers, vinyles, montres, cartes de collection). Chaque oeuvre est accompagnée d'un certificat d'authenticité infalsifiable.` },
       { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo), et Cards. Le tout limité à 50 Mo.` },
-      { q: `Qu'est-ce que le STCERT ?`, a: `Certificat d'Authenticité — une empreinte SHA-256 du contenu + signature Ed25519 du créateur. Infalsifiable et permanent.` },
-      { q: `Les Strangrz sont-elles stockées on-chain ?`, a: `Oui ! Avec StrangrzMesh, les objets sont compressés via StrangrzCode SVG (5-30x pour les données structurées) et stockés dans IndexedDB (échelle Go). Pas d'IPFS, pas de dépendance à un serveur externe.` },
-      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees via MetaMask). Dans les deux cas, ton œuvre reçoit un certificat STCERT et une protection Strangrz Safe.` },
-      { q: `Comment minter sur Ethereum ?`, a: `Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain, connecte ton wallet MetaMask depuis l'onglet Portefeuille → Ethereum, et confirme la transaction. Les royalties et la provenance sont garanties via le système Strangrz.` },
-      { q: `Quelle est la différence entre StrangrzChain et Ethereum ?`, a: `StrangrzChain (SZ-721) : zéro gas, minting instantané, StrangrzCode on-chain backup. Ethereum (ERC-721) : standard ERC-721 sur le mainnet, gas fees requis, compatible MetaMask/WalletConnect. Les deux chaînes offrent la même protection Strangrz et certification STCERT.` },
+      { q: `Qu'est-ce que le certificat STCERT ?`, a: `Un certificat d'authenticité numérique infalsifiable qui accompagne chaque oeuvre. Il contient une empreinte numérique unique du contenu, la signature du créateur et un horodatage. Il est vérifiable par tous et permanent.` },
+      { q: `Les oeuvres sont-elles protégées ?`, a: `Oui ! Chaque oeuvre bénéficie d'un stockage sécurisé multi-couches et d'un monitoring actif. Si un problème est détecté, le système lance automatiquement une réparation.` },
+      { q: `Comment fonctionnent les royalties ?`, a: `Les artistes reçoivent automatiquement 5% du prix à chaque revente de leur oeuvre. C'est géré par la plateforme — aucune action requise. Le taux est configurable entre 0% et 50% à la publication.` },
     ],
   },
   {
     title: 'Le Mur (Réseau social)',
     icon: 'Le Mur (Réseau social)',
     items: [
-      { q: `Qu'est-ce que le Mur ?`, a: `Un réseau social chiffré et anonyme au sein de Strangrz. Publie, crée des canaux, envoie des DM, et donne des pourboires en Strangrz.` },
-      { q: `Comment fonctionnent les pourboires ?`, a: `1 Strangrz par utilisateur par post. C'est comme un « like » mais adossé à une vraie valeur.` },
-      { q: `Qu'est-ce que le ReStrangrz ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur la timeline du Mur.` },
+      { q: `Qu'est-ce que le Mur ?`, a: `Un réseau social intégré dédié à l'art et aux collectionneurs. Publie, crée des canaux thématiques, envoie des messages directs aux artistes.` },
+      { q: `Comment interagir avec les artistes ?`, a: `Like les posts pour soutenir les créateurs, envoie des messages directs, suis tes artistes préférés et partage leurs oeuvres.` },
+      { q: `Qu'est-ce que le RePost ?`, a: `Comme un retweet — partage le post de quelqu'un à tes abonnés sur ta timeline.` },
     ],
   },
   {
-    title: 'StrangrzMesh & StrangrzCode',
+    title: 'Technologie & Sécurité',
     icon: 'StrangrzMesh & StrangrzCode',
     items: [
-      { q: `Qu'est-ce que StrangrzMesh ?`, a: `Un réseau DAG à 7 couches parallèles tournant dans de vrais Web Workers. Chaque couche traite les transactions indépendamment toutes les 1,5 secondes. Le TPS dépend du matériel (lance le benchmark). Frais de gas : toujours 0 ⬣.` },
-      { q: `Quelles sont les 7 couches ?`, a: `GRID (<10⬣), HELIX (10-100⬣), GLYPH (100-1K⬣ + objets rares), COSMO (gouvernance), CHRONOS (verrouillage temporel), NEXUS (inter-couches), LUMINA (époques). Ta TX est automatiquement routée vers la bonne couche.` },
-      { q: `Pourquoi les transactions sont-elles gratuites ?`, a: `Les validateurs gagnent via les récompenses de staking, pas via les frais. L'anti-spam utilise la limitation de débit (100 TX/min) au lieu de tarifer les utilisateurs. StrangrzCode compresse les données structurées 5-30x, et IndexedDB fournit un stockage local à l'échelle du Go.` },
-      { q: `Qu'est-ce que StrangrzCode SVG ?`, a: `Un moteur de compression à 7 couches qui encode toutes les données on-chain dans des conteneurs SVG optimisés. Delta + Dictionnaire + Run-Length + Imbrication Fractale + Fréquence + Quantification + Filtres. Réel mesuré : 5-30x pour les données structurées, ~1-2x pour le binaire.` },
-      { q: `Les Strangrz sont-elles vraiment stockées on-chain ?`, a: `Oui ! StrangrzMesh stocke les objets en tant que StrangrzCode SVG compressé dans IndexedDB (stockage local à l'échelle du Go). Pas de dépendance IPFS. Actuellement mono-nœud ; la récupération P2P nécessite un réseau de pairs.` },
-      { q: `Qu'est-ce qu'un Beacon Block ?`, a: `Toutes les 10 blocs de couche (~15s), un Beacon Block ancre les 7 couches dans une seule Racine d'État Global. Cela fournit une finalité inter-couches absolue.` },
+      { q: `Comment fonctionne la certification ?`, a: `Quand tu publies une oeuvre, Strangrz génère automatiquement un certificat d'authenticité (STCERT) infalsifiable. Il est basé sur une empreinte numérique unique du contenu et la signature du créateur. Tout est automatique — tu n'as rien à faire.` },
+      { q: `Mes oeuvres sont-elles protégées ?`, a: `Oui ! Chaque oeuvre bénéficie d'un stockage multi-couches (local + cloud + sauvegarde permanente), d'un monitoring actif, et de réparation automatique si un problème est détecté.` },
+      { q: `Est-ce que la plateforme est rapide ?`, a: `Oui. Strangrz utilise une infrastructure à 7 couches parallèles qui garantit des transactions quasi-instantanées. Publier une oeuvre ou acheter prend quelques secondes.` },
     ],
   },
   {
     title: 'Paiement',
     icon: 'Paiement',
     items: [
-      { q: `Puis-je payer par carte bancaire ?`, a: `Oui ! Strangrz intègre une passerelle fiat complète : carte bancaire, PayPal et virement SEPA.` },
-      { q: `Faut-il passer par un exchange crypto ?`, a: `Non. Tu peux acheter des Strangrz et des Strangrz directement en euros, sans passer par une plateforme d'échange.` },
+      { q: `Comment payer ?`, a: `Carte bancaire, Apple Pay ou Google Pay. Paiement sécurisé par Stripe. Tous les prix sont affichés en euros.` },
+      { q: `Comment recevoir mes ventes ?`, a: `Les paiements sont traités automatiquement via Stripe. L'acheteur paie en euros, tu reçois tes euros directement sur ton compte bancaire.` },
+      { q: `Y a-t-il des frais ?`, a: `Les frais de publication sont gratuits. Une commission plateforme s'applique sur chaque vente. Les royalties (5% par défaut) sont versées automatiquement au créateur original sur chaque revente.` },
     ],
   },
   {
@@ -540,39 +512,20 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    title: 'Prix, Comparatif & Impact',
-    icon: 'Ethereum & Multi-Chain',
+    title: 'Prix & Impact',
+    icon: 'Paiement',
     items: [
       {
-        q: 'Pourquoi un prix minimum de 100 ⬣ / 0.01 ETH pour les oeuvres ?',
-        a: `Strangrz n'est pas une plateforme gratuite de publication. Le prix minimum garantit :\n\n• La valorisation du travail des artistes — une oeuvre a de la valeur\n• Un filtre anti-spam — pas de flood d'oeuvres générées en masse\n• Un écosystème économique durable — les créateurs, collectionneurs et validateurs participent à une vraie économie\n• Des royalties significatives — 5% de 100 ⬣ = 5 ⬣ à chaque revente\n\nL'art gratuit dévalue la création. Strangrz protège les artistes en imposant un plancher qui donne du sens à chaque oeuvre certifiée.`,
-      },
-      {
-        q: 'Tableau comparatif : Strangrz vs Ethereum vs Tezos vs Solana',
-        a: `| Critère | Strangrz (SZ-721) | Ethereum (ERC-721) | Tezos (FA2) | Solana (Metaplex) |
-|---|---|---|---|---|
-| Frais de mint | 0 ⬣ (gratuit) | 2-100 $ (gas) | ~0.50 $ | ~0.01 $ |
-| Prix min. vente | 100 ⬣ | 0.01 ETH | Aucun | Aucun |
-| Vitesse de bloc | 1.5s (7 shards) | ~12s | ~15s | ~0.4s |
-| TPS théorique | ~7 000 | ~15 | ~40 | ~4 000 |
-| Consensus | DAG 7 couches | Proof of Stake | Liquid PoS | Proof of History |
-| Énergie/TX | ~0.001 Wh | ~0.03 Wh | ~0.002 Wh | ~0.002 Wh |
-| Énergie annuelle | < 1 MWh | ~2 600 MWh | ~60 MWh | ~2 000 MWh |
-| Empreinte CO₂/TX | ~0 g | ~20 g | ~1 g | ~1 g |
-| Stockage on-chain | Oui (StrangrzCode SVG) | Non (IPFS/Arweave) | Non (IPFS) | Non (Arweave) |
-| Certificat natif | STCERT (SHA-256+Ed25519) | Aucun (métadonnées JSON) | Aucun | Aucun |
-| Protection Strangrz | Oui (monitoring + repair) | Non | Non | Non |
-| Royalties | Garanties (Strangrz) | Non garanties | Oui (on-chain) | Partiellement |
-| Wallet requis | Aucun (StrangrzID) | MetaMask | Temple | Phantom |
-| Paiement fiat | Oui (CB, PayPal, SEPA) | Non natif | Non natif | Non natif |`,
+        q: 'Pourquoi un prix minimum de 10€ pour les oeuvres ?',
+        a: `Strangrz n'est pas une plateforme gratuite de publication. Le prix minimum garantit :\n\n• La valorisation du travail des artistes — une oeuvre a de la valeur\n• Un filtre anti-spam — pas de flood d'oeuvres générées en masse\n• Un écosystème économique durable\n• Des royalties significatives à chaque revente\n\nL'art gratuit dévalue la création. Strangrz protège les artistes en imposant un plancher qui donne du sens à chaque oeuvre.`,
       },
       {
         q: 'Quel est l\'impact écologique de Strangrz ?',
-        a: `Strangrz est l'une des solutions les plus éco-responsables pour l'art numérique :\n\n• Pas de Proof of Work — zéro minage énergivore\n• Architecture DAG légère — chaque transaction ne valide que 2 transactions précédentes\n• Stockage local + cloud — pas de réseau mondial de nœuds à alimenter 24/7\n• Compression StrangrzCode — réduit les données stockées de 5 à 30x\n• Gas à 0 — aucun calcul compétitif pour inclure une transaction\n\nComparaison : minter une oeuvre sur Strangrz consomme environ 0.001 Wh (l'équivalent d'allumer une LED pendant 1 seconde). Sur Ethereum pré-merge, c'était l'équivalent de 2 jours de consommation d'un foyer. Même après le passage en PoS, Ethereum reste 30x plus énergivore par transaction que Strangrz.`,
+        a: `Strangrz est l'une des plateformes les plus éco-responsables pour l'art :\n\n• Architecture ultra-légère — chaque transaction consomme ~0.001 Wh\n• Stockage intelligent — compression avancée qui réduit l'empreinte de 5 à 30x\n• Pas de calculs énergivores — 99.9% plus efficace que les plateformes traditionnelles\n• Zéro gaspillage — pas de processus inutile`,
       },
       {
         q: 'Pourquoi l\'art ne doit pas être gratuit ?',
-        a: `Le modèle "gratuit" a détruit la valeur de la création numérique pendant 20 ans :\n\n• Les artistes sur les plateformes gratuites gagnent en moyenne 0.003 $ par stream/vue\n• 90% des NFT gratuits ou à bas prix n'ont jamais été revendus\n• Les marketplaces sans prix minimum sont envahies par les bots et le spam\n\nStrangrz impose un prix minimum de 100 ⬣ pour chaque oeuvre parce que :\n\n1. La création a de la valeur — un prix plancher respecte le travail de l'artiste\n2. Les collectionneurs investissent — un achat à 100 ⬣ crée un engagement réel\n3. L'écosystème vit — les royalties (5%) et le marché secondaire génèrent une économie circulaire\n4. Anti-spam — le coût d'entrée décourage la pollution du marketplace\n5. Durabilité — un écosystème où la création a un prix est un écosystème qui survit`,
+        a: `Le modèle "gratuit" a détruit la valeur de la création numérique pendant 20 ans :\n\n• Les artistes sur les plateformes gratuites gagnent en moyenne 0.003 $ par stream/vue\n• Les galeries sans prix minimum sont envahies par le spam\n\nStrangrz impose un prix minimum de 10€ parce que :\n\n1. La création a de la valeur — un prix plancher respecte le travail de l'artiste\n2. Les collectionneurs investissent — un achat crée un engagement réel\n3. L'écosystème vit — les royalties (5%) et le marché secondaire génèrent une économie circulaire\n4. Anti-spam — le coût d'entrée décourage la pollution\n5. Durabilité — un écosystème où la création a un prix est un écosystème qui survit`,
       },
     ],
   },
@@ -588,26 +541,13 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    title: 'Trading Floor',
+    title: 'Marché secondaire',
     icon: 'Trading Floor',
     items: [
-      { q: `Qu'est-ce que le Trading Floor ?`, a: `Le Trading Floor est une interface de trading inspirée d'OpenSea, intégrée dans Strangrz. Il offre une vue en temps réel du marché : listings actifs, activité récente, classement des collections, et gestion de votre portfolio.` },
-      { q: `Comment fonctionne le trading ?`, a: `Toutes les transactions sont en STRNGRZ (⬣), la monnaie native de Strangrz. Achetez des oeuvres listées, vendez les vôtres, suivez vos P&L. Zéro frais de gas — uniquement le prix de l'oeuvre et les royalties au créateur.` },
-      { q: `Comment suivre mon portfolio ?`, a: `Dans Gallery → Trading → My Portfolio, visualisez la valeur totale de votre collection, vos gains/pertes non réalisés, et gérez vos listings (mise en vente, retrait).` },
-      { q: `Qu'est-ce que STRNGRZ remplace ?`, a: `STRNGRZ (⬣) vise à être LA monnaie des oeuvres numériques, remplaçant ETH, SOL, XTZ etc. pour le trading d'art digital. Zéro gas, transactions gratuites, royalties garanties.` },
-      { q: `Comment voir l'activité du marché ?`, a: `Trading → Activity vous montre toutes les ventes, transferts et mints récents avec filtres temporels (1h, 24h, 7j, 30j). Suivez les tendances du marché en temps réel.` },
-    ],
-  },
-  {
-    title: 'Ethereum & Multi-Chain',
-    icon: 'Ethereum & Multi-Chain',
-    items: [
-      { q: `Peut-on minter sur Ethereum ?`, a: `Oui ! Strangrz supporte le minting multi-chain. Au moment de créer une Strangrz, tu choisis ta blockchain : StrangrzChain (SZ-721, gratuit, 0 gas) ou Ethereum (ERC-721, gas fees). Les deux offrent la même protection Strangrz et certification STCERT.` },
-      { q: `Comment minter sur Ethereum ?`, a: `(1) Va dans Portefeuille → Ethereum et connecte ton wallet MetaMask ou WalletConnect. (2) Dans la Marketplace → Créer, sélectionne « Ethereum » dans le sélecteur de blockchain. (3) Remplis les infos de ton œuvre et confirme la transaction MetaMask. Gas fees requis.` },
-      { q: `Quelle blockchain choisir ?`, a: `StrangrzChain : idéal pour débuter, zéro frais, minting instantané, backup on-chain via StrangrzCode. Ethereum : pour toucher l'écosystème ERC-721 mondial, compatible OpenSea et tous les wallets ETH. Les deux chaînes garantissent royalties et provenance via Strangrz.` },
-      { q: `Comment connecter MetaMask ?`, a: `Va dans l'onglet Portefeuille → Ethereum, puis clique sur « Connect ». Sélectionne MetaMask ou WalletConnect. Une fois connecté, ton adresse ETH et ton solde s'affichent. Tu peux alors minter et acheter des Strangrz sur Ethereum.` },
-      { q: `Les royalties fonctionnent-elles sur Ethereum ?`, a: `Oui ! Le système Strangrz gère les royalties de manière cross-chain. Que ton œuvre soit sur StrangrzChain ou Ethereum, le créateur reçoit ses royalties (5 % par défaut) à chaque revente. La provenance est vérifiable sur les deux chaînes.` },
-      { q: `Mes Strangrz ETH sont-elles protégées ?`, a: `Absolument. Chaque Strangrz mintée sur Ethereum reçoit le même niveau de protection : certificat STCERT, Strangrz Manifest, Strangrz Safe monitoring, et routes de stockage multi-couches. Le système d'adaptateurs Strangrz (EVMAdapter pour ERC-721) assure la compatibilité cross-chain.` },
+      { q: `C'est quoi le marché secondaire ?`, a: `C'est l'espace où les collectionneurs peuvent revendre leurs oeuvres. Suivez les prix, les tendances et l'activité en temps réel. Gérez votre collection et mettez en vente vos pièces à tout moment.` },
+      { q: `Comment revendre une oeuvre ?`, a: `Allez dans votre collection, sélectionnez une oeuvre et fixez votre prix de revente en euros. L'artiste original reçoit automatiquement ses royalties (5%) sur chaque revente.` },
+      { q: `Comment suivre ma collection ?`, a: `Dans la section Marché, visualisez la valeur de votre collection, vos oeuvres en vente, et les tendances du marché en temps réel.` },
+      { q: `Comment voir l'activité du marché ?`, a: `L'onglet Activité vous montre toutes les ventes récentes avec filtres temporels (1h, 24h, 7j, 30j). Suivez les tendances en temps réel.` },
     ],
   },
 ];
@@ -621,7 +561,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
     {
       id: 'welcome',
       role: 'cosmo',
-      text: `Salut ! Je suis Doctor Strangrz, ton oracle et guide dans l'univers Strangrz. Pose-moi n'importe quelle question — portefeuilles, minage, Strangrz, Mur, sécurité, paiement... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
+      text: `Salut ! Je suis Doctor Strangrz, ton guide dans l'univers Strangrz. Pose-moi n'importe quelle question — compte, galerie, oeuvres, paiement, sécurité, le Mur... je sais tout. (Et oui, je suis plus drôle qu'une FAQ classique.)`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -782,7 +722,7 @@ export default function HelpView({ onNavigate }: { onNavigate: (tab: string) => 
               </button>
             </div>
             <div className="flex gap-2 mt-2 flex-wrap">
-              {['Comment miner ?', "C'est quoi Strangrz ?", "Pourquoi c'est gratuit ?", 'Comment certifier un objet ?', 'Sécurité & 2FA'].map(q => (
+              {['Comment acheter ?', "C'est quoi Strangrz ?", 'Comment publier une oeuvre ?', 'Comment recevoir mes paiements ?', 'Sécurité & 2FA'].map(q => (
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}
