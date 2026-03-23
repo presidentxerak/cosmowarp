@@ -72,7 +72,7 @@ function getEurSymbol(wart: Wart): string {
 export default function MarketplaceView() {
   const {
     wallet, unlocked, warts: allWartsRaw, marketplace, myCollection, myCreated,
-    mintWart, buyWart, listWart, delistWart, transferWart, send,
+    mintWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
     listWartFiat, buyWartFiat,
     lazyListings, createLazyListing, buyLazyMint, cancelLazyListing,
@@ -134,7 +134,7 @@ export default function MarketplaceView() {
   const [maxEditions, setMaxEditions] = useState('');
   const [durationHours, setDurationHours] = useState('');
   const [mintChain, setMintChain] = useState<'strangrz' | 'ethereum'>('strangrz');
-  const [lazyMintMode, setLazyMintMode] = useState(true); // Default: lazy mint (buyer pays all)
+  const [lazyMintMode] = useState(true); // Always lazy mint
   const [saleMode, setSaleMode] = useState<'fixed' | 'auction'>('fixed');
   const [auctionType, setAuctionType] = useState<'no-reserve' | 'minimum' | 'reserve' | 'dutch'>('no-reserve');
   const [auctionStartPrice, setAuctionStartPrice] = useState('');
@@ -161,9 +161,7 @@ export default function MarketplaceView() {
   const [searchQuery] = useState('');
 
   // Buy / List state
-  const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [listPrice, setListPrice] = useState('');
   const [transferTo, setTransferTo] = useState('');
 
   // Edit state
@@ -182,8 +180,7 @@ export default function MarketplaceView() {
 
   // Fiat pricing
   const [fiatPriceInput, setFiatPriceInput] = useState('');
-  const [fiatCurrency, setFiatCurrency] = useState<FiatCurrency>('EUR');
-  const [pricingMode, setPricingMode] = useState<'crypto' | 'fiat'>('crypto');
+  const [fiatCurrency] = useState<FiatCurrency>('EUR');
   const [buyingFiat, setBuyingFiat] = useState(false);
 
   // Phygital certificate
@@ -563,32 +560,6 @@ export default function MarketplaceView() {
     }
   };
 
-  const handleBuy = async (wart: Wart) => {
-    setBuying(true);
-    setBuyResult(null);
-    const timeout = setTimeout(() => {
-      setBuying(false);
-      setBuyResult({ success: false, message: 'Request timed out — please try again' });
-    }, 30000);
-    try {
-      const result = await buyWart(wart.id);
-      clearTimeout(timeout);
-      setBuyResult({
-        success: result.success,
-        message: result.success ? `Bought "${wart.title}"!` : result.error || 'Failed',
-      });
-      setBuying(false);
-      if (result.success) {
-        setSelectedWart(null);
-        setTimeout(() => setBuyResult(null), 3000);
-      }
-    } catch {
-      clearTimeout(timeout);
-      setBuying(false);
-      setBuyResult({ success: false, message: 'Purchase failed — please try again' });
-    }
-  };
-
   const handleBuyFiat = async (wart: Wart) => {
     setBuyingFiat(true);
     setBuyResult(null);
@@ -607,22 +578,14 @@ export default function MarketplaceView() {
   };
 
   const handleList = (wart: Wart) => {
-    let ok = false;
-    if (pricingMode === 'fiat') {
-      const fp = parseFloat(fiatPriceInput);
-      if (isNaN(fp) || fp <= 0) return;
-      ok = listWartFiat(wart.id, fp, fiatCurrency);
-      setFiatPriceInput('');
-    } else {
-      const p = parseFloat(listPrice);
-      if (isNaN(p) || p < 1) {
-        setListSuccess('Prix minimum : 1 \u20AC');
-        setTimeout(() => setListSuccess(''), 3000);
-        return;
-      }
-      ok = listWart(wart.id, p);
-      setListPrice('');
+    const fp = parseFloat(fiatPriceInput);
+    if (isNaN(fp) || fp < 1) {
+      setListSuccess('Prix minimum : 1 \u20AC');
+      setTimeout(() => setListSuccess(''), 3000);
+      return;
     }
+    const ok = listWartFiat(wart.id, fp, fiatCurrency);
+    setFiatPriceInput('');
     if (ok) {
       setListSuccess('Listed successfully!');
       setTimeout(() => setListSuccess(''), 3000);
@@ -702,7 +665,7 @@ export default function MarketplaceView() {
     setSelectedWart(wart);
     setTab('detail');
     setBuyResult(null);
-    setListPrice('');
+    setFiatPriceInput('');
     setTransferTo('');
     setEditing(false);
     setConfirmDelete(false);
