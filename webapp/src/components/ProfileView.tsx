@@ -202,9 +202,22 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
   if (!wallet || !unlocked) {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
-        <div className="text-center px-6">
+        <div className="text-center px-6 space-y-5">
           <HexAvatar address="default" size={64} className="mx-auto mb-4" />
-          <p className="opacity-50 text-base">Unlock your wallet to view profile</p>
+          <h2 className="text-title-sm font-bold font-title">Rejoins Strangrz</h2>
+          <p className="opacity-50 text-base max-w-xs mx-auto">Crée ton profil, collectionne et vends des oeuvres d'art uniques.</p>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }))}
+            className="cta-gradient-btn px-8 py-4 text-base font-bold"
+          >
+            Créer un compte gratuit
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }))}
+            className="block mx-auto text-body-sm opacity-50 cursor-pointer hover:opacity-80"
+          >
+            Déjà un compte ? Se connecter
+          </button>
         </div>
       </div>
     );

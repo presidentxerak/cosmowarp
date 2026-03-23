@@ -375,11 +375,14 @@ export default function MarketplaceView() {
     return false;
   };
 
-  // Redirect auth-only tabs to 'all' for unauthenticated users
+  // Redirect auth-only tabs to wallet sign-in for unauthenticated users
   const authOnlyTabs: GalleryTab[] = ['create', 'curate', 'trading'];
-  if (!isAuth && authOnlyTabs.includes(tab)) {
-    setTab('all');
-  }
+  useEffect(() => {
+    if (!isAuth && authOnlyTabs.includes(tab)) {
+      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+      setTab('all');
+    }
+  }, [tab, isAuth]);
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
