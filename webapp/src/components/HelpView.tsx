@@ -264,7 +264,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['vendre', 'sell', 'recevoir euros', 'receive money', 'payout', 'retrait', 'withdrawal', 'stripe connect', 'bank account', 'compte bancaire', 'comment vendre', 'how to sell'],
     response: {
-      answer: "Pour vendre tes oeuvres et recevoir tes euros, voici le process : (1) Va dans Paramètres → Payouts et configure ton compte bancaire via Stripe Connect (vérification d'identité + IBAN, une seule fois). (2) Mets ton oeuvre en vente dans la Marketplace — fixe un prix en euros. (3) Quand quelqu'un achète, le paiement est traité automatiquement : l'acheteur paie en €, le protocole transfère le certificat STCERT, et toi tu reçois tes euros directement sur ton compte bancaire (moins 2,5% de frais plateforme). Les royalties de 5% sur les reventes sont aussi versées automatiquement au créateur original. Si tu n'as pas encore configuré Stripe Connect, tes gains restent en ⬣ dans ton wallet jusqu'à ce que tu le fasses.",
+      answer: "Pour vendre tes oeuvres et recevoir tes euros, voici le process : (1) Va dans Paramètres → Payouts et configure ton compte bancaire via Stripe Connect (vérification d'identité + IBAN, une seule fois). (2) Mets ton oeuvre en vente dans la Marketplace — fixe un prix en euros. (3) Quand quelqu'un achète, le paiement est traité automatiquement : l'acheteur paie en €, le protocole transfère le certificat STCERT, et toi tu reçois 100% du prix affiché directement sur ton compte bancaire. C'est l'acheteur qui paie les frais plateforme (10% premier marché, 5% second marché) en plus du prix affiché. Les royalties sur les reventes sont aussi versées automatiquement au créateur original. Si tu n'as pas encore configuré Stripe Connect, tes gains restent en ⬣ dans ton wallet jusqu'à ce que tu le fasses.",
       navigateTo: 'settings',
       tabLabel: 'Paramètres → Payouts',
     },
@@ -273,7 +273,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['royalty', 'royalties', 'revente', 'resale', 'secondary', 'secondaire', 'créateur', 'creator earnings', 'revenus créateur'],
     response: {
-      answer: "Les royalties sur Strangrz sont automatiques et impossibles à contourner — c'est le protocole qui les gère, pas un contrat qu'on peut ignorer. Par défaut, 5% du prix de chaque revente est versé au créateur original. Exemple : tu crées une oeuvre à 50€. Un collectionneur l'achète, puis la revend 200€. Tu reçois automatiquement 10€ (5% de 200€) directement sur ton compte bancaire, sans rien faire. Et ça marche à l'infini — 2ème revente, 3ème, 10ème... tu touches toujours tes royalties. Le taux est configurable entre 0% et 50% au moment de la création.",
+      answer: "Les royalties sur Strangrz sont automatiques et impossibles à contourner — c'est le protocole qui les gère, pas un contrat qu'on peut ignorer. Par défaut, 5% du prix de chaque revente est versé au créateur original. Exemple : tu crées une oeuvre à 50€. Un collectionneur l'achète, puis la revend 200€. Tu reçois automatiquement 10€ (5% de 200€) directement sur ton compte bancaire, sans rien faire. Et ça marche à l'infini — 2ème revente, 3ème, 10ème... tu touches toujours tes royalties. Le taux est configurable entre 0% et 50% au moment de la création. Note : la plateforme prélève 10% sur le premier marché et 5% sur le second marché, ces frais sont payés par l'acheteur en plus du prix affiché.",
       navigateTo: 'gallery',
       tabLabel: 'Marketplace → Créer',
     },
@@ -452,11 +452,12 @@ const FAQ_SECTIONS = [
     title: 'Galerie & Oeuvres',
     icon: 'Marketplace (Strangrz)',
     items: [
-      { q: `Qu'est-ce qu'on peut acheter ?`, a: `Art numérique, photographies, musique, vidéos, objets physiques certifiés (sneakers, vinyles, montres, cartes de collection). Chaque oeuvre est accompagnée d'un certificat d'authenticité infalsifiable.` },
+      { q: `Qu'est-ce qu'on peut acheter ?`, a: `Art numérique, photographies, musique, vidéos, et objets physiques certifiés (sneakers, vinyles, montres, cartes de collection). Chaque oeuvre est accompagnée d'un certificat d'authenticité infalsifiable.` },
+      { q: `La plateforme gère-t-elle la livraison d'objets physiques ?`, a: `Non. Strangrz est une plateforme de certification et de vente d'oeuvres numériques. Pour les objets physiques certifiés, la plateforme fournit uniquement le certificat d'authenticité numérique (STCERT) et la transaction de vente. La livraison, l'expédition et la logistique sont entièrement à la charge du vendeur et de l'acheteur, qui doivent s'organiser entre eux (via les messages directs de la plateforme par exemple). Strangrz ne peut être tenu responsable des problèmes de livraison, de perte ou de dommages liés au transport d'objets physiques.` },
       { q: `Quels formats sont supportés ?`, a: `.gif .jpeg .png (images), .mp3 (audio avec pochette), .mp4 .mov (vidéo), et Cards. Le tout limité à 50 Mo.` },
       { q: `Qu'est-ce que le certificat STCERT ?`, a: `Un certificat d'authenticité numérique infalsifiable qui accompagne chaque oeuvre. Il contient une empreinte numérique unique du contenu, la signature du créateur et un horodatage. Il est vérifiable par tous et permanent.` },
       { q: `Les oeuvres sont-elles protégées ?`, a: `Oui ! Chaque oeuvre bénéficie d'un stockage sécurisé multi-couches et d'un monitoring actif. Si un problème est détecté, le système lance automatiquement une réparation.` },
-      { q: `Comment fonctionnent les royalties ?`, a: `Les artistes reçoivent automatiquement 5% du prix à chaque revente de leur oeuvre. C'est géré par la plateforme — aucune action requise. Le taux est configurable entre 0% et 50% à la publication.` },
+      { q: `Comment fonctionnent les royalties ?`, a: `Les artistes reçoivent automatiquement 5% du prix à chaque revente de leur oeuvre. C'est géré par la plateforme — aucune action requise. Le taux est configurable entre 0% et 50% à la publication. Les frais plateforme (10% premier marché, 5% second marché) sont payés par l'acheteur en plus du prix affiché — le vendeur reçoit 100% du prix.` },
     ],
   },
   {
@@ -483,7 +484,7 @@ const FAQ_SECTIONS = [
     items: [
       { q: `Comment payer ?`, a: `Carte bancaire, Apple Pay ou Google Pay. Paiement sécurisé par Stripe. Tous les prix sont affichés en euros.` },
       { q: `Comment recevoir mes ventes ?`, a: `Les paiements sont traités automatiquement via Stripe. L'acheteur paie en euros, tu reçois tes euros directement sur ton compte bancaire.` },
-      { q: `Y a-t-il des frais ?`, a: `Les frais de publication sont gratuits. Une commission plateforme s'applique sur chaque vente. Les royalties (5% par défaut) sont versées automatiquement au créateur original sur chaque revente.` },
+      { q: `Y a-t-il des frais ?`, a: `La publication est gratuite. L'acheteur paie des frais plateforme : 10% sur le premier marché (première vente d'une oeuvre) et 5% sur le second marché (reventes). Ces frais sont ajoutés au prix affiché — le vendeur reçoit 100% de son prix. Les royalties (5% par défaut, configurable 0-50%) sont versées automatiquement au créateur original sur chaque revente.` },
     ],
   },
   {
@@ -525,7 +526,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'Pourquoi l\'art ne doit pas être gratuit ?',
-        a: `Le modèle "gratuit" a détruit la valeur de la création numérique pendant 20 ans :\n\n• Les artistes sur les plateformes gratuites gagnent en moyenne 0.003 $ par stream/vue\n• Les galeries sans prix minimum sont envahies par le spam\n\nStrangrz impose un prix minimum de 10€ parce que :\n\n1. La création a de la valeur — un prix plancher respecte le travail de l'artiste\n2. Les collectionneurs investissent — un achat crée un engagement réel\n3. L'écosystème vit — les royalties (5%) et le marché secondaire génèrent une économie circulaire\n4. Anti-spam — le coût d'entrée décourage la pollution\n5. Durabilité — un écosystème où la création a un prix est un écosystème qui survit`,
+        a: `Le modèle "gratuit" a détruit la valeur de la création numérique pendant 20 ans :\n\n• Les artistes sur les plateformes gratuites gagnent en moyenne 0.003 $ par stream/vue\n• Les galeries sans prix minimum sont envahies par le spam\n\nStrangrz impose un prix minimum de 10€ parce que :\n\n1. La création a de la valeur — un prix plancher respecte le travail de l'artiste\n2. Les collectionneurs investissent — un achat crée un engagement réel\n3. L'écosystème vit — les royalties et le marché secondaire génèrent une économie circulaire\n4. Anti-spam — le coût d'entrée décourage la pollution\n5. Durabilité — un écosystème où la création a un prix est un écosystème qui survit`,
       },
     ],
   },
@@ -545,7 +546,7 @@ const FAQ_SECTIONS = [
     icon: 'Trading Floor',
     items: [
       { q: `C'est quoi le marché secondaire ?`, a: `C'est l'espace où les collectionneurs peuvent revendre leurs oeuvres. Suivez les prix, les tendances et l'activité en temps réel. Gérez votre collection et mettez en vente vos pièces à tout moment.` },
-      { q: `Comment revendre une oeuvre ?`, a: `Allez dans votre collection, sélectionnez une oeuvre et fixez votre prix de revente en euros. L'artiste original reçoit automatiquement ses royalties (5%) sur chaque revente.` },
+      { q: `Comment revendre une oeuvre ?`, a: `Allez dans votre collection, sélectionnez une oeuvre et fixez votre prix de revente en euros. Vous recevez 100% du prix affiché moins les royalties du créateur original (5% par défaut). L'acheteur paie 5% de frais plateforme en plus du prix affiché.` },
       { q: `Comment suivre ma collection ?`, a: `Dans la section Marché, visualisez la valeur de votre collection, vos oeuvres en vente, et les tendances du marché en temps réel.` },
       { q: `Comment voir l'activité du marché ?`, a: `L'onglet Activité vous montre toutes les ventes récentes avec filtres temporels (1h, 24h, 7j, 30j). Suivez les tendances en temps réel.` },
     ],
@@ -764,7 +765,7 @@ function FaqSection({ section }: { section: typeof FAQ_SECTIONS[number] }) {
           <div key={i} className="border-b border-white/3 last:border-0">
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full text-left p-3 flex items-center justify-between text-body-sm hover:bg-white/3 transition-all cursor-pointer"
+              className="w-full text-left p-3 flex items-center justify-between text-base hover:bg-white/3 transition-all cursor-pointer"
             >
               <span className="opacity-70 font-medium">{item.q}</span>
               <span className={`opacity-60 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}>
@@ -773,7 +774,7 @@ function FaqSection({ section }: { section: typeof FAQ_SECTIONS[number] }) {
             </button>
             {openIndex === i && (
               <div className="px-3 pb-3">
-                <p className="text-[11px] opacity-50 leading-relaxed">{item.a}</p>
+                <p className="text-base opacity-60 leading-relaxed">{item.a}</p>
               </div>
             )}
           </div>

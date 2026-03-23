@@ -79,7 +79,7 @@ function SectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title:
         <span className="text-title-lg opacity-60">{icon}</span>
         <h2 className="text-title-md font-bold opacity-100 font-title">{title}</h2>
       </div>
-      <p className="text-body-sm opacity-60">{subtitle}</p>
+      <p className="text-base opacity-60">{subtitle}</p>
     </div>
   );
 }
@@ -347,10 +347,16 @@ function TokenomicsSection() {
         brutalement. La transition est fluide et prévisible.
       </P>
 
-      <H3>Zéro frais — toujours</H3>
+      <H3>Zéro frais réseau</H3>
       <P>
-        Envoyer des Strangrz, certifier un objet, vérifier un certificat : tout est gratuit.
-        Le réseau se finance par la récompense de minage, pas par les frais des utilisateurs.
+        Envoyer des Strangrz, certifier un objet, vérifier un certificat : aucun frais de réseau (gas).
+        Le réseau se finance par la récompense de minage, pas par les frais de transaction réseau.
+      </P>
+      <P>
+        <span className="opacity-80 font-bold">Frais plateforme Marketplace :</span> Lors d'un achat sur la Marketplace,
+        des frais plateforme s'appliquent côté acheteur : <span className="font-bold">10% sur le premier marché</span> (première vente)
+        et <span className="font-bold">5% sur le second marché</span> (reventes). Le vendeur reçoit 100% du prix affiché.
+        Ces frais financent le développement, la maintenance et la sécurité de la plateforme.
       </P>
     </div>
   );

@@ -156,9 +156,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (connectAccount?.onboarding_complete && connectAccount.stripe_account_id) {
           try {
             const sellerFiatAmount = (session.amount_total || 0); // in cents
-            // Deduct platform commission — seller gets the rest
-            const platformFeeCents = Math.round(sellerFiatAmount * SELLER_COMMISSION_PERCENT / 100);
-            const sellerReceivesCents = sellerFiatAmount - platformFeeCents;
+            // Seller receives 100% — platform fee is already paid by buyer on top
+            const sellerReceivesCents = sellerFiatAmount;
 
             if (sellerReceivesCents > 0) {
               await stripe.transfers.create({

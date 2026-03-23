@@ -66,16 +66,19 @@ export interface WartCertificate {
 //
 // Le créateur ne paie RIEN. Il crée un template (blueprint) gratuit.
 // Le mint réel ne se produit que lorsqu'un acheteur achète.
-// L'acheteur paie : prix affiché + frais de service plateforme.
-// Le créateur reçoit 100% du prix affiché (première vente).
+// L'acheteur paie : prix affiché + frais plateforme (10% premier marché, 5% second marché).
+// Le créateur/vendeur reçoit 100% du prix affiché.
 //
 // Flow:
 //   1. Créateur → createLazyListing() → template stocké (gratuit)
 //   2. Acheteur → buyLazyMint() → mint + transfert + paiement
-//   3. Acheteur paie: price + (price × SERVICE_FEE_PERCENT)
+//   3. Acheteur paie: price + frais plateforme + frais de stockage
 
-/** Service fee charged to the buyer on top of the listed price (2.5%) */
-export const BUYER_SERVICE_FEE_PERCENT = 2.5;
+/** Platform fee charged to the buyer: 10% on primary market (1st sale), 5% on secondary (resale) */
+export const PRIMARY_MARKET_FEE_PERCENT = 10;
+export const SECONDARY_MARKET_FEE_PERCENT = 5;
+/** Lazy mint is always primary market (first sale) */
+export const BUYER_SERVICE_FEE_PERCENT = PRIMARY_MARKET_FEE_PERCENT;
 
 /**
  * Storage fee tiers — the buyer pays for permanent storage.

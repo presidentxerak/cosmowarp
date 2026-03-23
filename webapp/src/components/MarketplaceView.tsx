@@ -2266,7 +2266,7 @@ export default function MarketplaceView() {
                 <div className="mt-2 p-3 border border-current/10 bg-current/5">
                   <p className="text-[10px] opacity-60 leading-relaxed">
                     <strong>Lazy Mint</strong> : Vous ne payez rien. Votre oeuvre est publi{'\u00E9'}e comme template.
-                    Le mint r{'\u00E9'}el ne se produit que lorsqu'un acheteur ach{'\u00E8'}te. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais de service + frais de stockage (selon la taille du fichier).
+                    Le mint r{'\u00E9'}el ne se produit que lorsqu'un acheteur ach{'\u00E8'}te. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais plateforme (1er march{'\u00E9'}) + frais de stockage (selon la taille du fichier).
                     Le stockage cloud (Supabase, IPFS) n'est activ{'\u00E9'} qu'au moment de l'achat — la plateforme ne paie rien.
                     Vous recevez 100% du prix affich{'\u00E9'}.
                   </p>

@@ -138,7 +138,7 @@ export default function FiatGatewayView() {
         </p>
         <div className="text-base opacity-50 mt-2 space-y-0.5 text-left">
           <p><span className="opacity-60 font-bold">Comment ça marche :</span> Strangrz Coin est la passerelle officielle qui permet de convertir votre monnaie fiat (EUR, USD, GBP...) en tokens {'\u2B23'} et inversement.</p>
-          <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Strangrz. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Strangrz certifiées. Les frais de transaction (2.5%) financent le développement et la maintenance du protocole.</p>
+          <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Strangrz. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Strangrz certifiées. Les frais plateforme (10% premier marché, 5% second marché) financent le développement et la maintenance du protocole.</p>
         </div>
         <p className="text-label opacity-50 mt-2">Paiement sécurisé via Stripe — Carte, PayPal, SEPA</p>
         <div className="flex justify-center gap-3 mt-3">
@@ -211,7 +211,7 @@ export default function FiatGatewayView() {
               {buyFees && (
                 <>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Frais plateforme (2,5%)</span>
+                    <span className="opacity-60">Frais plateforme</span>
                     <span className="opacity-60">{getCurrencySymbol(currency)}{buyFees.platformFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -289,7 +289,7 @@ export default function FiatGatewayView() {
               {sellFees && (
                 <>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Frais plateforme (2,5%)</span>
+                    <span className="opacity-60">Frais plateforme</span>
                     <span className="opacity-60">-{getCurrencySymbol(currency)}{sellFees.platformFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -367,8 +367,12 @@ export default function FiatGatewayView() {
             <h3 className="text-base font-bold opacity-70 mb-3">Grille tarifaire</h3>
             <div className="space-y-2 text-body-sm">
               <div className="flex justify-between py-1">
-                <span className="opacity-50">Frais plateforme</span>
-                <span className="opacity-70">2.5%</span>
+                <span className="opacity-50">Frais plateforme (1er marché)</span>
+                <span className="opacity-70">10%</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="opacity-50">Frais plateforme (2nd marché)</span>
+                <span className="opacity-70">5%</span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="opacity-50">Carte (Stripe)</span>

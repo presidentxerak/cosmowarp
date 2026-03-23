@@ -68,10 +68,12 @@ export async function ethToSTZ(ethAmount: number): Promise<number> {
 }
 
 // ─── Fee Structure ─────────────────────────────────────────
-// BUYER_PLATFORM_FEE: charged to buyer on top of listed price (covers platform + processing)
-// SELLER_COMMISSION: deducted from seller payout (platform take on each sale)
-export const PLATFORM_FEE_PERCENT = 5;        // 5% buyer-facing fee (displayed at checkout)
-export const SELLER_COMMISSION_PERCENT = 2.5;  // 2.5% deducted from seller payout
+// Platform fee: charged to buyer on top of listed price.
+// Differs by market: 10% on primary (1st sale), 5% on secondary (resale).
+// Seller receives 100% of listed price (no seller commission).
+export const PRIMARY_MARKET_FEE_PERCENT = 10;   // 10% buyer fee — 1st market (first sale)
+export const SECONDARY_MARKET_FEE_PERCENT = 5;  // 5% buyer fee — 2nd market (resale)
+export const SELLER_COMMISSION_PERCENT = 0;      // No seller commission — seller gets 100%
 
 export const PROCESSOR_FEES: Record<string, { percent: number; fixed: number }> = {
   card: { percent: 2.9, fixed: 0.30 },
@@ -82,8 +84,9 @@ export const PROCESSOR_FEES: Record<string, { percent: number; fixed: number }> 
   bank_transfer: { percent: 0, fixed: 1.50 },
 };
 
-export function calculateFees(amount: number, method: string) {
-  const platformFee = Math.round(amount * PLATFORM_FEE_PERCENT / 100 * 100) / 100;
+export function calculateFees(amount: number, method: string, isResale = false) {
+  const feePercent = isResale ? SECONDARY_MARKET_FEE_PERCENT : PRIMARY_MARKET_FEE_PERCENT;
+  const platformFee = Math.round(amount * feePercent / 100 * 100) / 100;
   const proc = PROCESSOR_FEES[method] || { percent: 0, fixed: 0 };
   const processorFee = Math.round((amount * proc.percent / 100 + proc.fixed) * 100) / 100;
   return { platformFee, processorFee, total: platformFee + processorFee };

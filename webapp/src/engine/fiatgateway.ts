@@ -116,7 +116,8 @@ const RATES_KEY = 'strangrz_fiat_rates';
 const FIAT_TX_KEY = 'strangrz_fiat_tx';
 const FIAT_LISTINGS_KEY = 'strangrz_fiat_listings';
 
-const DEFAULT_PLATFORM_FEE = 2.5;   // 2.5% platform fee
+const PRIMARY_MARKET_FEE = 10;     // 10% platform fee — 1st market (first sale)
+const SECONDARY_MARKET_FEE = 5;    // 5% platform fee — 2nd market (resale)
 const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> = {
   card: { percent: 2.9, fixed: 0.30 },
   paypal: { percent: 3.49, fixed: 0.49 },
@@ -312,13 +313,14 @@ export class FiatGateway {
   /**
    * Calculate fees for a transaction.
    */
-  calculateFees(fiatAmount: number, paymentMethod: PaymentMethod): {
+  calculateFees(fiatAmount: number, paymentMethod: PaymentMethod, isResale = false): {
     platformFee: number;
     processorFee: number;
     totalFees: number;
     sellerReceives: number;
   } {
-    const platformFee = Math.round(fiatAmount * DEFAULT_PLATFORM_FEE / 100 * 100) / 100;
+    const feePercent = isResale ? SECONDARY_MARKET_FEE : PRIMARY_MARKET_FEE;
+    const platformFee = Math.round(fiatAmount * feePercent / 100 * 100) / 100;
     const procFee = PROCESSOR_FEES[paymentMethod] || { percent: 0, fixed: 0 };
     const processorFee = Math.round((fiatAmount * procFee.percent / 100 + procFee.fixed) * 100) / 100;
     const totalFees = platformFee + processorFee;
@@ -448,7 +450,7 @@ export class FiatGateway {
       wartId: params.wartId,
       wartTitle: params.wartTitle,
       timestamp: Date.now(),
-      platformFeePercent: DEFAULT_PLATFORM_FEE,
+      platformFeePercent: PRIMARY_MARKET_FEE,
       platformFeeAmount: fees.platformFee,
       processorFeeAmount: fees.processorFee,
       sellerReceives: fees.sellerReceives,
@@ -529,7 +531,7 @@ export class FiatGateway {
       exchangeRate: rate.warpsPerUnit,
       paymentMethod: params.paymentMethod,
       timestamp: Date.now(),
-      platformFeePercent: DEFAULT_PLATFORM_FEE,
+      platformFeePercent: PRIMARY_MARKET_FEE,
       platformFeeAmount: fees.platformFee,
       processorFeeAmount: fees.processorFee,
       sellerReceives: fees.sellerReceives,
