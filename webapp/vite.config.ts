@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import path from 'path'
 
 /**
@@ -60,7 +61,12 @@ function safariColorMixFallback(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), safariColorMixFallback()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    nodePolyfills({ include: ['stream', 'events', 'crypto', 'util'] }),
+    safariColorMixFallback(),
+  ],
   base: '/',
   resolve: {
     alias: {
