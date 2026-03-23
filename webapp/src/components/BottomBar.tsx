@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import HexAvatar from './HexAvatar';
 
@@ -8,6 +9,22 @@ interface BottomBarProps {
 
 export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
   const { wallet } = useWallet();
+  const [gallerySubTab, setGallerySubTab] = useState('all');
+
+  // Track gallery sub-tab changes via custom event
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setGallerySubTab(detail);
+    };
+    window.addEventListener('strangrz_gallery_tab', handler);
+    return () => window.removeEventListener('strangrz_gallery_tab', handler);
+  }, []);
+
+  // Reset gallery sub-tab when leaving gallery
+  useEffect(() => {
+    if (activeTab !== 'gallery') setGallerySubTab('all');
+  }, [activeTab]);
 
   const tabs = [
     {
@@ -62,12 +79,25 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
   const handleTabClick = (tabId: string) => {
     if (tabId === 'curate') {
       sessionStorage.setItem('strangrz_gallery_tab', 'curate');
-      window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'curate' }));
       setActiveTab('gallery');
+      // Dispatch after setActiveTab so MarketplaceView listener is ready
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'curate' }));
+      });
     } else if (tabId === 'trading') {
       sessionStorage.setItem('strangrz_gallery_tab', 'trading');
-      window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'trading' }));
       setActiveTab('gallery');
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'trading' }));
+      });
+    } else if (tabId === 'gallery') {
+      // Clear any stale gallery sub-tab so we always land on the main gallery
+      sessionStorage.removeItem('strangrz_gallery_tab');
+      sessionStorage.removeItem('strangrz_open_wart');
+      setActiveTab('gallery');
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'all' }));
+      });
     } else {
       setActiveTab(tabId);
     }
@@ -78,8 +108,9 @@ export default function BottomBar({ activeTab, setActiveTab }: BottomBarProps) {
       <div className="flex items-center justify-around max-w-lg mx-auto h-full">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id ||
-            (tab.id === 'curate' && activeTab === 'gallery' && sessionStorage.getItem('strangrz_gallery_tab') === 'curate') ||
-            (tab.id === 'trading' && activeTab === 'gallery' && sessionStorage.getItem('strangrz_gallery_tab') === 'trading');
+            (tab.id === 'curate' && activeTab === 'gallery' && gallerySubTab === 'curate') ||
+            (tab.id === 'trading' && activeTab === 'gallery' && gallerySubTab === 'trading') ||
+            (tab.id === 'gallery' && activeTab === 'gallery' && gallerySubTab !== 'curate' && gallerySubTab !== 'trading');
 
           // Profile tab
           if ('isProfile' in tab && tab.isProfile) {

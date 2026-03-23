@@ -110,6 +110,12 @@ export default function MarketplaceView() {
       window.removeEventListener('strangrz_gallery_tab', handleGalleryTab);
     };
   }, []);
+
+  // Broadcast tab changes so BottomBar can highlight the correct icon
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: tab }));
+  }, [tab]);
+
   const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
   const [editionFilter, setEditionFilter] = useState<EditionFilter>('all');
   const [salesMarketFilter, setSalesMarketFilter] = useState<SalesMarketFilter>('1st');
@@ -2679,7 +2685,10 @@ export default function MarketplaceView() {
 
       {/* ─── Share Modal ──────────────────────────────────── */}
       {shareMenuWartId && (() => {
-        const shareWart = [...allWartsRaw, ...marketplace, ...myCollection, ...myCreated].find(w => w.id === shareMenuWartId);
+        // Look in all lists AND the currently selected wart (which may have been edited in-memory)
+        const shareWart = selectedWart?.id === shareMenuWartId
+          ? selectedWart
+          : [...allWartsRaw, ...marketplace, ...myCollection, ...myCreated].find(w => w.id === shareMenuWartId);
         if (!shareWart) return null;
         return (
           <ShareModal

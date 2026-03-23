@@ -222,7 +222,6 @@ export default function CosmoChatView() {
     const openWartDetail = (wartId: string) => {
       sessionStorage.setItem('strangrz_open_wart', wartId);
       sessionStorage.setItem('strangrz_gallery_tab', 'detail');
-      window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
       window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'gallery' }));
     };
 
@@ -994,8 +993,8 @@ export default function CosmoChatView() {
                   <span className="text-[10px] opacity-40">Last 7 days</span>
                 </div>
                 <button className="text-[11px] opacity-60 hover:opacity-80 cursor-pointer" onClick={() => {
+                  sessionStorage.setItem('strangrz_gallery_tab', 'top-creators');
                   window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'gallery' }));
-                  setTimeout(() => window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'top-creators' })), 100);
                 }}>View more</button>
               </div>
               <div className="flex gap-1">

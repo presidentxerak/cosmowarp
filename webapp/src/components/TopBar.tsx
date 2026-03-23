@@ -141,8 +141,11 @@ export default function TopBar({ onNavigate }: TopBarProps) {
     } else if (result.type === 'wart') {
       sessionStorage.setItem('strangrz_open_wart', result.id);
       sessionStorage.setItem('strangrz_gallery_tab', 'detail');
-      window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
       onNavigate('gallery');
+      // Dispatch after navigation so MarketplaceView listener is mounted
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
+      });
     } else if (result.type === 'collection' && result.address) {
       sessionStorage.setItem('strangrz_view_user', result.address);
       onNavigate('user-profile');
@@ -304,7 +307,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
 
         {/* Create button */}
         <button
-          onClick={() => { sessionStorage.setItem('strangrz_gallery_tab', 'create'); window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'create' })); onNavigate('gallery'); }}
+          onClick={() => { sessionStorage.setItem('strangrz_gallery_tab', 'create'); onNavigate('gallery'); requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'create' }))); }}
           className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-body-sm font-medium cursor-pointer transition-all hover:opacity-80 bg-pink-600 text-white"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

@@ -223,9 +223,13 @@ function App() {
               {/* Notifications (from top bar bell) */}
               {activeTab === 'notifications' && <NotificationsView />}
 
-              {/* Curate & Trading — redirect to gallery with tab */}
-              {activeTab === 'curate' && (() => { sessionStorage.setItem('strangrz_gallery_tab', 'curate'); return <MarketplaceView />; })()}
-              {activeTab === 'trading' && (() => { sessionStorage.setItem('strangrz_gallery_tab', 'trading'); return <MarketplaceView />; })()}
+              {/* Curate & Trading — redirect to gallery with correct tab */}
+              {(activeTab === 'curate' || activeTab === 'trading') && (() => {
+                // Set the gallery sub-tab before rendering; MarketplaceView reads it on mount
+                const subTab = activeTab === 'curate' ? 'curate' : 'trading';
+                sessionStorage.setItem('strangrz_gallery_tab', subTab);
+                return <MarketplaceView />;
+              })()}
 
               {/* Payment */}
               {activeTab === 'payment-success' && <PaymentSuccessView onNavigate={navigate} />}
