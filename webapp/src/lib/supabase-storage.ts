@@ -166,6 +166,100 @@ export async function uploadBanner(
   }
 }
 
+// ─── Preview / Thumbnail Generation ──────────────────────────
+//
+// To avoid paying full storage costs on every mint, we generate a small
+// compressed JPEG preview (~30-100 KB) and only upload that at mint time.
+// The full-quality media is uploaded later when the artwork is actually
+// purchased — the buyer's payment covers the storage cost.
+
+/** Max dimensions for preview thumbnails */
+const PREVIEW_MAX_WIDTH = 400;
+const PREVIEW_MAX_HEIGHT = 400;
+const PREVIEW_QUALITY = 0.6;
+
+/**
+ * Generate a compressed JPEG preview from a data URL.
+ * Works for image types only (png, jpg, gif, webp, svg).
+ * For video/audio, returns null (no visual preview generated).
+ *
+ * @returns A small JPEG data URL (~30-100 KB), or null if unsupported
+ */
+export function generatePreview(dataUrl: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!dataUrl) { resolve(null); return; }
+
+    // Skip non-image media (video, audio)
+    const isImage = dataUrl.startsWith('data:image/') ||
+      dataUrl.trimStart().startsWith('<svg') ||
+      dataUrl.trimStart().startsWith('<?xml');
+    if (!isImage && !dataUrl.startsWith('data:image')) { resolve(null); return; }
+
+    const img = new Image();
+    img.onload = () => {
+      try {
+        // Calculate scaled dimensions preserving aspect ratio
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        if (w > PREVIEW_MAX_WIDTH) { h = Math.round(h * PREVIEW_MAX_WIDTH / w); w = PREVIEW_MAX_WIDTH; }
+        if (h > PREVIEW_MAX_HEIGHT) { w = Math.round(w * PREVIEW_MAX_HEIGHT / h); h = PREVIEW_MAX_HEIGHT; }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(null); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        const jpeg = canvas.toDataURL('image/jpeg', PREVIEW_QUALITY);
+        resolve(jpeg);
+      } catch { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    // Handle SVG raw strings
+    if (dataUrl.trimStart().startsWith('<svg') || dataUrl.trimStart().startsWith('<?xml')) {
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dataUrl)));
+    } else {
+      img.src = dataUrl;
+    }
+  });
+}
+
+/**
+ * Upload a compressed preview thumbnail to Supabase Storage.
+ * Stored at warts/{wartId}/preview.jpg — separate from the full media.
+ *
+ * @returns The storage path, or null on failure
+ */
+export async function uploadPreview(
+  previewDataUrl: string,
+  wartId: string,
+): Promise<string | null> {
+  if (!isBackendAvailable() || !previewDataUrl) return null;
+
+  try {
+    const { blob } = dataUrlToBlob(previewDataUrl);
+    const path = `warts/${wartId}/preview.jpg`;
+
+    const { error } = await supabase!.storage
+      .from(BUCKETS.MEDIA)
+      .upload(path, blob, {
+        contentType: 'image/jpeg',
+        upsert: true,
+        cacheControl: '31536000',
+      });
+
+    if (error) {
+      console.error('[Storage] uploadPreview:', error.message);
+      return null;
+    }
+
+    return path;
+  } catch (err) {
+    console.error('[Storage] uploadPreview failed:', err);
+    return null;
+  }
+}
+
 /**
  * Get the public URL for a media file.
  */

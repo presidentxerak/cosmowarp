@@ -191,6 +191,37 @@ export async function processPendingSync(
  * Media stays local until a buyer purchases and pays the storage fee.
  * This ensures the platform never pays for storage — the collector does.
  */
+/**
+ * Sync a newly minted wart with only a compressed preview thumbnail.
+ * Full media stays on the creator's device and is only uploaded when sold.
+ * This dramatically reduces storage costs for unsold artworks (~99% savings).
+ */
+export async function syncWartWithPreview(wart: Wart): Promise<void> {
+  if (!isBackendAvailable()) {
+    queuePendingSync('wart', wart.id);
+    return;
+  }
+  setSyncStatus('syncing');
+  try {
+    // 1. Generate a compressed thumbnail preview (~30-100 KB vs up to 50 MB)
+    const { generatePreview, uploadPreview } = await import('./supabase-storage');
+    const preview = await generatePreview(wart.imageData);
+    let previewPath: string | undefined;
+
+    if (preview) {
+      previewPath = await uploadPreview(preview, wart.id) || undefined;
+    }
+
+    // 2. Upsert metadata with preview path only — NO full media upload
+    await db.upsertWart(wart, undefined, undefined, previewPath);
+    setSyncStatus('idle');
+  } catch (err) {
+    console.error('[Sync] syncWartWithPreview failed:', err instanceof Error ? err.message : err);
+    setSyncStatus('error');
+    queuePendingSync('wart', wart.id);
+  }
+}
+
 export async function syncLazyTemplate(wart: Wart): Promise<void> {
   if (!isBackendAvailable()) {
     queuePendingSync('wart', wart.id);
@@ -257,10 +288,13 @@ export async function pullWartWithMedia(wartId: string): Promise<Wart | null> {
   const row = await db.fetchWartById(wartId);
   if (!row) return null;
 
-  // Download media
+  // Download media — prefer full quality, fall back to preview thumbnail
   let imageData = '';
   if (row.media_path) {
     imageData = await media.downloadMediaAsDataUrl(row.media_path as string) || '';
+  }
+  if (!imageData && row.preview_path) {
+    imageData = await media.downloadMediaAsDataUrl(row.preview_path as string) || '';
   }
 
   let audioCover: string | undefined;

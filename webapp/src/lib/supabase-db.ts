@@ -90,7 +90,7 @@ export async function updateBalance(address: string, balance: number): Promise<b
 
 // ─── Warts ───────────────────────────────────────────────────
 
-function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string) {
+function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string, previewPath?: string) {
   return {
     id: wart.id,
     title: wart.title,
@@ -123,6 +123,7 @@ function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string) {
     mint_chain: wart.mintChain || 'strangrz',
     media_path: mediaPath || null,
     audio_cover_path: audioCoverPath || null,
+    preview_path: previewPath || null,
     created_at: wart.createdAt,
     updated_at: Date.now(),
   };
@@ -167,11 +168,11 @@ function rowToWart(row: Record<string, unknown>, imageData: string, audioCover?:
   };
 }
 
-export async function upsertWart(wart: Wart, mediaPath?: string, audioCoverPath?: string): Promise<boolean> {
+export async function upsertWart(wart: Wart, mediaPath?: string, audioCoverPath?: string, previewPath?: string): Promise<boolean> {
   if (!isBackendAvailable()) return false;
   const { error } = await supabase!
     .from('warts')
-    .upsert(wartToRow(wart, mediaPath, audioCoverPath), { onConflict: 'id' });
+    .upsert(wartToRow(wart, mediaPath, audioCoverPath, previewPath), { onConflict: 'id' });
 
   if (error) console.error('[Supabase] upsertWart:', error.message);
   return !error;

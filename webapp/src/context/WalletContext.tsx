@@ -270,8 +270,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (deletedIds.has(wartId)) continue;
 
       // Get public URL for immediate display (no download needed)
+      // Prefer full media, fall back to preview thumbnail for unsold artworks
       const mediaPath = row.media_path as string | undefined;
-      const publicUrl = mediaPath ? getPublicUrl(BUCKETS.MEDIA, mediaPath) : '';
+      const previewPath = row.preview_path as string | undefined;
+      const displayPath = mediaPath || previewPath;
+      const publicUrl = displayPath ? getPublicUrl(BUCKETS.MEDIA, displayPath) : '';
 
       if (localIds.has(wartId)) {
         const local = engine.getWart(wartId);
@@ -1022,8 +1025,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
-    // Sync to Supabase (wart + media + transaction)
-    sync.syncWart(wart);
+    // Sync to Supabase with preview thumbnail only — NO full media upload.
+    // Full media stays on creator's device until the artwork is sold.
+    // This prevents storage cost explosion from unsold mints.
+    sync.syncWartWithPreview(wart);
     sync.syncProfile(wallet);
     if (wart.certId) {
       sync.syncCertificate({
@@ -1110,6 +1115,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       seller,
       txId,
     });
+    // Upload full-quality media now that the artwork has been sold.
+    // At mint time only a preview thumbnail was uploaded to save storage costs.
+    const soldWart = engine.getWart(wartId);
+    if (soldWart) {
+      sync.syncWart(soldWart);
+    }
     sync.syncProfile(wallet);
     sync.syncTransaction(buyTx);
     sync.syncNotification({

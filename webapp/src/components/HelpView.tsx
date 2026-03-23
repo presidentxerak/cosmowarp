@@ -236,9 +236,9 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
     },
   },
   {
-    keywords: ['stockage', 'storage', 'où sont stockés', 'where stored', 'persistant', 'persistent', 'perte', 'perdu ordinateur', 'lost computer', 'hack', 'hacké', 'vol', 'stolen'],
+    keywords: ['stockage', 'storage', 'où sont stockés', 'where stored', 'persistant', 'persistent', 'perte', 'perdu ordinateur', 'lost computer', 'hack', 'hacké', 'vol', 'stolen', 'coût stockage', 'storage cost'],
     response: {
-      answer: "Tes Strangrz sont protégées par un système de stockage multi-couches grâce à Strangrz : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud. (3) On-chain — stockage permanent dans StrangrzMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé StrangrzID. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Strangrz Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
+      answer: "Tes Strangrz sont protégées par un système de stockage multi-couches grâce à Strangrz : (1) IndexedDB local — stockage rapide sur ton appareil. (2) Supabase Cloud — backup dans le cloud (preview compressé à la publication, média complet uniquement après vente). (3) On-chain — stockage permanent dans StrangrzMesh. (4) CosmoVault — tes médias chiffrés en AES-256-GCM avec ta clé StrangrzID. Pour un modèle durable, seul un aperçu léger (~50 Ko) est envoyé dans le cloud à la publication. Le média en pleine qualité est uploadé uniquement lors de la vente — les coûts de stockage sont couverts par les frais de transaction. Si tu perds ton ordi, tes objets sont récupérables via CosmoVault (même identifiants = même clé de vault) ou le Recovery Kit. Strangrz Safe vérifie régulièrement que toutes les routes de stockage sont actives.",
       navigateTo: 'warts',
       tabLabel: 'Marketplace',
     },
@@ -484,6 +484,7 @@ const FAQ_SECTIONS = [
       { q: `Comment payer ?`, a: `Carte bancaire, Apple Pay ou Google Pay. Paiement sécurisé par Stripe. Tous les prix sont affichés en euros.` },
       { q: `Comment recevoir mes ventes ?`, a: `Les paiements sont traités automatiquement via Stripe. L'acheteur paie en euros, tu reçois tes euros directement sur ton compte bancaire.` },
       { q: `Y a-t-il des frais ?`, a: `La publication est gratuite. L'acheteur paie des frais plateforme : 10% sur le premier marché (première vente d'une oeuvre) et 5% sur le second marché (reventes). Ces frais sont ajoutés au prix affiché — le vendeur reçoit 100% de son prix. Les royalties (5% par défaut, configurable 0-50%) sont versées automatiquement au créateur original sur chaque revente.` },
+      { q: `Comment fonctionne le stockage des oeuvres ?`, a: `Pour garantir un modèle économique durable, le stockage fonctionne en deux étapes : (1) À la publication, seul un aperçu compressé (~50 Ko) est envoyé dans le cloud — l'oeuvre originale reste sur l'appareil du créateur. (2) Le média en pleine qualité est uploadé uniquement lorsque l'oeuvre est achetée — les frais de stockage sont couverts par la vente. Ce système évite les coûts de stockage pour les oeuvres non vendues tout en permettant la navigation dans la galerie.` },
     ],
   },
   {
