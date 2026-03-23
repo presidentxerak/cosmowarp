@@ -59,9 +59,9 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
     },
   },
   {
-    keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace'],
+    keywords: ['buy', 'acheter', 'sell', 'vendre', 'price', 'prix', 'list', 'marketplace', 'publier', 'publish', 'mint'],
     response: {
-      answer: "Tu veux acheter une oeuvre ? Parcours la Galerie, trouve une pièce qui parle à ton âme cosmique, et clique sur « Collect ». Paie par carte bancaire, Apple Pay ou Google Pay — c'est aussi simple qu'un achat en ligne classique. Tu veux vendre ? Publie ton oeuvre, fixe un prix en euros, et mets en vente. Les acheteurs paient par carte, tu reçois tes euros directement. En cas de revente, tu touches encore des royalties (5%) automatiquement !",
+      answer: "Tu veux acheter une oeuvre ? Parcours la Galerie, trouve une pièce qui parle à ton âme cosmique, et clique sur « Collect ». Paie par carte bancaire, Apple Pay ou Google Pay — c'est aussi simple qu'un achat en ligne classique. Tu veux vendre ? Publie ton oeuvre, fixe un prix en euros, et mets en vente. La publication est 100% gratuite — seul un aperçu compressé (~50 Ko) est envoyé dans le cloud. L'oeuvre originale reste sur ton appareil. Le média en pleine qualité est uploadé automatiquement lors de la première vente, avec réplication sur IPFS, Arweave et Supabase. Les acheteurs paient par carte, tu reçois tes euros directement. En cas de revente, tu touches encore des royalties (5%) automatiquement !",
       navigateTo: 'gallery',
       tabLabel: 'Galerie',
     },
@@ -134,6 +134,15 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
       answer: "StrangrzCode est le moteur de compression derrière le stockage on-chain. Il prend n'importe quelle donnée — transactions, images, objets rares — et la compresse à travers 7 couches fractales dans un conteneur SVG minuscule. Couche 1 : Encodage Delta (ne stocker que les différences). Couche 2 : Dictionnaire (symboles courts). Couche 3 : Run-Length. Couche 4 : Imbrication Fractale (SVG <defs>/<use> = déduplication). Couches 5-7 : Fréquence, Quantification, Filtres. Ratios réels mesurés : 5-30x pour les données structurées (transactions), ~1-2x pour les données binaires (images). Lance le benchmark pour vérifier.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → StrangrzCode',
+    },
+  },
+  // Deferred Storage / Smart Storage
+  {
+    keywords: ['deferred storage', 'stockage différé', 'stockage intelligent', 'smart storage', 'preview', 'aperçu', 'thumbnail', 'upload media', 'quand upload', 'why preview', 'pourquoi aperçu', 'coût stockage', 'storage cost', 'ipfs', 'arweave', 'pinata', 'permanent storage', 'stockage permanent'],
+    response: {
+      answer: "Strangrz utilise un stockage intelligent en 2 étapes pour un modèle économique durable : (1) À LA PUBLICATION : seul un aperçu compressé (~50 Ko en JPEG) est envoyé dans le cloud. L'oeuvre originale haute qualité reste sur ton appareil. Cela permet aux visiteurs de parcourir la galerie tout en évitant des coûts de stockage massifs pour les oeuvres non vendues. (2) À LA VENTE : le média en pleine qualité est automatiquement uploadé et répliqué sur 3 couches de stockage permanent — Supabase Cloud (accès rapide), IPFS via Pinata (stockage décentralisé, adressé par contenu), et Arweave via Irys (stockage permanent et immuable). Les coûts de stockage sont couverts par les frais de transaction payés par l'acheteur. Résultat : publication 100% gratuite, stockage durable financé par les ventes, et tes oeuvres protégées à vie sur des réseaux décentralisés.",
+      navigateTo: 'gallery',
+      tabLabel: 'Galerie → Créer',
     },
   },
   // Zero gas
@@ -442,9 +451,10 @@ const FAQ_SECTIONS = [
     title: 'Publier & Vendre',
     icon: 'Publier & Vendre',
     items: [
-      { q: `Comment publier une oeuvre ?`, a: `Va dans la Galerie et clique sur « + Créer ». Uploade ton média (image, vidéo, musique), ajoute un titre, une description et un prix en euros. Publie et c'est en ligne !` },
+      { q: `Comment publier une oeuvre ?`, a: `Va dans la Galerie et clique sur « + Créer ». Uploade ton média (image, vidéo, musique), ajoute un titre, une description et un prix en euros. Publie et c'est en ligne ! La publication est 100% gratuite — seul un aperçu compressé est envoyé dans le cloud pour l'affichage en galerie.` },
       { q: `Comment fixer le prix ?`, a: `Le prix minimum est de 10€ par oeuvre. Fixe ton prix en euros — les acheteurs paient par carte bancaire, et tu reçois tes euros directement.` },
       { q: `Comment recevoir mes paiements ?`, a: `Quand un collectionneur achète ton oeuvre, le paiement est traité automatiquement via Stripe. Tu reçois tes euros sur ton compte bancaire.` },
+      { q: `Comment fonctionne le stockage des oeuvres ?`, a: `Strangrz utilise un stockage intelligent en 2 étapes : (1) À la publication, seul un aperçu compressé (~50 Ko) est envoyé dans le cloud — l'oeuvre originale reste sur ton appareil. (2) Lors de la première vente, le média en pleine qualité est automatiquement uploadé et répliqué sur Supabase Cloud, IPFS (via Pinata, stockage décentralisé) et Arweave (via Irys, stockage permanent). Les coûts de stockage sont couverts par les frais de transaction. Résultat : publication gratuite, stockage durable financé par les ventes.` },
     ],
   },
   {
@@ -484,7 +494,7 @@ const FAQ_SECTIONS = [
       { q: `Comment payer ?`, a: `Carte bancaire, Apple Pay ou Google Pay. Paiement sécurisé par Stripe. Tous les prix sont affichés en euros.` },
       { q: `Comment recevoir mes ventes ?`, a: `Les paiements sont traités automatiquement via Stripe. L'acheteur paie en euros, tu reçois tes euros directement sur ton compte bancaire.` },
       { q: `Y a-t-il des frais ?`, a: `La publication est gratuite. L'acheteur paie des frais plateforme : 10% sur le premier marché (première vente d'une oeuvre) et 5% sur le second marché (reventes). Ces frais sont ajoutés au prix affiché — le vendeur reçoit 100% de son prix. Les royalties (5% par défaut, configurable 0-50%) sont versées automatiquement au créateur original sur chaque revente.` },
-      { q: `Comment fonctionne le stockage des oeuvres ?`, a: `Pour garantir un modèle économique durable, le stockage fonctionne en deux étapes : (1) À la publication, seul un aperçu compressé (~50 Ko) est envoyé dans le cloud — l'oeuvre originale reste sur l'appareil du créateur. (2) Le média en pleine qualité est uploadé uniquement lorsque l'oeuvre est achetée — les frais de stockage sont couverts par la vente. Ce système évite les coûts de stockage pour les oeuvres non vendues tout en permettant la navigation dans la galerie.` },
+      { q: `Comment fonctionne le stockage des oeuvres ?`, a: `Pour garantir un modèle économique durable, le stockage fonctionne en deux étapes : (1) À la publication, seul un aperçu compressé (~50 Ko) est envoyé dans le cloud — l'oeuvre originale reste sur l'appareil du créateur. (2) Lors de la vente, le média HD est automatiquement répliqué sur 3 couches : Supabase Cloud (accès rapide CDN), IPFS via Pinata (décentralisé, adressé par contenu — gateway : ipfs.io), et Arweave via Irys (stockage permanent et immuable — gateway : arweave.net). Les frais de stockage sont couverts par la transaction. Résultat : publication gratuite, oeuvres protégées à vie.` },
     ],
   },
   {
@@ -493,7 +503,7 @@ const FAQ_SECTIONS = [
     items: [
       { q: `Qu'est-ce que Strangrz ?`, a: `Strangrz est le standard d'intégrité et de résilience des actifs numériques de Strangrz. Chaque objet certifié reçoit un « Strangrz Manifest » — un passeport numérique contenant empreinte SHA-256, routes de stockage, droits, politique de mutation, et signatures Ed25519. C'est chain-agnostic : il peut s'adapter à EVM, XRPL, Solana et d'autres.` },
       { q: `Qu'est-ce que Strangrz Safe ?`, a: `Strangrz Safe est le système de surveillance et réparation automatique. Il vérifie régulièrement que les routes de stockage sont actives (Supabase, IndexedDB, on-chain). Si une route tombe, Safe passe l'objet en état « warning » puis « degraded » et peut lancer des réparations automatiques (re-upload, ajout de miroir). Un journal d'incidents trace chaque action.` },
-      { q: `Où sont stockées mes Strangrz ?`, a: `Stockage multi-couches : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance, (3) StrangrzMesh on-chain pour le stockage permanent. Strangrz Safe vérifie que chaque objet a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
+      { q: `Où sont stockées mes Strangrz ?`, a: `Stockage multi-couches après vente : (1) IndexedDB local pour l'accès rapide, (2) Supabase Cloud pour la persistance CDN, (3) IPFS via Pinata (https://api.pinata.cloud) pour le stockage décentralisé adressé par contenu (gateway : https://ipfs.io/ipfs/ ou https://dweb.link/ipfs/), (4) Arweave via Irys (https://node1.irys.xyz) pour le stockage permanent et immuable (gateway : https://arweave.net), (5) StrangrzMesh on-chain pour les certificats. Avant la vente, seul un aperçu compressé est dans le cloud. Strangrz Safe vérifie que chaque objet vendu a au moins 2 routes actives. Le CosmoVault chiffre les médias en AES-256-GCM.` },
       { q: `Que se passe-t-il si je perds mon ordinateur ?`, a: `Tes objets sont récupérables : (1) Reconnecte-toi avec le même StrangrzID → même clé de vault → accès à tous tes médias chiffrés. (2) Utilise ton Recovery Kit (téléchargeable, fonctionne hors ligne). (3) Récupération on-chain via StrangrzCode SVG. (4) Récupération peer-to-peer (fragments chiffrés).` },
       { q: `Quels sont les droits gérés par Strangrz ?`, a: `Chaque manifest définit : droits d'affichage (allowed/forbidden), usage commercial (personal_only/commercial), dérivés (forbidden/allowed), licence version, et termes personnalisés. Ces droits sont embarqués dans le manifest et signés cryptographiquement.` },
     ],

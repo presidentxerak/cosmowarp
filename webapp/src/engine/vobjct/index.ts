@@ -356,9 +356,42 @@ export class StrangrzEngine {
 
 let vobjctInstance: StrangrzEngine | null = null;
 
+/** Build IPFS config from environment variables (if available) */
+function getIPFSConfigFromEnv(): IPFSConfig | undefined {
+  const gateway = import.meta.env.VITE_IPFS_GATEWAY_URL;
+  if (!gateway) return undefined;
+  return {
+    gatewayUrl: gateway,
+    pinningApiUrl: import.meta.env.VITE_IPFS_PINNING_API_URL || undefined,
+    pinningApiToken: import.meta.env.VITE_IPFS_PINNING_API_TOKEN || undefined,
+  };
+}
+
+/** Build Arweave config from environment variables (if available) */
+function getArweaveConfigFromEnv(): ArweaveConfig | undefined {
+  const gateway = import.meta.env.VITE_ARWEAVE_GATEWAY_URL;
+  if (!gateway) return undefined;
+  return {
+    gatewayUrl: gateway,
+    bundlerUrl: import.meta.env.VITE_ARWEAVE_BUNDLER_URL || undefined,
+    bundlerToken: import.meta.env.VITE_ARWEAVE_BUNDLER_TOKEN || undefined,
+  };
+}
+
 export function getStrangrzEngine(): StrangrzEngine {
   if (!vobjctInstance) {
     vobjctInstance = new StrangrzEngine();
+
+    // Auto-register IPFS and Arweave providers from env vars
+    const sl = vobjctInstance.getStorageLayer();
+    const ipfsConfig = getIPFSConfigFromEnv();
+    if (ipfsConfig) {
+      sl.registerProvider(new IPFSStorageProvider(ipfsConfig));
+    }
+    const arweaveConfig = getArweaveConfigFromEnv();
+    if (arweaveConfig) {
+      sl.registerProvider(new ArweaveStorageProvider(arweaveConfig));
+    }
   }
   return vobjctInstance;
 }

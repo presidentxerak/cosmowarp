@@ -179,12 +179,38 @@ function HowItWorksSection() {
         <Stat label="Confirmation" value="~15s" />
       </div>
 
-      <H3>Le stockage : StrangrzCode</H3>
+      <H3>Le stockage : Architecture multi-couches</H3>
       <P>
-        Chaque certificat contient une représentation visuelle de l'objet certifié.
-        <span className="opacity-80 font-bold"> StrangrzCode</span> compresse ces images
-        via 7 couches de compression pour les stocker directement sur le réseau.
-        Pas de serveur externe qui pourrait disparaître : votre certificat est permanent et autosuffisant.
+        Strangrz utilise un <span className="opacity-80 font-bold">stockage intelligent en 2 {'\u00E9'}tapes</span> pour
+        garantir un mod{'\u00E8'}le {'\u00E9'}conomique durable sans compromettre la protection :
+      </P>
+      <div className="p-4 rounded-none bg-current/5 mb-3 text-body-sm opacity-60 space-y-1">
+        <p><span className="font-bold">{'À'} la publication (gratuit) :</span> seul un aper{'\u00E7'}u compress{'\u00E9'} (~50 Ko JPEG)
+          est envoy{'\u00E9'} dans le cloud. L'oeuvre originale reste sur l'appareil du cr{'\u00E9'}ateur.
+          Z{'\u00E9'}ro co{'\u00FB'}t de stockage pour la plateforme.</p>
+        <p><span className="font-bold">{'À'} la vente :</span> le m{'\u00E9'}dia en pleine qualit{'\u00E9'} est automatiquement
+          r{'\u00E9'}pliqu{'\u00E9'} sur 3 couches de stockage permanent :</p>
+      </div>
+      <div className="space-y-2 mb-3">
+        {[
+          ['Supabase Cloud', 'CDN rapide — acc\u00E8s instantan\u00E9 mondial'],
+          ['IPFS (Pinata)', 'Stockage d\u00E9centralis\u00E9 adress\u00E9 par contenu — gateway : ipfs.io'],
+          ['Arweave (Irys)', 'Stockage permanent et immuable — gateway : arweave.net'],
+        ].map(([name, desc]) => (
+          <div key={name} className="flex gap-3 p-2 rounded-none bg-current/5">
+            <code className="text-body-sm opacity-60 bg-current/5 px-1 py-0.5 rounded-none font-mono shrink-0 w-28 text-center">{name}</code>
+            <p className="text-body-sm opacity-50">{desc}</p>
+          </div>
+        ))}
+      </div>
+      <P>
+        Les co{'\u00FB'}ts de stockage sont couverts par les frais de transaction (pay{'\u00E9'}s par l'acheteur).
+        R{'\u00E9'}sultat : publication 100% gratuite, stockage durable financ{'\u00E9'} par les ventes.
+      </P>
+      <P>
+        En parall{'\u00E8'}le, <span className="opacity-80 font-bold">StrangrzCode</span> compresse les certificats
+        via 7 couches de compression fractale dans un conteneur SVG stock{'\u00E9'} directement on-chain.
+        Pas de serveur externe : votre certificat est permanent et autosuffisant.
       </P>
 
       <H3>L'exécution : StrangrzChain</H3>
@@ -211,16 +237,18 @@ function HowItWorksSection() {
         ))}
       </div>
 
-      <H3>En résumé</H3>
+      <H3>En r{'\u00E9'}sum{'\u00E9'}</H3>
       <P>
         Quand vous certifiez un objet rare, voici ce qui se passe en coulisses :
       </P>
       <div className="p-4 rounded-none bg-current/5 mb-4 text-body-sm opacity-60 space-y-1">
-        <p>1. Votre photo est compressée par <span className="font-bold">StrangrzCode</span> (7 couches de compression)</p>
-        <p>2. Un certificat STCERT est généré (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 + signature Ed25519</p>
-        <p>3. Le tout est validé par le <span className="font-bold">StrangrzMesh</span> (7 couches parallèles)</p>
-        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">StrangrzChain</span></p>
-        <p>5. Vous recevez un certificat vérifiable à tout moment par n'importe qui</p>
+        <p>1. Votre photo est compress{'\u00E9'}e par <span className="font-bold">StrangrzCode</span> (7 couches de compression)</p>
+        <p>2. Un certificat STCERT est g{'\u00E9'}n{'\u00E9'}r{'\u00E9'} (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 + signature Ed25519</p>
+        <p>3. Le tout est valid{'\u00E9'} par le <span className="font-bold">StrangrzMesh</span> (7 couches parall{'\u00E8'}les)</p>
+        <p>4. Un aper{'\u00E7'}u compress{'\u00E9'} (~50 Ko) est envoy{'\u00E9'} dans le cloud pour l'affichage en galerie</p>
+        <p>5. Le certificat est stock{'\u00E9'} de fa{'\u00E7'}on permanente dans <span className="font-bold">StrangrzChain</span></p>
+        <p>6. {'À'} la vente : le m{'\u00E9'}dia HD est r{'\u00E9'}pliqu{'\u00E9'} sur <span className="font-bold">Supabase + IPFS + Arweave</span> (stockage permanent)</p>
+        <p>7. Vous recevez un certificat v{'\u00E9'}rifiable {'\u00E0'} tout moment par n'importe qui</p>
       </div>
     </div>
   );

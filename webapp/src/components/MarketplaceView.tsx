@@ -487,7 +487,8 @@ export default function MarketplaceView() {
         setCreateSuccess(
           `"${template.title}" publi\u00E9 ! ` +
           `L'acheteur paiera ${fees.total} \u20AC (${fees.price} \u20AC + ${fees.serviceFee} \u20AC service + ${fees.storageFee} \u20AC stockage). ` +
-          `Vous recevrez ${fees.price} \u20AC \u00E0 chaque vente.`
+          `Vous recevrez ${fees.price} \u20AC \u00E0 chaque vente. ` +
+          `Un aper\u00E7u compress\u00E9 est visible dans la galerie \u2014 le m\u00E9dia HD sera upload\u00E9 automatiquement lors de la vente.`
         );
         setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
         setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
@@ -532,7 +533,7 @@ export default function MarketplaceView() {
 
       setUploadProgress(100);
       setUploadStatus('');
-      setCreateSuccess(`"${wart.title}" certifi\u00E9 avec succ\u00E8s (\u00C9dition #${wart.editionNumber}) !`);
+      setCreateSuccess(`"${wart.title}" certifi\u00E9 avec succ\u00E8s (\u00C9dition #${wart.editionNumber}) ! Aper\u00E7u compress\u00E9 en ligne \u2014 m\u00E9dia HD upload\u00E9 automatiquement \u00E0 la vente.`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
       setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
       setMediaType('image'); setAudioCover('');
@@ -2129,10 +2130,15 @@ export default function MarketplaceView() {
             </div>
 
             {/* ─── Publication Info ─────────────────────── */}
-            <div className="p-3 border border-current/10 bg-current/5">
+            <div className="p-3 border border-current/10 bg-current/5 space-y-1.5">
               <p className="text-[10px] opacity-60 leading-relaxed">
                 La publication est gratuite. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais plateforme.
                 Vous recevez 100% du prix affich{'\u00E9'}.
+              </p>
+              <p className="text-[10px] opacity-50 leading-relaxed">
+                {'\uD83D\uDCC2'} Stockage intelligent : seul un aper{'\u00E7'}u compress{'\u00E9'} (~50 Ko) est envoy{'\u00E9'} dans le cloud {'\u00E0'} la publication.
+                L'oeuvre originale reste sur votre appareil. Le m{'\u00E9'}dia en pleine qualit{'\u00E9'} est upload{'\u00E9'} automatiquement
+                lors de la premi{'\u00E8'}re vente — les co{'\u00FB'}ts de stockage (IPFS, Arweave, Supabase) sont couverts par les frais de transaction.
               </p>
             </div>
 
@@ -2289,9 +2295,16 @@ export default function MarketplaceView() {
                 {price && parseFloat(price) >= 1 && (() => {
                   const fees = calculateBuyerTotal(parseFloat(price), imageData || undefined);
                   return (
-                    <p className="text-[10px] opacity-50 mt-1">
-                      L'acheteur paiera {fees.total} {'\u20AC'} ({price} {'\u20AC'} + {fees.serviceFee} {'\u20AC'} service{fees.storageFee > 0 ? ` + ${fees.storageFee} \u20AC stockage` : ''})
-                    </p>
+                    <>
+                      <p className="text-[10px] opacity-50 mt-1">
+                        L'acheteur paiera {fees.total} {'\u20AC'} ({price} {'\u20AC'} + {fees.serviceFee} {'\u20AC'} service{fees.storageFee > 0 ? ` + ${fees.storageFee} \u20AC stockage cloud` : ''})
+                      </p>
+                      {fees.storageFee > 0 && (
+                        <p className="text-[9px] opacity-40 mt-0.5">
+                          Stockage cloud = r{'\u00E9'}plication IPFS + Arweave + Supabase ({'\u00E0'} la vente uniquement)
+                        </p>
+                      )}
+                    </>
                   );
                 })()}
               </div>

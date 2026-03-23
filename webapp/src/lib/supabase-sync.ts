@@ -79,13 +79,17 @@ export async function syncWart(wart: Wart): Promise<void> {
     // 1. Upsert metadata FIRST (ensures DB record exists even if media upload fails)
     await db.upsertWart(wart, undefined, undefined);
 
-    // 2. Upload media to Supabase Storage
+    // 2. Upload media to Supabase Storage (primary CDN)
     const mediaPath = await media.uploadMedia(wart.imageData, wart.id, 'main');
     const audioCoverPath = wart.audioCover
       ? await media.uploadMedia(wart.audioCover, wart.id, 'cover')
       : undefined;
 
-    // 3. Update DB row with media paths if upload succeeded
+    // 3. Replicate to IPFS + Arweave (non-blocking, best-effort)
+    // These provide decentralized (IPFS) and permanent (Arweave) storage.
+    replicateToDecentralizedStorage(wart).catch(() => {});
+
+    // 4. Update DB row with media paths if upload succeeded
     if (mediaPath) {
       await db.upsertWart(wart, mediaPath, audioCoverPath || undefined);
     } else {
@@ -113,6 +117,42 @@ export async function syncWart(wart: Wart): Promise<void> {
         console.error('[Sync] syncWart retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
       }
     }, 3000);
+  }
+}
+
+// ─── Decentralized Storage Replication ───────────────────────
+
+/**
+ * Replicate artwork media to IPFS and Arweave for permanent decentralized storage.
+ * Called after a sale — the buyer's fees cover the storage costs.
+ * Best-effort: failures don't block the sale flow.
+ */
+async function replicateToDecentralizedStorage(wart: Wart): Promise<void> {
+  if (!wart.imageData) return;
+
+  try {
+    const { getStrangrzEngine } = await import('../engine/vobjct');
+    const engine = getStrangrzEngine();
+    const storageLayer = engine.getStorageLayer();
+    const networks = storageLayer.listProviders();
+    const path = `warts/${wart.id}/main`;
+
+    for (const network of networks) {
+      if (network === 'ipfs' || network === 'arweave') {
+        const provider = storageLayer.getProvider(network);
+        if (!provider) continue;
+        try {
+          const locator = await provider.upload(wart.imageData, path);
+          if (locator) {
+            console.log(`[Sync] Replicated wart ${wart.id} to ${network}: ${locator}`);
+          }
+        } catch (err) {
+          console.warn(`[Sync] ${network} replication failed for wart ${wart.id}:`, err);
+        }
+      }
+    }
+  } catch {
+    // Strangrz engine not available — skip decentralized replication
   }
 }
 
