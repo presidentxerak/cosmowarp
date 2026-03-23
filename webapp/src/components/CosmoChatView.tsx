@@ -37,7 +37,7 @@ function formatViews(n: number): string {
 }
 
 export default function CosmoChatView() {
-  const { wallet, unlocked, send, myCreated, myCollection, marketplace, warts: allWarts, buyWart, toggleWartLike, toggleWartBookmark } = useWallet();
+  const { wallet, unlocked, send, myCreated, myCollection, marketplace, warts: allWarts, buyWart, toggleWartLike, toggleWartBookmark, addWartComment } = useWallet();
   const [engine] = useState(() => CosmoChatEngine.load());
   const [tab, setTab] = useState<Tab>('feed');
   const [posts, setPosts] = useState<ChatPost[]>([]);
@@ -79,6 +79,10 @@ export default function CosmoChatView() {
 
   // Feed share modal
   const [feedShareWart, setFeedShareWart] = useState<Wart | null>(null);
+  // Feed comment bottom sheet
+  const [feedCommentWart, setFeedCommentWart] = useState<Wart | null>(null);
+  const [feedCommentText, setFeedCommentText] = useState('');
+  const feedCommentInputRef = useRef<HTMLInputElement>(null);
 
   const refresh = () => {
     const e = CosmoChatEngine.load();
@@ -249,6 +253,101 @@ export default function CosmoChatView() {
           </div>
         )}
 
+        {/* Comment bottom sheet (TikTok-style) */}
+        {feedCommentWart && (
+          <div className="fixed inset-0 z-[60]" onClick={() => { setFeedCommentWart(null); setFeedCommentText(''); }}>
+            {/* Dimmed top area */}
+            <div className="absolute inset-0 bg-black/50" />
+            {/* Bottom sheet */}
+            <div
+              className="absolute bottom-0 left-0 right-0 bg-[#1a1a1a] rounded-t-2xl max-h-[70vh] flex flex-col"
+              onClick={e => e.stopPropagation()}
+              style={{ animation: 'slideUp 0.3s ease-out' }}
+            >
+              {/* Handle + header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                <div className="w-8" />
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-1 bg-white/30 rounded-full mb-2" />
+                  <span className="text-white text-sm font-bold">{feedCommentWart.comments?.length || 0} commentaires</span>
+                </div>
+                <button onClick={() => { setFeedCommentWart(null); setFeedCommentText(''); }} className="text-white/60 cursor-pointer text-lg">
+                  {'\u2715'}
+                </button>
+              </div>
+
+              {/* Comments list */}
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 min-h-[120px] max-h-[calc(70vh-120px)]">
+                {(!feedCommentWart.comments || feedCommentWart.comments.length === 0) ? (
+                  <div className="text-center py-8">
+                    <p className="text-white/40 text-sm">Pas encore de commentaires</p>
+                    <p className="text-white/25 text-xs mt-1">Sois le premier à commenter</p>
+                  </div>
+                ) : (
+                  feedCommentWart.comments.map(c => (
+                    <div key={c.id} className="flex gap-3">
+                      <HexAvatar address={c.author} size={32} className="shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-white/80 text-xs font-bold truncate">{c.authorAlias || shortAddress(c.author)}</span>
+                          <span className="text-white/30 text-[10px] shrink-0">{timeAgo(c.timestamp)}</span>
+                        </div>
+                        <p className="text-white/70 text-sm mt-0.5 break-words">{c.content}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Comment input */}
+              <div className="px-4 py-3 border-t border-white/10 flex gap-2 items-center" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+                {isAuth ? (
+                  <>
+                    <HexAvatar address={wallet?.address ?? ''} size={28} className="shrink-0" />
+                    <input
+                      ref={feedCommentInputRef}
+                      type="text"
+                      className="flex-1 bg-white/10 text-white text-sm px-3 py-2.5 rounded-full outline-none placeholder:text-white/30"
+                      placeholder="Ajouter un commentaire..."
+                      value={feedCommentText}
+                      onChange={e => setFeedCommentText(e.target.value)}
+                      maxLength={300}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && feedCommentText.trim()) {
+                          addWartComment(feedCommentWart.id, feedCommentText.trim());
+                          setFeedCommentText('');
+                          // Refresh the wart to show new comment
+                          const updated = allWarts.find(w => w.id === feedCommentWart.id) || feedCommentWart;
+                          setFeedCommentWart({ ...updated });
+                        }
+                      }}
+                    />
+                    <button
+                      className={`text-sm font-bold px-3 py-2 cursor-pointer ${feedCommentText.trim() ? 'text-pink-400' : 'text-white/20'}`}
+                      onClick={() => {
+                        if (!feedCommentText.trim()) return;
+                        addWartComment(feedCommentWart.id, feedCommentText.trim());
+                        setFeedCommentText('');
+                        const updated = allWarts.find(w => w.id === feedCommentWart.id) || feedCommentWart;
+                        setFeedCommentWart({ ...updated });
+                      }}
+                    >
+                      Envoyer
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={requireAuth}
+                    className="w-full bg-white/10 text-white/50 text-sm px-3 py-2.5 rounded-full text-center cursor-pointer hover:bg-white/15"
+                  >
+                    Connecte-toi pour commenter
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div
           ref={feedScrollRef}
           className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-none"
@@ -294,15 +393,15 @@ export default function CosmoChatView() {
                     <svg width="28" height="28" viewBox="0 0 24 24" fill={liked ? 'white' : 'none'} stroke="white" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     <span className="text-[10px] text-white/80">{wart.likes?.length || 0}</span>
                   </button>
-                  <button onClick={() => handleFeedAction(() => openWartDetail(wart.id))} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
+                  <button onClick={() => { setFeedCommentWart(wart); setTimeout(() => feedCommentInputRef.current?.focus(), 300); }} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span className="text-[10px] text-white/80">{wart.comments?.length || 0}</span>
                   </button>
                   <button onClick={() => setFeedShareWart(wart)} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                   </button>
-                  <button onClick={() => handleFeedAction(() => { if (wallet) toggleWartBookmark(wart.id); })} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill={wallet && wart.bookmarks?.includes(wallet?.address) ? 'white' : 'none'} stroke="white" strokeWidth="1.8"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  <button onClick={() => { if (!isAuth) { requireAuth(); return; } toggleWartBookmark(wart.id); }} className="flex flex-col items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill={wallet?.address && wart.bookmarks?.includes(wallet.address) ? 'white' : 'none'} stroke="white" strokeWidth="1.8"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                   </button>
                 </div>
 
