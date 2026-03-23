@@ -205,6 +205,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }),
         ]);
 
+        // Upload full media to Arweave via Irys (permanent storage, platform pays)
+        // Non-blocking: don't fail the purchase if storage fails
+        uploadToIrys(supabase, wartId, txId).catch((err) => {
+          console.error('[Webhook] Irys upload failed (non-blocking):', err);
+        });
+
         // Mark fiat transaction as completed
         await updateFiatTx(supabase, txId, 'completed', session.id);
 
@@ -250,4 +256,90 @@ async function updateFiatTx(
     error: error || null,
     updated_at: Date.now(),
   }).eq('tx_id', txId);
+}
+
+/**
+ * Upload artwork media to Arweave via Irys after a fiat sale.
+ * Platform pays from IRYS_PRIVATE_KEY wallet — cost absorbed in commission.
+ *
+ * Flow:
+ * 1. Fetch full media from Supabase Storage
+ * 2. Upload to Arweave via Irys SDK (platform wallet)
+ * 3. Store the ar:// locator in the wart's storage_routes
+ *
+ * Cost: ~€0.02 per 5MB artwork — negligible vs 10% commission.
+ */
+async function uploadToIrys(
+  supabase: SupabaseClient,
+  wartId: string,
+  txId: string,
+): Promise<void> {
+  const IRYS_PRIVATE_KEY = process.env.IRYS_PRIVATE_KEY;
+  if (!IRYS_PRIVATE_KEY) {
+    console.log('[Webhook] Irys not configured — skipping permanent storage');
+    return;
+  }
+
+  // 1. Get media path from the wart record
+  const { data: wart } = await supabase
+    .from('warts')
+    .select('media_path')
+    .eq('id', wartId)
+    .single();
+
+  if (!wart?.media_path) {
+    console.log(`[Webhook] No media_path for wart ${wartId} — Irys upload deferred to client sync`);
+    return;
+  }
+
+  // 2. Download the full media from Supabase Storage
+  const { data: mediaBlob, error: dlError } = await supabase.storage
+    .from('media')
+    .download(wart.media_path);
+
+  if (dlError || !mediaBlob) {
+    console.error('[Webhook] Failed to download media from Supabase:', dlError?.message);
+    return;
+  }
+
+  const buffer = Buffer.from(await mediaBlob.arrayBuffer());
+  const mimeType = mediaBlob.type || 'application/octet-stream';
+
+  // 3. Upload to Arweave via Irys
+  const { Uploader } = await import('@irys/upload');
+  const { Ethereum } = await import('@irys/upload-ethereum');
+
+  const irysUploader = await Uploader(Ethereum).withWallet(IRYS_PRIVATE_KEY);
+
+  // Auto-fund if needed
+  const price = await irysUploader.getPrice(buffer.length);
+  const balance = await irysUploader.getBalance();
+  if (BigInt(balance.toString()) < BigInt(price.toString())) {
+    const needed = (BigInt(price.toString()) * 120n) / 100n; // 20% buffer
+    await irysUploader.fund(needed);
+  }
+
+  const receipt = await irysUploader.upload(buffer, {
+    tags: [
+      { name: 'App-Name', value: 'Strangrz' },
+      { name: 'Content-Type', value: mimeType },
+      { name: 'Wart-ID', value: wartId },
+      { name: 'TX-ID', value: txId },
+      { name: 'Payment', value: 'fiat-stripe' },
+      { name: 'Timestamp', value: new Date().toISOString() },
+    ],
+  });
+
+  const arLocator = `ar://${receipt.id}`;
+  const gatewayUrl = `${process.env.VITE_ARWEAVE_GATEWAY_URL || 'https://arweave.net'}/${receipt.id}`;
+
+  // 4. Store the Arweave locator in the wart's storage metadata
+  await supabase.from('warts').update({
+    arweave_tx: receipt.id,
+    storage_routes: [
+      { network: 'arweave', locator: arLocator, priority: 1, status: 'active' },
+    ],
+  }).eq('id', wartId);
+
+  console.log(`[Webhook] Wart ${wartId} stored permanently on Arweave: ${gatewayUrl} (${buffer.length} bytes)`);
 }

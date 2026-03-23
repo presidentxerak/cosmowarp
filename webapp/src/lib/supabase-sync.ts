@@ -125,34 +125,83 @@ export async function syncWart(wart: Wart): Promise<void> {
 /**
  * Replicate artwork media to IPFS and Arweave for permanent decentralized storage.
  * Called after a sale — the buyer's fees cover the storage costs.
+ *
+ * Model C (hybrid):
+ *   - IPFS: pinned via configured pinning service (platform-side)
+ *   - Arweave: uploaded via server API (platform wallet pays, ~€0.02/5MB)
+ *     OR via browser Irys SDK if buyer has wallet connected
+ *
  * Best-effort: failures don't block the sale flow.
  */
 async function replicateToDecentralizedStorage(wart: Wart): Promise<void> {
   if (!wart.imageData) return;
 
+  // IPFS replication (via storage layer provider)
   try {
     const { getStrangrzEngine } = await import('../engine/vobjct');
     const engine = getStrangrzEngine();
     const storageLayer = engine.getStorageLayer();
-    const networks = storageLayer.listProviders();
     const path = `warts/${wart.id}/main`;
 
-    for (const network of networks) {
-      if (network === 'ipfs' || network === 'arweave') {
-        const provider = storageLayer.getProvider(network);
-        if (!provider) continue;
-        try {
-          const locator = await provider.upload(wart.imageData, path);
-          if (locator) {
-            console.log(`[Sync] Replicated wart ${wart.id} to ${network}: ${locator}`);
-          }
-        } catch (err) {
-          console.warn(`[Sync] ${network} replication failed for wart ${wart.id}:`, err);
+    const ipfsProvider = storageLayer.getProvider('ipfs');
+    if (ipfsProvider) {
+      try {
+        const locator = await ipfsProvider.upload(wart.imageData, path);
+        if (locator) {
+          console.log(`[Sync] Replicated wart ${wart.id} to IPFS: ${locator}`);
         }
+      } catch (err) {
+        console.warn(`[Sync] IPFS replication failed for wart ${wart.id}:`, err);
       }
     }
   } catch {
-    // Strangrz engine not available — skip decentralized replication
+    // Strangrz engine not available — skip IPFS replication
+  }
+
+  // Arweave replication via server API (platform wallet pays)
+  try {
+    const { uploadViaServer } = await import('./irys');
+    const result = await uploadViaServer(wart.imageData, wart.id);
+    console.log(`[Sync] Replicated wart ${wart.id} to Arweave: ${result.locator} (${result.sizeBytes} bytes)`);
+  } catch (err) {
+    console.warn(`[Sync] Arweave server replication failed for wart ${wart.id}:`, err);
+  }
+}
+
+/**
+ * Upload artwork to Arweave via browser Irys SDK (buyer pays directly).
+ * Used for crypto purchases where the buyer has a wallet connected.
+ * Returns the ar:// locator on success, null on failure.
+ */
+export async function replicateToArweaveViaBrowser(wart: Wart): Promise<string | null> {
+  if (!wart.imageData) return null;
+
+  try {
+    const { createBrowserUploader, uploadDataUrlFromBrowser } = await import('./irys');
+    const uploader = await createBrowserUploader();
+
+    // Check price first
+    const { dataUrlToBytes } = await import('./irys');
+    const { bytes } = dataUrlToBytes(wart.imageData);
+
+    // Files < 100KB are free on Irys
+    if (bytes.length >= 100 * 1024) {
+      const { estimatePrice, fundFromBrowser, getBrowserBalance } = await import('./irys');
+      const price = await estimatePrice(uploader, bytes.length);
+      const balance = await getBrowserBalance(uploader);
+
+      // Fund if needed
+      if (parseFloat(balance.standard) < parseFloat(price.standard)) {
+        await fundFromBrowser(uploader, price.standard);
+      }
+    }
+
+    const result = await uploadDataUrlFromBrowser(uploader, wart.imageData, wart.id);
+    console.log(`[Sync] Buyer uploaded wart ${wart.id} to Arweave: ${result.locator} (${result.sizeBytes} bytes)`);
+    return result.locator;
+  } catch (err) {
+    console.warn(`[Sync] Browser Arweave upload failed for wart ${wart.id}:`, err);
+    return null;
   }
 }
 

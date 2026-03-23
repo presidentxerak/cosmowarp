@@ -1120,6 +1120,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const soldWart = engine.getWart(wartId);
     if (soldWart) {
       sync.syncWart(soldWart);
+
+      // Model C: Crypto buyer pays Irys directly via their wallet (best-effort).
+      // If browser upload fails, server-side replication handles it as fallback.
+      if (window.ethereum) {
+        sync.replicateToArweaveViaBrowser(soldWart).catch(() => {});
+      }
     }
     sync.syncProfile(wallet);
     sync.syncTransaction(buyTx);
@@ -1480,6 +1486,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // This is the moment the media leaves the creator's local device
     // and gets replicated to cloud storage.
     sync.syncWart(result.wart);
+
+    // Model C: Crypto buyer pays Irys directly via their wallet (best-effort).
+    if (window.ethereum) {
+      sync.replicateToArweaveViaBrowser(result.wart).catch(() => {});
+    }
+
     sync.syncProfile(updatedWallet);
     sync.syncTransaction(buyTx);
     sync.syncNotification({
