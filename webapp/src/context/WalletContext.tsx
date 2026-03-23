@@ -24,7 +24,7 @@ import { SocialEngine } from '../engine/social';
 // ─── Supabase Sync ──────────────────────────────────────────
 import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
-import { isBackendAvailable } from '../lib/supabase';
+import { isBackendAvailable, getPublicUrl, BUCKETS } from '../lib/supabase';
 import { insertWartLike, deleteWartLike, fetchWartLikes, insertWartBookmark, deleteWartBookmark, fetchWartBookmarks } from '../lib/supabase-db';
 
 // ─── Recovery Kit reminder ────────────────────────────────
@@ -254,10 +254,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const localIds = new Set(localWarts.map(w => w.id));
     const deletedIds = getDeletedWartIds();
 
+    // Collect warts that need media download (for background fetch)
+    const needsMediaDownload: { wartId: string; mediaPath: string }[] = [];
+
     for (const row of cloudWarts) {
       const wartId = row.id as string;
       // Skip warts we've locally deleted — don't resurrect them
       if (deletedIds.has(wartId)) continue;
+
+      // Get public URL for immediate display (no download needed)
+      const mediaPath = row.media_path as string | undefined;
+      const publicUrl = mediaPath ? getPublicUrl(BUCKETS.MEDIA, mediaPath) : '';
+
       if (localIds.has(wartId)) {
         const local = engine.getWart(wartId);
         if (local) {
@@ -269,13 +277,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             local.title = (row.title as string) || local.title;
             local.description = (row.description as string) || local.description;
           }
+          // Fix missing images: use public URL for existing warts with no imageData
+          if (!local.imageData && publicUrl) {
+            local.imageData = publicUrl;
+            if (mediaPath) needsMediaDownload.push({ wartId, mediaPath });
+          }
         }
       } else {
         const wartData: Wart = {
           id: wartId,
           title: (row.title as string) || '',
           description: (row.description as string) || '',
-          imageData: '',
+          imageData: publicUrl, // Use public URL for instant display
           mediaType: (row.media_type as Wart['mediaType']) || 'image',
           creator: (row.creator as string) || '',
           owner: (row.owner as string) || '',
@@ -293,12 +306,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           contentFingerprint: (row.content_fingerprint as string) || undefined,
           creatorSignature: (row.creator_signature as string) || undefined,
           storageMode: (row.storage_mode as Wart['storageMode']) || 'hybrid',
+          priceFiat: row.price_fiat != null ? Number(row.price_fiat) : undefined,
+          fiatCurrency: (row.fiat_currency as Wart['fiatCurrency']) || undefined,
           vaultBackup: false,
         };
         engine.addFromCloud(wartData);
 
-        if (row.media_path) {
-          sync.pullWartWithMedia(wartId).then(fullWart => {
+        // Queue background download for local caching
+        if (mediaPath) needsMediaDownload.push({ wartId, mediaPath });
+      }
+    }
+    engine.savePublic();
+
+    // Background: download full-quality media for local caching (non-blocking)
+    if (needsMediaDownload.length > 0) {
+      const downloadBatch = async () => {
+        for (const { wartId } of needsMediaDownload) {
+          try {
+            const fullWart = await sync.pullWartWithMedia(wartId);
             if (fullWart?.imageData) {
               const local = engine.getWart(wartId);
               if (local) {
@@ -307,19 +332,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                 if (fullWart.contentFingerprint) {
                   WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
                 }
-                // Store in IndexedDB for persistence
                 storeMedia(wartId, fullWart.imageData, fullWart.audioCover);
-                engine.savePublic();
-                // Refresh React state so images appear
-                const currentWallet = loadWallet();
-                refreshWartsState(currentWallet?.address);
               }
             }
-          });
+          } catch { /* continue with next */ }
         }
-      }
+        engine.savePublic();
+        const currentWallet = loadWallet();
+        refreshWartsState(currentWallet?.address);
+      };
+      // Delay background downloads to not block initial render
+      setTimeout(downloadBatch, 2000);
     }
-    engine.savePublic();
   }
 
   // ─── Load wallet on mount + Supabase sync ──────────────
@@ -471,6 +495,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             refreshWartsState(w.address);
           }
         }).catch(() => { /* Pull failed — use local data */ });
+      }
+    } else {
+      // No wallet (unauthenticated) — still load public gallery from cloud
+      if (isBackendAvailable()) {
+        sync.pullWarts().then(allWarts => {
+          if (allWarts && allWarts.length > 0) {
+            mergeCloudWarts(allWarts);
+            refreshWartsState(undefined);
+          }
+        }).catch(() => {});
       }
     }
     setGlobalTxs(getGlobalTransactions());
