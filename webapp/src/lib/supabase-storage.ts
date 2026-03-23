@@ -11,18 +11,27 @@ import { supabase, isBackendAvailable, BUCKETS, getPublicUrl } from './supabase'
 function dataUrlToBlob(dataUrl: string): { blob: Blob; ext: string; mime: string } {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!match) {
-    // Not a data URL — treat as raw text (e.g., SVG)
+    // Not a data URL — detect SVG or treat as text
+    const isSvg = dataUrl.trimStart().startsWith('<svg') || dataUrl.trimStart().startsWith('<?xml');
+    const mime = isSvg ? 'image/svg+xml' : 'text/plain';
+    const ext = isSvg ? 'svg' : 'txt';
     return {
-      blob: new Blob([dataUrl], { type: 'text/plain' }),
-      ext: 'txt',
-      mime: 'text/plain',
+      blob: new Blob([dataUrl], { type: mime }),
+      ext,
+      mime,
     };
   }
 
   const mime = match[1];
   const base64 = match[2];
-  const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  const blob = new Blob([bytes], { type: mime });
+  let bytes: Uint8Array;
+  try {
+    bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  } catch {
+    // Malformed base64 — return empty blob
+    return { blob: new Blob([], { type: mime }), ext: 'bin', mime };
+  }
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mime });
 
   // Determine extension from MIME type
   const extMap: Record<string, string> = {

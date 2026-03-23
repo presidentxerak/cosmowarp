@@ -24,7 +24,7 @@ import { SocialEngine } from '../engine/social';
 // ─── Supabase Sync ──────────────────────────────────────────
 import * as sync from '../lib/supabase-sync';
 import { realtime } from '../lib/supabase-realtime';
-import { isBackendAvailable, getPublicUrl, BUCKETS } from '../lib/supabase';
+import { isBackendAvailable, getPublicUrl, BUCKETS, setSupabaseAddress } from '../lib/supabase';
 import { insertWartLike, deleteWartLike, fetchWartLikes, insertWartBookmark, deleteWartBookmark, fetchWartBookmarks } from '../lib/supabase-db';
 
 // ─── Recovery Kit reminder ────────────────────────────────
@@ -269,19 +269,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (localIds.has(wartId)) {
         const local = engine.getWart(wartId);
         if (local) {
+          let changed = false;
+          const updated = { ...local }; // Immutable copy
           const cloudUpdated = Number(row.updated_at || 0);
           if (cloudUpdated > (local.createdAt || 0)) {
-            local.owner = (row.owner as string) || local.owner;
-            local.price = row.price != null ? Number(row.price) : local.price;
-            local.listed = (row.listed as boolean) ?? local.listed;
-            local.title = (row.title as string) || local.title;
-            local.description = (row.description as string) || local.description;
+            updated.owner = (row.owner as string) || local.owner;
+            updated.price = row.price != null ? Number(row.price) : local.price;
+            updated.listed = (row.listed as boolean) ?? local.listed;
+            updated.title = (row.title as string) || local.title;
+            updated.description = (row.description as string) || local.description;
+            changed = true;
           }
           // Fix missing images: use public URL for existing warts with no imageData
           if (!local.imageData && publicUrl) {
-            local.imageData = publicUrl;
+            updated.imageData = publicUrl;
             if (mediaPath) needsMediaDownload.push({ wartId, mediaPath });
+            changed = true;
           }
+          if (changed) engine.addFromCloud(updated); // Replace in Map with new ref
         }
       } else {
         const wartData: Wart = {
@@ -327,8 +332,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             if (fullWart?.imageData) {
               const local = engine.getWart(wartId);
               if (local) {
-                local.imageData = fullWart.imageData;
-                if (fullWart.audioCover) local.audioCover = fullWart.audioCover;
+                // Create immutable copy with updated media
+                const updated = { ...local, imageData: fullWart.imageData };
+                if (fullWart.audioCover) updated.audioCover = fullWart.audioCover;
+                engine.addFromCloud(updated);
                 if (fullWart.contentFingerprint) {
                   WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
                 }
@@ -350,6 +357,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const w = loadWallet();
     if (w) {
+      // Set address header for Supabase RLS ownership checks
+      setSupabaseAddress(w.address);
       // Restore session: if private key is in sessionStorage, auto-unlock
       const sessionPk = loadSessionKey();
       if (sessionPk) {
@@ -363,7 +372,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       // Pull cloud data and persist to localStorage for cross-device sync
       if (isBackendAvailable()) {
-        sync.fullSync(w.address).then(cloudData => {
+        sync.fullSync(w.address, (id) => getWartEngine().getWart(id)).then(cloudData => {
           if (!cloudData) return;
 
           // Sync profile: reconcile local and cloud state
@@ -582,6 +591,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   // ─── Wallet creation ──────────────────────────────────
   const initWallet = useCallback(async (password: string, alias?: string) => {
     const w = await createWallet(password, alias);
+    setSupabaseAddress(w.address);
     setWallet({ ...w });
     setUnlocked(true);
     saveSessionKey(w.privateKey);
@@ -599,6 +609,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // ─── Complete login (shared between initial login and 2FA verification) ──
   const completeLogin = useCallback(async (w: WarpWallet, username: string, password: string, isNew: boolean) => {
+    setSupabaseAddress(w.address);
     setWallet({ ...w });
     setUnlocked(true);
     saveSessionKey(w.privateKey);

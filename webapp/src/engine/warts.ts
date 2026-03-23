@@ -402,12 +402,10 @@ export class WartEngine {
     this.save();
   }
 
-  /** Add a wart from cloud sync (doesn't trigger save — caller must call savePublic) */
+  /** Add or update a wart from cloud sync (doesn't trigger save — caller must call savePublic) */
   addFromCloud(wart: Wart): void {
-    if (!this.warts.has(wart.id)) {
-      WartEngine.normalizeWart(wart);
-      this.warts.set(wart.id, wart);
-    }
+    WartEngine.normalizeWart(wart);
+    this.warts.set(wart.id, wart);
   }
 
   private registerCertificate(cert: WartCertificate): void {

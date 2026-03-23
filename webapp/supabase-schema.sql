@@ -183,6 +183,19 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient, read);
 
 -- ─── 11. ROW LEVEL SECURITY ─────────────────────────────────
+-- Strategy: anon key = public read + guarded writes.
+-- Write operations use request headers to carry the caller's wallet address.
+-- Service role key (server-side only) bypasses RLS for trusted operations.
+--
+-- Helper: extract wallet address from request header set by the client.
+-- The webapp sets this via supabase.rpc() or custom fetch headers.
+CREATE OR REPLACE FUNCTION requesting_address() RETURNS TEXT AS $$
+  SELECT coalesce(
+    current_setting('request.jwt.claims', true)::json->>'address',
+    current_setting('request.headers', true)::json->>'x-strangrz-address',
+    ''
+  );
+$$ LANGUAGE sql STABLE;
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE warts ENABLE ROW LEVEL SECURITY;
@@ -195,7 +208,7 @@ ALTER TABLE social_follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mesh_state ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- Public read access for marketplace data
+-- ── SELECT: public read for marketplace data ──
 CREATE POLICY "Public read profiles" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Public read warts" ON warts FOR SELECT USING (true);
 CREATE POLICY "Public read wart_history" ON wart_history FOR SELECT USING (true);
@@ -207,25 +220,42 @@ CREATE POLICY "Public read social_follows" ON social_follows FOR SELECT USING (t
 CREATE POLICY "Public read mesh_state" ON mesh_state FOR SELECT USING (true);
 CREATE POLICY "Public read notifications" ON notifications FOR SELECT USING (true);
 
--- Write access via anon key (service role can bypass RLS)
--- In production, you'd want auth-based policies. For now, allow writes.
-CREATE POLICY "Allow insert profiles" ON profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update profiles" ON profiles FOR UPDATE USING (true);
-CREATE POLICY "Allow insert warts" ON warts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update warts" ON warts FOR UPDATE USING (true);
-CREATE POLICY "Allow delete warts" ON warts FOR DELETE USING (true);
+-- ── INSERT: caller must own the record they're creating ──
+CREATE POLICY "Own insert profiles" ON profiles FOR INSERT
+  WITH CHECK (address = requesting_address());
+CREATE POLICY "Own insert warts" ON warts FOR INSERT
+  WITH CHECK (creator = requesting_address());
 CREATE POLICY "Allow insert wart_history" ON wart_history FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow insert wart_comments" ON wart_comments FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow insert transactions" ON transactions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Own insert wart_comments" ON wart_comments FOR INSERT
+  WITH CHECK (author = requesting_address());
+CREATE POLICY "Own insert transactions" ON transactions FOR INSERT
+  WITH CHECK (from_addr = requesting_address() OR to_addr = requesting_address());
 CREATE POLICY "Allow insert certificates" ON certificates FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow insert social_profiles" ON social_profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update social_profiles" ON social_profiles FOR UPDATE USING (true);
-CREATE POLICY "Allow insert social_follows" ON social_follows FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow delete social_follows" ON social_follows FOR DELETE USING (true);
+CREATE POLICY "Own insert social_profiles" ON social_profiles FOR INSERT
+  WITH CHECK (address = requesting_address());
+CREATE POLICY "Own insert social_follows" ON social_follows FOR INSERT
+  WITH CHECK (follower = requesting_address());
 CREATE POLICY "Allow upsert mesh_state" ON mesh_state FOR INSERT WITH CHECK (true);
+CREATE POLICY "Own insert notifications" ON notifications FOR INSERT WITH CHECK (true);
+
+-- ── UPDATE: only owner can update their own data ──
+CREATE POLICY "Own update profiles" ON profiles FOR UPDATE
+  USING (address = requesting_address());
+CREATE POLICY "Own update warts" ON warts FOR UPDATE
+  USING (owner = requesting_address() OR creator = requesting_address());
+CREATE POLICY "Own update social_profiles" ON social_profiles FOR UPDATE
+  USING (address = requesting_address());
 CREATE POLICY "Allow update mesh_state" ON mesh_state FOR UPDATE USING (true);
-CREATE POLICY "Allow insert notifications" ON notifications FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update notifications" ON notifications FOR UPDATE USING (true);
+CREATE POLICY "Own update notifications" ON notifications FOR UPDATE
+  USING (recipient = requesting_address());
+
+-- ── DELETE: only owner can delete their own data ──
+CREATE POLICY "Own delete warts" ON warts FOR DELETE
+  USING (owner = requesting_address() OR creator = requesting_address());
+CREATE POLICY "Own delete social_follows" ON social_follows FOR DELETE
+  USING (follower = requesting_address());
+CREATE POLICY "Own delete notifications" ON notifications FOR DELETE
+  USING (recipient = requesting_address());
 
 -- ─── 11b. TOTP 2FA CONFIGS ───────────────────────────────────
 
@@ -243,11 +273,15 @@ CREATE TABLE IF NOT EXISTS totp_configs (
 
 ALTER TABLE totp_configs ENABLE ROW LEVEL SECURITY;
 
--- Only the owner can read their own 2FA config (sensitive data)
-CREATE POLICY "Public read totp_configs" ON totp_configs FOR SELECT USING (true);
-CREATE POLICY "Allow insert totp_configs" ON totp_configs FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update totp_configs" ON totp_configs FOR UPDATE USING (true);
-CREATE POLICY "Allow delete totp_configs" ON totp_configs FOR DELETE USING (true);
+-- Only the owner can read/write their own 2FA config (sensitive data)
+CREATE POLICY "Own read totp_configs" ON totp_configs FOR SELECT
+  USING (address = requesting_address());
+CREATE POLICY "Own insert totp_configs" ON totp_configs FOR INSERT
+  WITH CHECK (address = requesting_address());
+CREATE POLICY "Own update totp_configs" ON totp_configs FOR UPDATE
+  USING (address = requesting_address());
+CREATE POLICY "Own delete totp_configs" ON totp_configs FOR DELETE
+  USING (address = requesting_address());
 
 -- ─── 11c. FIAT TRANSACTIONS ─────────────────────────────────
 
@@ -270,9 +304,9 @@ CREATE INDEX IF NOT EXISTS idx_fiat_tx_buyer ON fiat_transactions(buyer_address)
 CREATE INDEX IF NOT EXISTS idx_fiat_tx_status ON fiat_transactions(status);
 
 ALTER TABLE fiat_transactions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read fiat_transactions" ON fiat_transactions FOR SELECT USING (true);
-CREATE POLICY "Allow insert fiat_transactions" ON fiat_transactions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update fiat_transactions" ON fiat_transactions FOR UPDATE USING (true);
+CREATE POLICY "Own read fiat_transactions" ON fiat_transactions FOR SELECT
+  USING (buyer_address = requesting_address() OR seller_address = requesting_address());
+-- Inserts and updates via service role only (fiat gateway server)
 
 -- ─── 11d. STRIPE CONNECT ACCOUNTS ──────────────────────────
 
@@ -285,9 +319,9 @@ CREATE TABLE IF NOT EXISTS stripe_connect_accounts (
 );
 
 ALTER TABLE stripe_connect_accounts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read stripe_connect_accounts" ON stripe_connect_accounts FOR SELECT USING (true);
-CREATE POLICY "Allow upsert stripe_connect_accounts" ON stripe_connect_accounts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update stripe_connect_accounts" ON stripe_connect_accounts FOR UPDATE USING (true);
+CREATE POLICY "Own read stripe_connect_accounts" ON stripe_connect_accounts FOR SELECT
+  USING (seller_address = requesting_address());
+-- Inserts and updates via service role only (fiat gateway server)
 
 -- ─── 11e. CREDIT WARPS RPC (fiat gateway minting) ──────────
 
@@ -338,8 +372,10 @@ CREATE INDEX IF NOT EXISTS idx_wart_likes_wart ON wart_likes(wart_id);
 
 ALTER TABLE wart_likes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read wart_likes" ON wart_likes FOR SELECT USING (true);
-CREATE POLICY "Allow insert wart_likes" ON wart_likes FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow delete wart_likes" ON wart_likes FOR DELETE USING (true);
+CREATE POLICY "Own insert wart_likes" ON wart_likes FOR INSERT
+  WITH CHECK (user_address = requesting_address());
+CREATE POLICY "Own delete wart_likes" ON wart_likes FOR DELETE
+  USING (user_address = requesting_address());
 
 CREATE TABLE IF NOT EXISTS wart_bookmarks (
   wart_id     TEXT NOT NULL REFERENCES warts(id) ON DELETE CASCADE,
@@ -353,8 +389,10 @@ CREATE INDEX IF NOT EXISTS idx_wart_bookmarks_wart ON wart_bookmarks(wart_id);
 
 ALTER TABLE wart_bookmarks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read wart_bookmarks" ON wart_bookmarks FOR SELECT USING (true);
-CREATE POLICY "Allow insert wart_bookmarks" ON wart_bookmarks FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow delete wart_bookmarks" ON wart_bookmarks FOR DELETE USING (true);
+CREATE POLICY "Own insert wart_bookmarks" ON wart_bookmarks FOR INSERT
+  WITH CHECK (user_address = requesting_address());
+CREATE POLICY "Own delete wart_bookmarks" ON wart_bookmarks FOR DELETE
+  USING (user_address = requesting_address());
 
 -- ─── 11g. EXCHANGE RATES ─────────────────────────────────────
 
@@ -376,8 +414,7 @@ ON CONFLICT (currency) DO NOTHING;
 
 ALTER TABLE exchange_rates ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read exchange_rates" ON exchange_rates FOR SELECT USING (true);
-CREATE POLICY "Allow upsert exchange_rates" ON exchange_rates FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update exchange_rates" ON exchange_rates FOR UPDATE USING (true);
+-- Exchange rate writes via service role only (admin gateway)
 
 -- ─── 12. STORAGE BUCKETS ────────────────────────────────────
 

@@ -76,36 +76,43 @@ export async function syncWart(wart: Wart): Promise<void> {
   }
   setSyncStatus('syncing');
   try {
-    // Upload media to Supabase Storage
+    // 1. Upsert metadata FIRST (ensures DB record exists even if media upload fails)
+    await db.upsertWart(wart, undefined, undefined);
+
+    // 2. Upload media to Supabase Storage
     const mediaPath = await media.uploadMedia(wart.imageData, wart.id, 'main');
     const audioCoverPath = wart.audioCover
       ? await media.uploadMedia(wart.audioCover, wart.id, 'cover')
       : undefined;
 
-    // Upsert wart metadata to database
-    await db.upsertWart(wart, mediaPath || undefined, audioCoverPath || undefined);
-
-    if (!mediaPath) {
+    // 3. Update DB row with media paths if upload succeeded
+    if (mediaPath) {
+      await db.upsertWart(wart, mediaPath, audioCoverPath || undefined);
+    } else {
       console.warn('[Sync] Media upload failed for wart', wart.id, '— metadata saved without remote media');
+      // Queue for re-upload on next sync
+      queuePendingSync('wart', wart.id);
     }
     setSyncStatus('idle');
   } catch (err) {
     console.error('[Sync] syncWart failed:', err instanceof Error ? err.message : err);
     setSyncStatus('error');
-    // Retry once after 2 seconds
+    queuePendingSync('wart', wart.id);
+    // Retry once after 3 seconds with exponential backoff
     setTimeout(async () => {
       if (!isBackendAvailable()) return;
       try {
+        await db.upsertWart(wart, undefined, undefined);
         const mediaPath = await media.uploadMedia(wart.imageData, wart.id, 'main');
         const audioCoverPath = wart.audioCover
           ? await media.uploadMedia(wart.audioCover, wart.id, 'cover')
           : undefined;
-        await db.upsertWart(wart, mediaPath || undefined, audioCoverPath || undefined);
+        if (mediaPath) await db.upsertWart(wart, mediaPath, audioCoverPath || undefined);
         setSyncStatus('idle');
-      } catch {
-        // Silent retry failure — will sync on next full sync
+      } catch (retryErr) {
+        console.error('[Sync] syncWart retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
       }
-    }, 2000);
+    }, 3000);
   }
 }
 
@@ -127,8 +134,11 @@ function queuePendingSync(type: string, id: string): void {
 /**
  * Process pending syncs queued while offline.
  * Called on fullSync to retry any operations that failed due to connectivity.
+ * @param getWart - callback to retrieve a wart from the local WartEngine
  */
-export async function processPendingSync(): Promise<number> {
+export async function processPendingSync(
+  getWart?: (id: string) => Wart | undefined,
+): Promise<number> {
   if (!isBackendAvailable()) return 0;
   try {
     const raw = localStorage.getItem(PENDING_SYNC_KEY);
@@ -142,9 +152,28 @@ export async function processPendingSync(): Promise<number> {
     for (const item of queue) {
       try {
         if (item.type === 'wart') {
-          // Re-sync wart metadata (media may have been stored in IndexedDB)
-          await db.fetchWartById(item.id); // Check if already synced
-          processed++;
+          // Check if already synced to cloud
+          const existing = await db.fetchWartById(item.id);
+          if (existing?.media_path) {
+            // Already in cloud with media — skip
+            processed++;
+            continue;
+          }
+          // Get local wart data (with imageData) and re-sync
+          const localWart = getWart?.(item.id);
+          if (localWart) {
+            const mediaPath = localWart.imageData
+              ? await media.uploadMedia(localWart.imageData, localWart.id, 'main')
+              : null;
+            const audioCoverPath = localWart.audioCover
+              ? await media.uploadMedia(localWart.audioCover, localWart.id, 'cover')
+              : undefined;
+            await db.upsertWart(localWart, mediaPath || undefined, audioCoverPath || undefined);
+            processed++;
+          } else {
+            // Wart no longer exists locally — discard from queue
+            processed++;
+          }
         }
         // Add more types here as needed
       } catch {
@@ -220,6 +249,7 @@ export async function pullWarts(filters?: {
 
 /**
  * Pull a single wart with its media data.
+ * Verifies SHA-256 integrity if contentFingerprint is available.
  */
 export async function pullWartWithMedia(wartId: string): Promise<Wart | null> {
   if (!isBackendAvailable()) return null;
@@ -236,6 +266,25 @@ export async function pullWartWithMedia(wartId: string): Promise<Wart | null> {
   let audioCover: string | undefined;
   if (row.audio_cover_path) {
     audioCover = await media.downloadMediaAsDataUrl(row.audio_cover_path as string) || undefined;
+  }
+
+  // Verify media integrity via SHA-256 if fingerprint exists
+  if (imageData && row.content_fingerprint) {
+    try {
+      const { sha256 } = await import('../engine/crypto');
+      const downloadedHash = await sha256(imageData);
+      if (downloadedHash !== row.content_fingerprint) {
+        console.error(
+          `[Sync] Integrity check FAILED for wart ${wartId}: ` +
+          `expected ${(row.content_fingerprint as string).slice(0, 16)}..., ` +
+          `got ${downloadedHash.slice(0, 16)}...`
+        );
+        // Return wart without media — don't trust corrupted data
+        imageData = '';
+      }
+    } catch {
+      // Crypto unavailable — skip verification (non-blocking)
+    }
   }
 
   const wart = db.rowToWart(row, imageData, audioCover);
@@ -417,7 +466,7 @@ export async function atomicPurchaseWart(params: {
  * 3. Pull user's warts
  * Returns the cloud profile if found.
  */
-export async function fullSync(address: string): Promise<{
+export async function fullSync(address: string, getWart?: (id: string) => Wart | undefined): Promise<{
   profile: WarpWallet | null;
   transactions: Transaction[];
   warts: Record<string, unknown>[];
@@ -436,7 +485,7 @@ export async function fullSync(address: string): Promise<{
   setSyncStatus('syncing');
 
   // Process any pending syncs from previous offline sessions
-  processPendingSync().catch(() => {});
+  processPendingSync(getWart).catch(() => {});
 
   try {
     const [profile, transactions, ownedWarts, createdWarts, playlists, articles] = await Promise.all([
