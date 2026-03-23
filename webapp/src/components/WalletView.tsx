@@ -47,7 +47,7 @@ function WelcomeTutorial({ wallet, onNavigate, onSkip }: { wallet: { balance: nu
         <h2 className="text-title-md font-bold opacity-80 mb-2 font-title">{steps[step].title}</h2>
         {step === 0 && (
           <div className="text-body-sm opacity-50 mb-3">
-            <span className="opacity-80 font-bold">+{wallet.balance.toLocaleString()} {'\u2B23'}</span> airdrop received
+            <span className="opacity-80 font-bold">+{wallet.balance.toLocaleString()} {'\u2B23'}</span> reward coins received
           </div>
         )}
         <p className="text-base opacity-60 mb-6 leading-relaxed">{steps[step].desc}</p>
@@ -325,7 +325,7 @@ export default function WalletView() {
             color: '#000',
           }}
         >
-          100 premiers inscrits : 300 {'\u2B23'} offerts (30{'\u20AC'}) = 3 oeuvres gratuites !
+          First 100 signups: 2000 Strngrz Coins = 1 Exclusive Limited Edition artwork by Xerak!
         </div>
         <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
 
@@ -356,7 +356,7 @@ export default function WalletView() {
         {authTab === 'signup' ? (
           <div className="max-w-xs mx-auto space-y-3">
             <p className="text-base opacity-50 mb-1">
-              Create your wallet and receive 300 {'\u2B23'} airdrop (30{'\u20AC'}).
+              Create your wallet and receive 300 {'\u2B23'} reward coins. Collect artworks to earn more!
             </p>
 
             <div className="p-3 bg-current/5 border border-current/10 text-left">

@@ -494,7 +494,7 @@ export default function ProfileView({ onNavigate }: { onNavigate: (tab: string) 
           {/* Balance & Level */}
           <div className="flex gap-4 mt-2 items-center flex-wrap justify-center">
             <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'\u2B23'}</span>
-            <InfoTooltip text="Your STRNGRZ balance (\u2B23). Earn by mining, selling artworks, or receiving tips." />
+            <InfoTooltip text="Your Strngrz Coins (\u2B23). Reward tokens: 1 artwork collected = 100 STZ. At 2000 STZ (20 artworks), receive an exclusive limited edition artwork!" />
             <span className="text-body-sm opacity-60">|</span>
             <span className="text-base font-bold opacity-80">Lv.{wallet.level || 1}</span>
             <span className="text-label opacity-60">{wallet.levelName}</span>

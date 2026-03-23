@@ -282,7 +282,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mode avancé', 'advanced mode', 'crypto mode', 'token', 'strangrz coin', '⬣', 'afficher solde', 'show balance', 'mining visible'],
     response: {
-      answer: "Par défaut, Strangrz affiche les prix en euros et masque les mécanismes crypto pour offrir une expérience simple aux collectionneurs. Si tu veux accéder aux fonctionnalités avancées — voir ton solde en ⬣, miner des tokens, faire des transferts P2P, ou consulter les détails du protocole — active le « Mode avancé » dans Paramètres → Advanced Mode. Ça débloque : le Wallet dans la sidebar, les balances en tokens, le minage, et les outils crypto. Tu peux basculer à tout moment entre les deux modes.",
+      answer: "Par défaut, Strangrz affiche les prix en euros et masque les mécanismes crypto pour offrir une expérience simple aux collectionneurs. Si tu veux accéder aux fonctionnalités avancées — voir tes Strngrz Coins (⬣), miner des reward tokens, faire des transferts P2P, ou consulter les détails du protocole — active le « Mode avancé » dans Paramètres → Advanced Mode. Ça débloque : le Wallet dans la sidebar, les balances en Strngrz Coins, le minage, et les outils crypto. Rappel : les STZ sont des tokens de récompense, pas une monnaie. 1 œuvre achetée = 100 STZ, et à 2 000 STZ tu reçois une œuvre exclusive en airdrop !",
       navigateTo: 'settings',
       tabLabel: 'Paramètres → Advanced Mode',
     },
@@ -300,7 +300,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['barre sociale', 'social bar', 'coeur', 'heart', 'signet', 'bookmark', 'partager', 'share', 'repost', 'recosmo', 'hexagone', 'pourboire tip'],
     response: {
-      answer: "La barre sociale est présente partout — sous les posts du Mur, les cartes de la Marketplace, et les profils utilisateurs. Elle contient : ❤️ Tip (avec le compteur en Strangrz affiché sous forme X⬣), ↻ ReStrangrz (repost), ↑ Partager, et 🔖 Signet (bookmark). L'icône hexagone (⬣) représente la monnaie Strangrz. Quand tu tip un post, tu envoies 1⬣ au créateur — c'est un « like » qui a de la vraie valeur !",
+      answer: "La barre sociale est présente partout — sous les posts du Mur, les cartes de la Marketplace, et les profils utilisateurs. Elle contient : ❤️ Like, ↻ ReStrangrz (repost), ↑ Partager, et 🔖 Signet (bookmark). L'icône hexagone (⬣) représente les Strngrz Coins — des tokens de récompense pour les collectionneurs. Chaque œuvre collectionnée te rapporte 100 STZ !",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur',
     },
@@ -327,7 +327,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['stz', 'token', 'coin', 'strangrz coin', 'monnaie', 'currency', 'hexagone', '⬣', 'strngrz', 'tokenomics', 'supply', 'valeur', 'prix token', 'combien vaut'],
     response: {
-      answer: "Le Strangrz (⬣), ticker STZ, c'est le carburant cosmique de tout l'écosystème ! Supply fixe de 69 millions — pas un de plus, jamais. On le gagne en minant (preuve de calcul), et il sert à TOUT : certifier des objets rares, tipper sur le Mur, acheter sur la Marketplace, et payer les royalties. Valeur de référence : 1 STZ = 0,10 € (10 centimes). Les récompenses de minage suivent la Décroissance par Résonance — une courbe basée sur le nombre d'or (φ) qui diminue progressivement, sans halving brutal. Le minage démarre à 50 STZ par bloc et descend doucement. Répartition : 84 % pour le minage (58M), 14,5 % pour les airdrops (10M, dont 1 000 STZ offerts à chaque nouveau compte), et 1,5 % verrouillé pour le créateur (1M). Transactions ? Gratuites. Toujours. Zéro gas. Tu peux aussi acheter des STZ directement en euros via carte bancaire, PayPal ou virement SEPA. Le cosmos a sa propre monnaie, et elle est belle.",
+      answer: "Les Strngrz Coins (⬣, ticker STZ) sont des tokens de récompense — pas une monnaie ! Ils récompensent les collectionneurs : 1 œuvre achetée = 100 STZ. Quand tu atteins 2 000 STZ (soit 20 œuvres collectionnées), tu reçois en airdrop une œuvre digitale exclusive en série limitée, curatée par la plateforme. C'est le programme de fidélité ultime pour les collectionneurs d'art numérique. Tu peux aussi gagner des STZ en minant (preuve de calcul) et en restant actif (streak rewards). Les 100 premiers inscrits reçoivent 2 000 STZ = 1 œuvre exclusive Limited Edition par Xerak ! Supply fixe de 69 millions. Répartition : 84 % minage (58M), 14,5 % airdrops (10M), 1,5 % créateur (1M). Transactions toujours gratuites, zéro gas.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → Tokenomics',
     },
@@ -336,7 +336,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['strangrzid', 'cosmo id', 'identifiant', 'login', 'connexion', 'se connecter', 'sign in', 'sign up', 'inscription'],
     response: {
-      answer: "StrangrzID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit un airdrop de 1 000 ⬣ pour démarrer. Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
+      answer: "StrangrzID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit 300 Strngrz Coins (⬣) de bienvenue. Collectionne des œuvres pour en gagner plus — 100 STZ par œuvre ! Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille',
     },
@@ -354,7 +354,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['trading', 'trade', 'trader', 'acheter', 'vendre', 'opensea', 'portfolio', 'portefeuille trading', 'cours', 'prix', 'volume', 'classement', 'ranking', 'floor price', 'listing', 'delist', 'p&l', 'profit', 'perte'],
     response: {
-      answer: "Le Trading Floor, c'est ton OpenSea personnel — mais en mieux et sans gas fees ! Tu y trouves : (1) Vue d'ensemble du marché avec stats en temps réel — volume total, listings actifs, prix plancher, prix moyen. (2) Live Listings — toutes les œuvres en vente, triées par prix, date, popularité ou volume. (3) Activité — feed en temps réel de toutes les ventes, mints et transferts. (4) Collections — classement des collections par volume et floor price. (5) Portfolio — valeur totale de ta collection, P&L non réalisé, et gestion de tes listings. Le tout propulsé par STRNGRZ (⬣), LA monnaie des œuvres numériques. Zéro gas, zéro frais cachés. Va dans Gallery → Trading pour commencer !",
+      answer: "Le Trading Floor, c'est ton OpenSea personnel — mais en mieux et sans gas fees ! Tu y trouves : (1) Vue d'ensemble du marché avec stats en temps réel — volume total, listings actifs, prix plancher, prix moyen. (2) Live Listings — toutes les œuvres en vente, triées par prix, date, popularité ou volume. (3) Activité — feed en temps réel de toutes les ventes, mints et transferts. (4) Collections — classement des collections par volume et floor price. (5) Portfolio — valeur totale de ta collection, P&L non réalisé, et gestion de tes listings. Bonus : chaque œuvre achetée te rapporte 100 Strngrz Coins (⬣) ! À 2 000 STZ, tu reçois une œuvre exclusive en airdrop. Zéro gas, zéro frais cachés. Va dans Gallery → Trading pour commencer !",
       navigateTo: 'gallery',
       tabLabel: 'Gallery → Trading',
     },

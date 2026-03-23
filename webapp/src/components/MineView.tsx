@@ -115,7 +115,7 @@ export default function MineView() {
         setHistory(loadMiningHistory());
 
         if (levelUp) {
-          setLevelUpMsg(`${levelUp.levelDef.name}: ${levelUp.levelDef.title} (+${levelUp.airdropBonus} \u2B23 bonus)`);
+          setLevelUpMsg(`${levelUp.levelDef.name}: ${levelUp.levelDef.title} (+${levelUp.airdropBonus} \u2B23 reward coins bonus)`);
         }
 
         setPhase('result');

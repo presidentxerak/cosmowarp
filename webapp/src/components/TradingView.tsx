@@ -212,9 +212,9 @@ export default function TradingView() {
           <div>
             <h2 className="text-title-sm font-bold font-title opacity-95 flex items-center gap-2">
               Trading Floor
-              <InfoTooltip text="The Strangrz Trading Floor gives you a real-time view of all marketplace activity. Track prices, volume, collection rankings, and manage your portfolio — all powered by STRNGRZ (⬣), the native currency for digital art." />
+              <InfoTooltip text="The Strangrz Trading Floor gives you a real-time view of all marketplace activity. Track prices, volume, collection rankings, and manage your portfolio. Earn Strngrz Coins (\u2B23) as reward points for every artwork you collect!" />
             </h2>
-            <p className="text-body-sm opacity-60">Powered by STRNGRZ {'\u2B23'}</p>
+            <p className="text-body-sm opacity-60">Strngrz Coins {'\u2B23'} Rewards</p>
           </div>
         </div>
 

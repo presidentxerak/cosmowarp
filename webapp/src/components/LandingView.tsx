@@ -549,7 +549,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           color: '#000',
         }}
       >
-        First 100 signups: 30{'\u20AC'} credit = 3 free artworks!
+        First 100 signups: 2000 Strngrz Coins = 1 Exclusive Limited Edition artwork by Xerak!
       </div>
       <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
 

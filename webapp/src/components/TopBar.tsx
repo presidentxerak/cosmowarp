@@ -171,11 +171,16 @@ export default function TopBar({ onNavigate }: TopBarProps) {
           color: '#000',
         }}
       >
-        First 100 signups: 30{'\u20AC'} credit = 3 free artworks!
+        First 100 signups: 2000 Strngrz Coins = 1 Exclusive Limited Edition artwork by Xerak!
       </div>
       <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
       <div className="glass-panel">
       <div className="flex items-center gap-2 px-3 py-2 sm:px-[10px]">
+        {/* Logo */}
+        <div className="shrink-0 flex items-center gap-1.5">
+          <img src="/strangrz-logo-white.svg" alt="Strangrz" className="w-6 h-6" />
+          <span className="font-logo text-base font-bold tracking-wide hidden sm:inline" style={{ fontFamily: "'Hoodlrz', sans-serif" }}>Strangrz</span>
+        </div>
         {/* Search bar */}
         <div className="flex-1 relative" ref={containerRef}>
           <div className={`flex items-center gap-3 px-4 py-2 transition-all duration-200 ${
