@@ -7,7 +7,7 @@ export default function NotificationsView() {
 
   const typeIcon = (type: string) => {
     switch (type) {
-      case 'mine': return '\u26CF';
+      case 'mine': return '\u2B23';
       case 'send': return '\u2197';
       case 'genesis': return '\u2B21';
       default: return '\u25CE';
@@ -16,7 +16,7 @@ export default function NotificationsView() {
 
   const typeColor = (type: string) => {
     switch (type) {
-      case 'mine': return 'text-yellow-400 opacity-90';
+      case 'mine': return 'opacity-80';
       case 'send': return 'text-blue-400 opacity-90';
       case 'receive': return 'text-green-400 opacity-90';
       case 'genesis': return 'text-purple-400 opacity-90';
@@ -87,7 +87,7 @@ export default function NotificationsView() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-body-sm font-bold opacity-90">
-                      {tx.type === 'mine' ? 'Mining Reward' :
+                      {tx.type === 'mine' ? 'Récompense' :
                        tx.type === 'genesis' ? 'Genesis' :
                        tx.type === 'send' ? 'Transfer' : tx.type}
                     </span>

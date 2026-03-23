@@ -118,7 +118,7 @@ function OverviewSection() {
         {[
           ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
           ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Strangrz génère un certificat STCERT infalsifiable (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte numérique et signature cryptographique.'],
-          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Strangrz certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Strangrz (⬣).'],
+          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des oeuvres certifiées ou mettez les vôtres en vente. Paiement par carte bancaire, Apple Pay, Google Pay ou en Ethereum.'],
           ['4', 'Collectionnez en confiance', 'Chaque Strangrz a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 p-3 rounded-none bg-current/5">
@@ -134,9 +134,9 @@ function OverviewSection() {
       <H3>Pourquoi Strangrz ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Strangrz, vérifier un certificat : tout est gratuit.'],
+          ['✓', 'Zéro frais', 'Certifier un objet et vérifier un certificat : tout est gratuit.'],
           ['✓', 'Infalsifiable', 'Les certificats STCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
-          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Strangrz (⬣). Pas besoin d\u2019exchange crypto."],
+          ['✓', 'Paiement simple', "Carte bancaire, Apple Pay, Google Pay ou Ethereum. Simple et direct."],
           ['✓', 'Décentralisé', "Vos données vous appartiennent. Pas d\u2019intermédiaire, pas de banque."],
           ['✓', 'Hors ligne', "L\u2019app fonctionne même sans internet grâce au mode PWA."],
         ].map(([icon, title, desc]) => (
@@ -307,27 +307,21 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (⬣)" subtitle="La monnaie de l'écosystème Strangrz" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (⬣)" subtitle="Le jeton de récompense de l'écosystème" />
       <P>
-        Le <span className="opacity-80 font-bold">Strangrz (⬣)</span> est la monnaie native de Strangrz.
-        Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
-        Aucun Strangrz supplémentaire ne sera jamais créé.
+        Le <span className="opacity-80 font-bold">Strangrz (⬣ STZ)</span> est un jeton de récompense interne à la plateforme.
+        Il récompense les collectionneurs actifs et permet de débloquer des avantages exclusifs.
+        Les achats et ventes d'oeuvres se font en <span className="opacity-80 font-bold">euros</span> (carte, Apple Pay, Google Pay)
+        ou en <span className="opacity-80 font-bold">Ethereum (ETH)</span>.
       </P>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <Stat label="Offre totale" value="69M ⬣" />
-        <Stat label="Minage" value="60%" />
-        <Stat label="Fondation" value="20%" />
-        <Stat label="Communauté" value="20%" />
-      </div>
-
-      <H3>Comment obtenir des Strangrz ?</H3>
+      <H3>Comment gagner des STZ ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          [<svg key="mine" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Strangrz. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
-          [<svg key="buy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Acheter', "Achetez des Strangrz directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
-          [<svg key="sell" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 'Vendre des Strangrz', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Strangrz.'],
-          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrops', 'Des Strangrz sont distribués gratuitement à la communauté active.'],
+          [<svg key="collect" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>, 'Collectionner', "Chaque oeuvre achetée vous rapporte 100 STZ automatiquement."],
+          [<svg key="welcome" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg>, 'Bienvenue', "300 STZ offerts à la création de votre compte."],
+          [<svg key="streak" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>, 'Streaks', "Restez actif chaque jour pour accumuler des bonus de streak."],
+          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrop exclusif', "À 2 000 STZ (20 oeuvres), recevez une oeuvre digitale exclusive en série limitée !"],
         ].map(([icon, title, desc]) => (
           <div key={title as string} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="opacity-60 shrink-0 mt-0.5">{icon}</span>
@@ -339,18 +333,17 @@ function TokenomicsSection() {
         ))}
       </div>
 
-      <H3>Décroissance Résonante</H3>
+      <H3>Acheter et vendre des oeuvres</H3>
       <P>
-        Au lieu du "halving" brutal du Bitcoin (récompense divisée par 2 tous les 4 ans), Strangrz
-        utilise une courbe douce basée sur le <span className="opacity-80 font-bold">nombre d'or (φ = 1.618)</span>.
-        Les premiers mineurs sont récompensés généreusement, mais la récompense ne s'effondre jamais
-        brutalement. La transition est fluide et prévisible.
+        Toutes les transactions d'achat et de vente d'oeuvres se font en <span className="opacity-80 font-bold">euros (€)</span> via
+        carte bancaire, Apple Pay ou Google Pay, ou en <span className="opacity-80 font-bold">Ethereum (ETH)</span>.
+        Les vendeurs reçoivent leurs paiements directement sur leur compte bancaire via Stripe.
+        Le protocole Strangrz gère les certificats d'authenticité (STCERT) en arrière-plan.
       </P>
 
       <H3>Zéro frais réseau</H3>
       <P>
-        Envoyer des Strangrz, certifier un objet, vérifier un certificat : aucun frais de réseau (gas).
-        Le réseau se finance par la récompense de minage, pas par les frais de transaction réseau.
+        Certifier un objet, vérifier un certificat : aucun frais de réseau (gas) sur le protocole Strangrz.
       </P>
       <P>
         <span className="opacity-80 font-bold">Frais plateforme Marketplace :</span> Lors d'un achat sur la Marketplace,
@@ -370,13 +363,13 @@ function HierarchySection() {
       <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>} title="Niveaux" subtitle="Plus vous utilisez Strangrz, plus vous êtes récompensé" />
       <P>
         Strangrz récompense l'engagement avec un système de <span className="opacity-80 font-bold">7 niveaux</span>.
-        Plus vous certifiez, échangez et minez, plus vous montez et plus vos récompenses augmentent.
+        Plus vous certifiez, échangez et collectionnez, plus vous montez et plus vos récompenses augmentent.
       </P>
 
       <div className="space-y-2 mb-4">
         {[
           ['Particle', '×1.0', 'Niveau de départ. Accès à toutes les fonctionnalités.'],
-          ['Wave', '×1.2', '+20% sur les récompenses de minage.'],
+          ['Wave', '×1.2', '+20% sur les récompenses STZ.'],
           ['Star', '×1.5', 'Fonctionnalités avancées du Mur.'],
           ['Nebula', '×2.0', 'Double récompense sur les certifications.'],
           ['Galaxy', '×3.0', 'Droit de vote sur le protocole.'],
@@ -395,8 +388,8 @@ function HierarchySection() {
 
       <H3>Comment monter ?</H3>
       <P>
-        La progression est basée sur votre activité réelle : certifications créées, transactions effectuées,
-        participation au minage. Il n'est pas possible d'acheter un niveau — seule l'utilisation réelle compte.
+        La progression est basée sur votre activité réelle : certifications créées, oeuvres collectionnées,
+        publications sur le Mur. Il n'est pas possible d'acheter un niveau — seule l'utilisation réelle compte.
       </P>
 
       <H3>Bonus de série</H3>

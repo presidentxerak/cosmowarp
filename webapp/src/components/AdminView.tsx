@@ -119,7 +119,7 @@ export default function AdminView() {
               <span className="opacity-60 ml-1">{supplyInfo.creatorLocked.toLocaleString()}</span>
             </div>
             <div>
-              <span className="opacity-60">Mining Pool:</span>
+              <span className="opacity-60">Reward Pool:</span>
               <span className="opacity-80 ml-1">{supplyInfo.miningPoolRemaining.toLocaleString()}</span>
             </div>
             <div>

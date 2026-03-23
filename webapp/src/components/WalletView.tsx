@@ -7,14 +7,14 @@ import { HIERARCHY_LEVELS } from '../engine/hierarchy';
 import { setup2FA, enable2FA, disable2FA, is2FAEnabled } from '../engine/totp';
 import { SocialEngine } from '../engine/social';
 import { isAliasTakenCloud } from '../lib/supabase-db';
-import MineView from './MineView';
+// MineView removed — mining disabled
 import FiatGatewayView from './FiatGatewayView';
 import Logo from './Logo';
 import HexAvatar from './HexAvatar';
 import InfoTooltip from './InfoTooltip';
 import { copyToClipboard } from '../lib/clipboard';
 
-type WalletTab = 'overview' | 'send' | 'mine' | 'payment' | 'ethereum';
+type WalletTab = 'overview' | 'payment' | 'ethereum';
 type AuthTab = 'signup' | 'signin';
 type SignInMethod = 'strangrzid' | 'strangrzlink' | 'file';
 
@@ -119,10 +119,10 @@ function WelcomeTutorial({ wallet, onNavigate, onSkip }: { wallet: { balance: nu
 export default function WalletView() {
   const {
     wallet, unlocked, needsMigration,
-    meshStats, supplyInfo, levelProgress,
+    meshStats, levelProgress,
     strangrzIDLogin, verify2FACode, pending2FA,
     showRecoveryReminder, dismissRecoveryReminder,
-    unlock, lock, signOut, migrate, send,
+    unlock, lock, signOut, migrate,
     doExportWallet, doImportWallet, doImportStrangrzLink,
     generateRecoveryKit,
   } = useWallet();
@@ -171,12 +171,6 @@ export default function WalletView() {
   // Wallet sub-tabs
   const [walletTab, setWalletTab] = useState<WalletTab>('overview');
 
-  // Send state
-  const [sendTo, setSendTo] = useState('');
-  const [sendAmount, setSendAmount] = useState('');
-  const [sendMemo, setSendMemo] = useState('');
-  const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [sending, setSending] = useState(false);
 
   // Mine tab now uses MineView component directly
 
@@ -664,29 +658,6 @@ export default function WalletView() {
     URL.revokeObjectURL(url);
   };
 
-  // ─── Send handler ──────────────────────────────────────
-  const handleSend = async () => {
-    const addr = sendTo.trim();
-    if (!addr.startsWith('STZ') || addr.length < 10) {
-      setSendResult({ success: false, message: 'Invalid address — must start with STZ' }); return;
-    }
-    if (addr === wallet.address) {
-      setSendResult({ success: false, message: 'Cannot send to yourself' }); return;
-    }
-    const amt = parseFloat(sendAmount);
-    if (isNaN(amt) || amt <= 0) { setSendResult({ success: false, message: 'Invalid amount' }); return; }
-    if (amt > wallet.balance) { setSendResult({ success: false, message: 'Insufficient balance' }); return; }
-    setSending(true);
-    try {
-      const res = await send(sendTo.trim(), amt, sendMemo || undefined);
-      if (res.success) { setSendResult({ success: true, message: `Sent ${amt} \u2B23 via StrangrzMesh DAG!` }); setSendTo(''); setSendAmount(''); setSendMemo(''); }
-      else setSendResult({ success: false, message: res.error || 'Transaction failed' });
-    } catch (err) { setSendResult({ success: false, message: err instanceof Error ? err.message : 'Transaction failed' }); }
-    finally { setSending(false); }
-    setTimeout(() => setSendResult(null), 4000);
-  };
-
-  // Mine handler is now in MineView component
 
   // ─── Unlocked wallet: Full view ────────────────────────
   const recentTxs = wallet.transactions.slice(0, 8);
@@ -695,16 +666,12 @@ export default function WalletView() {
 
   const subTabIcons: Record<WalletTab, ReactNode> = {
     overview: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
-    send: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>,
-    mine: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
     payment: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M15 9.354a4 4 0 0 0-2.764-1.354C10.448 7.89 9 9.005 9 10.5c0 1.38 1.12 2.5 3.236 2.5C14.12 13 16 14.12 16 15.5c0 1.495-1.448 2.61-3.236 2.5A4 4 0 0 1 10 16.646" /><line x1="12" y1="6" x2="12" y2="8" /><line x1="12" y1="18" x2="12" y2="20" /></svg>,
     ethereum: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L4 12l8 5 8-5L12 2z" /><path d="M4 12l8 10 8-10-8 5-8-5z" /></svg>,
   };
   const subTabs: { id: WalletTab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'send', label: 'Send' },
-    { id: 'mine', label: 'Mine' },
-    { id: 'payment', label: 'Strangrz Coin' },
+    { id: 'payment', label: 'Paiement' },
     { id: 'ethereum', label: 'Ethereum' },
   ];
 
@@ -958,33 +925,9 @@ export default function WalletView() {
           {/* Stats Grid (simplified) */}
           <div className="grid grid-cols-3 gap-2">
             <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.transactions.length}</p><p className="text-label opacity-50">TXs</p></div>
-            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.transactions.filter(t => t.type === 'mine').length}</p><p className="text-label opacity-50">MINED</p></div>
+            <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.balance.toLocaleString()}</p><p className="text-label opacity-50">STZ</p></div>
             <div className="glass-panel p-3 text-center"><p className="text-title-sm font-bold opacity-90">{wallet.streakDays}</p><p className="text-label opacity-50">STREAK</p></div>
           </div>
-
-          {/* Tokenomics (simplified) */}
-          {supplyInfo && (
-            <div className="glass-panel p-5">
-              <h3 className="text-title-sm font-bold font-title mb-3 flex items-center gap-2">
-                Tokenomics
-                <InfoTooltip text={`Epoch ${supplyInfo.currentEpoch} — Mined ${supplyInfo.percentMined.toFixed(2)}% — Burned ${supplyInfo.burned.toLocaleString()} ⬣`} />
-              </h3>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-current/5 p-3">
-                  <p className="text-label opacity-50">SUPPLY</p>
-                  <p className="text-body-lg font-bold opacity-90">{(supplyInfo.circulating / 1000).toFixed(0)}K</p>
-                </div>
-                <div className="bg-current/5 p-3">
-                  <p className="text-label opacity-50">REWARD</p>
-                  <p className="text-body-lg font-bold opacity-90">{supplyInfo.currentReward.toFixed(2)}</p>
-                </div>
-                <div className="bg-current/5 p-3">
-                  <p className="text-label opacity-50">MINED</p>
-                  <p className="text-body-lg font-bold opacity-90">{supplyInfo.percentMined.toFixed(1)}%</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Mesh Stats (simplified) */}
           {meshStats && (
@@ -1019,13 +962,8 @@ export default function WalletView() {
               <div className="space-y-2">
                 {recentTxs.map(tx => (
                   <div key={tx.id} className="flex items-center gap-3 p-2 rounded-none bg-current/5 text-body-sm">
-                    <span className={`text-base ${
-                      tx.type === 'mine' ? 'opacity-80' : tx.type === 'send' ? 'opacity-80' :
-                      tx.type === 'genesis' || tx.type === 'airdrop' ? 'opacity-80' : tx.type === 'level_up' ? 'opacity-60' :
-                      tx.type === 'wart_mint' ? 'opacity-80' : tx.type === 'wart_buy' ? 'opacity-80' :
-                      tx.type === 'wart_transfer' ? 'opacity-80' : 'opacity-80'
-                    }`}>
-                      {tx.type === 'mine' ? '\u26CF' : tx.type === 'send' ? '\u2197' :
+                    <span className="text-base opacity-80">
+                      {tx.type === 'mine' ? '\u2B23' : tx.type === 'send' ? '\u2197' :
                        tx.type === 'genesis' || tx.type === 'airdrop' ? '\u2B21' : tx.type === 'level_up' ? '\u2605' :
                        tx.type === 'wart_mint' ? '\u2742' : tx.type === 'wart_buy' ? '\u2B22' :
                        tx.type === 'wart_transfer' ? '\u21C4' : '\u2199'}
@@ -1033,7 +971,7 @@ export default function WalletView() {
                     <div className="flex-1 min-w-0">
                       <p className="opacity-70 truncate">
                         {(tx.memo || (tx.type === 'genesis' || tx.type === 'airdrop' ? 'Airdrop' :
-                          tx.type === 'mine' ? 'Mining Reward' : tx.type === 'level_up' ? 'Level Up Bonus' :
+                          tx.type === 'mine' ? 'Récompense' : tx.type === 'level_up' ? 'Level Up Bonus' :
                           tx.type === 'streak_reward' ? 'Streak Reward' : tx.type === 'send' ? `To ${shortAddress(tx.to)}` :
                           `From ${shortAddress(tx.from)}`)).replace(/Cosmorare/gi, 'Strangrz')}
                       </p>
@@ -1052,63 +990,6 @@ export default function WalletView() {
           </div>
         </>
       )}
-
-      {/* ─── Send Tab ────────────────────────────────────── */}
-      {walletTab === 'send' && (
-        <>
-          <div className="glass-panel p-5">
-            <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title flex items-center gap-2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-              Envoyer des Strangrz
-            </h2>
-            <p className="text-body-sm opacity-60 mb-4">
-              Balance: <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u2B23'}</span>
-              <span className="opacity-50 ml-2">Ed25519 signed + DAG validated</span>
-            </p>
-            <div className="space-y-3 max-w-md mx-auto">
-              <div>
-                <label className="text-label opacity-50 block mb-1">RECIPIENT ADDRESS</label>
-                <input className="warp-input" placeholder="STZ..." value={sendTo} onChange={e => setSendTo(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-label opacity-50 block mb-1">AMOUNT ({'\u2B23'})</label>
-                <div className="flex gap-2">
-                  <input className="warp-input" type="number" placeholder="0" min="0" step="0.1" value={sendAmount} onChange={e => setSendAmount(e.target.value)} />
-                  <button className="warp-button text-body-sm shrink-0" onClick={() => setSendAmount(wallet.balance.toString())}>MAX</button>
-                </div>
-              </div>
-              <div>
-                <label className="text-label opacity-50 block mb-1">MEMO (optional)</label>
-                <input className="warp-input" placeholder="What's this for?" value={sendMemo} onChange={e => setSendMemo(e.target.value)} />
-              </div>
-              {sendResult && (
-                <div className={`text-base p-3 rounded-none ${sendResult.success ? 'bg-current/5 border border-current/10 opacity-80' : 'bg-current/5 border border-current/15 opacity-70'}`}>
-                  {sendResult.message}
-                </div>
-              )}
-              <button className="warp-button w-full py-3 text-base" onClick={handleSend} disabled={!sendTo || !sendAmount || sending}>
-                {sending ? <span className="flex items-center justify-center gap-2"><Spinner />Signing & Validating...</span> : (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                    Send Transaction
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-          <div className="glass-panel p-4">
-            <p className="text-label opacity-60 mb-2">QUICK AMOUNTS</p>
-            <div className="flex gap-2 flex-wrap">
-              {[10, 25, 50, 100].map(a => (
-                <button key={a} className="warp-button text-body-sm" onClick={() => setSendAmount(a.toString())} disabled={a > wallet.balance}>{a} {'\u2B23'}</button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ─── Mine Tab ────────────────────────────────────── */}
-      {walletTab === 'mine' && <MineView />}
 
       {/* ─── Payment Tab ─────────────────────────────────── */}
       {walletTab === 'payment' && <FiatGatewayView />}

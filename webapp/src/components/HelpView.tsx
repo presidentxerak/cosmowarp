@@ -95,7 +95,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['feed', 'transaction', 'transactions', 'history', 'historique', 'activity', 'activité'],
     response: {
-      answer: "Le Feed, c'est là où tu observes le pouls cosmique de Strangrz. Chaque transaction — envois, minages, certifications de Strangrz, achats — apparaît ici en temps réel avec le fuseau horaire français (parce que Paris est le centre de l'univers, évidemment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
+      answer: "Le Feed, c'est là où tu observes le pouls cosmique de Strangrz. Chaque transaction — certifications, achats, ventes — apparaît ici en temps réel avec le fuseau horaire français (parce que Paris est le centre de l'univers, évidemment). C'est comme regarder la matrice, mais en plus joli et avec plus de lettres grecques.",
       navigateTo: 'feed',
       tabLabel: 'Feed',
     },
@@ -194,7 +194,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['level', 'niveau', 'rank', 'rang', 'particle', 'wave', 'star', 'nebula', 'galaxy', 'cosmos', 'lumina', 'hierarchy', 'hiérarchie'],
     response: {
-      answer: "Ton voyage cosmique comporte 7 niveaux : Particle → Wave → Star → Nebula → Galaxy → Cosmos → Lumina. Chaque niveau te donne des multiplicateurs de minage plus élevés (jusqu'à 5x !) et des bonus de montée de niveau. C'est basé sur le nombre de transactions, pas l'argent — donc la régularité bat la richesse. Le dernier niveau, Lumina, signifie que tu as transcendé. Tu ES littéralement la lumière. Pas de pression.",
+      answer: "Ton voyage cosmique comporte 7 niveaux : Particle → Wave → Star → Nebula → Galaxy → Cosmos → Lumina. Chaque niveau te donne des bonus de récompenses plus élevés et des avantages exclusifs. C'est basé sur ton activité (achats, publications, streak), pas l'argent — donc la régularité bat la richesse. Le dernier niveau, Lumina, signifie que tu as transcendé. Tu ES littéralement la lumière. Pas de pression.",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → Hiérarchie',
     },
@@ -282,7 +282,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['mode avancé', 'advanced mode', 'crypto mode', 'token', 'strangrz coin', '⬣', 'afficher solde', 'show balance', 'mining visible'],
     response: {
-      answer: "Par défaut, Strangrz affiche les prix en euros et masque les mécanismes crypto pour offrir une expérience simple aux collectionneurs. Si tu veux accéder aux fonctionnalités avancées — voir tes Strngrz Coins (⬣), miner des reward tokens, faire des transferts P2P, ou consulter les détails du protocole — active le « Mode avancé » dans Paramètres → Advanced Mode. Ça débloque : le Wallet dans la sidebar, les balances en Strngrz Coins, le minage, et les outils crypto. Rappel : les STZ sont des tokens de récompense, pas une monnaie. 1 œuvre achetée = 100 STZ, et à 2 000 STZ tu reçois une œuvre exclusive en airdrop !",
+      answer: "Par défaut, Strangrz affiche les prix en euros et masque les mécanismes crypto pour offrir une expérience simple aux collectionneurs. Si tu veux accéder aux fonctionnalités avancées — voir tes Strngrz Coins (⬣), consulter les détails du protocole, ou gérer ton wallet Ethereum — active le « Mode avancé » dans Paramètres → Advanced Mode. Rappel : les STZ sont des tokens de récompense, pas une monnaie. 1 œuvre achetée = 100 STZ, et à 2 000 STZ tu reçois une œuvre exclusive en airdrop !",
       navigateTo: 'settings',
       tabLabel: 'Paramètres → Advanced Mode',
     },
@@ -291,7 +291,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['profil', 'profile', 'adresse', 'address', 'copier', 'copy', 'utilisateur', 'user', 'pseudo', 'alias', 'nom'],
     response: {
-      answer: "Chaque utilisateur a un profil avec son pseudo, sa bio, ses liens sociaux (site web, Instagram, X) et ses statistiques. Tu peux visiter le profil d'un créateur en cliquant sur son nom dans la Marketplace ou le Mur. Sur chaque profil, tu peux copier l'adresse Strangrz en cliquant dessus — pratique pour envoyer des Strangrz ! Tu verras aussi ses créations, sa collection et ses posts.",
+      answer: "Chaque utilisateur a un profil avec son pseudo, sa bio, ses liens sociaux (site web, Instagram, X) et ses statistiques. Tu peux visiter le profil d'un créateur en cliquant sur son nom dans la Marketplace ou le Mur. Tu verras ses créations, sa collection et ses posts.",
       navigateTo: 'cosmochat',
       tabLabel: 'Mur → Profil',
     },
@@ -327,7 +327,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['stz', 'token', 'coin', 'strangrz coin', 'monnaie', 'currency', 'hexagone', '⬣', 'strngrz', 'tokenomics', 'supply', 'valeur', 'prix token', 'combien vaut'],
     response: {
-      answer: "Les Strngrz Coins (⬣, ticker STZ) sont des tokens de récompense — pas une monnaie ! Ils récompensent les collectionneurs : 1 œuvre achetée = 100 STZ. Quand tu atteins 2 000 STZ (soit 20 œuvres collectionnées), tu reçois en airdrop une œuvre digitale exclusive en série limitée, curatée par la plateforme. C'est le programme de fidélité ultime pour les collectionneurs d'art numérique. Tu peux aussi gagner des STZ en minant (preuve de calcul) et en restant actif (streak rewards). Les 100 premiers inscrits reçoivent 2 000 STZ = 1 œuvre exclusive Limited Edition par Xerak ! Supply fixe de 69 millions. Répartition : 84 % minage (58M), 14,5 % airdrops (10M), 1,5 % créateur (1M). Transactions toujours gratuites, zéro gas.",
+      answer: "Les Strngrz Coins (⬣, ticker STZ) sont des jetons de récompense — pas une monnaie ! Ils récompensent les collectionneurs : 1 œuvre achetée = 100 STZ. Quand tu atteins 2 000 STZ (soit 20 œuvres collectionnées), tu reçois en airdrop une œuvre digitale exclusive en série limitée, curatée par la plateforme. C'est le programme de fidélité ultime pour les collectionneurs d'art numérique. Tu gagnes des STZ automatiquement en collectionnant des œuvres et en restant actif (bonus de streak). Les 100 premiers inscrits reçoivent 2 000 STZ = 1 œuvre exclusive Limited Edition par Xerak !",
       navigateTo: 'whitepaper',
       tabLabel: 'Livre Blanc → Tokenomics',
     },
@@ -336,7 +336,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['strangrzid', 'cosmo id', 'identifiant', 'login', 'connexion', 'se connecter', 'sign in', 'sign up', 'inscription'],
     response: {
-      answer: "StrangrzID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit 300 Strngrz Coins (⬣) de bienvenue. Collectionne des œuvres pour en gagner plus — 100 STZ par œuvre ! Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit !",
+      answer: "StrangrzID est ton identifiant unique sur Strangrz. Il dérive un portefeuille déterministe à partir de ton nom d'utilisateur + mot de passe grâce à la cryptographie Ed25519 et PBKDF2. Même identifiants = même portefeuille, sur n'importe quel appareil. Pas d'email, pas de numéro de téléphone — juste un pseudo et un mot de passe. Chaque nouveau compte reçoit 300 Strngrz Coins (⬣) de bienvenue. Collectionne des œuvres pour en gagner plus — 100 STZ par œuvre ! Conseil : choisis un mot de passe FORT — il n'y a pas de récupération possible sans Recovery Kit.",
       navigateTo: 'wallet',
       tabLabel: 'Portefeuille',
     },
@@ -363,7 +363,7 @@ const KNOWLEDGE_BASE: KnowledgeEntry[] = [
   {
     keywords: ['level', 'niveau', 'particle', 'wave', 'atom', 'molecule', 'star', 'galaxy', 'universe', 'lv', 'lv.1', 'hiérarchie', 'hierarchy', 'rang', 'rank'],
     response: {
-      answer: "Le système de niveaux Strangrz suit les 7 couches cosmiques : Lv.1 Particle (débutant), Lv.2 Wave (voyageur harmonique), Lv.3 Atom (noyau stable), Lv.4 Molecule (structure complexe), Lv.5 Star (luminaire), Lv.6 Galaxy (constellation), Lv.7 Universe (transcendance). Tu progresses en faisant des transactions et en restant actif. Chaque niveau débloque un multiplicateur de minage plus élevé et des bonus d'airdrop. Particle c'est le début du voyage — tout le monde commence là !",
+      answer: "Le système de niveaux Strangrz suit les 7 couches cosmiques : Lv.1 Particle (débutant), Lv.2 Wave (voyageur harmonique), Lv.3 Atom (noyau stable), Lv.4 Molecule (structure complexe), Lv.5 Star (luminaire), Lv.6 Galaxy (constellation), Lv.7 Universe (transcendance). Tu progresses en collectionnant des oeuvres et en restant actif. Chaque niveau débloque des bonus de récompenses plus élevés. Particle c'est le début du voyage — tout le monde commence là !",
       navigateTo: 'profile',
       tabLabel: 'Profil',
     },
@@ -413,7 +413,6 @@ interface ChatMsg {
 const FAQ_ICONS: Record<string, ReactNode> = {
   'Pour commencer': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" /></svg>,
   'Publier & Vendre': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
-  'Minage & Strangrz': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
   'Galerie & Oeuvres': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Marketplace (Strangrz)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>,
   'Le Mur (Réseau social)': <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>,
@@ -441,7 +440,7 @@ const FAQ_SECTIONS = [
   },
   {
     title: 'Publier & Vendre',
-    icon: 'Minage & Strangrz',
+    icon: 'Publier & Vendre',
     items: [
       { q: `Comment publier une oeuvre ?`, a: `Va dans la Galerie et clique sur « + Créer ». Uploade ton média (image, vidéo, musique), ajoute un titre, une description et un prix en euros. Publie et c'est en ligne !` },
       { q: `Comment fixer le prix ?`, a: `Le prix minimum est de 10€ par oeuvre. Fixe ton prix en euros — les acheteurs paient par carte bancaire, et tu reçois tes euros directement.` },

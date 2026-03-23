@@ -12,13 +12,13 @@ interface Message {
 const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { label: string; tab: string } }[] = [
   {
     keywords: ['wallet', 'portefeuille', 'balance', 'solde', 'compte'],
-    response: 'Votre wallet est le coeur de Strangrz ! Il stocke vos tokens Strangrz et gère votre identité sur le réseau. Vous pouvez envoyer, recevoir, et miner des Strangrz. Vous voulez accéder à votre wallet ?',
+    response: 'Votre wallet est le coeur de Strangrz ! Il gère votre identité sur le réseau et vos récompenses STZ. Achetez et vendez des oeuvres en euros ou en Ethereum. Vous voulez accéder à votre wallet ?',
     suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
   },
   {
     keywords: ['mine', 'mining', 'miner', 'minage'],
-    response: 'Le minage sur Strangrz utilise un système de preuve de calcul avec 3 niveaux de difficulté : Léger, Crypto et Minage profond. Chaque minage réussi vous récompense en Strangrz (⬣). La récompense diminue progressivement selon le nombre d\'or.',
-    suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
+    response: 'Le minage n\'est plus disponible sur Strangrz. Les STZ sont désormais des jetons de récompense que vous gagnez automatiquement en collectionnant des oeuvres (100 STZ par oeuvre). Concentrez-vous sur la galerie pour acheter et vendre en euros ou Ethereum !',
+    suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {
     keywords: ['wart', 'strangrz', 'art', 'gallery', 'marketplace', 'objet', 'rare', 'certificat', 'certifier'],
@@ -27,8 +27,8 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['send', 'transfer', 'envoyer'],
-    response: 'Vous pouvez envoyer des Strangrz à n\'importe quelle adresse Strangrz. Les transactions passent par le réseau StrangrzMesh DAG avec 7 couches de validation. Instantané et gratuit !',
-    suggestion: { label: 'Ouvrir le Wallet', tab: 'wallet' },
+    response: 'Les STZ sont des jetons de récompense et ne peuvent pas être envoyés entre utilisateurs. Pour acheter ou vendre des oeuvres, utilisez la galerie ! Les paiements se font en euros (carte, Apple Pay, Google Pay) ou en Ethereum.',
+    suggestion: { label: 'Ouvrir la Galerie', tab: 'gallery' },
   },
   {
     keywords: ['strangrmesh', 'mesh', 'dag', 'network', 'reseau', 'réseau'],
@@ -37,17 +37,17 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['help', 'aide', 'how', 'comment'],
-    response: 'Je suis là pour vous guider dans Strangrz ! Posez-moi des questions sur les wallets, le minage, les certificats, le paiement ou le réseau. Vous pouvez aussi me demander de générer une image AI !',
+    response: 'Je suis là pour vous guider dans Strangrz ! Posez-moi des questions sur les wallets, les certificats, le paiement ou le réseau. Vous pouvez aussi me demander de générer une image AI !',
     suggestion: { label: 'Ouvrir l\'Aide', tab: 'help' },
   },
   {
     keywords: ['wall', 'post', 'social', 'feed', 'chat', 'mur'],
-    response: 'Le Mur est le réseau social décentralisé de Strangrz. Partagez du texte, des objets certifiés, et tippez les publications avec des Strangrz. Toutes les conversations sont chiffrées et anonymes.',
+    response: 'Le Mur est le réseau social décentralisé de Strangrz. Partagez du texte, des objets certifiés, et interagissez avec la communauté. Toutes les conversations sont chiffrées et anonymes.',
     suggestion: { label: 'Ouvrir le Mur', tab: 'wall' },
   },
   {
     keywords: ['hello', 'hi', 'bonjour', 'salut', 'hey'],
-    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz. Je peux vous expliquer comment certifier un objet rare, miner des Strangrz, utiliser le paiement, ou générer une oeuvre d\'art AI.',
+    response: 'Bonjour ! Je suis Doctor Strangrz, votre guide dans l\'univers Strangrz. Je peux vous expliquer comment certifier un objet rare, acheter et vendre des oeuvres, ou générer une oeuvre d\'art AI.',
   },
   {
     keywords: ['who', 'what are you', 'qui es tu', 'cosmo', 'c\'est quoi'],
@@ -55,12 +55,12 @@ const COSMO_RESPONSES: { keywords: string[]; response: string; suggestion?: { la
   },
   {
     keywords: ['token', 'warp', 'supply', 'tokenomics', 'stz', 'coin', 'monnaie', 'valeur', 'prix token', 'combien vaut', 'hexagone', '⬣'],
-    response: 'Le Strangrz (⬣), ticker STZ, est le token natif de Strangrz. Supply fixe : 69 millions. Valeur de référence : 1 STZ = 0,10 € (10 centimes). On le gagne par le minage (récompenses de 50 STZ/bloc qui diminuent via la Décroissance par Résonance basée sur le nombre d\'or φ), par airdrop (1 000 STZ pour chaque nouveau compte), ou par achat fiat (carte, PayPal, SEPA). Il sert à certifier des objets rares, tipper sur le Mur, acheter sur la Marketplace, et payer les royalties. Transactions : toujours gratuites, zéro gas !',
+    response: 'Le Strangrz (⬣ STZ) est un jeton de récompense interne à la plateforme. Vous en gagnez automatiquement : 300 STZ à l\'inscription, 100 STZ par oeuvre collectionnée, et des bonus de niveau. À 2 000 STZ, vous recevez un airdrop exclusif d\'une oeuvre rare ! Les achats et ventes d\'oeuvres se font en euros (carte, Apple Pay, Google Pay) ou en Ethereum.',
     suggestion: { label: 'Lire le White Paper', tab: 'whitepaper' },
   },
   {
     keywords: ['paiement', 'payment', 'payer', 'acheter', 'buy', 'euro', 'carte', 'card', 'paypal', 'fiat'],
-    response: 'Strangrz intègre une passerelle de paiement ! Achetez des Strangrz par carte bancaire, PayPal, virement SEPA, Apple Pay ou Google Pay. Vendez vos Strangrz contre des euros. Tout est intégré dans l\'app.',
+    response: 'Strangrz intègre une passerelle de paiement ! Achetez des oeuvres par carte bancaire, Apple Pay ou Google Pay en euros. Vous pouvez aussi payer en Ethereum. Les vendeurs reçoivent leurs paiements directement sur leur compte bancaire via Stripe.',
     suggestion: { label: 'Passerelle de paiement', tab: 'fiat-gateway' },
   },
   {

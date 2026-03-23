@@ -8,7 +8,7 @@ export default function FeedView() {
 
   const typeIcon = (type: string) => {
     switch (type) {
-      case 'mine': return '\u26CF';
+      case 'mine': return '\u2B23';
       case 'send': return '\u2197';
       case 'genesis': return '\u2B21';
       default: return '\u25CE';
@@ -64,7 +64,7 @@ export default function FeedView() {
       {globalTxs.length === 0 ? (
         <div className="glass-panel p-8 text-center">
           <Logo className="w-12 h-12 mx-auto mb-2" />
-          <p className="opacity-50 text-base">No transactions yet. Be the first to mine or send!</p>
+          <p className="opacity-50 text-base">No transactions yet.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -75,7 +75,7 @@ export default function FeedView() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-body-sm font-bold opacity-90">
-                      {tx.type === 'mine' ? 'Mining Reward' :
+                      {tx.type === 'mine' ? 'Récompense' :
                        tx.type === 'genesis' ? 'Genesis' :
                        tx.type === 'send' ? 'Transfer' : tx.type}
                     </span>

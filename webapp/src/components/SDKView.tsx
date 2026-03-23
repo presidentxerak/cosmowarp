@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type Tab = 'overview' | 'wallet' | 'crypto' | 'mining' | 'events' | 'extension';
+type Tab = 'overview' | 'wallet' | 'crypto' | 'rewards' | 'events' | 'extension';
 
 export default function SDKView() {
   const [tab, setTab] = useState<Tab>('overview');
@@ -9,7 +9,7 @@ export default function SDKView() {
     { id: 'overview', label: 'Overview' },
     { id: 'wallet', label: 'Wallet API' },
     { id: 'crypto', label: 'Crypto' },
-    { id: 'mining', label: 'Mining' },
+    { id: 'rewards', label: 'Rewards' },
     { id: 'events', label: 'Events' },
     { id: 'extension', label: 'Extension' },
   ];
@@ -27,7 +27,7 @@ export default function SDKView() {
         </div>
         <p className="text-base opacity-50">
           Build apps, extensions, and integrations on the Strangrz multi-chain ecosystem (Strangrz SZ-721 + Ethereum ERC-721).
-          The SDK provides wallet creation, cryptographic utilities, mining calculators,
+          The SDK provides wallet creation, cryptographic utilities, reward calculators,
           and an event system.
         </p>
       </div>
@@ -56,7 +56,7 @@ export default function SDKView() {
         {tab === 'overview' && <OverviewTab />}
         {tab === 'wallet' && <WalletTab />}
         {tab === 'crypto' && <CryptoTab />}
-        {tab === 'mining' && <MiningTab />}
+        {tab === 'rewards' && <MiningTab />}
         {tab === 'events' && <EventsTab />}
         {tab === 'extension' && <ExtensionTab />}
       </div>
@@ -121,8 +121,8 @@ console.log(info.layers);      // ['GRID', 'HELIX', ...]
 // Hash data
 const hash = await cosmo.hash('hello world');
 
-// Calculate mining reward
-const reward = cosmo.calculateReward(0); // 50 STZ
+// Calculate STZ reward
+const reward = cosmo.calculateReward(0);
 
 // Listen for events
 cosmo.on('balance_changed', (event) => {
@@ -217,10 +217,10 @@ console.log(keys.privateKey); // hex string`} />
 function MiningTab() {
   return (
     <div>
-      <h3 className="text-title-sm font-bold opacity-80 mb-3">Mining Calculator</h3>
+      <h3 className="text-title-sm font-bold opacity-80 mb-3">Reward Calculator</h3>
       <ApiMethod
         name="cosmo.calculateReward(totalMined)"
-        desc="Calculate the current mining reward based on total STZ already mined (Resonance Decay)."
+        desc="Calculate the current STZ reward based on collection activity."
         params={['totalMined: number']}
         returns="number (STZ reward)"
       />

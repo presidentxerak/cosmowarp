@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { sha256 } from '../engine/crypto';
-import { loadDifficultyState, hashMeetsDifficulty, countLeadingZeroBits, difficultyToTarget } from '../engine/miner';
+// Mining imports removed — mining disabled
 
 interface ConsoleLine {
   text: string;
@@ -57,9 +57,7 @@ export default function ConsoleView() {
 
     const text = allLines.join('\n');
     sha256(text).then(hash => {
-      const zeroBits = countLeadingZeroBits(hash);
       addLine(`SHA-256: ${hash}`, 'output');
-      addLine(`Leading zero bits: ${zeroBits}`, 'output');
     }).catch(err => {
       addLine(`\u2717 Error: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
     });
@@ -91,26 +89,16 @@ export default function ConsoleView() {
         const text = buffer.join('\n');
         setBuffer([]);
         sha256(text).then(hash => {
-          const zeroBits = countLeadingZeroBits(hash);
           addLine(`SHA-256: ${hash}`, 'output');
-          addLine(`Leading zero bits: ${zeroBits}`, 'output');
         });
         break;
       }
       case '/difficulty': {
-        const state = loadDifficultyState();
-        addLine(`Current difficulty: ${state.currentDifficulty} bits`, 'output');
-        addLine(`Blocks mined: ${state.blocksMined}`, 'output');
-        addLine(`Last block hash: ${state.lastBlockHash.slice(0, 32)}...`, 'output');
-        addLine(`Target block time: 15s`, 'info');
+        addLine('Mining has been disabled. STZ are now reward tokens only.', 'info');
         break;
       }
       case '/target': {
-        const st = loadDifficultyState();
-        const target = difficultyToTarget(st.currentDifficulty);
-        addLine(`Difficulty: ${st.currentDifficulty} bits`, 'output');
-        addLine(`Target: ${target.slice(0, 32)}...`, 'output');
-        addLine(`Hash must be <= target to be valid`, 'info');
+        addLine('Mining has been disabled. STZ are now reward tokens only.', 'info');
         break;
       }
       default:
@@ -119,12 +107,7 @@ export default function ConsoleView() {
           if (hash.length !== 64 || !/^[0-9a-f]+$/.test(hash)) {
             addLine('Usage: /check <64-char hex hash>', 'error');
           } else {
-            const st = loadDifficultyState();
-            const meets = hashMeetsDifficulty(hash, st.currentDifficulty);
-            const zeroBits = countLeadingZeroBits(hash);
             addLine(`Hash: ${hash}`, 'output');
-            addLine(`Leading zero bits: ${zeroBits} / ${st.currentDifficulty} required`, 'output');
-            addLine(meets ? '\u2713 Valid! Hash meets difficulty target.' : '\u2717 Invalid. Hash does not meet difficulty.', meets ? 'output' : 'error');
           }
         } else {
           addLine(`Unknown command: ${cmd}`, 'error');

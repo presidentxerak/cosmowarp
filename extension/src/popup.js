@@ -381,8 +381,8 @@ function renderWallet() {
   document.getElementById('w-progress-bar').style.width = progress + '%';
 
   document.getElementById('w-txs').textContent = wallet.transactions.length;
-  document.getElementById('w-mined').textContent = wallet.transactions.filter(t => t.type === 'mine').length;
-  document.getElementById('w-sent').textContent = wallet.transactions.filter(t => t.type === 'send').reduce((a, t) => a + t.amount, 0);
+  document.getElementById('w-mined').textContent = wallet.balance.toLocaleString();
+  document.getElementById('w-sent').textContent = wallet.transactions.length;
 
   // Transaction list — sanitized rendering
   const txList = document.getElementById('w-txlist');
@@ -395,9 +395,9 @@ function renderWallet() {
   } else {
     txEmpty.classList.add('hidden');
     for (const tx of recentTxs) {
-      const icon = tx.type === 'mine' ? '\u26CF' : tx.type === 'send' ? '\u2197' : tx.type === 'airdrop' ? '\u2726' : '\u2199';
-      const iconColor = tx.type === 'mine' ? 'text-star' : tx.type === 'send' ? 'text-nebula' : 'text-warp';
-      const title = tx.type === 'airdrop' ? 'Airdrop' : tx.type === 'mine' ? 'Mining Reward' : tx.type === 'send' ? `To ${shortAddr(tx.to)}` : `From ${shortAddr(tx.from)}`;
+      const icon = tx.type === 'mine' ? '\u2B23' : tx.type === 'send' ? '\u2197' : tx.type === 'airdrop' ? '\u2726' : '\u2199';
+      const iconColor = tx.type === 'mine' ? 'text-warp' : tx.type === 'send' ? 'text-nebula' : 'text-warp';
+      const title = tx.type === 'airdrop' ? 'Airdrop' : tx.type === 'mine' ? 'Récompense' : tx.type === 'send' ? `To ${shortAddr(tx.to)}` : `From ${shortAddr(tx.from)}`;
       const sign = tx.type === 'send' ? '-' : '+';
       const amtColor = tx.type === 'send' ? 'text-nebula' : 'text-energy';
 
@@ -435,8 +435,8 @@ function renderInfo() {
   const items = [
     ['Total Supply', TOTAL_SUPPLY.toLocaleString()],
     ['Airdrop', AIRDROP_AMOUNT.toLocaleString() + ' STZ'],
-    ['Mining Reward', reward.toFixed(2) + ' STZ'],
-    ['Decay System', 'Resonance Decay (\u03C6)'],
+    ['Collect Reward', '100 STZ / artwork'],
+    ['Airdrop Seuil', '2,000 STZ = exclusive airdrop'],
   ];
   const container = document.getElementById('info-supply');
   container.innerHTML = '';
