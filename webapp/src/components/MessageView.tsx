@@ -45,6 +45,8 @@ export default function MessageView() {
   };
 
   useEffect(() => {
+    // Mark DMs as seen for badge count
+    localStorage.setItem('strangrz_dm_last_seen', Date.now().toString());
     refresh();
     // Auto-open DM if navigated from user profile
     if (wallet) {

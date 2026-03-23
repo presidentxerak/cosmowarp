@@ -16,10 +16,14 @@ export default function NotificationsView() {
 
   const typeColor = (type: string) => {
     switch (type) {
-      case 'mine': return 'opacity-80';
-      case 'send': return 'opacity-80';
-      case 'genesis': return 'opacity-80';
-      default: return 'opacity-80';
+      case 'mine': return 'text-yellow-400 opacity-90';
+      case 'send': return 'text-blue-400 opacity-90';
+      case 'receive': return 'text-green-400 opacity-90';
+      case 'genesis': return 'text-purple-400 opacity-90';
+      case 'wart_buy': return 'text-pink-400 opacity-90';
+      case 'wart_sell': return 'text-emerald-400 opacity-90';
+      case 'tip': return 'text-amber-400 opacity-90';
+      default: return 'opacity-70';
     }
   };
 

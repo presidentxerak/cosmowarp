@@ -12,7 +12,7 @@ import {
 import type { MiningProof } from '../engine/miner';
 import { generateStrangrzLink, parseStrangrzLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/strangrmesh';
-import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal } from '../engine/warts';
+import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal, PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT } from '../engine/warts';
 import { storeMedia } from '../engine/mediadb';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
@@ -1002,12 +1002,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wart) return { success: false, error: 'Strangrz not found' };
     if (!wart.listed || wart.price === null) return { success: false, error: 'Not for sale' };
     if (wart.owner === wallet.address) return { success: false, error: 'You already own this' };
-    if (wallet.balance < wart.price) return { success: false, error: 'Insufficient STZ' };
 
     const seller = wart.owner;
     const creator = wart.creator;
     const price = wart.price;
     const isResale = seller !== creator;
+
+    // Platform fee: 10% primary market, 5% secondary market
+    const feePercent = isResale ? SECONDARY_MARKET_FEE_PERCENT : PRIMARY_MARKET_FEE_PERCENT;
+    const platformFee = Math.round(price * feePercent / 100 * 100) / 100;
+    const totalCost = price + platformFee;
+
+    if (wallet.balance < totalCost) {
+      return { success: false, error: `Insufficient STZ. Need ${totalCost} ⬣ (${price} + ${feePercent}% fee)` };
+    }
+
     const royaltyAmount = isResale ? Math.round(price * wart.royaltyPercent / 100 * 100) / 100 : 0;
     const sellerAmount = price - royaltyAmount;
 
@@ -1018,6 +1027,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // Pay royalty to creator if resale
     if (royaltyAmount > 0 && creator !== seller) {
       await sendWarps(wallet, creator, royaltyAmount, `Strangrz royalty: ${wart.title}`);
+    }
+
+    // Pay platform fee
+    if (platformFee > 0) {
+      const PLATFORM_ADDRESS = 'STZ_PLATFORM_FEE';
+      await sendWarps(wallet, PLATFORM_ADDRESS, platformFee, `Platform fee: ${wart.title} (${feePercent}%)`);
     }
 
     // Transfer ownership

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { SocialEngine } from '../engine/social';
+import { CosmoChatEngine } from '../engine/cosmochat';
 import { shortAddress } from '../engine/crypto';
 import HexAvatar from './HexAvatar';
 
@@ -18,7 +19,7 @@ interface SearchResult {
 }
 
 export default function TopBar({ onNavigate }: TopBarProps) {
-  const { warts, globalTxs } = useWallet();
+  const { wallet, warts, globalTxs } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -26,8 +27,16 @@ export default function TopBar({ onNavigate }: TopBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const notifCount = globalTxs?.length || 0;
-  // Message badge: count DM threads (visual indicator)
-  const msgCount = 0;
+  // Message badge: count DM threads with recent activity
+  const msgCount = useMemo(() => {
+    if (!wallet) return 0;
+    try {
+      const engine = CosmoChatEngine.load();
+      const threads = engine.getThreads(wallet.address);
+      const lastSeen = parseInt(localStorage.getItem('strangrz_dm_last_seen') || '0', 10);
+      return threads.filter(t => t.lastActivity > lastSeen && t.messages.length > 0).length;
+    } catch { return 0; }
+  }, [wallet, globalTxs]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

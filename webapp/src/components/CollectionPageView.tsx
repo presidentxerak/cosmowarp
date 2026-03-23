@@ -114,7 +114,6 @@ export default function CollectionPageView({ onNavigate }: { onNavigate: (tab: s
 
   const openCollection = (key: string, info: CollectionInfo) => {
     sessionStorage.setItem('strangrz_collection_key', key);
-    sessionStorage.setItem('strangrz_collection_type', info.type);
     setSelectedCollection(info);
   };
 

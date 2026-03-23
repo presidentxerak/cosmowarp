@@ -267,6 +267,7 @@ export default function UserProfileView({ onNavigate }: { onNavigate: (tab: stri
   useEffect(() => {
     const addr = sessionStorage.getItem('strangrz_view_user');
     if (!addr) return;
+    sessionStorage.removeItem('strangrz_view_user');
     setTargetAddress(addr);
     refresh(addr);
   // eslint-disable-next-line react-hooks/exhaustive-deps

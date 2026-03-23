@@ -4,7 +4,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
+import { DEFAULT_RATES, calculateFees, generateTxId, PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT } from '../_shared/rates';
 import { checkRateLimit, getClientIp } from '../_shared/rate-limit';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: limit.retryAfter });
   }
 
-  const { amount, currency, paymentMethod, wartId, buyerAddress, sellerAddress } = req.body;
+  const { amount, currency, paymentMethod, wartId, buyerAddress, sellerAddress, isResale } = req.body;
 
   if (!amount || !currency || !buyerAddress) {
     return res.status(400).json({ error: 'Missing required fields: amount, currency, buyerAddress' });
@@ -40,8 +40,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!rate) return res.status(400).json({ error: `Unsupported currency: ${currency}` });
 
   const warpAmount = Math.round(amount * rate * 100) / 100;
-  const fees = calculateFees(amount, paymentMethod || 'card');
+  const fees = calculateFees(amount, paymentMethod || 'card', !!isResale);
   const txId = generateTxId('FIAT');
+
+  // Total charged to buyer: artwork price + platform fee
+  const feePercent = isResale ? SECONDARY_MARKET_FEE_PERCENT : PRIMARY_MARKET_FEE_PERCENT;
+  const platformFee = Math.round(amount * feePercent / 100 * 100) / 100;
+  const totalCharged = amount + platformFee;
 
   // Stripe integration
   if (STRIPE_SECRET_KEY) {
@@ -54,10 +59,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         line_items: [{
           price_data: {
             currency: currency.toLowerCase(),
-            unit_amount: Math.round(amount * 100),
+            unit_amount: Math.round(totalCharged * 100),
             product_data: {
               name: wartId ? `Strangrz #${wartId}` : `${warpAmount} STZ (⬣)`,
-              description: `Strangrz purchase — ${warpAmount} ⬣`,
+              description: wartId
+                ? `Strangrz purchase — ${amount} ${currency.toUpperCase()} + ${feePercent}% platform fee`
+                : `Strangrz purchase — ${warpAmount} ⬣`,
             },
           },
           quantity: 1,
@@ -71,6 +78,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           seller_address: sellerAddress || '',
           warp_amount: warpAmount.toString(),
           wart_id: wartId || '',
+          platform_fee_percent: feePercent.toString(),
+          platform_fee_amount: platformFee.toString(),
+          artwork_price: amount.toString(),
         },
       });
 

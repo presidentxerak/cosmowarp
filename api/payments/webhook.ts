@@ -13,7 +13,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { SELLER_COMMISSION_PERCENT } from '../_shared/rates';
+import { PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT } from '../_shared/rates';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -155,9 +155,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (connectAccount?.onboarding_complete && connectAccount.stripe_account_id) {
           try {
-            const sellerFiatAmount = (session.amount_total || 0); // in cents
-            // Seller receives 100% — platform fee is already paid by buyer on top
-            const sellerReceivesCents = sellerFiatAmount;
+            const totalPaidCents = (session.amount_total || 0); // total paid by buyer (price + platform fee) in cents
+            // Extract the platform fee from the total — seller receives artwork price only
+            const feePercent = parseFloat(session.metadata?.platform_fee_percent || '0');
+            // Reverse: totalPaid = artworkPrice * (1 + feePercent/100), so artworkPrice = totalPaid / (1 + feePercent/100)
+            const sellerReceivesCents = feePercent > 0
+              ? Math.round(totalPaidCents / (1 + feePercent / 100))
+              : totalPaidCents;
 
             if (sellerReceivesCents > 0) {
               await stripe.transfers.create({
