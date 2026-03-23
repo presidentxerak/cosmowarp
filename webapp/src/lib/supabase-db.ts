@@ -116,6 +116,11 @@ function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string) {
     price_fiat: wart.priceFiat,
     fiat_currency: wart.fiatCurrency,
     vault_backup: wart.vaultBackup,
+    royalty_contract_id: wart.royaltyContractId || null,
+    active_contract_ids: wart.activeContractIds || [],
+    vobjct_id: wart.vobjctId || null,
+    vobjct_protected: wart.vobjctProtected || false,
+    mint_chain: wart.mintChain || 'strangrz',
     media_path: mediaPath || null,
     audio_cover_path: audioCoverPath || null,
     created_at: wart.createdAt,
@@ -154,6 +159,11 @@ function rowToWart(row: Record<string, unknown>, imageData: string, audioCover?:
     priceFiat: row.price_fiat != null ? Number(row.price_fiat) : undefined,
     fiatCurrency: (row.fiat_currency as Wart['fiatCurrency']) || undefined,
     vaultBackup: (row.vault_backup as boolean) || false,
+    royaltyContractId: (row.royalty_contract_id as string) || undefined,
+    activeContractIds: Array.isArray(row.active_contract_ids) ? row.active_contract_ids as string[] : undefined,
+    vobjctId: (row.vobjct_id as string) || undefined,
+    vobjctProtected: (row.vobjct_protected as boolean) || false,
+    mintChain: (row.mint_chain as Wart['mintChain']) || 'strangrz',
   };
 }
 
@@ -179,15 +189,34 @@ export async function fetchWarts(filters?: {
   creator?: string;
 }): Promise<Record<string, unknown>[]> {
   if (!isBackendAvailable()) return [];
-  let query = supabase!.from('warts').select('*').order('created_at', { ascending: false });
 
-  if (filters?.listed !== undefined) query = query.eq('listed', filters.listed);
-  if (filters?.owner) query = query.eq('owner', filters.owner);
-  if (filters?.creator) query = query.eq('creator', filters.creator);
+  const PAGE_SIZE = 500;
+  const allRows: Record<string, unknown>[] = [];
+  let offset = 0;
+  let hasMore = true;
 
-  const { data, error } = await query.limit(500);
-  if (error) { console.error('[Supabase] fetchWarts:', error.message); return []; }
-  return (data || []) as Record<string, unknown>[];
+  while (hasMore) {
+    let query = supabase!.from('warts').select('*').order('created_at', { ascending: false });
+    if (filters?.listed !== undefined) query = query.eq('listed', filters.listed);
+    if (filters?.owner) query = query.eq('owner', filters.owner);
+    if (filters?.creator) query = query.eq('creator', filters.creator);
+
+    const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
+    if (error) { console.error('[Supabase] fetchWarts:', error.message); break; }
+
+    const rows = (data || []) as Record<string, unknown>[];
+    allRows.push(...rows);
+
+    if (rows.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      offset += PAGE_SIZE;
+      // Safety limit: stop after 5000 warts to prevent infinite loops
+      if (offset >= 5000) break;
+    }
+  }
+
+  return allRows;
 }
 
 export async function fetchWartById(wartId: string): Promise<Record<string, unknown> | null> {

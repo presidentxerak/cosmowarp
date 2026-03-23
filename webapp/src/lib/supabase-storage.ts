@@ -66,6 +66,9 @@ export async function uploadMedia(
 ): Promise<string | null> {
   if (!isBackendAvailable() || !data) return null;
 
+  // Skip upload for public URLs (already in Supabase Storage or external)
+  if (data.startsWith('http://') || data.startsWith('https://')) return null;
+
   try {
     const { blob, ext } = dataUrlToBlob(data);
 
@@ -200,17 +203,28 @@ export async function downloadMediaAsDataUrl(path: string): Promise<string | nul
       .from(BUCKETS.MEDIA)
       .download(path);
 
-    if (error || !data) return null;
+    if (error || !data) {
+      if (import.meta.env.DEV && error) console.warn('[Storage] download error:', path, error.message);
+      return null;
+    }
+
+    // Scale timeout by file size: 30s base + 1s per MB (handles large video/audio)
+    const timeoutMs = Math.max(30000, 30000 + Math.ceil(data.size / (1024 * 1024)) * 1000);
 
     return new Promise((resolve) => {
       const reader = new FileReader();
-      const timeout = setTimeout(() => { reader.abort(); resolve(null); }, 30000);
+      const timeout = setTimeout(() => {
+        if (import.meta.env.DEV) console.warn('[Storage] download timeout for', path, `(${data.size} bytes, ${timeoutMs}ms)`);
+        reader.abort();
+        resolve(null);
+      }, timeoutMs);
       reader.onload = () => { clearTimeout(timeout); resolve(reader.result as string ?? null); };
       reader.onerror = () => { clearTimeout(timeout); resolve(null); };
       reader.onabort = () => { clearTimeout(timeout); resolve(null); };
       reader.readAsDataURL(data);
     });
-  } catch {
+  } catch (err) {
+    if (import.meta.env.DEV) console.warn('[Storage] downloadMediaAsDataUrl failed:', path, err);
     return null;
   }
 }

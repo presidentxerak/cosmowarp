@@ -1,4 +1,11 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+
+/** Log errors in development, silent in production */
+const logErr = (context: string, err?: unknown) => {
+  if (import.meta.env.DEV) {
+    console.warn(`[Strangrz] ${context}:`, err instanceof Error ? err.message : err ?? 'unknown');
+  }
+};
 import {
   loadWallet, createWallet, sendWarps, mineWarps,
   getGlobalTransactions, getMeshStats, getSupplyBreakdown,
@@ -438,8 +445,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
           // Sync wart likes/bookmarks from cloud
           Promise.all([
-            fetchWartLikes(w.address).catch(() => []),
-            fetchWartBookmarks(w.address).catch(() => []),
+            fetchWartLikes(w.address).catch((e) => { logErr('fetchLikes', e); return []; }),
+            fetchWartBookmarks(w.address).catch((e) => { logErr('fetchBookmarks', e); return []; }),
           ]).then(([cloudLikes, cloudBookmarks]) => {
             const engine = getWartEngine();
             let changed = false;
@@ -458,7 +465,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
               }
             }
             if (changed) refreshWartsState(w.address);
-          }).catch(() => {});
+          }).catch((e) => logErr('syncLikesBookmarks', e));
 
           // Sync playlists: merge cloud playlists into localStorage
           if (cloudData.playlists && cloudData.playlists.length > 0) {
@@ -487,15 +494,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
               }
             } catch { /* ignore */ }
           }
-        }).catch(() => { /* Sync failed — continue in offline mode */ });
-
-        // Pull ALL listed warts from Supabase (marketplace — includes other users' artworks)
-        sync.pullWarts({ listed: true }).then(listedWarts => {
-          if (listedWarts && listedWarts.length > 0) {
-            mergeCloudWarts(listedWarts);
-            refreshWartsState(w.address);
-          }
-        }).catch(() => { /* Pull failed — use local data */ });
+        }).catch((e) => logErr('fullSync', e));
 
         // Pull ALL warts from Supabase (full gallery — all artworks across all users)
         sync.pullWarts().then(allWarts => {
@@ -503,7 +502,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(allWarts);
             refreshWartsState(w.address);
           }
-        }).catch(() => { /* Pull failed — use local data */ });
+        }).catch((e) => logErr('pullWarts(all)', e));
       }
     } else {
       // No wallet (unauthenticated) — still load public gallery from cloud
@@ -513,7 +512,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(allWarts);
             refreshWartsState(undefined);
           }
-        }).catch(() => {});
+        }).catch((e) => logErr('pullWarts(public)', e));
       }
     }
     setGlobalTxs(getGlobalTransactions());
@@ -1245,8 +1244,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const liked = engine.toggleLike(wartId, wallet.address);
     refreshWartsState(wallet.address);
-    if (liked) { insertWartLike(wartId, wallet.address).catch(() => {}); }
-    else { deleteWartLike(wartId, wallet.address).catch(() => {}); }
+    if (liked) { insertWartLike(wartId, wallet.address).catch((e) => logErr('insertLike', e)); }
+    else { deleteWartLike(wartId, wallet.address).catch((e) => logErr('deleteLike', e)); }
     return liked;
   }, [wallet]);
 
@@ -1255,8 +1254,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const bookmarked = engine.toggleBookmark(wartId, wallet.address);
     refreshWartsState(wallet.address);
-    if (bookmarked) { insertWartBookmark(wartId, wallet.address).catch(() => {}); }
-    else { deleteWartBookmark(wartId, wallet.address).catch(() => {}); }
+    if (bookmarked) { insertWartBookmark(wartId, wallet.address).catch((e) => logErr('insertBookmark', e)); }
+    else { deleteWartBookmark(wartId, wallet.address).catch((e) => logErr('deleteBookmark', e)); }
     return bookmarked;
   }, [wallet]);
 

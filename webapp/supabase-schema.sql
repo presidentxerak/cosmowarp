@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS warts (
   fiat_currency       TEXT,
   -- Vault
   vault_backup        BOOLEAN DEFAULT FALSE,
+  -- Contract references
+  royalty_contract_id  TEXT,
+  active_contract_ids  JSONB DEFAULT '[]',
+  -- Strangrz integration
+  vobjct_id            TEXT,
+  vobjct_protected     BOOLEAN DEFAULT FALSE,
+  -- Multi-chain minting
+  mint_chain           TEXT DEFAULT 'strangrz',
   -- Media reference (Supabase Storage path)
   media_path          TEXT,        -- path in supabase storage bucket
   audio_cover_path    TEXT,        -- cover image path for audio warts
