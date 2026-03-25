@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
+import VirtualGrid from './VirtualGrid';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { getCurrencySymbol, FiatGateway, type FiatCurrency } from '../engine/fiatgateway';
@@ -1932,11 +1933,17 @@ export default function MarketplaceView() {
                   </button>
                 </div>
               ) : warts.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {warts.map(wart => (
+                <VirtualGrid
+                  items={warts}
+                  columns={window.innerWidth >= 640 ? 3 : 2}
+                  rowHeight={340}
+                  gap={12}
+                  className="max-h-[70vh]"
+                  emptyMessage="Aucune Strangrz"
+                  renderItem={(wart) => (
                     <WartCard key={wart.id} wart={wart} showBuy />
-                  ))}
-                </div>
+                  )}
+                />
               ) : null}
             </>
           );

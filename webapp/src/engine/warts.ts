@@ -74,9 +74,10 @@ export interface WartCertificate {
 //   2. Acheteur → buyLazyMint() → mint + transfert + paiement
 //   3. Acheteur paie: price + frais plateforme + frais de stockage
 
-/** Platform fee charged to the buyer: 10% on primary market (1st sale), 5% on secondary (resale) */
-export const PRIMARY_MARKET_FEE_PERCENT = 10;
-export const SECONDARY_MARKET_FEE_PERCENT = 5;
+/** Platform fee charged to the buyer */
+import { PRIMARY_MARKET_FEE_PERCENT as _PMF, SECONDARY_MARKET_FEE_PERCENT as _SMF } from '../config/constants';
+export const PRIMARY_MARKET_FEE_PERCENT = _PMF;
+export const SECONDARY_MARKET_FEE_PERCENT = _SMF;
 /** Lazy mint is always primary market (first sale) */
 export const BUYER_SERVICE_FEE_PERCENT = PRIMARY_MARKET_FEE_PERCENT;
 

@@ -32,6 +32,7 @@
  */
 
 import { storage } from './storage';
+import { PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT, PROCESSOR_FEES as CONFIG_PROCESSOR_FEES } from '../config/constants';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -116,15 +117,10 @@ const RATES_KEY = 'strangrz_fiat_rates';
 const FIAT_TX_KEY = 'strangrz_fiat_tx';
 const FIAT_LISTINGS_KEY = 'strangrz_fiat_listings';
 
-const PRIMARY_MARKET_FEE = 10;     // 10% platform fee — 1st market (first sale)
-const SECONDARY_MARKET_FEE = 5;    // 5% platform fee — 2nd market (resale)
+const PRIMARY_MARKET_FEE = PRIMARY_MARKET_FEE_PERCENT;
+const SECONDARY_MARKET_FEE = SECONDARY_MARKET_FEE_PERCENT;
 const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> = {
-  card: { percent: 2.9, fixed: 0.30 },
-  paypal: { percent: 3.49, fixed: 0.49 },
-  sepa: { percent: 0.8, fixed: 0 },
-  apple_pay: { percent: 2.9, fixed: 0.30 },
-  google_pay: { percent: 2.9, fixed: 0.30 },
-  bank_transfer: { percent: 0, fixed: 1.50 },
+  ...(CONFIG_PROCESSOR_FEES as Record<PaymentMethod, { percent: number; fixed: number }>),
   internal: { percent: 0, fixed: 0 },
 };
 
