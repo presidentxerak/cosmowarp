@@ -6,6 +6,7 @@
  */
 
 import type { Wart } from './warts';
+import { storage } from './storage';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -41,10 +42,10 @@ export const DEFAULT_FILTERS: SearchFilters = {
 const TAGS_STORAGE_KEY = 'strangrz_wart_tags';
 const MAX_TAGS_PER_WART = 5;
 
-/** Load tag map from localStorage */
+/** Load tag map from storage (safe for iOS Safari private mode) */
 function loadTags(): Map<string, string[]> {
   try {
-    const raw = localStorage.getItem(TAGS_STORAGE_KEY);
+    const raw = storage.getItem(TAGS_STORAGE_KEY);
     if (!raw) return new Map();
     const obj = JSON.parse(raw) as Record<string, string[]>;
     return new Map(Object.entries(obj));
@@ -53,10 +54,10 @@ function loadTags(): Map<string, string[]> {
   }
 }
 
-/** Save tag map to localStorage */
+/** Save tag map to storage */
 function saveTags(tags: Map<string, string[]>): void {
   const obj = Object.fromEntries(tags);
-  localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(obj));
+  storage.setItem(TAGS_STORAGE_KEY, JSON.stringify(obj));
 }
 
 /** Set tags for a wart (max 5, lowercase, trimmed) */
