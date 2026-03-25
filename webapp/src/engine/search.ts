@@ -8,6 +8,7 @@
 import type { Wart } from './warts';
 import { storage } from './storage';
 import { syncWartTags } from '../lib/supabase-phase2-sync';
+import { MAX_TAGS_PER_WART } from '../config/constants';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -41,7 +42,6 @@ export const DEFAULT_FILTERS: SearchFilters = {
 // ─── Tag System ───────────────────────────────────────────
 
 const TAGS_STORAGE_KEY = 'strangrz_wart_tags';
-const MAX_TAGS_PER_WART = 5;
 
 /** Load tag map from storage (safe for iOS Safari private mode) */
 function loadTags(): Map<string, string[]> {

@@ -8,12 +8,11 @@
 
 import { storage } from './storage';
 import { syncAuction, syncBid } from '../lib/supabase-phase2-sync';
+import { ANTI_SNIPE_WINDOW_MS, ANTI_SNIPE_EXTENSION_MS } from '../config/constants';
 
 // ─── Constants ────────────────────────────────────────────
 
 const STORAGE_KEY = 'strangrz_auctions';
-const ANTI_SNIPE_WINDOW_MS = 5 * 60 * 1000;   // 5 minutes
-const ANTI_SNIPE_EXTENSION_MS = 5 * 60 * 1000; // extend by 5 minutes
 
 // ─── Types ────────────────────────────────────────────────
 

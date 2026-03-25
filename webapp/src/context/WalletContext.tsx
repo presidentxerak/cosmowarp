@@ -30,9 +30,14 @@ import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
 // ─── Supabase Sync ──────────────────────────────────────────
 import * as sync from '../lib/supabase-sync';
+import { pullPhase2Data } from '../lib/supabase-phase2-sync';
 import { realtime } from '../lib/supabase-realtime';
 import { isBackendAvailable, getPublicUrl, BUCKETS, setSupabaseAddress } from '../lib/supabase';
 import { insertWartLike, deleteWartLike, fetchWartLikes, insertWartBookmark, deleteWartBookmark, fetchWartBookmarks } from '../lib/supabase-db';
+// ─── Phase 2 Engines ──────────────────────────────────────────
+import { CollectionEngine } from '../engine/collections';
+import { AuctionEngine } from '../engine/auctions';
+import { setWartTags } from '../engine/search';
 
 // ─── Recovery Kit reminder ────────────────────────────────
 const RECOVERY_REMINDER_KEY = 'strangrz_recovery_reminder';
@@ -506,6 +511,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             refreshWartsState(w.address);
           }
         }).catch((e) => logErr('pullWarts(all)', e));
+
+        // Pull Phase 2 data on mount (collections, auctions, tags)
+        pullPhase2Data(w.address).then(phase2 => {
+          if (phase2.collections.length > 0) CollectionEngine.load().mergeCloud(phase2.collections);
+          if (phase2.auctions.length > 0) AuctionEngine.load().mergeCloud(phase2.auctions);
+          if (phase2.tagMap.size > 0) {
+            for (const [wartId, tags] of phase2.tagMap) setWartTags(wartId, tags);
+          }
+        }).catch((e) => logErr('pullPhase2Data', e));
       }
     } else {
       // No wallet (unauthenticated) — still load public gallery from cloud
@@ -579,6 +593,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           // Social graph updated — re-sync to keep local data fresh
           if (addr) {
             sync.fullSync(addr);
+          }
+          break;
+        // Phase 2 realtime events
+        case 'collection_new':
+        case 'collection_update':
+        case 'collection_delete':
+        case 'auction_update':
+        case 'bid_new':
+          // Re-pull Phase 2 data to stay in sync
+          if (addr) {
+            pullPhase2Data(addr).then(phase2 => {
+              if (phase2.collections.length > 0) CollectionEngine.load().mergeCloud(phase2.collections);
+              if (phase2.auctions.length > 0) AuctionEngine.load().mergeCloud(phase2.auctions);
+            }).catch((e) => logErr('phase2Realtime', e));
           }
           break;
       }
@@ -683,6 +711,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         refreshWartsState(w.address);
       }
     } catch { /* Pull failed — use local data */ }
+
+    // Pull Phase 2 data (collections, auctions, tags) from Supabase
+    try {
+      const phase2 = await pullPhase2Data(w.address);
+      if (phase2.collections.length > 0) {
+        CollectionEngine.load().mergeCloud(phase2.collections);
+      }
+      if (phase2.auctions.length > 0) {
+        AuctionEngine.load().mergeCloud(phase2.auctions);
+      }
+      if (phase2.tagMap.size > 0) {
+        for (const [wartId, tags] of phase2.tagMap) {
+          setWartTags(wartId, tags);
+        }
+      }
+    } catch (e) { logErr('pullPhase2Data', e); }
 
     // Sync social profile from Supabase (cross-device: pull remote alias, bio, links)
     try {

@@ -133,6 +133,12 @@ export const MAX_CACHE_SIZE = 10_000;
 export const INTEGRITY_CHECK_INTERVAL_MS = 300_000; // 5 min
 export const NONCE_TTL_MS = 3_600_000;              // 1 hour
 
+// ─── Auctions ─────────────────────────────────────────────
+
+export const ANTI_SNIPE_WINDOW_MS = 5 * 60 * 1000;      // 5 minutes
+export const ANTI_SNIPE_EXTENSION_MS = 5 * 60 * 1000;   // extend by 5 minutes
+export const MAX_TAGS_PER_WART = 5;
+
 // ─── Hierarchy ────────────────────────────────────────────
 // Level definitions are kept in hierarchy.ts as they include
 // UI metadata (names, symbols, colors, descriptions).

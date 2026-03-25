@@ -13,8 +13,15 @@
  * useWallet() remains fully backward-compatible.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback, useRef } from 'react';
 import { useWallet } from './WalletContext';
+import { CollectionEngine } from '../engine/collections';
+import { AuctionEngine } from '../engine/auctions';
+import {
+  filterWarts, setWartTags, getWartTags, getAllTags,
+  DEFAULT_FILTERS, type SearchFilters,
+} from '../engine/search';
+import { getTrending, getNew, getForYou, getTopSellers, getTopCollectors } from '../engine/recommendations';
 
 /**
  * Authentication state and operations.
@@ -140,4 +147,151 @@ export function useBalance() {
     ctx.send, ctx.mine, ctx.refreshTxs, ctx.refreshStats,
     ctx.unlockAdmin, ctx.unlockCreator,
   ]);
+}
+
+// ─── Phase 2 Hooks ────────────────────────────────────────
+
+/**
+ * Collections management.
+ * Wraps CollectionEngine with React state for reactivity.
+ */
+export function useCollections() {
+  const { wallet } = useWallet();
+  const engineRef = useRef(CollectionEngine.load());
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  const engine = engineRef.current;
+
+  return useMemo(() => ({
+    collections: engine.getAll(),
+    myCollections: wallet ? engine.getByCreator(wallet.address) : [],
+    getCollection: (id: string) => engine.get(id),
+    getCollectionsForWart: (wartId: string) => engine.getCollectionsForWart(wartId),
+    createCollection: (title: string, description?: string) => {
+      if (!wallet) return null;
+      const col = engine.create(wallet.address, title, description);
+      bump();
+      return col;
+    },
+    updateCollection: (id: string, updates: { title?: string; description?: string; coverWartId?: string | null }) => {
+      if (!wallet) return false;
+      const ok = engine.update(id, wallet.address, updates);
+      if (ok) bump();
+      return ok;
+    },
+    addWartToCollection: (collectionId: string, wartId: string) => {
+      if (!wallet) return false;
+      const ok = engine.addWart(collectionId, wallet.address, wartId);
+      if (ok) bump();
+      return ok;
+    },
+    removeWartFromCollection: (collectionId: string, wartId: string) => {
+      if (!wallet) return false;
+      const ok = engine.removeWart(collectionId, wallet.address, wartId);
+      if (ok) bump();
+      return ok;
+    },
+    reorderCollection: (collectionId: string, wartIds: string[]) => {
+      if (!wallet) return false;
+      const ok = engine.reorderWarts(collectionId, wallet.address, wartIds);
+      if (ok) bump();
+      return ok;
+    },
+    deleteCollection: (id: string) => {
+      if (!wallet) return false;
+      const ok = engine.delete(id, wallet.address);
+      if (ok) bump();
+      return ok;
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Auctions management.
+ * Wraps AuctionEngine with React state for reactivity.
+ */
+export function useAuctions() {
+  const { wallet } = useWallet();
+  const engineRef = useRef(AuctionEngine.load());
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  const engine = engineRef.current;
+
+  return useMemo(() => ({
+    activeAuctions: engine.getActive(),
+    endedUnsettled: engine.getEndedUnsettled(),
+    getAuction: (id: string) => engine.get(id),
+    getAuctionForWart: (wartId: string) => engine.getByWart(wartId),
+    createAuction: (wartId: string, startPrice: number, durationHours: number, reservePrice?: number) => {
+      if (!wallet) return null;
+      try {
+        const auction = engine.create(wartId, wallet.address, startPrice, durationHours, reservePrice);
+        bump();
+        return auction;
+      } catch {
+        return null;
+      }
+    },
+    placeBid: (auctionId: string, amount: number) => {
+      if (!wallet) return { success: false, error: 'No wallet' };
+      const result = engine.placeBid(auctionId, wallet.address, amount);
+      if (result.success) bump();
+      return result;
+    },
+    settleAuction: (auctionId: string) => {
+      const result = engine.settle(auctionId);
+      bump();
+      return result;
+    },
+    cancelAuction: (auctionId: string) => {
+      if (!wallet) return false;
+      const ok = engine.cancel(auctionId, wallet.address);
+      if (ok) bump();
+      return ok;
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Search, filtering, and recommendations.
+ * Provides stateful search filters and computed results.
+ */
+export function useSearch() {
+  const { warts, wallet } = useWallet();
+  const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
+
+  const results = useMemo(() => filterWarts(warts, filters), [warts, filters]);
+
+  const trending = useMemo(() => getTrending(warts), [warts]);
+  const newest = useMemo(() => getNew(warts), [warts]);
+  const topSellers = useMemo(() => getTopSellers(warts), [warts]);
+  const topCollectors = useMemo(() => getTopCollectors(warts), [warts]);
+
+  const updateFilters = useCallback((partial: Partial<SearchFilters>) => {
+    setFilters(prev => ({ ...prev, ...partial }));
+  }, []);
+
+  const resetFilters = useCallback(() => setFilters(DEFAULT_FILTERS), []);
+
+  return {
+    // Search
+    filters,
+    results,
+    updateFilters,
+    resetFilters,
+    // Tags
+    setTags: setWartTags,
+    getTags: getWartTags,
+    allTags: getAllTags(),
+    // Recommendations
+    trending,
+    newest,
+    topSellers,
+    topCollectors,
+    forYou: wallet ? getForYou(warts, wallet.address, []) : [],
+  };
 }
