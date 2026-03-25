@@ -14,3 +14,4 @@ dist/
 # Build artifacts in webapp engine (compiled by tsc)
 webapp/src/engine/*.js
 webapp/src/engine/*.d.ts
+tsconfig.tsbuildinfo
