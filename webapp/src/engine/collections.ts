@@ -6,6 +6,7 @@
  */
 
 import { storage } from './storage';
+import { syncCollection, syncCollectionDelete } from '../lib/supabase-phase2-sync';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -69,6 +70,7 @@ export class CollectionEngine {
     };
     this.collections.set(id, collection);
     this.save();
+    syncCollection(collection).catch(() => {});
     return collection;
   }
 
@@ -96,6 +98,7 @@ export class CollectionEngine {
     if (updates.coverWartId !== undefined) col.coverWartId = updates.coverWartId;
     col.updatedAt = Date.now();
     this.save();
+    syncCollection(col).catch(() => {});
     return true;
   }
 
@@ -107,6 +110,7 @@ export class CollectionEngine {
     col.wartIds.push(wartId);
     col.updatedAt = Date.now();
     this.save();
+    syncCollection(col).catch(() => {});
     return true;
   }
 
@@ -119,6 +123,7 @@ export class CollectionEngine {
     col.wartIds.splice(idx, 1);
     col.updatedAt = Date.now();
     this.save();
+    syncCollection(col).catch(() => {});
     return true;
   }
 
@@ -126,12 +131,12 @@ export class CollectionEngine {
   reorderWarts(collectionId: string, creator: string, wartIds: string[]): boolean {
     const col = this.collections.get(collectionId);
     if (!col || col.creator !== creator) return false;
-    // Validate all IDs exist in the collection
     const existing = new Set(col.wartIds);
     if (wartIds.length !== existing.size || !wartIds.every(id => existing.has(id))) return false;
     col.wartIds = wartIds;
     col.updatedAt = Date.now();
     this.save();
+    syncCollection(col).catch(() => {});
     return true;
   }
 
@@ -141,11 +146,23 @@ export class CollectionEngine {
     if (!col || col.creator !== creator) return false;
     this.collections.delete(id);
     this.save();
+    syncCollectionDelete(id).catch(() => {});
     return true;
   }
 
   /** Get collections containing a specific wart */
   getCollectionsForWart(wartId: string): Collection[] {
     return this.getAll().filter(c => c.wartIds.includes(wartId));
+  }
+
+  /** Hydrate from cloud data (called during login sync) */
+  mergeCloud(cloudCollections: Collection[]): void {
+    for (const cloud of cloudCollections) {
+      const local = this.collections.get(cloud.id);
+      if (!local || cloud.updatedAt > local.updatedAt) {
+        this.collections.set(cloud.id, cloud);
+      }
+    }
+    this.save();
   }
 }

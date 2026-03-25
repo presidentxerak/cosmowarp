@@ -7,6 +7,7 @@
  */
 
 import { storage } from './storage';
+import { syncAuction, syncBid } from '../lib/supabase-phase2-sync';
 
 // ─── Constants ────────────────────────────────────────────
 
@@ -110,6 +111,7 @@ export class AuctionEngine {
 
     this.auctions.set(id, auction);
     this.save();
+    syncAuction(auction).catch(() => {});
     return auction;
   }
 
@@ -138,6 +140,8 @@ export class AuctionEngine {
     }
 
     this.save();
+    syncBid(auctionId, bid).catch(() => {});
+    syncAuction(auction).catch(() => {});
     return { success: true };
   }
 
@@ -165,6 +169,7 @@ export class AuctionEngine {
     auction.status = 'settled';
     auction.settledAt = Date.now();
     this.save();
+    syncAuction(auction).catch(() => {});
 
     return {
       success: true,
@@ -180,6 +185,7 @@ export class AuctionEngine {
     if (auction.bids.length > 0) return false; // can't cancel with bids
     auction.status = 'cancelled';
     this.save();
+    syncAuction(auction).catch(() => {});
     return true;
   }
 
@@ -218,6 +224,17 @@ export class AuctionEngine {
         this.updateStatus(a);
         return a.status === 'ended';
       });
+  }
+
+  /** Hydrate from cloud data (called during login sync) */
+  mergeCloud(cloudAuctions: Auction[]): void {
+    for (const cloud of cloudAuctions) {
+      const local = this.auctions.get(cloud.id);
+      if (!local || cloud.endTime > local.endTime || cloud.bids.length > local.bids.length) {
+        this.auctions.set(cloud.id, cloud);
+      }
+    }
+    this.save();
   }
 
   /** Auto-update auction status based on time */

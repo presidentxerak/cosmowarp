@@ -18,7 +18,13 @@ export type RealtimeEvent =
   | { type: 'comment_new'; payload: Record<string, unknown> }
   | { type: 'notification_new'; payload: Record<string, unknown> }
   | { type: 'follow_new'; payload: Record<string, unknown> }
-  | { type: 'follow_delete'; payload: Record<string, unknown> };
+  | { type: 'follow_delete'; payload: Record<string, unknown> }
+  // Phase 2
+  | { type: 'collection_new'; payload: Record<string, unknown> }
+  | { type: 'collection_update'; payload: Record<string, unknown> }
+  | { type: 'collection_delete'; payload: Record<string, unknown> }
+  | { type: 'auction_update'; payload: Record<string, unknown> }
+  | { type: 'bid_new'; payload: Record<string, unknown> };
 
 type RealtimeListener = (event: RealtimeEvent) => void;
 
@@ -120,6 +126,52 @@ class RealtimeManager {
       .subscribe();
 
     this.channels.push(followsChannel);
+
+    // ─── Collections channel (Phase 2) ─────────────────
+    const collectionsChannel = supabase
+      .channel('collections-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'collections' },
+        (payload) => this.emit({ type: 'collection_new', payload: payload.new as Record<string, unknown> }),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'collections' },
+        (payload) => this.emit({ type: 'collection_update', payload: payload.new as Record<string, unknown> }),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'collections' },
+        (payload) => this.emit({ type: 'collection_delete', payload: payload.old as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(collectionsChannel);
+
+    // ─── Auctions channel (Phase 2) ────────────────────
+    const auctionsChannel = supabase
+      .channel('auctions-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'auctions' },
+        (payload) => this.emit({ type: 'auction_update', payload: (payload.new || payload.old) as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(auctionsChannel);
+
+    // ─── Bids channel (Phase 2) ─────────────────────────
+    const bidsChannel = supabase
+      .channel('bids-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bids' },
+        (payload) => this.emit({ type: 'bid_new', payload: payload.new as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(bidsChannel);
   }
 
   /** Stop all realtime channels */

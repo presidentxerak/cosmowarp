@@ -7,6 +7,7 @@
 
 import type { Wart } from './warts';
 import { storage } from './storage';
+import { syncWartTags } from '../lib/supabase-phase2-sync';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -69,6 +70,7 @@ export function setWartTags(wartId: string, tags: string[]): string[] {
   const allTags = loadTags();
   allTags.set(wartId, normalized);
   saveTags(allTags);
+  syncWartTags(wartId, normalized).catch(() => {});
   return normalized;
 }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from '../context/WalletContext';
+import { logAdminAction } from '../lib/audit';
 
 export default function AdminView() {
   const { wallet, adminDashboard, supplyInfo, unlockAdmin, unlockCreator } = useWallet();
@@ -32,7 +33,9 @@ export default function AdminView() {
     try {
       const success = await unlockAdmin();
       setUnlocked(success);
-      if (!success) {
+      if (success) {
+        logAdminAction({ action: 'unlock_registry', actor_address: wallet.address });
+      } else {
         setUnlockResult('Failed to unlock registry.');
       }
     } finally {
@@ -47,6 +50,9 @@ export default function AdminView() {
       return;
     }
     const success = await unlockCreator(amount);
+    if (success) {
+      logAdminAction({ action: 'unlock_creator_tokens', actor_address: wallet.address, details: { amount } });
+    }
     setUnlockResult(success ? `Unlocked ${amount} STZ successfully!` : 'Failed to unlock tokens.');
     if (success) setUnlockAmount('');
     setTimeout(() => setUnlockResult(null), 4000);
