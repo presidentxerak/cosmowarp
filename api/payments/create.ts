@@ -5,7 +5,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { DEFAULT_RATES, calculateFees, generateTxId, PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT } from '../_shared/rates';
-import { checkRateLimit, getClientIp } from '../_shared/rate-limit';
+import { checkRateLimitAsync, getClientIp } from '../_shared/rate-limit';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Rate limit: 10 payment creations per minute per IP
   const ip = getClientIp(req.headers as Record<string, string | string[] | undefined>);
-  const limit = checkRateLimit(`payment:${ip}`, 10, 60_000);
+  const limit = await checkRateLimitAsync(`payment:${ip}`, 10, 60_000);
   if (!limit.allowed) {
     res.setHeader('Retry-After', String(limit.retryAfter));
     return res.status(429).json({ error: 'Too many requests', retryAfter: limit.retryAfter });

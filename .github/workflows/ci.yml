@@ -1,0 +1,91 @@
+name: CI — Lint, Type-check, Test, Build
+
+on:
+  push:
+    branches: ['main', 'develop', 'claude/*']
+  pull_request:
+    branches: ['main', 'develop']
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Protocol Tests (root /src) ───────────────────────────
+  protocol-tests:
+    name: Protocol Tests (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Run protocol tests
+        run: npm test -- --ci --coverage
+
+  # ─── Webapp CI ────────────────────────────────────────────
+  webapp:
+    name: Webapp — Lint, Type-check, Test, Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webapp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npx tsc -b --noEmit
+
+      - name: Test
+        run: npm test -- --run --reporter=verbose
+
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle size
+        run: |
+          MAX_SIZE_KB=2048
+          MAIN_CHUNK=$(find dist/assets -name 'index-*.js' -type f | head -1)
+          if [ -n "$MAIN_CHUNK" ]; then
+            SIZE_KB=$(du -k "$MAIN_CHUNK" | cut -f1)
+            echo "Main chunk: ${SIZE_KB}KB (max: ${MAX_SIZE_KB}KB)"
+            if [ "$SIZE_KB" -gt "$MAX_SIZE_KB" ]; then
+              echo "::warning::Main chunk exceeds ${MAX_SIZE_KB}KB budget (${SIZE_KB}KB)"
+            fi
+          fi
+
+  # ─── API Type-check ──────────────────────────────────────
+  api:
+    name: API — Type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Type-check API functions
+        run: npx tsc --noEmit --strict --esModuleInterop --resolveJsonModule --skipLibCheck api/**/*.ts

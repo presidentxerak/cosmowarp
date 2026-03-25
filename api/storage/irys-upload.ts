@@ -23,6 +23,7 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { checkRateLimitAsync, getClientIp } from '../_shared/rate-limit';
 
 const IRYS_PRIVATE_KEY = process.env.IRYS_PRIVATE_KEY || '';
 const IRYS_NETWORK = process.env.IRYS_NETWORK || 'mainnet';
@@ -40,6 +41,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Rate limit: 10 uploads per minute per IP
+  const ip = getClientIp(req.headers as Record<string, string | string[] | undefined>);
+  const limit = await checkRateLimitAsync(`upload:${ip}`, 10, 60_000);
+  if (!limit.allowed) {
+    res.setHeader('Retry-After', String(limit.retryAfter));
+    return res.status(429).json({ error: 'Too many requests', retryAfter: limit.retryAfter });
+  }
 
   if (!IRYS_PRIVATE_KEY) {
     return res.status(500).json({ error: 'Irys not configured: missing IRYS_PRIVATE_KEY' });

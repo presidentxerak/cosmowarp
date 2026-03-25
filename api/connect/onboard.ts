@@ -8,7 +8,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { checkRateLimit, getClientIp } from '../_shared/rate-limit';
+import { checkRateLimitAsync, getClientIp } from '../_shared/rate-limit';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Rate limit: 5 onboarding attempts per minute per IP
   const ip = getClientIp(req.headers as Record<string, string | string[] | undefined>);
-  const limit = checkRateLimit(`connect:${ip}`, 5, 60_000);
+  const limit = await checkRateLimitAsync(`connect:${ip}`, 5, 60_000);
   if (!limit.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: limit.retryAfter });
   }

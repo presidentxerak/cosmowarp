@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense, Component } from 'rea
 import type { ReactNode } from 'react';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { Sentry } from './lib/sentry';
 import TopBar from './components/TopBar';
 import BottomBar from './components/BottomBar';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
@@ -109,7 +110,9 @@ class AppErrorBoundary extends Component<
   static getDerivedStateFromError(err: Error) {
     return { hasError: true, error: err.message };
   }
-  componentDidCatch() { /* logged above */ }
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+  }
   render() {
     if (this.state.hasError) {
       return (

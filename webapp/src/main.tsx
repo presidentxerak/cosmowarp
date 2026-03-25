@@ -1,6 +1,10 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { initSentry } from './lib/sentry'
+
+// ─── Initialize error reporting ──────────────────────────
+initSentry();
 
 // ─── Migrate old cosmorare_* storage keys to strangrz_* ─────
 // The rebrand changed all localStorage keys, orphaning existing data.

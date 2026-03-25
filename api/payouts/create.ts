@@ -6,6 +6,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
+import { checkRateLimitAsync, getClientIp } from '../_shared/rate-limit';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
@@ -19,6 +20,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Rate limit: 5 payout requests per minute per IP
+  const ip = getClientIp(req.headers as Record<string, string | string[] | undefined>);
+  const limit = await checkRateLimitAsync(`payout:${ip}`, 5, 60_000);
+  if (!limit.allowed) {
+    res.setHeader('Retry-After', String(limit.retryAfter));
+    return res.status(429).json({ error: 'Too many requests', retryAfter: limit.retryAfter });
+  }
 
   // Authentication: require a valid API key
   const authHeader = req.headers.authorization;
