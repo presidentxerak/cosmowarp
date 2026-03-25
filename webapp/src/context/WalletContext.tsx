@@ -609,6 +609,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             }).catch((e) => logErr('phase2Realtime', e));
           }
           break;
+        // Phase 3 realtime events
+        case 'dm_new':
+          // DM thread updated — messaging hook will pick up on next render
+          break;
+        case 'profile_update':
+          // Profile updated (e.g. verification status changed)
+          if (addr) {
+            sync.fullSync(addr).then(cloudData => {
+              if (cloudData?.profile && currentWallet) {
+                currentWallet.balance = cloudData.profile.balance;
+                saveWallet(currentWallet);
+                setWallet({ ...currentWallet });
+              }
+            }).catch((e) => logErr('profileUpdateRealtime', e));
+          }
+          break;
       }
     });
 

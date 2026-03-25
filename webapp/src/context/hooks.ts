@@ -17,6 +17,15 @@ import { useMemo, useState, useCallback, useRef } from 'react';
 import { useWallet } from './WalletContext';
 import { CollectionEngine } from '../engine/collections';
 import { AuctionEngine } from '../engine/auctions';
+import { MessagingEngine, setOnline, isOnline } from '../engine/messaging';
+import {
+  getNotifPreferences, setNotifPreferences, toggleNotifType,
+  filterByPreferences, groupNotifications, getUnreadCount, markAllRead,
+  type NotifType,
+} from '../engine/notifications';
+import {
+  isVerified, getVerification, getAllVerified, computeCreatorStats, getFeatured,
+} from '../engine/verification';
 import {
   filterWarts, setWartTags, getWartTags, getAllTags,
   DEFAULT_FILTERS, type SearchFilters,
@@ -294,4 +303,96 @@ export function useSearch() {
     topCollectors,
     forYou: wallet ? getForYou(warts, wallet.address, []) : [],
   };
+}
+
+// ─── Phase 3 Hooks ────────────────────────────────────────
+
+/**
+ * Messaging — send/receive DMs, unread counts.
+ */
+export function useMessaging() {
+  const { wallet } = useWallet();
+  const engineRef = useRef(MessagingEngine.load());
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  const engine = engineRef.current;
+
+  // Keep presence alive
+  if (wallet) setOnline(wallet.address);
+
+  return useMemo(() => ({
+    conversations: wallet ? engine.getConversations(wallet.address) : [],
+    totalUnread: wallet ? engine.getTotalUnread(wallet.address) : 0,
+    getConversation: (otherAddress: string) =>
+      wallet ? engine.getConversation(wallet.address, otherAddress) : null,
+    sendMessage: (to: string, content: string, type?: 'text' | 'wart_share' | 'transaction_receipt', refId?: string) => {
+      if (!wallet) return null;
+      const msg = engine.sendMessage(wallet.address, to, content, type || 'text', refId);
+      bump();
+      return msg;
+    },
+    markRead: (otherAddress: string) => {
+      if (!wallet) return;
+      const id = [wallet.address, otherAddress].sort().join('_');
+      engine.markConversationRead(id, wallet.address);
+      bump();
+    },
+    deleteConversation: (otherAddress: string) => {
+      if (!wallet) return;
+      const id = [wallet.address, otherAddress].sort().join('_');
+      engine.deleteConversation(id);
+      bump();
+    },
+    isUserOnline: isOnline,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Enhanced notifications — preferences, grouping, deep links.
+ */
+export function useNotifications() {
+  const { wallet, globalTxs } = useWallet();
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  const prefs = getNotifPreferences();
+
+  return useMemo(() => ({
+    preferences: prefs,
+    setPreferences: (p: Parameters<typeof setNotifPreferences>[0]) => {
+      setNotifPreferences(p);
+      bump();
+    },
+    toggleType: (type: NotifType, enabled: boolean) => {
+      toggleNotifType(type, enabled);
+      bump();
+    },
+    filterByPrefs: filterByPreferences,
+    groupNotifications,
+    getUnreadCount,
+    markAllRead: async (notifications: Parameters<typeof markAllRead>[1]) => {
+      if (!wallet) return;
+      await markAllRead(wallet.address, notifications);
+      bump();
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, globalTxs, version]);
+}
+
+/**
+ * Creator verification — badges and stats.
+ */
+export function useVerification() {
+  const { warts } = useWallet();
+
+  return useMemo(() => ({
+    isVerified,
+    getVerification,
+    allVerified: getAllVerified(),
+    featured: getFeatured(),
+    getCreatorStats: (address: string, followerCount?: number) =>
+      computeCreatorStats(address, warts, followerCount),
+  }), [warts]);
 }

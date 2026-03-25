@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { logAdminAction } from '../lib/audit';
+import { verifyCreator, revokeVerification, getAllVerified } from '../engine/verification';
 
 export default function AdminView() {
   const { wallet, adminDashboard, supplyInfo, unlockAdmin, unlockCreator } = useWallet();
@@ -8,6 +9,9 @@ export default function AdminView() {
   const [unlocked, setUnlocked] = useState(false);
   const [unlockAmount, setUnlockAmount] = useState('');
   const [unlockResult, setUnlockResult] = useState<string | null>(null);
+  const [verifyAddress, setVerifyAddress] = useState('');
+  const [verifyResult, setVerifyResult] = useState<string | null>(null);
+  const [verifiedList, setVerifiedList] = useState(getAllVerified());
 
   if (!wallet) {
     return (
@@ -232,6 +236,48 @@ export default function AdminView() {
           </div>
         </>
       )}
+
+      {/* Creator Verification */}
+      <div className="glass-panel p-4">
+        <h3 className="text-base font-bold opacity-70 mb-3">{'\u2714'} Creator Verification</h3>
+        <div className="flex gap-2 mb-3">
+          <input
+            className="warp-input flex-1"
+            type="text"
+            placeholder="Creator address (STZ_...)"
+            value={verifyAddress}
+            onChange={e => setVerifyAddress(e.target.value)}
+          />
+          <button className="warp-button text-body-sm" onClick={async () => {
+            if (!verifyAddress.trim()) return;
+            await verifyCreator(verifyAddress.trim(), wallet.address, 'verified', 'Admin verified');
+            logAdminAction({ action: 'verify_creator', actor_address: wallet.address, target_address: verifyAddress.trim() });
+            setVerifyResult(`Verified ${verifyAddress.trim()}`);
+            setVerifiedList(getAllVerified());
+            setVerifyAddress('');
+            setTimeout(() => setVerifyResult(null), 4000);
+          }}>
+            Verify
+          </button>
+        </div>
+        {verifyResult && <p className="text-body-sm opacity-80 mb-3">{verifyResult}</p>}
+        {verifiedList.length > 0 && (
+          <div className="space-y-1 max-h-36 overflow-y-auto">
+            {verifiedList.map(v => (
+              <div key={v.address} className="flex items-center justify-between text-[11px] p-2 bg-current/5">
+                <span className="opacity-70">{v.address.slice(0, 16)}... <span className="opacity-60">({v.status})</span></span>
+                <button className="opacity-50 hover:opacity-80 text-label" onClick={async () => {
+                  await revokeVerification(v.address);
+                  logAdminAction({ action: 'revoke_verification', actor_address: wallet.address, target_address: v.address });
+                  setVerifiedList(getAllVerified());
+                }}>
+                  Revoke
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

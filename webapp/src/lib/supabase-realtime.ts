@@ -24,7 +24,10 @@ export type RealtimeEvent =
   | { type: 'collection_update'; payload: Record<string, unknown> }
   | { type: 'collection_delete'; payload: Record<string, unknown> }
   | { type: 'auction_update'; payload: Record<string, unknown> }
-  | { type: 'bid_new'; payload: Record<string, unknown> };
+  | { type: 'bid_new'; payload: Record<string, unknown> }
+  // Phase 3
+  | { type: 'dm_new'; payload: Record<string, unknown> }
+  | { type: 'profile_update'; payload: Record<string, unknown> };
 
 type RealtimeListener = (event: RealtimeEvent) => void;
 
@@ -172,6 +175,30 @@ class RealtimeManager {
       .subscribe();
 
     this.channels.push(bidsChannel);
+
+    // ─── DM threads channel (Phase 3) ───────────────────
+    const dmsChannel = supabase
+      .channel('dms-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_dms' },
+        (payload) => this.emit({ type: 'dm_new', payload: (payload.new || payload.old) as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(dmsChannel);
+
+    // ─── Profile updates channel (Phase 3 — verification) ─
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => this.emit({ type: 'profile_update', payload: payload.new as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(profilesChannel);
   }
 
   /** Stop all realtime channels */
