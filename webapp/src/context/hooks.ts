@@ -13,11 +13,27 @@
  * useWallet() remains fully backward-compatible.
  */
 
-import { useMemo, useState, useCallback, useRef } from 'react';
+import { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { useWallet } from './WalletContext';
 import { CollectionEngine } from '../engine/collections';
 import { AuctionEngine } from '../engine/auctions';
 import { MessagingEngine, setOnline, isOnline } from '../engine/messaging';
+import {
+  getPayoutHistory, getPayoutSettings, setPayoutSettings, getSellerEarnings,
+  requestPayout, type PayoutSettings,
+} from '../engine/payouts';
+import {
+  calculateRoyaltySplit, getCreatorRoyalties, getTotalRoyalties, getRoyaltiesByWart,
+} from '../engine/royalties';
+import {
+  getKYCState, getTransactionLimits, checkTransactionAllowed,
+  completeBasicKYC, submitFullKYC,
+} from '../engine/kyc';
+import {
+  getPreferredCurrency, setPreferredCurrency, getCurrentRates,
+  stzToFiat, fiatToStz, formatPrice, formatDualPrice, refreshRates,
+  SUPPORTED_CURRENCIES,
+} from '../engine/currency';
 import {
   getNotifPreferences, setNotifPreferences, toggleNotifType,
   filterByPreferences, groupNotifications, getUnreadCount, markAllRead,
@@ -395,4 +411,117 @@ export function useVerification() {
     getCreatorStats: (address: string, followerCount?: number) =>
       computeCreatorStats(address, warts, followerCount),
   }), [warts]);
+}
+
+// ─── Phase 4 Hooks ────────────────────────────────────────
+
+/**
+ * Payouts — history, settings, earnings, request payout.
+ */
+export function usePayouts() {
+  const { wallet } = useWallet();
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  return useMemo(() => {
+    const address = wallet?.address || '';
+    return {
+      history: getPayoutHistory(address),
+      settings: getPayoutSettings(address),
+      earnings: getSellerEarnings(address),
+      updateSettings: (s: Partial<PayoutSettings>) => {
+        if (!wallet) return;
+        setPayoutSettings(wallet.address, s);
+        bump();
+      },
+      requestPayout: async (amount: number, currency: string) => {
+        if (!wallet) return { success: false, error: 'No wallet' };
+        const result = await requestPayout(wallet.address, amount, currency);
+        if (result.success) bump();
+        return result;
+      },
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet, version]);
+}
+
+/**
+ * Royalties — calculation, tracking, creator dashboard.
+ */
+export function useRoyalties() {
+  const { wallet, warts } = useWallet();
+
+  return useMemo(() => ({
+    calculateSplit: calculateRoyaltySplit,
+    myRoyalties: wallet ? getCreatorRoyalties(wallet.address) : [],
+    totalEarned: wallet ? getTotalRoyalties(wallet.address) : 0,
+    byWart: wallet ? getRoyaltiesByWart(wallet.address) : new Map(),
+  }), [wallet, warts]);
+}
+
+/**
+ * KYC — level, limits, transaction checks, verification lifecycle.
+ */
+export function useKYC() {
+  const { wallet } = useWallet();
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  const state = wallet ? getKYCState(wallet.address) : null;
+  const limits = wallet ? getTransactionLimits(wallet.address) : { maxSingleTx: 0, maxMonthlyVolume: 0 };
+
+  return useMemo(() => ({
+    state,
+    limits,
+    checkTransaction: (amountEUR: number, monthlyVolumeEUR?: number) => {
+      if (!wallet) return { allowed: false, reason: 'No wallet' };
+      return checkTransactionAllowed(wallet.address, amountEUR, monthlyVolumeEUR);
+    },
+    completeBasic: () => {
+      if (!wallet) return null;
+      const result = completeBasicKYC(wallet.address);
+      bump();
+      return result;
+    },
+    submitFull: () => {
+      if (!wallet) return null;
+      const result = submitFullKYC(wallet.address);
+      bump();
+      return result;
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Currency — preferred currency, conversion, formatting, live rates.
+ */
+export function useCurrency() {
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  // Auto-refresh rates on mount
+  useEffect(() => {
+    refreshRates().then(() => bump());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return useMemo(() => ({
+    preferred: getPreferredCurrency(),
+    rates: getCurrentRates(),
+    supported: SUPPORTED_CURRENCIES,
+    setPreferred: (currency: Parameters<typeof setPreferredCurrency>[0]) => {
+      setPreferredCurrency(currency);
+      bump();
+    },
+    toFiat: stzToFiat,
+    toStz: fiatToStz,
+    format: formatPrice,
+    formatDual: formatDualPrice,
+    refreshRates: async () => {
+      await refreshRates();
+      bump();
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [version]);
 }

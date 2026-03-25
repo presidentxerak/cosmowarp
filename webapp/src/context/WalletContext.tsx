@@ -38,6 +38,7 @@ import { insertWartLike, deleteWartLike, fetchWartLikes, insertWartBookmark, del
 import { CollectionEngine } from '../engine/collections';
 import { AuctionEngine } from '../engine/auctions';
 import { setWartTags } from '../engine/search';
+import { pullKYCState } from '../engine/kyc';
 
 // ─── Recovery Kit reminder ────────────────────────────────
 const RECOVERY_REMINDER_KEY = 'strangrz_recovery_reminder';
@@ -520,6 +521,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             for (const [wartId, tags] of phase2.tagMap) setWartTags(wartId, tags);
           }
         }).catch((e) => logErr('pullPhase2Data', e));
+
+        // Pull KYC state on mount
+        pullKYCState(w.address).catch((e) => logErr('pullKYCState', e));
       }
     } else {
       // No wallet (unauthenticated) — still load public gallery from cloud
@@ -743,6 +747,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (e) { logErr('pullPhase2Data', e); }
+
+    // Pull KYC state from Supabase (cross-device persistence)
+    pullKYCState(w.address).catch((e) => logErr('pullKYCState', e));
 
     // Sync social profile from Supabase (cross-device: pull remote alias, bio, links)
     try {
