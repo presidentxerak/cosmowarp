@@ -6,6 +6,7 @@
  */
 
 import { storage } from './storage';
+import { supabase, isBackendAvailable } from '../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -99,6 +100,7 @@ export class SubscriptionEngine {
     };
     this.configs.set(creatorAddress, config);
     this.save();
+    this.syncConfigToCloud(config);
     return config;
   }
 
@@ -131,6 +133,7 @@ export class SubscriptionEngine {
     };
     this.subs.push(sub);
     this.save();
+    this.syncSubToCloud(sub);
     return sub;
   }
 
@@ -140,6 +143,7 @@ export class SubscriptionEngine {
     if (!sub) return false;
     sub.autoRenew = false;
     this.save();
+    this.syncSubToCloud(sub);
     return true;
   }
 
@@ -180,5 +184,28 @@ export class SubscriptionEngine {
     const counts: Record<SubscriptionTier, number> = { free: 0, supporter: 0, premium: 0 };
     for (const s of subs) counts[s.tier]++;
     return counts;
+  }
+
+  private syncConfigToCloud(config: CreatorSubscriptionConfig): void {
+    if (!isBackendAvailable() || !supabase) return;
+    supabase.from('creator_subscription_configs').upsert({
+      creator_address: config.creatorAddress,
+      tiers_json: JSON.stringify(config.tiers),
+      created_at: config.createdAt,
+    }, { onConflict: 'creator_address' }).then(() => {}, () => {});
+  }
+
+  private syncSubToCloud(sub: Subscription): void {
+    if (!isBackendAvailable() || !supabase) return;
+    supabase.from('subscriptions').upsert({
+      id: sub.id,
+      subscriber: sub.subscriberAddress,
+      creator: sub.creatorAddress,
+      tier: sub.tier,
+      started_at: sub.startedAt,
+      expires_at: sub.expiresAt,
+      auto_renew: sub.autoRenew,
+      total_paid: sub.totalPaid,
+    }, { onConflict: 'id' }).then(() => {}, () => {});
   }
 }

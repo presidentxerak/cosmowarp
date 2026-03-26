@@ -151,6 +151,8 @@ export class GovernanceEngine {
     proposal.voterCount++;
 
     this.save();
+    this.syncToCloud(proposal);
+    this.syncVoteToCloud(vote);
     return { success: true };
   }
 
@@ -240,5 +242,16 @@ export class GovernanceEngine {
       created_at: proposal.createdAt,
       executed_at: proposal.executedAt,
     }, { onConflict: 'id' }).then(() => {}, () => {});
+  }
+
+  private syncVoteToCloud(vote: Vote): void {
+    if (!isBackendAvailable() || !supabase) return;
+    supabase.from('votes').insert({
+      proposal_id: vote.proposalId,
+      voter: vote.voter,
+      choice: vote.choice,
+      weight: vote.weight,
+      created_at: vote.timestamp,
+    }).then(() => {}, () => {});
   }
 }
