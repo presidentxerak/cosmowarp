@@ -47,8 +47,8 @@ describe('Tokenomics Constants', () => {
     expect(CREATOR_LOCKED).toBe(1_000_000);
   });
 
-  test('airdrop per account is 1000', () => {
-    expect(AIRDROP_AMOUNT).toBe(1_000);
+  test('airdrop per account is 300', () => {
+    expect(AIRDROP_AMOUNT).toBe(300);
   });
 
   test('airdrop pool is 10M', () => {
@@ -190,12 +190,12 @@ describe('Streak System', () => {
 describe('TokenomicsEngine', () => {
   beforeEach(() => storage.clear());
 
-  test('airdrop gives 1000 STZ', () => {
+  test('airdrop gives 300 STZ', () => {
     const engine = new TokenomicsEngine('CWcreator');
     const amount = engine.processAirdrop('CWnew');
-    expect(amount).toBe(1000);
-    expect(engine.getState().totalAirdropped).toBe(1000);
-    expect(engine.getState().circulatingSupply).toBe(1000);
+    expect(amount).toBe(300);
+    expect(engine.getState().totalAirdropped).toBe(300);
+    expect(engine.getState().circulatingSupply).toBe(300);
   });
 
   test('mining reward decreases over time', () => {
@@ -229,7 +229,7 @@ describe('TokenomicsEngine', () => {
     engine.processAirdrop('CW1');
     const breakdown = engine.getSupplyBreakdown();
     expect(breakdown.total).toBe(TOTAL_SUPPLY);
-    expect(breakdown.totalAirdropped).toBe(1000);
+    expect(breakdown.totalAirdropped).toBe(300);
   });
 
   test('serialization roundtrip', () => {

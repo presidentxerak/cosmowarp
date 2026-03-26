@@ -1,4 +1,4 @@
-import { useEffect, useCallback, lazy, Suspense, Component } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, Component } from 'react';
 import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { WalletProvider } from './context/WalletContext';
@@ -11,6 +11,7 @@ import BottomBar from './components/BottomBar';
 const CosmicBackground = lazy(() => import('./components/CosmicBackground'));
 
 // ─── Lazy-loaded views with auto-reload on chunk failure ─
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lazyRetry<T extends { default: React.ComponentType<any> }>(
   factory: () => Promise<T>,
 ): React.LazyExoticComponent<T['default']> {
@@ -214,6 +215,10 @@ function NavigationBridge({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('strangrz-navigate', handler);
   }, [navigateTab]);
 
+  // Onboarding state — React-managed for immediate re-render
+  const [showOnboarding, setShowOnboarding] = useState(isOnboardingActive);
+  const onboardingStep = showOnboarding ? getCurrentStep() : null;
+
   return (
     <>
       <BackgroundErrorBoundary>
@@ -223,31 +228,27 @@ function NavigationBridge({ children }: { children: ReactNode }) {
         <TopBar onNavigate={navigateTab} />
 
         {/* Onboarding banner for new users */}
-        {isOnboardingActive() && (() => {
-          const step = getCurrentStep();
-          if (!step) return null;
-          return (
-            <div className="mx-2.5 sm:mx-[10px] mt-2 glass-panel p-4 border-current/20 flex items-center gap-4">
-              <span className="text-2xl shrink-0">{step.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-body-sm font-bold opacity-90">{step.title}</p>
-                <p className="text-[11px] opacity-60 mt-0.5">{step.description}</p>
-              </div>
-              <button
-                className="warp-button text-[11px] py-1.5 px-3 shrink-0"
-                onClick={() => { completeStep(step.id); navigateTab(PATH_TO_TAB[step.route.slice(1)] || 'wall'); }}
-              >
-                {step.action}
-              </button>
-              <button
-                className="text-[10px] opacity-40 hover:opacity-70 shrink-0"
-                onClick={() => skipOnboarding()}
-              >
-                Skip
-              </button>
+        {showOnboarding && onboardingStep && (
+          <div className="mx-2.5 sm:mx-[10px] mt-2 glass-panel p-4 border-current/20 flex items-center gap-4">
+            <span className="text-2xl shrink-0">{onboardingStep.icon}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-body-sm font-bold opacity-90">{onboardingStep.title}</p>
+              <p className="text-[11px] opacity-60 mt-0.5">{onboardingStep.description}</p>
             </div>
-          );
-        })()}
+            <button
+              className="warp-button text-[11px] py-1.5 px-3 shrink-0"
+              onClick={() => { completeStep(onboardingStep.id); setShowOnboarding(isOnboardingActive()); navigateTab(PATH_TO_TAB[onboardingStep.route.slice(1)] || 'wall'); }}
+            >
+              {onboardingStep.action}
+            </button>
+            <button
+              className="text-[10px] opacity-40 hover:opacity-70 shrink-0"
+              onClick={() => { skipOnboarding(); setShowOnboarding(false); }}
+            >
+              Skip
+            </button>
+          </div>
+        )}
 
         <main className="flex-1 px-2.5 sm:px-[10px] pb-16">
           <Suspense fallback={<ViewLoader />}>

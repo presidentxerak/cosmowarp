@@ -461,14 +461,14 @@ export function usePayouts() {
  * Royalties — calculation, tracking, creator dashboard.
  */
 export function useRoyalties() {
-  const { wallet, warts } = useWallet();
+  const { wallet } = useWallet();
 
   return useMemo(() => ({
     calculateSplit: calculateRoyaltySplit,
     myRoyalties: wallet ? getCreatorRoyalties(wallet.address) : [],
     totalEarned: wallet ? getTotalRoyalties(wallet.address) : 0,
     byWart: wallet ? getRoyaltiesByWart(wallet.address) : new Map(),
-  }), [wallet, warts]);
+  }), [wallet]);
 }
 
 /**
