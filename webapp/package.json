@@ -19,7 +19,7 @@
     "@irys/web-upload-ethereum-ethers-v6": "^0.0.16",
     "@noble/ed25519": "^2.3.0",
     "@sentry/react": "^10.45.0",
-    "@supabase/supabase-js": "^2.99.0",
+    "@supabase/supabase-js": "^2.100.1",
     "@tanstack/react-virtual": "^3.13.23",
     "@types/ws": "^8.18.1",
     "ethers": "^6.16.0",
