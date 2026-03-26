@@ -7,6 +7,7 @@
 
 import { supabase, isBackendAvailable } from './supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { EventBatcher, HeartbeatMonitor, ConnectionTracker, getReconnectDelay } from './realtime-optimizer';
 
 // ─── Event Types ─────────────────────────────────────────────
 
@@ -37,6 +38,20 @@ class RealtimeManager {
   private channels: RealtimeChannel[] = [];
   private listeners: Set<RealtimeListener> = new Set();
   private started = false;
+  private reconnectAttempts = 0;
+
+  /** Event batcher — debounces rapid-fire events to reduce re-renders */
+  private batcher = new EventBatcher<RealtimeEvent>((batch) => {
+    for (const event of batch) this.emitDirect(event);
+  }, 150, 20);
+
+  /** Heartbeat monitor — detects degraded connections */
+  private heartbeat = new HeartbeatMonitor(() => {
+    this.tracker.setHealth('degraded');
+  });
+
+  /** Connection health tracker */
+  readonly tracker = new ConnectionTracker();
 
   /** Register a listener for all realtime events */
   subscribe(fn: RealtimeListener): () => void {
@@ -44,16 +59,25 @@ class RealtimeManager {
     return () => this.listeners.delete(fn);
   }
 
-  private emit(event: RealtimeEvent) {
+  private emitDirect(event: RealtimeEvent) {
+    this.tracker.recordEvent();
+    this.heartbeat.receivePong();
     this.listeners.forEach(fn => {
       try { fn(event); } catch { /* listener error */ }
     });
+  }
+
+  private emit(event: RealtimeEvent) {
+    this.batcher.add(event);
   }
 
   /** Start all realtime channels */
   start() {
     if (this.started || !isBackendAvailable() || !supabase) return;
     this.started = true;
+    this.tracker.setHealth('connected');
+    this.heartbeat.start();
+    this.reconnectAttempts = 0;
 
     // ─── Warts channel ──────────────────────────────────
     const wartsChannel = supabase
@@ -203,6 +227,9 @@ class RealtimeManager {
 
   /** Stop all realtime channels */
   stop() {
+    this.batcher.clear();
+    this.heartbeat.stop();
+    this.tracker.setHealth('disconnected');
     for (const ch of this.channels) {
       supabase?.removeChannel(ch);
     }
@@ -210,10 +237,13 @@ class RealtimeManager {
     this.started = false;
   }
 
-  /** Restart (e.g., after reconnect) */
+  /** Restart with exponential backoff */
   restart() {
     this.stop();
-    this.start();
+    this.reconnectAttempts++;
+    this.tracker.recordReconnectAttempt();
+    const delay = getReconnectDelay(this.reconnectAttempts);
+    setTimeout(() => this.start(), delay);
   }
 }
 

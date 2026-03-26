@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
 import VirtualGrid from './VirtualGrid';
+import { getMediaUrl, getSrcSet, getSizes } from '../lib/media-cdn';
 import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
 import type { Wart } from '../engine/warts';
 import { getCurrencySymbol, FiatGateway, type FiatCurrency } from '../engine/fiatgateway';
@@ -766,7 +767,18 @@ export default function MarketplaceView() {
         />
       );
     }
-    return <img src={wart.imageData} alt={wart.title} className={`w-full h-full object-cover ${className}`} />;
+    const imgSrc = wart.imageData.startsWith('data:') ? wart.imageData : getMediaUrl(wart.imageData);
+    const srcSet = getSrcSet(wart.imageData);
+    return (
+      <img
+        src={imgSrc}
+        srcSet={srcSet || undefined}
+        sizes={srcSet ? getSizes('grid') : undefined}
+        alt={wart.title}
+        className={`w-full h-full object-cover ${className}`}
+        loading="lazy"
+      />
+    );
   };
 
   // ─── Rarity Badge ────────────────────────────────────────

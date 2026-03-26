@@ -2,9 +2,18 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { initSentry } from './lib/sentry'
+import { initInstallPrompt, observeWebVitals } from './lib/pwa'
 
 // ─── Initialize error reporting ──────────────────────────
 initSentry();
+
+// ─── Initialize PWA install prompt + Web Vitals ──────────
+initInstallPrompt();
+observeWebVitals((vitals) => {
+  if (import.meta.env.DEV) {
+    console.info('[WebVitals]', vitals);
+  }
+});
 
 // ─── Migrate old cosmorare_* storage keys to strangrz_* ─────
 // The rebrand changed all localStorage keys, orphaning existing data.
