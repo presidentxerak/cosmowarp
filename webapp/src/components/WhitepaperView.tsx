@@ -29,7 +29,7 @@ export default function WhitepaperView() {
           </div>
           <h1 className="text-title-lg sm:text-3xl font-bold opacity-100 mb-2 font-title">Strangrz</h1>
           <p className="text-base sm:text-base opacity-50 mb-1">Strangrz Protocole</p>
-          <p className="text-body-sm opacity-40 max-w-md mx-auto">
+          <p className="text-body-sm opacity-60 max-w-md mx-auto">
             La plateforme de certification pour objets rares.
             Certifiez, échangez et collectionnez en toute confiance.
           </p>
@@ -46,7 +46,7 @@ export default function WhitepaperView() {
               className={`flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-2 sm:py-1.5 rounded-none text-label sm:text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 section === n.id
                   ? 'bg-current/10 opacity-80'
-                  : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                  : 'opacity-60 hover:opacity-70 hover:bg-current/5'
               }`}
             >
               <span className="text-base sm:text-[11px] leading-none">{n.icon}</span>
@@ -79,7 +79,7 @@ function SectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title:
         <span className="text-title-lg opacity-60">{icon}</span>
         <h2 className="text-title-md font-bold opacity-100 font-title">{title}</h2>
       </div>
-      <p className="text-body-sm opacity-40">{subtitle}</p>
+      <p className="text-base opacity-60">{subtitle}</p>
     </div>
   );
 }
@@ -96,7 +96,7 @@ function Stat({ label, value, color = 'opacity-80' }: { label: string; value: st
   return (
     <div className="glass-panel p-3 text-center bg-current/5">
       <p className={`text-title-sm sm:text-title-md font-bold ${color}`}>{value}</p>
-      <p className="text-label opacity-40">{label}</p>
+      <p className="text-label opacity-60">{label}</p>
     </div>
   );
 }
@@ -118,14 +118,14 @@ function OverviewSection() {
         {[
           ['1', 'Créez votre portefeuille', 'Un mot de passe, une clé de récupération, et vous êtes prêt. Aucune donnée personnelle demandée.'],
           ['2', 'Certifiez vos objets rares', 'Uploadez une photo de votre objet. Strangrz génère un certificat STCERT infalsifiable (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte numérique et signature cryptographique.'],
-          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des Strangrz certifiées ou mettez les vôtres en vente. Paiement par carte, PayPal ou en Strangrz (⬣).'],
+          ['3', 'Achetez et vendez', 'Parcourez la marketplace, achetez des oeuvres certifiées ou mettez les vôtres en vente. Paiement par carte bancaire, Apple Pay, Google Pay ou en Ethereum.'],
           ['4', 'Collectionnez en confiance', 'Chaque Strangrz a un historique de propriété vérifiable. Le certificat est permanent et ne peut être falsifié.'],
         ].map(([num, title, desc]) => (
           <div key={num} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="text-title-md opacity-80 shrink-0 w-8 text-center font-bold">{num}</span>
             <div>
               <p className="text-body-sm font-bold opacity-90">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-label opacity-60">{desc}</p>
             </div>
           </div>
         ))}
@@ -134,9 +134,9 @@ function OverviewSection() {
       <H3>Pourquoi Strangrz ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          ['✓', 'Zéro frais', 'Certifier un objet, envoyer des Strangrz, vérifier un certificat : tout est gratuit.'],
+          ['✓', 'Zéro frais', 'Certifier un objet et vérifier un certificat : tout est gratuit.'],
           ['✓', 'Infalsifiable', 'Les certificats STCERT sont protégés par de la cryptographie (Ed25519 + SHA-256).'],
-          ['✓', 'Paiement simple', "Carte bancaire, PayPal, SEPA ou Strangrz (⬣). Pas besoin d\u2019exchange crypto."],
+          ['✓', 'Paiement simple', "Carte bancaire, Apple Pay, Google Pay ou Ethereum. Simple et direct."],
           ['✓', 'Décentralisé', "Vos données vous appartiennent. Pas d\u2019intermédiaire, pas de banque."],
           ['✓', 'Hors ligne', "L\u2019app fonctionne même sans internet grâce au mode PWA."],
         ].map(([icon, title, desc]) => (
@@ -144,7 +144,7 @@ function OverviewSection() {
             <span className="text-body-sm opacity-80 shrink-0">{icon}</span>
             <div>
               <p className="text-body-sm font-bold opacity-80">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-label opacity-60">{desc}</p>
             </div>
           </div>
         ))}
@@ -179,12 +179,38 @@ function HowItWorksSection() {
         <Stat label="Confirmation" value="~15s" />
       </div>
 
-      <H3>Le stockage : StrangrzCode</H3>
+      <H3>Le stockage : Architecture multi-couches</H3>
       <P>
-        Chaque certificat contient une représentation visuelle de l'objet certifié.
-        <span className="opacity-80 font-bold"> StrangrzCode</span> compresse ces images
-        via 7 couches de compression pour les stocker directement sur le réseau.
-        Pas de serveur externe qui pourrait disparaître : votre certificat est permanent et autosuffisant.
+        Strangrz utilise un <span className="opacity-80 font-bold">stockage intelligent en 2 {'\u00E9'}tapes</span> pour
+        garantir un mod{'\u00E8'}le {'\u00E9'}conomique durable sans compromettre la protection :
+      </P>
+      <div className="p-4 rounded-none bg-current/5 mb-3 text-body-sm opacity-60 space-y-1">
+        <p><span className="font-bold">{'À'} la publication (gratuit) :</span> seul un aper{'\u00E7'}u compress{'\u00E9'} (~50 Ko JPEG)
+          est envoy{'\u00E9'} dans le cloud. L'oeuvre originale reste sur l'appareil du cr{'\u00E9'}ateur.
+          Z{'\u00E9'}ro co{'\u00FB'}t de stockage pour la plateforme.</p>
+        <p><span className="font-bold">{'À'} la vente :</span> le m{'\u00E9'}dia en pleine qualit{'\u00E9'} est automatiquement
+          r{'\u00E9'}pliqu{'\u00E9'} sur 3 couches de stockage permanent :</p>
+      </div>
+      <div className="space-y-2 mb-3">
+        {[
+          ['Supabase Cloud', 'CDN rapide — acc\u00E8s instantan\u00E9 mondial'],
+          ['IPFS (Pinata)', 'Stockage d\u00E9centralis\u00E9 adress\u00E9 par contenu — gateway : ipfs.io'],
+          ['Arweave (Irys)', 'Stockage permanent et immuable — gateway : arweave.net'],
+        ].map(([name, desc]) => (
+          <div key={name} className="flex gap-3 p-2 rounded-none bg-current/5">
+            <code className="text-body-sm opacity-60 bg-current/5 px-1 py-0.5 rounded-none font-mono shrink-0 w-28 text-center">{name}</code>
+            <p className="text-body-sm opacity-50">{desc}</p>
+          </div>
+        ))}
+      </div>
+      <P>
+        Les co{'\u00FB'}ts de stockage sont couverts par les frais de transaction (pay{'\u00E9'}s par l'acheteur).
+        R{'\u00E9'}sultat : publication 100% gratuite, stockage durable financ{'\u00E9'} par les ventes.
+      </P>
+      <P>
+        En parall{'\u00E8'}le, <span className="opacity-80 font-bold">StrangrzCode</span> compresse les certificats
+        via 7 couches de compression fractale dans un conteneur SVG stock{'\u00E9'} directement on-chain.
+        Pas de serveur externe : votre certificat est permanent et autosuffisant.
       </P>
 
       <H3>L'exécution : StrangrzChain</H3>
@@ -211,16 +237,18 @@ function HowItWorksSection() {
         ))}
       </div>
 
-      <H3>En résumé</H3>
+      <H3>En r{'\u00E9'}sum{'\u00E9'}</H3>
       <P>
         Quand vous certifiez un objet rare, voici ce qui se passe en coulisses :
       </P>
       <div className="p-4 rounded-none bg-current/5 mb-4 text-body-sm opacity-60 space-y-1">
-        <p>1. Votre photo est compressée par <span className="font-bold">StrangrzCode</span> (7 couches de compression)</p>
-        <p>2. Un certificat STCERT est généré (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 + signature Ed25519</p>
-        <p>3. Le tout est validé par le <span className="font-bold">StrangrzMesh</span> (7 couches parallèles)</p>
-        <p>4. Le certificat est stocké de façon permanente dans <span className="font-bold">StrangrzChain</span></p>
-        <p>5. Vous recevez un certificat vérifiable à tout moment par n'importe qui</p>
+        <p>1. Votre photo est compress{'\u00E9'}e par <span className="font-bold">StrangrzCode</span> (7 couches de compression)</p>
+        <p>2. Un certificat STCERT est g{'\u00E9'}n{'\u00E9'}r{'\u00E9'} (SZ-721 sur Strangrz & ERC-721 sur Ethereum) avec empreinte SHA-256 + signature Ed25519</p>
+        <p>3. Le tout est valid{'\u00E9'} par le <span className="font-bold">StrangrzMesh</span> (7 couches parall{'\u00E8'}les)</p>
+        <p>4. Un aper{'\u00E7'}u compress{'\u00E9'} (~50 Ko) est envoy{'\u00E9'} dans le cloud pour l'affichage en galerie</p>
+        <p>5. Le certificat est stock{'\u00E9'} de fa{'\u00E7'}on permanente dans <span className="font-bold">StrangrzChain</span></p>
+        <p>6. {'À'} la vente : le m{'\u00E9'}dia HD est r{'\u00E9'}pliqu{'\u00E9'} sur <span className="font-bold">Supabase + IPFS + Arweave</span> (stockage permanent)</p>
+        <p>7. Vous recevez un certificat v{'\u00E9'}rifiable {'\u00E0'} tout moment par n'importe qui</p>
       </div>
     </div>
   );
@@ -290,7 +318,7 @@ function CertificatesSection() {
           <div key={label} className="text-center p-2 rounded-none bg-current/5">
             <p className="text-title-sm">{icon}</p>
             <p className="text-body-sm font-bold opacity-80">{label}</p>
-            <p className="text-label opacity-40">{desc}</p>
+            <p className="text-label opacity-60">{desc}</p>
           </div>
         ))}
       </div>
@@ -307,50 +335,49 @@ function CertificatesSection() {
 function TokenomicsSection() {
   return (
     <div>
-      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (⬣)" subtitle="La monnaie de l'écosystème Strangrz" />
+      <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 8.5l8 7M16 8.5l-8 7" /></svg>} title="Le Strangrz (⬣)" subtitle="Le jeton de récompense de l'écosystème" />
       <P>
-        Le <span className="opacity-80 font-bold">Strangrz (⬣)</span> est la monnaie native de Strangrz.
-        Son offre est fixée à <span className="opacity-80 font-bold">69 millions</span> d'unités pour toujours.
-        Aucun Strangrz supplémentaire ne sera jamais créé.
+        Le <span className="opacity-80 font-bold">Strangrz (⬣ STZ)</span> est un jeton de récompense interne à la plateforme.
+        Il récompense les collectionneurs actifs et permet de débloquer des avantages exclusifs.
+        Les achats et ventes d'oeuvres se font en <span className="opacity-80 font-bold">euros</span> (carte, Apple Pay, Google Pay)
+        ou en <span className="opacity-80 font-bold">Ethereum (ETH)</span>.
       </P>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <Stat label="Offre totale" value="69M ⬣" />
-        <Stat label="Minage" value="60%" />
-        <Stat label="Fondation" value="20%" />
-        <Stat label="Communauté" value="20%" />
-      </div>
-
-      <H3>Comment obtenir des Strangrz ?</H3>
+      <H3>Comment gagner des STZ ?</H3>
       <div className="space-y-2 mb-4">
         {[
-          [<svg key="mine" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, 'Miner', "Ex\u00e9cutez des calculs dans l\u2019app et gagnez des Strangrz. Plus la difficult\u00e9 est \u00e9lev\u00e9e, plus vous gagnez."],
-          [<svg key="buy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>, 'Acheter', "Achetez des Strangrz directement par carte bancaire, PayPal ou SEPA. Pas besoin d\u2019exchange crypto."],
-          [<svg key="sell" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 'Vendre des Strangrz', 'Vendez vos objets rares certifiés sur la marketplace et recevez des Strangrz.'],
-          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrops', 'Des Strangrz sont distribués gratuitement à la communauté active.'],
+          [<svg key="collect" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>, 'Collectionner', "Chaque oeuvre achetée vous rapporte 100 STZ automatiquement."],
+          [<svg key="welcome" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" /></svg>, 'Bienvenue', "300 STZ offerts à la création de votre compte."],
+          [<svg key="streak" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>, 'Streaks', "Restez actif chaque jour pour accumuler des bonus de streak."],
+          [<svg key="drop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><polyline points="12 15 12 3"/><polyline points="8 7 12 3 16 7"/></svg>, 'Airdrop exclusif', "À 2 000 STZ (20 oeuvres), recevez une oeuvre digitale exclusive en série limitée !"],
         ].map(([icon, title, desc]) => (
           <div key={title as string} className="flex gap-3 p-3 rounded-none bg-current/5">
             <span className="opacity-60 shrink-0 mt-0.5">{icon}</span>
             <div>
               <p className="text-body-sm font-bold opacity-80">{title as string}</p>
-              <p className="text-label opacity-40">{desc as string}</p>
+              <p className="text-label opacity-60">{desc as string}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <H3>Décroissance Résonante</H3>
+      <H3>Acheter et vendre des oeuvres</H3>
       <P>
-        Au lieu du "halving" brutal du Bitcoin (récompense divisée par 2 tous les 4 ans), Strangrz
-        utilise une courbe douce basée sur le <span className="opacity-80 font-bold">nombre d'or (φ = 1.618)</span>.
-        Les premiers mineurs sont récompensés généreusement, mais la récompense ne s'effondre jamais
-        brutalement. La transition est fluide et prévisible.
+        Toutes les transactions d'achat et de vente d'oeuvres se font en <span className="opacity-80 font-bold">euros (€)</span> via
+        carte bancaire, Apple Pay ou Google Pay, ou en <span className="opacity-80 font-bold">Ethereum (ETH)</span>.
+        Les vendeurs reçoivent leurs paiements directement sur leur compte bancaire via Stripe.
+        Le protocole Strangrz gère les certificats d'authenticité (STCERT) en arrière-plan.
       </P>
 
-      <H3>Zéro frais — toujours</H3>
+      <H3>Zéro frais réseau</H3>
       <P>
-        Envoyer des Strangrz, certifier un objet, vérifier un certificat : tout est gratuit.
-        Le réseau se finance par la récompense de minage, pas par les frais des utilisateurs.
+        Certifier un objet, vérifier un certificat : aucun frais de réseau (gas) sur le protocole Strangrz.
+      </P>
+      <P>
+        <span className="opacity-80 font-bold">Frais plateforme Marketplace :</span> Lors d'un achat sur la Marketplace,
+        des frais plateforme s'appliquent côté acheteur : <span className="font-bold">10% sur le premier marché</span> (première vente)
+        et <span className="font-bold">5% sur le second marché</span> (reventes). Le vendeur reçoit 100% du prix affiché.
+        Ces frais financent le développement, la maintenance et la sécurité de la plateforme.
       </P>
     </div>
   );
@@ -364,13 +391,13 @@ function HierarchySection() {
       <SectionTitle icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>} title="Niveaux" subtitle="Plus vous utilisez Strangrz, plus vous êtes récompensé" />
       <P>
         Strangrz récompense l'engagement avec un système de <span className="opacity-80 font-bold">7 niveaux</span>.
-        Plus vous certifiez, échangez et minez, plus vous montez et plus vos récompenses augmentent.
+        Plus vous certifiez, échangez et collectionnez, plus vous montez et plus vos récompenses augmentent.
       </P>
 
       <div className="space-y-2 mb-4">
         {[
           ['Particle', '×1.0', 'Niveau de départ. Accès à toutes les fonctionnalités.'],
-          ['Wave', '×1.2', '+20% sur les récompenses de minage.'],
+          ['Wave', '×1.2', '+20% sur les récompenses STZ.'],
           ['Star', '×1.5', 'Fonctionnalités avancées du Mur.'],
           ['Nebula', '×2.0', 'Double récompense sur les certifications.'],
           ['Galaxy', '×3.0', 'Droit de vote sur le protocole.'],
@@ -389,8 +416,8 @@ function HierarchySection() {
 
       <H3>Comment monter ?</H3>
       <P>
-        La progression est basée sur votre activité réelle : certifications créées, transactions effectuées,
-        participation au minage. Il n'est pas possible d'acheter un niveau — seule l'utilisation réelle compte.
+        La progression est basée sur votre activité réelle : certifications créées, oeuvres collectionnées,
+        publications sur le Mur. Il n'est pas possible d'acheter un niveau — seule l'utilisation réelle compte.
       </P>
 
       <H3>Bonus de série</H3>
@@ -440,7 +467,7 @@ function SecuritySection() {
           <div key={title} className="flex gap-3 p-3 rounded-none bg-current/5">
             <div>
               <p className="text-body-sm font-bold opacity-80">{title}</p>
-              <p className="text-label opacity-40">{desc}</p>
+              <p className="text-label opacity-60">{desc}</p>
             </div>
           </div>
         ))}
@@ -489,12 +516,12 @@ function RoadmapSection() {
           <div key={phase as string} className="p-4 rounded-none bg-current/5 border border-current/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-base font-bold opacity-80">{phase as string}</span>
-              <span className="text-label opacity-40">{date as string}</span>
+              <span className="text-label opacity-60">{date as string}</span>
             </div>
             <ul className="space-y-1">
               {(items as string[]).map(item => (
                 <li key={item} className="text-body-sm opacity-50 flex gap-2">
-                  <span className="opacity-40 shrink-0">{'→'}</span>
+                  <span className="opacity-60 shrink-0">{'→'}</span>
                   <span>{item}</span>
                 </li>
               ))}

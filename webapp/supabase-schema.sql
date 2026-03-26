@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS warts (
   fiat_currency       TEXT,
   -- Vault
   vault_backup        BOOLEAN DEFAULT FALSE,
+  -- Contract references
+  royalty_contract_id  TEXT,
+  active_contract_ids  JSONB DEFAULT '[]',
+  -- Strangrz integration
+  vobjct_id            TEXT,
+  vobjct_protected     BOOLEAN DEFAULT FALSE,
+  -- Multi-chain minting
+  mint_chain           TEXT DEFAULT 'strangrz',
   -- Media reference (Supabase Storage path)
   media_path          TEXT,        -- path in supabase storage bucket
   audio_cover_path    TEXT,        -- cover image path for audio warts
@@ -183,6 +191,19 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient, read);
 
 -- ─── 11. ROW LEVEL SECURITY ─────────────────────────────────
+-- Strategy: anon key = public read + guarded writes.
+-- Write operations use request headers to carry the caller's wallet address.
+-- Service role key (server-side only) bypasses RLS for trusted operations.
+--
+-- Helper: extract wallet address from request header set by the client.
+-- The webapp sets this via supabase.rpc() or custom fetch headers.
+CREATE OR REPLACE FUNCTION requesting_address() RETURNS TEXT AS $$
+  SELECT coalesce(
+    current_setting('request.jwt.claims', true)::json->>'address',
+    current_setting('request.headers', true)::json->>'x-strangrz-address',
+    ''
+  );
+$$ LANGUAGE sql STABLE;
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE warts ENABLE ROW LEVEL SECURITY;
@@ -195,7 +216,7 @@ ALTER TABLE social_follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mesh_state ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- Public read access for marketplace data
+-- ── SELECT: public read for marketplace data ──
 CREATE POLICY "Public read profiles" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Public read warts" ON warts FOR SELECT USING (true);
 CREATE POLICY "Public read wart_history" ON wart_history FOR SELECT USING (true);
@@ -207,25 +228,201 @@ CREATE POLICY "Public read social_follows" ON social_follows FOR SELECT USING (t
 CREATE POLICY "Public read mesh_state" ON mesh_state FOR SELECT USING (true);
 CREATE POLICY "Public read notifications" ON notifications FOR SELECT USING (true);
 
--- Write access via anon key (service role can bypass RLS)
--- In production, you'd want auth-based policies. For now, allow writes.
-CREATE POLICY "Allow insert profiles" ON profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update profiles" ON profiles FOR UPDATE USING (true);
-CREATE POLICY "Allow insert warts" ON warts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update warts" ON warts FOR UPDATE USING (true);
-CREATE POLICY "Allow delete warts" ON warts FOR DELETE USING (true);
+-- ── INSERT: caller must own the record they're creating ──
+CREATE POLICY "Own insert profiles" ON profiles FOR INSERT
+  WITH CHECK (address = requesting_address());
+CREATE POLICY "Own insert warts" ON warts FOR INSERT
+  WITH CHECK (creator = requesting_address());
 CREATE POLICY "Allow insert wart_history" ON wart_history FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow insert wart_comments" ON wart_comments FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow insert transactions" ON transactions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Own insert wart_comments" ON wart_comments FOR INSERT
+  WITH CHECK (author = requesting_address());
+CREATE POLICY "Own insert transactions" ON transactions FOR INSERT
+  WITH CHECK (from_addr = requesting_address() OR to_addr = requesting_address());
 CREATE POLICY "Allow insert certificates" ON certificates FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow insert social_profiles" ON social_profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update social_profiles" ON social_profiles FOR UPDATE USING (true);
-CREATE POLICY "Allow insert social_follows" ON social_follows FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow delete social_follows" ON social_follows FOR DELETE USING (true);
+CREATE POLICY "Own insert social_profiles" ON social_profiles FOR INSERT
+  WITH CHECK (address = requesting_address());
+CREATE POLICY "Own insert social_follows" ON social_follows FOR INSERT
+  WITH CHECK (follower = requesting_address());
 CREATE POLICY "Allow upsert mesh_state" ON mesh_state FOR INSERT WITH CHECK (true);
+CREATE POLICY "Own insert notifications" ON notifications FOR INSERT WITH CHECK (true);
+
+-- ── UPDATE: only owner can update their own data ──
+CREATE POLICY "Own update profiles" ON profiles FOR UPDATE
+  USING (address = requesting_address());
+CREATE POLICY "Own update warts" ON warts FOR UPDATE
+  USING (owner = requesting_address() OR creator = requesting_address());
+CREATE POLICY "Own update social_profiles" ON social_profiles FOR UPDATE
+  USING (address = requesting_address());
 CREATE POLICY "Allow update mesh_state" ON mesh_state FOR UPDATE USING (true);
-CREATE POLICY "Allow insert notifications" ON notifications FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow update notifications" ON notifications FOR UPDATE USING (true);
+CREATE POLICY "Own update notifications" ON notifications FOR UPDATE
+  USING (recipient = requesting_address());
+
+-- ── DELETE: only owner can delete their own data ──
+CREATE POLICY "Own delete warts" ON warts FOR DELETE
+  USING (owner = requesting_address() OR creator = requesting_address());
+CREATE POLICY "Own delete social_follows" ON social_follows FOR DELETE
+  USING (follower = requesting_address());
+CREATE POLICY "Own delete notifications" ON notifications FOR DELETE
+  USING (recipient = requesting_address());
+
+-- ─── 11b. TOTP 2FA CONFIGS ───────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS totp_configs (
+  address          TEXT PRIMARY KEY REFERENCES profiles(address),
+  secret           TEXT NOT NULL,
+  username         TEXT NOT NULL,
+  enabled          BOOLEAN DEFAULT FALSE,
+  enabled_at       BIGINT DEFAULT 0,
+  backup_codes     JSONB NOT NULL DEFAULT '[]',
+  used_backup_codes JSONB NOT NULL DEFAULT '[]',
+  created_at       BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  updated_at       BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+ALTER TABLE totp_configs ENABLE ROW LEVEL SECURITY;
+
+-- Only the owner can read/write their own 2FA config (sensitive data)
+CREATE POLICY "Own read totp_configs" ON totp_configs FOR SELECT
+  USING (address = requesting_address());
+CREATE POLICY "Own insert totp_configs" ON totp_configs FOR INSERT
+  WITH CHECK (address = requesting_address());
+CREATE POLICY "Own update totp_configs" ON totp_configs FOR UPDATE
+  USING (address = requesting_address());
+CREATE POLICY "Own delete totp_configs" ON totp_configs FOR DELETE
+  USING (address = requesting_address());
+
+-- ─── 11c. FIAT TRANSACTIONS ─────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS fiat_transactions (
+  tx_id           TEXT PRIMARY KEY,
+  buyer_address   TEXT NOT NULL,
+  seller_address  TEXT,
+  wart_id         TEXT,
+  amount_fiat     NUMERIC NOT NULL,
+  currency        TEXT DEFAULT 'eur',
+  amount_stz      NUMERIC NOT NULL,
+  status          TEXT DEFAULT 'pending', -- pending | completed | failed
+  processor_ref   TEXT,
+  error           TEXT,
+  created_at      BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  updated_at      BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+CREATE INDEX IF NOT EXISTS idx_fiat_tx_buyer ON fiat_transactions(buyer_address);
+CREATE INDEX IF NOT EXISTS idx_fiat_tx_status ON fiat_transactions(status);
+
+ALTER TABLE fiat_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own read fiat_transactions" ON fiat_transactions FOR SELECT
+  USING (buyer_address = requesting_address() OR seller_address = requesting_address());
+-- Inserts and updates via service role only (fiat gateway server)
+
+-- ─── 11d. STRIPE CONNECT ACCOUNTS ──────────────────────────
+
+CREATE TABLE IF NOT EXISTS stripe_connect_accounts (
+  seller_address       TEXT PRIMARY KEY REFERENCES profiles(address),
+  stripe_account_id    TEXT NOT NULL,
+  onboarding_complete  BOOLEAN DEFAULT FALSE,
+  created_at           BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  updated_at           BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+ALTER TABLE stripe_connect_accounts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own read stripe_connect_accounts" ON stripe_connect_accounts FOR SELECT
+  USING (seller_address = requesting_address());
+-- Inserts and updates via service role only (fiat gateway server)
+
+-- ─── 11e. CREDIT WARPS RPC (fiat gateway minting) ──────────
+
+CREATE OR REPLACE FUNCTION credit_warps(
+  p_address TEXT,
+  p_amount NUMERIC,
+  p_tx_id TEXT,
+  p_memo TEXT DEFAULT ''
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Idempotency: check if this tx was already processed
+  IF EXISTS (SELECT 1 FROM transactions WHERE id = p_tx_id) THEN
+    RETURN TRUE;
+  END IF;
+
+  -- Credit the address
+  UPDATE profiles SET balance = balance + p_amount,
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+  WHERE address = p_address;
+
+  IF NOT FOUND THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Record in transactions
+  INSERT INTO transactions (id, from_addr, to_addr, amount, tx_type, memo, created_at)
+  VALUES (p_tx_id, 'FIAT_GATEWAY', p_address, p_amount,
+    CASE WHEN p_amount >= 0 THEN 'airdrop' ELSE 'send' END,
+    p_memo, (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT);
+
+  RETURN TRUE;
+END;
+$$;
+
+-- ─── 11f. WART LIKES & BOOKMARKS ─────────────────────────────
+
+CREATE TABLE IF NOT EXISTS wart_likes (
+  wart_id     TEXT NOT NULL REFERENCES warts(id) ON DELETE CASCADE,
+  user_address TEXT NOT NULL,
+  created_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  PRIMARY KEY (wart_id, user_address)
+);
+
+CREATE INDEX IF NOT EXISTS idx_wart_likes_user ON wart_likes(user_address);
+CREATE INDEX IF NOT EXISTS idx_wart_likes_wart ON wart_likes(wart_id);
+
+ALTER TABLE wart_likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read wart_likes" ON wart_likes FOR SELECT USING (true);
+CREATE POLICY "Own insert wart_likes" ON wart_likes FOR INSERT
+  WITH CHECK (user_address = requesting_address());
+CREATE POLICY "Own delete wart_likes" ON wart_likes FOR DELETE
+  USING (user_address = requesting_address());
+
+CREATE TABLE IF NOT EXISTS wart_bookmarks (
+  wart_id     TEXT NOT NULL REFERENCES warts(id) ON DELETE CASCADE,
+  user_address TEXT NOT NULL,
+  created_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  PRIMARY KEY (wart_id, user_address)
+);
+
+CREATE INDEX IF NOT EXISTS idx_wart_bookmarks_user ON wart_bookmarks(user_address);
+CREATE INDEX IF NOT EXISTS idx_wart_bookmarks_wart ON wart_bookmarks(wart_id);
+
+ALTER TABLE wart_bookmarks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read wart_bookmarks" ON wart_bookmarks FOR SELECT USING (true);
+CREATE POLICY "Own insert wart_bookmarks" ON wart_bookmarks FOR INSERT
+  WITH CHECK (user_address = requesting_address());
+CREATE POLICY "Own delete wart_bookmarks" ON wart_bookmarks FOR DELETE
+  USING (user_address = requesting_address());
+
+-- ─── 11g. EXCHANGE RATES ─────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS exchange_rates (
+  currency    TEXT PRIMARY KEY,
+  warps_per_unit NUMERIC NOT NULL,
+  source      TEXT DEFAULT 'manual', -- manual | admin | oracle
+  updated_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+-- Seed default rates (1 STZ = €0.10)
+INSERT INTO exchange_rates (currency, warps_per_unit, source, updated_at) VALUES
+  ('EUR', 10, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('USD', 9.1, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('GBP', 11.7, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('JPY', 0.061, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT),
+  ('CHF', 10.3, 'manual', (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT)
+ON CONFLICT (currency) DO NOTHING;
+
+ALTER TABLE exchange_rates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read exchange_rates" ON exchange_rates FOR SELECT USING (true);
+-- Exchange rate writes via service role only (admin gateway)
 
 -- ─── 12. STORAGE BUCKETS ────────────────────────────────────
 
@@ -245,6 +442,41 @@ CREATE POLICY "Allow upload avatars" ON storage.objects FOR INSERT WITH CHECK (b
 CREATE POLICY "Allow update media" ON storage.objects FOR UPDATE USING (bucket_id = 'media');
 CREATE POLICY "Allow delete media" ON storage.objects FOR DELETE USING (bucket_id = 'media');
 
+-- ─── 12b. MESH PEERS (discovery registry, optional persistence) ──
+
+CREATE TABLE IF NOT EXISTS mesh_peers (
+  peer_id     TEXT PRIMARY KEY,
+  address     TEXT NOT NULL,
+  tx_count    INT DEFAULT 0,
+  tip_count   INT DEFAULT 0,
+  max_depth   INT DEFAULT 0,
+  layers      INT[] DEFAULT ARRAY[0,1,2],
+  max_peers   INT DEFAULT 20,
+  version     TEXT DEFAULT '2.0',
+  last_seen   BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+  created_at  BIGINT NOT NULL DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+CREATE INDEX IF NOT EXISTS idx_mesh_peers_last_seen ON mesh_peers(last_seen DESC);
+CREATE INDEX IF NOT EXISTS idx_mesh_peers_address ON mesh_peers(address);
+
+ALTER TABLE mesh_peers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read mesh_peers" ON mesh_peers FOR SELECT USING (true);
+CREATE POLICY "Allow upsert mesh_peers" ON mesh_peers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update mesh_peers" ON mesh_peers FOR UPDATE USING (true);
+CREATE POLICY "Allow delete mesh_peers" ON mesh_peers FOR DELETE USING (true);
+
+-- Auto-cleanup stale peers (older than 5 minutes) via pg_cron or manual call
+CREATE OR REPLACE FUNCTION cleanup_stale_peers()
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  DELETE FROM mesh_peers
+  WHERE last_seen < (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT - 300000;
+END;
+$$;
+
 -- ─── 13. REALTIME (enable for key tables) ───────────────────
 
 ALTER PUBLICATION supabase_realtime ADD TABLE warts;
@@ -252,6 +484,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE transactions;
 ALTER PUBLICATION supabase_realtime ADD TABLE wart_comments;
 ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 ALTER PUBLICATION supabase_realtime ADD TABLE social_follows;
+ALTER PUBLICATION supabase_realtime ADD TABLE mesh_peers;
 
 -- ─── 14. FUNCTIONS ──────────────────────────────────────────
 

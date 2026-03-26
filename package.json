@@ -20,6 +20,8 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@irys/upload": "^0.0.15",
+    "@irys/upload-ethereum": "^0.0.16",
     "stripe": "^17.5.0",
     "@supabase/supabase-js": "^2.99.0"
   },

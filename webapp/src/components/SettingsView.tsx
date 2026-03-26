@@ -1,8 +1,9 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { useTheme } from '../context/ThemeContext';
 import { shortAddress } from '../engine/crypto';
 import { storage } from '../engine/storage';
+import { copyToClipboard } from '../lib/clipboard';
 
 const LegalsView = lazy(() => import('./LegalsView'));
 const PrivacyView = lazy(() => import('./PrivacyView'));
@@ -20,12 +21,53 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
   const { theme, toggleTheme } = useTheme();
   const [cleared, setCleared] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [advancedMode, setAdvancedMode] = useState(() => localStorage.getItem('strangrz_advanced') === '1');
+  const [connectStatus, setConnectStatus] = useState<'none' | 'pending' | 'active' | 'loading'>('loading');
+  const [connectLoading, setConnectLoading] = useState(false);
   const [strangrzLink, setStrangrzLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [linkPassword, setLinkPassword] = useState('');
   const [linkError, setLinkError] = useState('');
   const [linkGenerating, setLinkGenerating] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+
+  const toggleAdvancedMode = () => {
+    const next = !advancedMode;
+    setAdvancedMode(next);
+    localStorage.setItem('strangrz_advanced', next ? '1' : '0');
+    window.dispatchEvent(new CustomEvent('strangrz-advanced-mode', { detail: next }));
+  };
+
+  // Check Stripe Connect status on mount
+  useEffect(() => {
+    if (!wallet?.address) return;
+    const apiBase = (import.meta as any).env?.VITE_API_URL || '';
+    fetch(`${apiBase}/api/connect/status?address=${encodeURIComponent(wallet.address)}`)
+      .then(r => r.json())
+      .then(data => setConnectStatus(data.status === 'active' ? 'active' : data.status === 'pending' ? 'pending' : 'none'))
+      .catch(() => setConnectStatus('none'));
+  }, [wallet?.address]);
+
+  const handleStartPayout = async () => {
+    if (!wallet?.address) return;
+    setConnectLoading(true);
+    try {
+      const apiBase = (import.meta as any).env?.VITE_API_URL || '';
+      const resp = await fetch(`${apiBase}/api/connect/onboard`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sellerAddress: wallet.address, returnUrl: window.location.origin }),
+      });
+      const data = await resp.json();
+      if (data.onboardingUrl) {
+        window.location.href = data.onboardingUrl;
+      } else if (data.status === 'active') {
+        setConnectStatus('active');
+      }
+    } catch { /* ignore */ } finally {
+      setConnectLoading(false);
+    }
+  };
 
   const handleExport = () => {
     const data = doExportWallet();
@@ -62,7 +104,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
 
   const handleCopyStrangrzLink = () => {
     if (!strangrzLink) return;
-    navigator.clipboard.writeText(strangrzLink);
+    copyToClipboard(strangrzLink);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 3000);
   };
@@ -82,6 +124,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
       return;
     }
     signOut();
+    onNavigate('wallet');
   };
 
   const settingsTabs: { id: SettingsTab; label: string }[] = [
@@ -100,14 +143,14 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
               key={t.id}
               onClick={() => setActiveSettingsTab(t.id)}
               className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
-                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-60 hover:opacity-70'
               }`}
             >
               {t.label}
             </button>
           ))}
         </div>
-        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-30"><div className="animate-pulse text-sm">Loading...</div></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-50"><div className="animate-pulse text-sm">Loading...</div></div>}>
           <LegalsView />
         </Suspense>
       </div>
@@ -123,14 +166,14 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
               key={t.id}
               onClick={() => setActiveSettingsTab(t.id)}
               className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
-                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-60 hover:opacity-70'
               }`}
             >
               {t.label}
             </button>
           ))}
         </div>
-        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-30"><div className="animate-pulse text-sm">Loading...</div></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-50"><div className="animate-pulse text-sm">Loading...</div></div>}>
           <PrivacyView />
         </Suspense>
       </div>
@@ -146,14 +189,14 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
               key={t.id}
               onClick={() => setActiveSettingsTab(t.id)}
               className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
-                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+                t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-60 hover:opacity-70'
               }`}
             >
               {t.label}
             </button>
           ))}
         </div>
-        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-30"><div className="animate-pulse text-sm">Loading...</div></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 opacity-50"><div className="animate-pulse text-sm">Loading...</div></div>}>
           <HelpView onNavigate={onNavigate} />
         </Suspense>
       </div>
@@ -169,7 +212,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             key={t.id}
             onClick={() => setActiveSettingsTab(t.id)}
             className={`flex-1 py-2 text-body-sm font-medium transition-all cursor-pointer ${
-              t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-40 hover:opacity-70'
+              t.id === activeSettingsTab ? 'bg-white/10 opacity-100' : 'opacity-60 hover:opacity-70'
             }`}
           >
             {t.label}
@@ -188,23 +231,23 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           </h3>
           <div className="space-y-2 text-body-sm">
             <div className="flex justify-between items-center">
-              <span className="opacity-40">Username</span>
+              <span className="opacity-60">Username</span>
               <span className="opacity-90">{wallet.alias ? `@${wallet.alias}` : 'Anonymous'}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="opacity-40">Address</span>
+              <span className="opacity-60">Address</span>
               <code className="opacity-80 text-label">{shortAddress(wallet.address)}</code>
             </div>
             <div className="flex justify-between items-center">
-              <span className="opacity-40">Level</span>
+              <span className="opacity-60">Level</span>
               <span className="opacity-80">{wallet.levelName} (Lv.{wallet.level})</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="opacity-40">Balance</span>
+              <span className="opacity-60">Balance</span>
               <span className="opacity-80">{wallet.balance.toLocaleString()} {'\u2B23'}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="opacity-40">Auth</span>
+              <span className="opacity-60">Auth</span>
               <span className="opacity-80">StrangrzID</span>
             </div>
           </div>
@@ -222,14 +265,14 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-body-sm opacity-90">Theme</p>
-            <p className="text-label opacity-40">Switch between dark and light mode</p>
+            <p className="text-label opacity-60">Switch between dark and light mode</p>
           </div>
           <button
             onClick={toggleTheme}
             className={`px-4 py-2 text-body-sm font-medium border transition-all cursor-pointer ${
               theme === 'dark'
                 ? 'bg-current/5 border-current/15 opacity-70'
-                : 'bg-current/10 border-black/10 opacity-30'
+                : 'bg-current/10 border-black/10 opacity-50'
             }`}
           >
             {theme === 'dark' ? (
@@ -247,6 +290,78 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
         </div>
       </div>
 
+      {/* ─── Advanced Mode ───────────────────────────────────── */}
+      <div className="glass-panel p-4">
+        <h3 className="text-title-sm font-bold font-title mb-3 flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          Advanced Mode
+        </h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-body-sm opacity-90">Show crypto features</p>
+            <p className="text-label opacity-60">Wallet, mining, token balances, P2P transfers</p>
+          </div>
+          <button
+            onClick={toggleAdvancedMode}
+            className={`px-4 py-2 text-body-sm font-medium border transition-all cursor-pointer ${
+              advancedMode ? 'bg-current/10 border-current/20 opacity-90' : 'bg-current/5 border-current/10 opacity-50'
+            }`}
+          >
+            {advancedMode ? 'ON' : 'OFF'}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Payouts (Stripe Connect) ─────────────────────────── */}
+      {wallet && unlocked && (
+        <div className="glass-panel p-4">
+          <h3 className="text-title-sm font-bold font-title mb-2 flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="opacity-60">
+              <rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            Payouts
+          </h3>
+          <p className="text-label opacity-60 mb-3">
+            Connect your bank account to receive EUR payouts when your artworks sell.
+          </p>
+
+          {connectStatus === 'loading' && (
+            <p className="text-body-sm opacity-40 animate-pulse">Checking payout status...</p>
+          )}
+
+          {connectStatus === 'active' && (
+            <div className="flex items-center gap-2 p-3 bg-current/5 border border-current/10">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-60"><polyline points="20 6 9 17 4 12" /></svg>
+              <span className="text-body-sm opacity-80">Bank account connected. Payouts are automatic.</span>
+            </div>
+          )}
+
+          {connectStatus === 'pending' && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-current/5 border border-current/10">
+                <span className="text-body-sm opacity-70">Onboarding started but not complete.</span>
+              </div>
+              <button onClick={handleStartPayout} className="warp-button w-full text-body-sm py-2" disabled={connectLoading}>
+                {connectLoading ? 'Loading...' : 'Complete Setup'}
+              </button>
+            </div>
+          )}
+
+          {connectStatus === 'none' && (
+            <button onClick={handleStartPayout} className="warp-button w-full text-body-sm py-2" disabled={connectLoading}>
+              {connectLoading ? 'Redirecting to Stripe...' : (
+                <span className="flex items-center justify-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>
+                  Connect Bank Account
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ─── StrangrzLink (Sync) ─────────────────────────────── */}
       {wallet && unlocked && (
         <div className="glass-panel p-4">
@@ -256,7 +371,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             </svg>
             StrangrzLink
           </h3>
-          <p className="text-label opacity-40 mb-3">
+          <p className="text-label opacity-60 mb-3">
             Generate an encrypted code to transfer your wallet to another device. Copy it and paste it via any messaging app.
           </p>
 
@@ -287,7 +402,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           ) : (
             <div className="space-y-3">
               <div className="p-3 bg-current/5 border border-current/10">
-                <p className="text-label opacity-40 mb-1">YOUR STRANGRZLINK CODE</p>
+                <p className="text-label opacity-60 mb-1">YOUR STRANGRZLINK CODE</p>
                 <p className="text-label opacity-80 break-all font-mono leading-relaxed select-all">{strangrzLink}</p>
               </div>
               <div className="flex gap-2">
@@ -337,7 +452,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-body-sm opacity-90">Recovery File</p>
-                <p className="text-label opacity-40">Download encrypted .json backup (legacy)</p>
+                <p className="text-label opacity-60">Download encrypted .json backup (legacy)</p>
               </div>
               <button onClick={handleExport} className="text-body-sm px-3 py-1.5 border border-current/15 opacity-50 hover:opacity-90 hover:bg-current/5 transition-all cursor-pointer">
                 <span className="flex items-center gap-1.5">
@@ -349,7 +464,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-body-sm opacity-90">Lock Wallet</p>
-                <p className="text-label opacity-40">Require password to access</p>
+                <p className="text-label opacity-60">Require password to access</p>
               </div>
               <button onClick={lock} className="text-body-sm px-3 py-1.5 border border-current/15 opacity-70 bg-current/5 hover:bg-current/5 transition-all cursor-pointer">
                 <span className="flex items-center gap-1.5">
@@ -374,7 +489,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-sm opacity-90">Clear CosmoChat Data</p>
-              <p className="text-label opacity-40">Delete all posts, channels and messages</p>
+              <p className="text-label opacity-60">Delete all posts, channels and messages</p>
             </div>
             <button
               onClick={handleClearChat}
@@ -395,7 +510,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             <div className="flex items-center justify-between pt-2 border-t border-current/10">
               <div>
                 <p className="text-body-sm opacity-90">Sign Out</p>
-                <p className="text-label opacity-40">Remove wallet from this device. You can sign back in with your StrangrzID.</p>
+                <p className="text-label opacity-60">Remove wallet from this device. You can sign back in with your StrangrzID.</p>
               </div>
               <button
                 onClick={handleSignOut}
@@ -415,7 +530,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             <div className="flex items-center justify-between pt-2 border-t border-current/10">
               <div>
                 <p className="text-body-sm opacity-90">Supprimer le profil</p>
-                <p className="text-label opacity-40">Supprime définitivement votre profil. Vos {wallet.balance.toLocaleString()} {'\u2B23'} seront réintégrés dans la supply.</p>
+                <p className="text-label opacity-60">Supprime définitivement votre profil. Vos {wallet.balance.toLocaleString()} {'\u2B23'} seront réintégrés dans la supply.</p>
               </div>
               <button
                 onClick={() => {
@@ -451,7 +566,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-sm opacity-90">CosmoVault</p>
-              <p className="text-label opacity-40">Coffre-fort sécurisé pour vos objets rares</p>
+              <p className="text-label opacity-60">Coffre-fort sécurisé pour vos objets rares</p>
             </div>
             <button
               onClick={() => onNavigate('vault')}
@@ -467,7 +582,7 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-body-sm opacity-90">Admin Registry</p>
-                <p className="text-label opacity-40">Panneau d'administration du protocole</p>
+                <p className="text-label opacity-60">Panneau d'administration du protocole</p>
               </div>
               <button
                 onClick={() => onNavigate('admin')}
@@ -493,27 +608,27 @@ export default function SettingsView({ onNavigate }: SettingsViewProps) {
         </h3>
         <div className="space-y-2 text-body-sm">
           <div className="flex justify-between">
-            <span className="opacity-40">Version</span>
+            <span className="opacity-60">Version</span>
             <span className="opacity-70">Strangrz Terminal v2.0</span>
           </div>
           <div className="flex justify-between">
-            <span className="opacity-40">Engine</span>
+            <span className="opacity-60">Engine</span>
             <span className="opacity-70">StrangrzMesh v2.0</span>
           </div>
           <div className="flex justify-between">
-            <span className="opacity-40">Protocol</span>
+            <span className="opacity-60">Protocol</span>
             <span className="opacity-70">Resonance Decay</span>
           </div>
           <div className="flex justify-between">
-            <span className="opacity-40">Max Supply</span>
+            <span className="opacity-60">Max Supply</span>
             <span className="opacity-70">69,000,000 {'\u2B23'}</span>
           </div>
           <div className="flex justify-between">
-            <span className="opacity-40">Encryption</span>
+            <span className="opacity-60">Encryption</span>
             <span className="opacity-70">Ed25519 + AES-256-GCM</span>
           </div>
           <div className="flex justify-between">
-            <span className="opacity-40">Auth</span>
+            <span className="opacity-60">Auth</span>
             <span className="opacity-70">StrangrzID (PBKDF2 600K)</span>
           </div>
         </div>

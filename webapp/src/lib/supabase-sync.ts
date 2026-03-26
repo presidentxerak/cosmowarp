@@ -66,27 +66,262 @@ export async function pullProfile(address: string): Promise<WarpWallet | null> {
 
 /**
  * Sync a newly minted or updated wart to Supabase + upload media.
+ * Retries once on failure to ensure global visibility.
  */
 export async function syncWart(wart: Wart): Promise<void> {
-  if (!isBackendAvailable()) return;
+  if (!isBackendAvailable()) {
+    // Queue for later sync when backend becomes available
+    queuePendingSync('wart', wart.id);
+    return;
+  }
   setSyncStatus('syncing');
   try {
-    // Upload media to Supabase Storage
+    // 1. Upsert metadata FIRST (ensures DB record exists even if media upload fails)
+    await db.upsertWart(wart, undefined, undefined);
+
+    // 2. Upload media to Supabase Storage (primary CDN)
     const mediaPath = await media.uploadMedia(wart.imageData, wart.id, 'main');
     const audioCoverPath = wart.audioCover
       ? await media.uploadMedia(wart.audioCover, wart.id, 'cover')
       : undefined;
 
-    // Upsert wart metadata to database
-    await db.upsertWart(wart, mediaPath || undefined, audioCoverPath || undefined);
+    // 3. Replicate to IPFS + Arweave (non-blocking, best-effort)
+    // These provide decentralized (IPFS) and permanent (Arweave) storage.
+    replicateToDecentralizedStorage(wart).catch(() => {});
 
-    if (!mediaPath) {
+    // 4. Update DB row with media paths if upload succeeded
+    if (mediaPath) {
+      await db.upsertWart(wart, mediaPath, audioCoverPath || undefined);
+    } else {
       console.warn('[Sync] Media upload failed for wart', wart.id, '— metadata saved without remote media');
+      // Queue for re-upload on next sync
+      queuePendingSync('wart', wart.id);
     }
     setSyncStatus('idle');
   } catch (err) {
     console.error('[Sync] syncWart failed:', err instanceof Error ? err.message : err);
     setSyncStatus('error');
+    queuePendingSync('wart', wart.id);
+    // Retry once after 3 seconds with exponential backoff
+    setTimeout(async () => {
+      if (!isBackendAvailable()) return;
+      try {
+        await db.upsertWart(wart, undefined, undefined);
+        const mediaPath = await media.uploadMedia(wart.imageData, wart.id, 'main');
+        const audioCoverPath = wart.audioCover
+          ? await media.uploadMedia(wart.audioCover, wart.id, 'cover')
+          : undefined;
+        if (mediaPath) await db.upsertWart(wart, mediaPath, audioCoverPath || undefined);
+        setSyncStatus('idle');
+      } catch (retryErr) {
+        console.error('[Sync] syncWart retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
+      }
+    }, 3000);
+  }
+}
+
+// ─── Decentralized Storage Replication ───────────────────────
+
+/**
+ * Replicate artwork media to IPFS and Arweave for permanent decentralized storage.
+ * Called after a sale — the buyer's fees cover the storage costs.
+ *
+ * Model C (hybrid):
+ *   - IPFS: pinned via configured pinning service (platform-side)
+ *   - Arweave: uploaded via server API (platform wallet pays, ~€0.02/5MB)
+ *     OR via browser Irys SDK if buyer has wallet connected
+ *
+ * Best-effort: failures don't block the sale flow.
+ */
+async function replicateToDecentralizedStorage(wart: Wart): Promise<void> {
+  if (!wart.imageData) return;
+
+  // IPFS replication (via storage layer provider)
+  try {
+    const { getStrangrzEngine } = await import('../engine/vobjct');
+    const engine = getStrangrzEngine();
+    const storageLayer = engine.getStorageLayer();
+    const path = `warts/${wart.id}/main`;
+
+    const ipfsProvider = storageLayer.getProvider('ipfs');
+    if (ipfsProvider) {
+      try {
+        const locator = await ipfsProvider.upload(wart.imageData, path);
+        if (locator) {
+          console.log(`[Sync] Replicated wart ${wart.id} to IPFS: ${locator}`);
+        }
+      } catch (err) {
+        console.warn(`[Sync] IPFS replication failed for wart ${wart.id}:`, err);
+      }
+    }
+  } catch {
+    // Strangrz engine not available — skip IPFS replication
+  }
+
+  // Arweave replication via server API (platform wallet pays)
+  try {
+    const { uploadViaServer } = await import('./irys');
+    const result = await uploadViaServer(wart.imageData, wart.id);
+    console.log(`[Sync] Replicated wart ${wart.id} to Arweave: ${result.locator} (${result.sizeBytes} bytes)`);
+  } catch (err) {
+    console.warn(`[Sync] Arweave server replication failed for wart ${wart.id}:`, err);
+  }
+}
+
+/**
+ * Upload artwork to Arweave via browser Irys SDK (buyer pays directly).
+ * Used for crypto purchases where the buyer has a wallet connected.
+ * Returns the ar:// locator on success, null on failure.
+ */
+export async function replicateToArweaveViaBrowser(wart: Wart): Promise<string | null> {
+  if (!wart.imageData) return null;
+
+  try {
+    const { createBrowserUploader, uploadDataUrlFromBrowser } = await import('./irys');
+    const uploader = await createBrowserUploader();
+
+    // Check price first
+    const { dataUrlToBytes } = await import('./irys');
+    const { bytes } = dataUrlToBytes(wart.imageData);
+
+    // Files < 100KB are free on Irys
+    if (bytes.length >= 100 * 1024) {
+      const { estimatePrice, fundFromBrowser, getBrowserBalance } = await import('./irys');
+      const price = await estimatePrice(uploader, bytes.length);
+      const balance = await getBrowserBalance(uploader);
+
+      // Fund if needed
+      if (parseFloat(balance.standard) < parseFloat(price.standard)) {
+        await fundFromBrowser(uploader, price.standard);
+      }
+    }
+
+    const result = await uploadDataUrlFromBrowser(uploader, wart.imageData, wart.id);
+    console.log(`[Sync] Buyer uploaded wart ${wart.id} to Arweave: ${result.locator} (${result.sizeBytes} bytes)`);
+    return result.locator;
+  } catch (err) {
+    console.warn(`[Sync] Browser Arweave upload failed for wart ${wart.id}:`, err);
+    return null;
+  }
+}
+
+// ─── Pending Sync Queue ─────────────────────────────────────
+
+const PENDING_SYNC_KEY = 'strangrz_pending_syncs';
+
+function queuePendingSync(type: string, id: string): void {
+  try {
+    const raw = localStorage.getItem(PENDING_SYNC_KEY) || '[]';
+    const queue: Array<{ type: string; id: string; ts: number }> = JSON.parse(raw);
+    if (!queue.some(q => q.type === type && q.id === id)) {
+      queue.push({ type, id, ts: Date.now() });
+      localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(queue.slice(-50)));
+    }
+  } catch { /* ignore */ }
+}
+
+/**
+ * Process pending syncs queued while offline.
+ * Called on fullSync to retry any operations that failed due to connectivity.
+ * @param getWart - callback to retrieve a wart from the local WartEngine
+ */
+export async function processPendingSync(
+  getWart?: (id: string) => Wart | undefined,
+): Promise<number> {
+  if (!isBackendAvailable()) return 0;
+  try {
+    const raw = localStorage.getItem(PENDING_SYNC_KEY);
+    if (!raw) return 0;
+    const queue: Array<{ type: string; id: string; ts: number }> = JSON.parse(raw);
+    if (queue.length === 0) return 0;
+
+    let processed = 0;
+    const remaining: typeof queue = [];
+
+    for (const item of queue) {
+      try {
+        if (item.type === 'wart') {
+          // Check if already synced to cloud
+          const existing = await db.fetchWartById(item.id);
+          if (existing?.media_path) {
+            // Already in cloud with media — skip
+            processed++;
+            continue;
+          }
+          // Get local wart data (with imageData) and re-sync
+          const localWart = getWart?.(item.id);
+          if (localWart) {
+            const mediaPath = localWart.imageData
+              ? await media.uploadMedia(localWart.imageData, localWart.id, 'main')
+              : null;
+            const audioCoverPath = localWart.audioCover
+              ? await media.uploadMedia(localWart.audioCover, localWart.id, 'cover')
+              : undefined;
+            await db.upsertWart(localWart, mediaPath || undefined, audioCoverPath || undefined);
+            processed++;
+          } else {
+            // Wart no longer exists locally — discard from queue
+            processed++;
+          }
+        }
+        // Add more types here as needed
+      } catch {
+        remaining.push(item); // Keep for next retry
+      }
+    }
+
+    localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(remaining));
+    return processed;
+  } catch { return 0; }
+}
+
+/**
+ * Sync a lazy listing template — metadata only, NO media upload.
+ * Media stays local until a buyer purchases and pays the storage fee.
+ * This ensures the platform never pays for storage — the collector does.
+ */
+/**
+ * Sync a newly minted wart with only a compressed preview thumbnail.
+ * Full media stays on the creator's device and is only uploaded when sold.
+ * This dramatically reduces storage costs for unsold artworks (~99% savings).
+ */
+export async function syncWartWithPreview(wart: Wart): Promise<void> {
+  if (!isBackendAvailable()) {
+    queuePendingSync('wart', wart.id);
+    return;
+  }
+  setSyncStatus('syncing');
+  try {
+    // 1. Generate a compressed thumbnail preview (~30-100 KB vs up to 50 MB)
+    const { generatePreview, uploadPreview } = await import('./supabase-storage');
+    const preview = await generatePreview(wart.imageData, wart.audioCover);
+    let previewPath: string | undefined;
+
+    if (preview) {
+      previewPath = await uploadPreview(preview, wart.id) || undefined;
+    }
+
+    // 2. Upsert metadata with preview path only — NO full media upload
+    await db.upsertWart(wart, undefined, undefined, previewPath);
+    setSyncStatus('idle');
+  } catch (err) {
+    console.error('[Sync] syncWartWithPreview failed:', err instanceof Error ? err.message : err);
+    setSyncStatus('error');
+    queuePendingSync('wart', wart.id);
+  }
+}
+
+export async function syncLazyTemplate(wart: Wart): Promise<void> {
+  if (!isBackendAvailable()) {
+    queuePendingSync('wart', wart.id);
+    return;
+  }
+  try {
+    // Upsert metadata WITHOUT uploading media to Supabase Storage.
+    // The media_path will be null — indicating no cloud media yet.
+    await db.upsertWart(wart, undefined, undefined);
+  } catch {
+    // Non-critical — will re-sync on next visit
   }
 }
 
@@ -134,6 +369,7 @@ export async function pullWarts(filters?: {
 
 /**
  * Pull a single wart with its media data.
+ * Verifies SHA-256 integrity if contentFingerprint is available.
  */
 export async function pullWartWithMedia(wartId: string): Promise<Wart | null> {
   if (!isBackendAvailable()) return null;
@@ -141,15 +377,37 @@ export async function pullWartWithMedia(wartId: string): Promise<Wart | null> {
   const row = await db.fetchWartById(wartId);
   if (!row) return null;
 
-  // Download media
+  // Download media — prefer full quality, fall back to preview thumbnail
   let imageData = '';
   if (row.media_path) {
     imageData = await media.downloadMediaAsDataUrl(row.media_path as string) || '';
+  }
+  if (!imageData && row.preview_path) {
+    imageData = await media.downloadMediaAsDataUrl(row.preview_path as string) || '';
   }
 
   let audioCover: string | undefined;
   if (row.audio_cover_path) {
     audioCover = await media.downloadMediaAsDataUrl(row.audio_cover_path as string) || undefined;
+  }
+
+  // Verify media integrity via SHA-256 if fingerprint exists
+  if (imageData && row.content_fingerprint) {
+    try {
+      const { sha256 } = await import('../engine/crypto');
+      const downloadedHash = await sha256(imageData);
+      if (downloadedHash !== row.content_fingerprint) {
+        console.error(
+          `[Sync] Integrity check FAILED for wart ${wartId}: ` +
+          `expected ${(row.content_fingerprint as string).slice(0, 16)}..., ` +
+          `got ${downloadedHash.slice(0, 16)}...`
+        );
+        // Return wart without media — don't trust corrupted data
+        imageData = '';
+      }
+    } catch {
+      // Crypto unavailable — skip verification (non-blocking)
+    }
   }
 
   const wart = db.rowToWart(row, imageData, audioCover);
@@ -331,20 +589,35 @@ export async function atomicPurchaseWart(params: {
  * 3. Pull user's warts
  * Returns the cloud profile if found.
  */
-export async function fullSync(address: string): Promise<{
+export async function fullSync(address: string, getWart?: (id: string) => Wart | undefined): Promise<{
   profile: WarpWallet | null;
   transactions: Transaction[];
   warts: Record<string, unknown>[];
+  playlists: Array<{
+    id: string; owner: string; title: string; description: string;
+    type: string; wartIds: string[]; createdAt: number; coverWartId?: string;
+  }>;
+  articles: Array<{
+    id: string; authorAddress: string; authorAlias: string; title: string;
+    subtitle: string; coverWartId: string; body: string; embeddedBlocks: unknown[];
+    featuredWartIds: string[]; featuredArtists: string[]; tags: string[];
+    createdAt: number; updatedAt: number; likes: string[]; views: number;
+  }>;
 } | null> {
   if (!isBackendAvailable()) return null;
   setSyncStatus('syncing');
 
+  // Process any pending syncs from previous offline sessions
+  processPendingSync(getWart).catch(() => {});
+
   try {
-    const [profile, transactions, ownedWarts, createdWarts] = await Promise.all([
+    const [profile, transactions, ownedWarts, createdWarts, playlists, articles] = await Promise.all([
       db.fetchProfile(address),
       db.fetchTransactionsForAddress(address, 200),
       db.fetchWarts({ owner: address }),
       db.fetchWarts({ creator: address }),
+      db.fetchPlaylists(address).catch(() => []),
+      db.fetchAllArticles().catch(() => []),
     ]);
 
     // Merge owned + created (deduplicate by ID)
@@ -358,6 +631,8 @@ export async function fullSync(address: string): Promise<{
       profile,
       transactions,
       warts: Array.from(wartMap.values()),
+      playlists,
+      articles,
     };
   } catch {
     setSyncStatus('error');

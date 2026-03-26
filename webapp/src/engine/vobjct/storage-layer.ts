@@ -13,6 +13,7 @@
  */
 
 import { sha256 } from '../crypto';
+import { computeCID, verifyCID } from '../cid';
 import type { StorageRoute, StorageNetwork } from './schema';
 
 // ─── Storage Provider Interface ─────────────────────────────
@@ -197,6 +198,347 @@ export class HTTPSMirrorProvider implements StorageProvider {
   }
 }
 
+// ─── IPFS Provider ──────────────────────────────────────────
+
+export interface IPFSConfig {
+  gatewayUrl: string;           // e.g. "https://ipfs.io/ipfs/" or "https://dweb.link/ipfs/"
+  pinningApiUrl?: string;       // e.g. "https://api.pinata.cloud" or "https://api.web3.storage"
+  pinningApiToken?: string;
+}
+
+export class IPFSStorageProvider implements StorageProvider {
+  readonly network: StorageNetwork = 'ipfs';
+  readonly name = 'IPFS (Content-Addressed)';
+
+  private config: IPFSConfig;
+
+  constructor(config: IPFSConfig) {
+    this.config = config;
+  }
+
+  /**
+   * Upload data to IPFS via a pinning service API.
+   * Returns the CID as locator: "ipfs://<cid>"
+   */
+  async upload(data: string, _path: string): Promise<string | null> {
+    if (!this.config.pinningApiUrl || !this.config.pinningApiToken) {
+      return null; // No pinning service configured — read-only gateway mode
+    }
+
+    try {
+      // Convert data to blob for upload
+      const blob = dataToBlob(data);
+
+      const formData = new FormData();
+      formData.append('file', blob);
+
+      const response = await fetch(`${this.config.pinningApiUrl}/pinning/pinFileToIPFS`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.config.pinningApiToken}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) return null;
+
+      const result = await response.json();
+      const cid = result.IpfsHash || result.cid;
+      if (!cid) return null;
+
+      return `ipfs://${cid}`;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Download data from IPFS via the configured gateway.
+   */
+  async download(locator: string): Promise<string | null> {
+    try {
+      const cid = extractCID(locator);
+      if (!cid) return null;
+
+      const gatewayUrl = this.config.gatewayUrl.replace(/\/$/, '');
+      const response = await fetch(`${gatewayUrl}/${cid}`);
+      if (!response.ok) return null;
+
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Check if content is available on IPFS via the gateway.
+   */
+  async checkAvailability(locator: string): Promise<boolean> {
+    try {
+      const cid = extractCID(locator);
+      if (!cid) return false;
+
+      const gatewayUrl = this.config.gatewayUrl.replace(/\/$/, '');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const response = await fetch(`${gatewayUrl}/${cid}`, {
+        method: 'HEAD',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async remove(_locator: string): Promise<boolean> {
+    // IPFS content is immutable — unpinning only removes local pin
+    if (!this.config.pinningApiUrl || !this.config.pinningApiToken) return false;
+
+    try {
+      const cid = extractCID(_locator);
+      if (!cid) return false;
+
+      const response = await fetch(`${this.config.pinningApiUrl}/pinning/unpin/${cid}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${this.config.pinningApiToken}`,
+        },
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Verify content integrity using the CID.
+   * IPFS CIDs are content-addressed — the hash IS the identifier.
+   */
+  async verifyContentIntegrity(locator: string, data: string): Promise<boolean> {
+    const cid = extractCID(locator);
+    if (!cid) return false;
+    return verifyCID(data, cid);
+  }
+}
+
+// ─── Arweave Provider ───────────────────────────────────────
+
+export interface ArweaveConfig {
+  gatewayUrl: string;           // e.g. "https://arweave.net"
+  walletJWK?: object;           // Arweave wallet JWK for uploads
+  bundlerUrl?: string;          // e.g. "https://node1.irys.xyz" for Irys
+  bundlerToken?: string;
+  /**
+   * Optional Irys SDK uploader instance (browser-side).
+   * When provided, uploads use the Irys SDK with wallet signing
+   * instead of raw HTTP POST. Set via `setIrysUploader()`.
+   */
+  irysUploader?: IrysUploaderLike | null;
+  /**
+   * Optional server-side upload function.
+   * When provided, uploads are delegated to the platform API.
+   */
+  serverUploadFn?: (data: string, wartId: string) => Promise<{ txId: string } | null>;
+}
+
+/** Minimal interface for an Irys uploader (avoids coupling to SDK types) */
+export interface IrysUploaderLike {
+  upload(data: Buffer | Uint8Array, opts?: { tags?: Array<{ name: string; value: string }> }): Promise<{ id: string }>;
+  getPrice(bytes: number): Promise<bigint | { toString(): string }>;
+  fund(amount: unknown): Promise<{ id: string }>;
+  utils: {
+    toAtomic(value: string | number): unknown;
+    fromAtomic(value: unknown): { toString(): string };
+  };
+  token: string;
+}
+
+export class ArweaveStorageProvider implements StorageProvider {
+  readonly network: StorageNetwork = 'arweave';
+  readonly name = 'Arweave (Permanent Storage via Irys)';
+
+  private config: ArweaveConfig;
+
+  constructor(config: ArweaveConfig) {
+    this.config = config;
+  }
+
+  /** Attach an Irys uploader after wallet connection */
+  setIrysUploader(uploader: IrysUploaderLike | null): void {
+    this.config.irysUploader = uploader;
+  }
+
+  /** Attach a server-side upload function */
+  setServerUploadFn(fn: (data: string, wartId: string) => Promise<{ txId: string } | null>): void {
+    this.config.serverUploadFn = fn;
+  }
+
+  /**
+   * Upload data to Arweave via Irys.
+   * Priority: 1) Irys SDK uploader 2) Server API 3) Raw HTTP fallback
+   * Returns locator: "ar://<txId>"
+   */
+  async upload(data: string, path: string): Promise<string | null> {
+    // 1) Irys SDK (browser, wallet-connected)
+    if (this.config.irysUploader) {
+      return this.uploadViaIrysSDK(data);
+    }
+
+    // 2) Server-side API (platform-funded)
+    if (this.config.serverUploadFn) {
+      return this.uploadViaServer(data, path);
+    }
+
+    // 3) Raw HTTP fallback (legacy)
+    return this.uploadViaHTTP(data);
+  }
+
+  private async uploadViaIrysSDK(data: string): Promise<string | null> {
+    try {
+      const blob = dataToBlob(data);
+      const buffer = new Uint8Array(await blob.arrayBuffer());
+
+      const tags = [
+        { name: 'App-Name', value: 'Strangrz' },
+        { name: 'Content-Type', value: blob.type },
+      ];
+
+      const receipt = await this.config.irysUploader!.upload(buffer, { tags });
+      return receipt.id ? `ar://${receipt.id}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async uploadViaServer(data: string, path: string): Promise<string | null> {
+    try {
+      const wartId = path.split('/').filter(Boolean).pop() || path;
+      const result = await this.config.serverUploadFn!(data, wartId);
+      return result?.txId ? `ar://${result.txId}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async uploadViaHTTP(data: string): Promise<string | null> {
+    if (!this.config.bundlerUrl || !this.config.bundlerToken) {
+      return null;
+    }
+
+    try {
+      const blob = dataToBlob(data);
+      const buffer = await blob.arrayBuffer();
+
+      const response = await fetch(`${this.config.bundlerUrl}/tx`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.config.bundlerToken}`,
+          'Content-Type': 'application/octet-stream',
+        },
+        body: buffer,
+      });
+
+      if (!response.ok) return null;
+
+      const result = await response.json();
+      return result.id ? `ar://${result.id}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Download data from Arweave via the gateway.
+   */
+  async download(locator: string): Promise<string | null> {
+    try {
+      const txId = extractArweaveTxId(locator);
+      if (!txId) return null;
+
+      const gatewayUrl = this.config.gatewayUrl.replace(/\/$/, '');
+      const response = await fetch(`${gatewayUrl}/${txId}`);
+      if (!response.ok) return null;
+
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Check if content is available on Arweave.
+   * Arweave data is permanent — this checks gateway accessibility.
+   */
+  async checkAvailability(locator: string): Promise<boolean> {
+    try {
+      const txId = extractArweaveTxId(locator);
+      if (!txId) return false;
+
+      const gatewayUrl = this.config.gatewayUrl.replace(/\/$/, '');
+      const response = await fetch(`${gatewayUrl}/${txId}`, { method: 'HEAD' });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async remove(_locator: string): Promise<boolean> {
+    return false; // Arweave data is permanent and immutable
+  }
+}
+
+// ─── Helpers ────────────────────────────────────────────────
+
+/** Extract CID from various IPFS locator formats */
+function extractCID(locator: string): string | null {
+  if (locator.startsWith('ipfs://')) return locator.slice(7);
+  if (locator.startsWith('/ipfs/')) return locator.slice(6);
+  // Gateway URL: https://ipfs.io/ipfs/Qm...
+  const match = locator.match(/\/ipfs\/([a-zA-Z0-9]+)/);
+  if (match) return match[1];
+  // Bare CID (starts with Qm or bafy)
+  if (/^(Qm[a-zA-Z0-9]{44}|bafy[a-zA-Z0-9]+)$/.test(locator)) return locator;
+  return null;
+}
+
+/** Extract Arweave transaction ID from locator */
+function extractArweaveTxId(locator: string): string | null {
+  if (locator.startsWith('ar://')) return locator.slice(5);
+  // Gateway URL: https://arweave.net/<txId>
+  const match = locator.match(/arweave\.net\/([a-zA-Z0-9_-]{43})/);
+  if (match) return match[1];
+  // Bare 43-char base64url transaction ID
+  if (/^[a-zA-Z0-9_-]{43}$/.test(locator)) return locator;
+  return null;
+}
+
+/** Convert data string (data URL or raw) to Blob */
+function dataToBlob(data: string): Blob {
+  if (data.startsWith('data:')) {
+    const [header, b64] = data.split(',');
+    const mime = header.match(/data:([^;]+)/)?.[1] || 'application/octet-stream';
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+  return new Blob([data], { type: 'application/octet-stream' });
+}
+
 // ─── Storage Layer Orchestrator ─────────────────────────────
 
 export class StrangrzStorageLayer {
@@ -286,10 +628,54 @@ export class StrangrzStorageLayer {
   }
 
   /**
+   * Upload data to all providers, using the IPFS CID as the canonical
+   * content identifier when an IPFS provider is registered.
+   * Falls back to SHA-256 hash for non-CID providers.
+   */
+  async uploadWithCID(data: string, path: string): Promise<{
+    cid: string | null;
+    sha256: string;
+    routes: StorageRoute[];
+  }> {
+    const hash = await sha256(data);
+    const cid = await computeCID(data);
+    const routes = await this.uploadToAll(data, path);
+
+    return { cid, sha256: hash, routes };
+  }
+
+  /**
+   * Resolve a CID to a downloadable route. Checks IPFS first, then
+   * falls back to other providers that may hold the same content.
+   */
+  async downloadByCID(cid: string, routes: StorageRoute[]): Promise<{ data: string; route: StorageRoute } | null> {
+    // Prefer IPFS route matching this CID
+    const ipfsRoute = routes.find(r => r.network === 'ipfs' && r.locator === `ipfs://${cid}`);
+    if (ipfsRoute) {
+      const provider = this.providers.get('ipfs');
+      if (provider) {
+        const data = await provider.download(ipfsRoute.locator);
+        if (data) return { data, route: ipfsRoute };
+      }
+    }
+
+    // Fall back to best available route
+    return this.downloadFromBest(routes);
+  }
+
+  /**
    * Verify data integrity against expected hash.
    */
   async verifyIntegrity(data: string, expectedSha256: string): Promise<boolean> {
     const hash = await sha256(data);
     return hash === expectedSha256;
+  }
+
+  /**
+   * Verify data integrity using CID (content-addressed verification).
+   * This is the preferred verification method when CIDs are available.
+   */
+  async verifyIntegrityByCID(data: string, expectedCID: string): Promise<boolean> {
+    return verifyCID(data, expectedCID);
   }
 }

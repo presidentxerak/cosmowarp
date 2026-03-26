@@ -12,10 +12,15 @@ import { validateManifest, getTrustSignals, isSafeProtected, getActiveStorageRou
 import { buildManifest, verifyManifest, type ManifestBuildInput, type VerificationResult } from './manifest';
 import { StrangrzSafeEngine, getSafeBadges, type StrangrzSafeConfig, type RouteCheckResult } from './safe';
 import { StrangrzAdapter, EVMAdapter, registerAdapter, type ChainAdapter } from './adapters';
-import { StrangrzStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider, OnChainStorageProvider, HTTPSMirrorProvider } from './storage-layer';
+import {
+  StrangrzStorageLayer, SupabaseStorageProvider, IndexedDBStorageProvider,
+  OnChainStorageProvider, HTTPSMirrorProvider, IPFSStorageProvider, ArweaveStorageProvider,
+  type IPFSConfig, type ArweaveConfig,
+} from './storage-layer';
 
 // Re-exports
 export type { StrangrzManifest, StorageRoute, RecoveryRoute, StrangrzSafeConfig, ManifestBuildInput, VerificationResult, RouteCheckResult };
+export type { IPFSConfig, ArweaveConfig };
 export { validateManifest, getTrustSignals, isSafeProtected, getSafeBadges, getActiveStorageRoutes };
 export { buildManifest, verifyManifest };
 export type { ChainAdapter };
@@ -70,6 +75,8 @@ export class StrangrzEngine {
     indexedDBStore?: (wartId: string, data: string, cover?: string) => Promise<void>,
     indexedDBRetrieve?: (wartId: string) => Promise<{ imageData: string; audioCover?: string } | null>,
     getOnChainSVG?: (wartId: string) => string | undefined,
+    ipfsConfig?: IPFSConfig,
+    arweaveConfig?: ArweaveConfig,
   ): void {
     // Register Strangrz adapter
     this.adapter = new StrangrzAdapter(wartLookup);
@@ -92,6 +99,16 @@ export class StrangrzEngine {
       this.storageLayer.registerProvider(
         new OnChainStorageProvider(getOnChainSVG)
       );
+    }
+
+    // Register IPFS provider (content-addressed storage)
+    if (ipfsConfig) {
+      this.storageLayer.registerProvider(new IPFSStorageProvider(ipfsConfig));
+    }
+
+    // Register Arweave provider (permanent storage)
+    if (arweaveConfig) {
+      this.storageLayer.registerProvider(new ArweaveStorageProvider(arweaveConfig));
     }
 
     // Always register HTTPS mirror support
@@ -339,9 +356,42 @@ export class StrangrzEngine {
 
 let vobjctInstance: StrangrzEngine | null = null;
 
+/** Build IPFS config from environment variables (if available) */
+function getIPFSConfigFromEnv(): IPFSConfig | undefined {
+  const gateway = import.meta.env.VITE_IPFS_GATEWAY_URL;
+  if (!gateway) return undefined;
+  return {
+    gatewayUrl: gateway,
+    pinningApiUrl: import.meta.env.VITE_IPFS_PINNING_API_URL || undefined,
+    pinningApiToken: import.meta.env.VITE_IPFS_PINNING_API_TOKEN || undefined,
+  };
+}
+
+/** Build Arweave config from environment variables (if available) */
+function getArweaveConfigFromEnv(): ArweaveConfig | undefined {
+  const gateway = import.meta.env.VITE_ARWEAVE_GATEWAY_URL;
+  if (!gateway) return undefined;
+  return {
+    gatewayUrl: gateway,
+    bundlerUrl: import.meta.env.VITE_ARWEAVE_BUNDLER_URL || undefined,
+    bundlerToken: import.meta.env.VITE_ARWEAVE_BUNDLER_TOKEN || undefined,
+  };
+}
+
 export function getStrangrzEngine(): StrangrzEngine {
   if (!vobjctInstance) {
     vobjctInstance = new StrangrzEngine();
+
+    // Auto-register IPFS and Arweave providers from env vars
+    const sl = vobjctInstance.getStorageLayer();
+    const ipfsConfig = getIPFSConfigFromEnv();
+    if (ipfsConfig) {
+      sl.registerProvider(new IPFSStorageProvider(ipfsConfig));
+    }
+    const arweaveConfig = getArweaveConfigFromEnv();
+    if (arweaveConfig) {
+      sl.registerProvider(new ArweaveStorageProvider(arweaveConfig));
+    }
   }
   return vobjctInstance;
 }

@@ -11,18 +11,27 @@ import { supabase, isBackendAvailable, BUCKETS, getPublicUrl } from './supabase'
 function dataUrlToBlob(dataUrl: string): { blob: Blob; ext: string; mime: string } {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!match) {
-    // Not a data URL — treat as raw text (e.g., SVG)
+    // Not a data URL — detect SVG or treat as text
+    const isSvg = dataUrl.trimStart().startsWith('<svg') || dataUrl.trimStart().startsWith('<?xml');
+    const mime = isSvg ? 'image/svg+xml' : 'text/plain';
+    const ext = isSvg ? 'svg' : 'txt';
     return {
-      blob: new Blob([dataUrl], { type: 'text/plain' }),
-      ext: 'txt',
-      mime: 'text/plain',
+      blob: new Blob([dataUrl], { type: mime }),
+      ext,
+      mime,
     };
   }
 
   const mime = match[1];
   const base64 = match[2];
-  const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  const blob = new Blob([bytes], { type: mime });
+  let bytes: Uint8Array;
+  try {
+    bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  } catch {
+    // Malformed base64 — return empty blob
+    return { blob: new Blob([], { type: mime }), ext: 'bin', mime };
+  }
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mime });
 
   // Determine extension from MIME type
   const extMap: Record<string, string> = {
@@ -56,6 +65,9 @@ export async function uploadMedia(
   type: 'main' | 'cover' = 'main',
 ): Promise<string | null> {
   if (!isBackendAvailable() || !data) return null;
+
+  // Skip upload for public URLs (already in Supabase Storage or external)
+  if (data.startsWith('http://') || data.startsWith('https://')) return null;
 
   try {
     const { blob, ext } = dataUrlToBlob(data);
@@ -122,6 +134,225 @@ export async function uploadAvatar(
 }
 
 /**
+ * Upload a profile banner to Supabase Storage.
+ */
+export async function uploadBanner(
+  data: string,
+  address: string,
+): Promise<string | null> {
+  if (!isBackendAvailable() || !data) return null;
+
+  try {
+    const { blob, ext } = dataUrlToBlob(data);
+    const path = `profiles/${address}/banner.${ext}`;
+
+    const { error } = await supabase!.storage
+      .from(BUCKETS.AVATARS)
+      .upload(path, blob, {
+        contentType: blob.type,
+        upsert: true,
+        cacheControl: '86400',
+      });
+
+    if (error) {
+      console.error('[Storage] uploadBanner:', error.message);
+      return null;
+    }
+
+    return path;
+  } catch (err) {
+    console.error('[Storage] uploadBanner failed:', err);
+    return null;
+  }
+}
+
+// ─── Preview / Thumbnail Generation ──────────────────────────
+//
+// To avoid paying full storage costs on every mint, we generate a small
+// compressed JPEG preview (~30-100 KB) and only upload that at mint time.
+// The full-quality media is uploaded later when the artwork is actually
+// purchased — the buyer's payment covers the storage cost.
+
+/** Max dimensions for preview thumbnails */
+const PREVIEW_MAX_WIDTH = 400;
+const PREVIEW_MAX_HEIGHT = 400;
+const PREVIEW_QUALITY = 0.6;
+
+/** Scale dimensions to fit within max bounds, preserving aspect ratio */
+function scaleToFit(w: number, h: number): { w: number; h: number } {
+  if (w > PREVIEW_MAX_WIDTH) { h = Math.round(h * PREVIEW_MAX_WIDTH / w); w = PREVIEW_MAX_WIDTH; }
+  if (h > PREVIEW_MAX_HEIGHT) { w = Math.round(w * PREVIEW_MAX_HEIGHT / h); h = PREVIEW_MAX_HEIGHT; }
+  return { w, h };
+}
+
+/** Draw source onto a canvas and return JPEG data URL */
+function canvasToJpeg(source: CanvasImageSource, srcW: number, srcH: number): string | null {
+  const { w, h } = scaleToFit(srcW, srcH);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.drawImage(source, 0, 0, w, h);
+  return canvas.toDataURL('image/jpeg', PREVIEW_QUALITY);
+}
+
+/**
+ * Generate a compressed JPEG preview from a data URL.
+ * Supports images (png, jpg, gif, webp, svg), video (captures frame at 1s),
+ * and audio (uses audioCover if provided).
+ *
+ * @param dataUrl - The media data URL
+ * @param audioCover - Optional cover image data URL for audio files
+ * @returns A small JPEG data URL (~30-100 KB), or null if unsupported
+ */
+export function generatePreview(dataUrl: string, audioCover?: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!dataUrl) { resolve(null); return; }
+
+    // ─── Video: capture a frame at 1 second ───
+    if (dataUrl.startsWith('data:video/')) {
+      const video = document.createElement('video');
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+
+      const cleanup = () => {
+        try { URL.revokeObjectURL(video.src); } catch {}
+      };
+
+      video.onloadeddata = () => {
+        // Seek to 1s (or 0 if shorter)
+        video.currentTime = Math.min(1, video.duration || 0);
+      };
+      video.onseeked = () => {
+        try {
+          const jpeg = canvasToJpeg(video, video.videoWidth, video.videoHeight);
+          cleanup();
+          resolve(jpeg);
+        } catch { cleanup(); resolve(null); }
+      };
+      video.onerror = () => { cleanup(); resolve(null); };
+
+      // Timeout: if video doesn't load in 10s, give up
+      setTimeout(() => { cleanup(); resolve(null); }, 10000);
+
+      // Convert data URL to blob URL for better memory handling
+      try {
+        const [header, base64] = dataUrl.split(',');
+        const mime = header?.match(/:(.*?);/)?.[1] || 'video/mp4';
+        const bytes = Uint8Array.from(atob(base64!), c => c.charCodeAt(0));
+        const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mime });
+        video.src = URL.createObjectURL(blob);
+      } catch { resolve(null); }
+      return;
+    }
+
+    // ─── Audio: use cover image if provided ───
+    if (dataUrl.startsWith('data:audio/')) {
+      if (audioCover) {
+        // Recursively generate preview from cover image
+        generatePreview(audioCover).then(resolve);
+      } else {
+        resolve(null);
+      }
+      return;
+    }
+
+    // ─── Image / SVG ───
+    const isImage = dataUrl.startsWith('data:image/') ||
+      dataUrl.trimStart().startsWith('<svg') ||
+      dataUrl.trimStart().startsWith('<?xml');
+    if (!isImage) { resolve(null); return; }
+
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const jpeg = canvasToJpeg(img, img.naturalWidth, img.naturalHeight);
+        resolve(jpeg);
+      } catch { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    // Handle SVG raw strings
+    if (dataUrl.trimStart().startsWith('<svg') || dataUrl.trimStart().startsWith('<?xml')) {
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dataUrl)));
+    } else {
+      img.src = dataUrl;
+    }
+  });
+}
+
+/** Maximum video duration in seconds */
+export const MAX_VIDEO_DURATION_SECONDS = 30;
+
+/**
+ * Validate video duration from a data URL.
+ * @returns Duration in seconds, or null if not a video / couldn't read
+ */
+export function getVideoDuration(dataUrl: string): Promise<number | null> {
+  return new Promise((resolve) => {
+    if (!dataUrl || !dataUrl.startsWith('data:video/')) { resolve(null); return; }
+
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+
+    const cleanup = () => { try { URL.revokeObjectURL(video.src); } catch {} };
+
+    video.onloadedmetadata = () => {
+      const duration = video.duration;
+      cleanup();
+      resolve(isFinite(duration) ? duration : null);
+    };
+    video.onerror = () => { cleanup(); resolve(null); };
+    setTimeout(() => { cleanup(); resolve(null); }, 5000);
+
+    try {
+      const [header, base64] = dataUrl.split(',');
+      const mime = header?.match(/:(.*?);/)?.[1] || 'video/mp4';
+      const bytes = Uint8Array.from(atob(base64!), c => c.charCodeAt(0));
+      const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mime });
+      video.src = URL.createObjectURL(blob);
+    } catch { resolve(null); }
+  });
+}
+
+/**
+ * Upload a compressed preview thumbnail to Supabase Storage.
+ * Stored at warts/{wartId}/preview.jpg — separate from the full media.
+ *
+ * @returns The storage path, or null on failure
+ */
+export async function uploadPreview(
+  previewDataUrl: string,
+  wartId: string,
+): Promise<string | null> {
+  if (!isBackendAvailable() || !previewDataUrl) return null;
+
+  try {
+    const { blob } = dataUrlToBlob(previewDataUrl);
+    const path = `warts/${wartId}/preview.jpg`;
+
+    const { error } = await supabase!.storage
+      .from(BUCKETS.MEDIA)
+      .upload(path, blob, {
+        contentType: 'image/jpeg',
+        upsert: true,
+        cacheControl: '31536000',
+      });
+
+    if (error) {
+      console.error('[Storage] uploadPreview:', error.message);
+      return null;
+    }
+
+    return path;
+  } catch (err) {
+    console.error('[Storage] uploadPreview failed:', err);
+    return null;
+  }
+}
+
+/**
  * Get the public URL for a media file.
  */
 export function getMediaUrl(path: string): string {
@@ -158,17 +389,58 @@ export async function downloadMediaAsDataUrl(path: string): Promise<string | nul
       .from(BUCKETS.MEDIA)
       .download(path);
 
-    if (error || !data) return null;
+    if (error || !data) {
+      if (import.meta.env.DEV && error) console.warn('[Storage] download error:', path, error.message);
+      return null;
+    }
+
+    // Scale timeout by file size: 30s base + 1s per MB (handles large video/audio)
+    const timeoutMs = Math.max(30000, 30000 + Math.ceil(data.size / (1024 * 1024)) * 1000);
 
     return new Promise((resolve) => {
       const reader = new FileReader();
-      const timeout = setTimeout(() => { reader.abort(); resolve(null); }, 30000);
+      const timeout = setTimeout(() => {
+        if (import.meta.env.DEV) console.warn('[Storage] download timeout for', path, `(${data.size} bytes, ${timeoutMs}ms)`);
+        reader.abort();
+        resolve(null);
+      }, timeoutMs);
       reader.onload = () => { clearTimeout(timeout); resolve(reader.result as string ?? null); };
       reader.onerror = () => { clearTimeout(timeout); resolve(null); };
       reader.onabort = () => { clearTimeout(timeout); resolve(null); };
       reader.readAsDataURL(data);
     });
-  } catch {
+  } catch (err) {
+    if (import.meta.env.DEV) console.warn('[Storage] downloadMediaAsDataUrl failed:', path, err);
     return null;
   }
+}
+
+/**
+ * Download avatar or banner from Supabase Storage and return as data URL.
+ * Tries common extensions (png, jpg, jpeg, webp, gif).
+ */
+export async function downloadProfileImageAsDataUrl(address: string, type: 'avatar' | 'banner'): Promise<string | null> {
+  if (!isBackendAvailable() || !address) return null;
+
+  const extensions = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+  for (const ext of extensions) {
+    try {
+      const path = `profiles/${address}/${type}.${ext}`;
+      const { data, error } = await supabase!.storage
+        .from(BUCKETS.AVATARS)
+        .download(path);
+
+      if (error || !data) continue;
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        const timeout = setTimeout(() => { reader.abort(); resolve(null); }, 15000);
+        reader.onload = () => { clearTimeout(timeout); resolve(reader.result as string ?? null); };
+        reader.onerror = () => { clearTimeout(timeout); resolve(null); };
+        reader.onabort = () => { clearTimeout(timeout); resolve(null); };
+        reader.readAsDataURL(data);
+      });
+    } catch { continue; }
+  }
+  return null;
 }

@@ -1,4 +1,6 @@
 import { storage } from './storage';
+import { insertFollow, deleteFollow, fetchFollowers, fetchFollowing, fetchRelationships, fetchBlockedBy } from '../lib/supabase-db';
+import { syncSocialProfile, syncFollow, syncUnfollow } from '../lib/supabase-sync';
 
 // ─── Types ─────────────────────────────────────────────
 
@@ -7,6 +9,7 @@ export interface UserProfile {
   alias: string;
   bio: string;
   profileImage: string;   // base64 custom avatar
+  bannerImage: string;     // base64 custom banner
   joinedAt: number;
   following: string[];     // addresses this user follows
   followers: string[];     // addresses following this user
@@ -44,6 +47,7 @@ function loadProfiles(): UserProfile[] {
     return profiles.map(p => ({
       ...p,
       profileImage: p.profileImage || '',
+      bannerImage: p.bannerImage || '',
       website: p.website || '',
       instagram: p.instagram || '',
       twitter: p.twitter || '',
@@ -103,6 +107,7 @@ export class SocialEngine {
         alias: safeAlias || address.slice(0, 10),
         bio: '',
         profileImage: '',
+        bannerImage: '',
         joinedAt: Date.now(),
         following: [],
         followers: [],
@@ -151,6 +156,14 @@ export class SocialEngine {
     return true;
   }
 
+  updateBannerImage(address: string, imageData: string): boolean {
+    const profile = this.profiles.find(p => p.address === address);
+    if (!profile) return false;
+    profile.bannerImage = imageData;
+    this.save();
+    return true;
+  }
+
   updateLinks(address: string, links: { website?: string; instagram?: string; twitter?: string }): boolean {
     const profile = this.profiles.find(p => p.address === address);
     if (!profile) return false;
@@ -168,6 +181,7 @@ export class SocialEngine {
     if (!me || me.closeFriends.includes(targetAddress)) return false;
     me.closeFriends.push(targetAddress);
     this.save();
+    insertFollow(myAddress, targetAddress, 'close_friend').catch(() => {});
     return true;
   }
 
@@ -177,6 +191,7 @@ export class SocialEngine {
     const idx = me.closeFriends.indexOf(targetAddress);
     if (idx >= 0) me.closeFriends.splice(idx, 1);
     this.save();
+    deleteFollow(myAddress, targetAddress, 'close_friend').catch(() => {});
     return true;
   }
 
@@ -185,6 +200,7 @@ export class SocialEngine {
     if (!me || me.favorites.includes(targetAddress)) return false;
     me.favorites.push(targetAddress);
     this.save();
+    insertFollow(myAddress, targetAddress, 'favorite').catch(() => {});
     return true;
   }
 
@@ -194,6 +210,7 @@ export class SocialEngine {
     const idx = me.favorites.indexOf(targetAddress);
     if (idx >= 0) me.favorites.splice(idx, 1);
     this.save();
+    deleteFollow(myAddress, targetAddress, 'favorite').catch(() => {});
     return true;
   }
 
@@ -202,6 +219,7 @@ export class SocialEngine {
     if (!me || me.muted.includes(targetAddress)) return false;
     me.muted.push(targetAddress);
     this.save();
+    insertFollow(myAddress, targetAddress, 'muted').catch(() => {});
     return true;
   }
 
@@ -211,6 +229,7 @@ export class SocialEngine {
     const idx = me.muted.indexOf(targetAddress);
     if (idx >= 0) me.muted.splice(idx, 1);
     this.save();
+    deleteFollow(myAddress, targetAddress, 'muted').catch(() => {});
     return true;
   }
 
@@ -219,6 +238,7 @@ export class SocialEngine {
     if (!me || me.restricted.includes(targetAddress)) return false;
     me.restricted.push(targetAddress);
     this.save();
+    insertFollow(myAddress, targetAddress, 'restricted').catch(() => {});
     return true;
   }
 
@@ -228,6 +248,7 @@ export class SocialEngine {
     const idx = me.restricted.indexOf(targetAddress);
     if (idx >= 0) me.restricted.splice(idx, 1);
     this.save();
+    deleteFollow(myAddress, targetAddress, 'restricted').catch(() => {});
     return true;
   }
 
@@ -264,6 +285,7 @@ export class SocialEngine {
     me.following.push(targetAddress);
     target.followers.push(myAddress);
     this.save();
+    syncFollow(myAddress, targetAddress).catch(() => {});
     return true;
   }
 
@@ -285,6 +307,9 @@ export class SocialEngine {
     if (fIdx >= 0) me.favorites.splice(fIdx, 1);
 
     this.save();
+    syncUnfollow(myAddress, targetAddress).catch(() => {});
+    deleteFollow(myAddress, targetAddress, 'close_friend').catch(() => {});
+    deleteFollow(myAddress, targetAddress, 'favorite').catch(() => {});
     return true;
   }
 
@@ -326,6 +351,7 @@ export class SocialEngine {
     this.unfollow(targetAddress, myAddress);
 
     this.save();
+    insertFollow(myAddress, targetAddress, 'block').catch(() => {});
     return true;
   }
 
@@ -341,6 +367,7 @@ export class SocialEngine {
     if (idx2 >= 0) target.blockedBy.splice(idx2, 1);
 
     this.save();
+    deleteFollow(myAddress, targetAddress, 'block').catch(() => {});
     return true;
   }
 
@@ -380,6 +407,53 @@ export class SocialEngine {
   getFollowingAddresses(myAddress: string): string[] {
     const me = this.profiles.find(p => p.address === myAddress);
     return me ? [...me.following] : [];
+  }
+
+  // ─── Cloud Sync ──────────────────────────────────────
+
+  /** Pull all social relationships from cloud and merge into local state */
+  async syncFromCloud(myAddress: string): Promise<void> {
+    const profile = this.profiles.find(p => p.address === myAddress);
+    if (!profile) return;
+
+    const [cloudFollowing, cloudFollowers, cloudBlocked, cloudBlockedBy, cloudCloseFriends, cloudFavorites, cloudMuted, cloudRestricted] = await Promise.all([
+      fetchFollowing(myAddress).catch(() => []),
+      fetchFollowers(myAddress).catch(() => []),
+      fetchRelationships(myAddress, 'block').catch(() => []),
+      fetchBlockedBy(myAddress).catch(() => []),
+      fetchRelationships(myAddress, 'close_friend').catch(() => []),
+      fetchRelationships(myAddress, 'favorite').catch(() => []),
+      fetchRelationships(myAddress, 'muted').catch(() => []),
+      fetchRelationships(myAddress, 'restricted').catch(() => []),
+    ]);
+
+    // Merge: union local + cloud (no duplicates)
+    const merge = (local: string[], cloud: string[]) => {
+      const set = new Set([...local, ...cloud]);
+      return [...set];
+    };
+
+    profile.following = merge(profile.following, cloudFollowing);
+    profile.followers = merge(profile.followers, cloudFollowers);
+    profile.blocked = merge(profile.blocked, cloudBlocked);
+    profile.blockedBy = merge(profile.blockedBy, cloudBlockedBy);
+    profile.closeFriends = merge(profile.closeFriends, cloudCloseFriends);
+    profile.favorites = merge(profile.favorites, cloudFavorites);
+    profile.muted = merge(profile.muted, cloudMuted);
+    profile.restricted = merge(profile.restricted, cloudRestricted);
+
+    this.save();
+
+    // Push local-only relationships back to cloud
+    for (const addr of profile.following) { insertFollow(myAddress, addr, 'follow').catch(() => {}); }
+    for (const addr of profile.blocked) { insertFollow(myAddress, addr, 'block').catch(() => {}); }
+    for (const addr of profile.closeFriends) { insertFollow(myAddress, addr, 'close_friend').catch(() => {}); }
+    for (const addr of profile.favorites) { insertFollow(myAddress, addr, 'favorite').catch(() => {}); }
+    for (const addr of profile.muted) { insertFollow(myAddress, addr, 'muted').catch(() => {}); }
+    for (const addr of profile.restricted) { insertFollow(myAddress, addr, 'restricted').catch(() => {}); }
+
+    // Sync profile metadata
+    syncSocialProfile(profile).catch(() => {});
   }
 
   /** Mutual follows (friends) */

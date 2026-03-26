@@ -529,6 +529,24 @@ export class ResonanceConsensus {
 
   // ─── Finalization (shared by single-node and PBFT) ──
 
+  /** Prune old finalized rounds to prevent unbounded memory growth */
+  private pruneOldRounds(): void {
+    if (this.rounds.size <= 5000) return;
+
+    const finalized: [string, ConsensusRound][] = [];
+    for (const [id, round] of this.rounds) {
+      if (round.finalized && round.endTime) {
+        finalized.push([id, round]);
+      }
+    }
+    // Sort by endTime ascending (oldest first) and remove excess
+    finalized.sort((a, b) => (a[1].endTime! - b[1].endTime!));
+    const toRemove = finalized.slice(0, finalized.length - 2500);
+    for (const [id] of toRemove) {
+      this.rounds.delete(id);
+    }
+  }
+
   /** Attempt to finalize a consensus round */
   private finalizeRound(round: ConsensusRound): void {
     if (round.finalized) return;
@@ -570,6 +588,9 @@ export class ResonanceConsensus {
 
       // Update validator reputations
       this.updateReputations(round);
+
+      // Prune old rounds to prevent memory leak
+      this.pruneOldRounds();
     }
   }
 

@@ -1,4 +1,11 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+
+/** Log errors in development, silent in production */
+const logErr = (context: string, err?: unknown) => {
+  if (import.meta.env.DEV) {
+    console.warn(`[Strangrz] ${context}:`, err instanceof Error ? err.message : err ?? 'unknown');
+  }
+};
 import {
   loadWallet, createWallet, sendWarps, mineWarps,
   getGlobalTransactions, getMeshStats, getSupplyBreakdown,
@@ -12,18 +19,26 @@ import {
 import type { MiningProof } from '../engine/miner';
 import { generateStrangrzLink, parseStrangrzLink } from '../engine/cosmolink';
 import type { MeshStats } from '../engine/strangrmesh';
-import { WartEngine, type Wart, WartMediaStore } from '../engine/warts';
+import { WartEngine, type Wart, type LazyMintTemplate, WartMediaStore, calculateBuyerTotal, PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT } from '../engine/warts';
+import { storeMedia } from '../engine/mediadb';
 import { storage } from '../engine/storage';
 import type { VaultStats, RecoveryKit } from '../engine/cosmovault';
-import { is2FAEnabled, verify2FALogin } from '../engine/totp';
+import { is2FAEnabled, verify2FALogin, pull2FAConfig } from '../engine/totp';
 import type { CosmoContract } from '../engine/cosmocontract';
 import type { FiatCurrency, FiatTransaction } from '../engine/fiatgateway';
 import { shortAddress } from '../engine/crypto';
 import { SocialEngine } from '../engine/social';
 // ─── Supabase Sync ──────────────────────────────────────────
 import * as sync from '../lib/supabase-sync';
+import { pullPhase2Data } from '../lib/supabase-phase2-sync';
 import { realtime } from '../lib/supabase-realtime';
-import { isBackendAvailable } from '../lib/supabase';
+import { isBackendAvailable, getPublicUrl, BUCKETS, setSupabaseAddress } from '../lib/supabase';
+import { insertWartLike, deleteWartLike, fetchWartLikes, insertWartBookmark, deleteWartBookmark, fetchWartBookmarks } from '../lib/supabase-db';
+// ─── Phase 2 Engines ──────────────────────────────────────────
+import { CollectionEngine } from '../engine/collections';
+import { AuctionEngine } from '../engine/auctions';
+import { setWartTags } from '../engine/search';
+import { pullKYCState } from '../engine/kyc';
 
 // ─── Recovery Kit reminder ────────────────────────────────
 const RECOVERY_REMINDER_KEY = 'strangrz_recovery_reminder';
@@ -43,18 +58,43 @@ function dismissRecoveryReminderStorage(): void {
 // ─── Session persistence ─────────────────────────────────
 // Store private key in sessionStorage so the user stays logged in
 // across page refreshes (cleared automatically when tab closes).
+// Safari ITP / private mode can silently clear or block sessionStorage,
+// so we keep an in-memory fallback to survive the current session.
 const SESSION_PK_KEY = 'strangrz_session_pk';
+let _sessionPkMemory: string | null = null;
+
+function isSessionStorageAvailable(): boolean {
+  try {
+    const k = '__cw_ss_test__';
+    sessionStorage.setItem(k, '1');
+    sessionStorage.removeItem(k);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function saveSessionKey(pk: string): void {
-  try { sessionStorage.setItem(SESSION_PK_KEY, pk); } catch { /* quota */ }
+  _sessionPkMemory = pk;
+  try { if (isSessionStorageAvailable()) sessionStorage.setItem(SESSION_PK_KEY, pk); } catch { /* quota */ }
 }
 
 function loadSessionKey(): string | null {
-  try { return sessionStorage.getItem(SESSION_PK_KEY); } catch { return null; }
+  try {
+    if (isSessionStorageAvailable()) {
+      const stored = sessionStorage.getItem(SESSION_PK_KEY);
+      if (stored) {
+        _sessionPkMemory = stored;
+        return stored;
+      }
+    }
+  } catch { /* ignore */ }
+  return _sessionPkMemory;
 }
 
 function clearSessionKey(): void {
-  try { sessionStorage.removeItem(SESSION_PK_KEY); } catch { /* ignore */ }
+  _sessionPkMemory = null;
+  try { if (isSessionStorageAvailable()) sessionStorage.removeItem(SESSION_PK_KEY); } catch { /* ignore */ }
 }
 
 interface WalletContextType {
@@ -98,7 +138,7 @@ interface WalletContextType {
   listWart: (wartId: string, price: number) => boolean;
   delistWart: (wartId: string) => boolean;
   transferWart: (wartId: string, toAddress: string) => Promise<{ success: boolean; error?: string }>;
-  deleteWart: (wartId: string) => boolean;
+  deleteWart: (wartId: string) => Promise<boolean>;
   editWart: (wartId: string, updates: { title?: string; description?: string; price?: number | null; royaltyPercent?: number }) => boolean;
   addWartComment: (wartId: string, content: string) => boolean;
   toggleWartLike: (wartId: string) => boolean;
@@ -119,6 +159,20 @@ interface WalletContextType {
   createAuction: (wartId: string, startPrice: number, durationHours: number, reservePrice?: number) => Promise<CosmoContract | null>;
   getWartContracts: (wartId: string) => CosmoContract[];
   getActiveAuctions: () => CosmoContract[];
+  // Lazy minting (buyer-pays-all)
+  lazyListings: LazyMintTemplate[];
+  myLazyListings: LazyMintTemplate[];
+  createLazyListing: (params: {
+    title: string; description: string; imageData: string; price: number;
+    royaltyPercent?: number; editionType?: 'unique' | 'limited' | 'unlimited';
+    maxEditions?: number | null; durationHours?: number | null;
+    mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';
+    audioCover?: string; priceFiat?: number; fiatCurrency?: FiatCurrency;
+    mintChain?: 'strangrz' | 'ethereum';
+  }) => Promise<LazyMintTemplate>;
+  buyLazyMint: (templateId: string) => Promise<{ success: boolean; wart?: Wart; fees?: { price: number; serviceFee: number; storageFee: number; total: number }; error?: string }>;
+  cancelLazyListing: (templateId: string) => boolean;
+  refreshLazyListings: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -137,6 +191,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [marketplace, setMarketplace] = useState<Wart[]>([]);
   const [myCollection, setMyCollection] = useState<Wart[]>([]);
   const [myCreated, setMyCreated] = useState<Wart[]>([]);
+  const [lazyListings, setLazyListings] = useState<LazyMintTemplate[]>([]);
+  const [myLazyListings, setMyLazyListings] = useState<LazyMintTemplate[]>([]);
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [pending2FA, setPending2FA] = useState(false);
   const pending2FARef = useRef<{ username: string; password: string } | null>(null);
@@ -154,38 +210,106 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     setWarts(engine.getAll());
     setMarketplace(engine.getMarketplace());
+    setLazyListings(engine.getLazyListings());
     if (address) {
       setMyCollection(engine.getCollection(address));
-      setMyCreated(engine.getCreated(address));
+      // Include lazy listings in myCreated so they appear in the profile
+      const directCreated = engine.getCreated(address);
+      const lazyCreated = engine.getLazyListingsByCreator(address);
+      const directIds = new Set(directCreated.map(w => w.id));
+      const lazyAsWarts: Wart[] = lazyCreated
+        .filter(t => !directIds.has(t.id))
+        .map(t => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          imageData: t.imageData,
+          mediaType: t.mediaType,
+          creator: t.creator,
+          owner: t.creator,
+          price: t.price,
+          listed: t.active,
+          createdAt: t.createdAt,
+          history: [],
+          royaltyPercent: t.royaltyPercent,
+          comments: [],
+          editionType: t.editionType,
+          maxEditions: t.maxEditions,
+          editionNumber: 0,
+          availableUntil: t.availableUntil,
+          storageMode: 'local' as const,
+          vaultBackup: false,
+          audioCover: t.audioCover,
+        }));
+      setMyCreated([...directCreated, ...lazyAsWarts]);
       setVaultStats(engine.getVaultStats(address));
+      setMyLazyListings(lazyCreated);
     }
+  }
+
+  // Track locally-deleted wart IDs so cloud sync doesn't resurrect them
+  const deletedWartIdsKey = 'strangrz_deleted_warts';
+  function getDeletedWartIds(): Set<string> {
+    try {
+      const raw = storage.getItem(deletedWartIdsKey);
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+    } catch { return new Set(); }
+  }
+  function markWartDeleted(wartId: string) {
+    const ids = getDeletedWartIds();
+    ids.add(wartId);
+    storage.setItem(deletedWartIdsKey, JSON.stringify([...ids]));
   }
 
   function mergeCloudWarts(cloudWarts: Record<string, unknown>[]) {
     const engine = getWartEngine();
     const localWarts = engine.getAll();
     const localIds = new Set(localWarts.map(w => w.id));
+    const deletedIds = getDeletedWartIds();
+
+    // Collect warts that need media download (for background fetch)
+    const needsMediaDownload: { wartId: string; mediaPath: string }[] = [];
 
     for (const row of cloudWarts) {
       const wartId = row.id as string;
+      // Skip warts we've locally deleted — don't resurrect them
+      if (deletedIds.has(wartId)) continue;
+
+      // Get public URL for immediate display (no download needed)
+      // Prefer full media, fall back to preview thumbnail for unsold artworks
+      const mediaPath = row.media_path as string | undefined;
+      const previewPath = row.preview_path as string | undefined;
+      const displayPath = mediaPath || previewPath;
+      const publicUrl = displayPath ? getPublicUrl(BUCKETS.MEDIA, displayPath) : '';
+
       if (localIds.has(wartId)) {
         const local = engine.getWart(wartId);
         if (local) {
+          let changed = false;
+          const updated = { ...local }; // Immutable copy
           const cloudUpdated = Number(row.updated_at || 0);
           if (cloudUpdated > (local.createdAt || 0)) {
-            local.owner = (row.owner as string) || local.owner;
-            local.price = row.price != null ? Number(row.price) : local.price;
-            local.listed = (row.listed as boolean) ?? local.listed;
-            local.title = (row.title as string) || local.title;
-            local.description = (row.description as string) || local.description;
+            updated.owner = (row.owner as string) || local.owner;
+            updated.price = row.price != null ? Number(row.price) : local.price;
+            updated.listed = (row.listed as boolean) ?? local.listed;
+            updated.title = (row.title as string) || local.title;
+            updated.description = (row.description as string) || local.description;
+            changed = true;
           }
+          // Fix missing images: use public URL for existing warts with no imageData
+          if (!local.imageData && publicUrl) {
+            updated.imageData = publicUrl;
+            if (mediaPath) needsMediaDownload.push({ wartId, mediaPath });
+            changed = true;
+          }
+          if (changed) engine.addFromCloud(updated); // Replace in Map with new ref
         }
       } else {
         const wartData: Wart = {
           id: wartId,
           title: (row.title as string) || '',
           description: (row.description as string) || '',
-          imageData: '',
+          imageData: publicUrl, // Use public URL for instant display
           mediaType: (row.media_type as Wart['mediaType']) || 'image',
           creator: (row.creator as string) || '',
           owner: (row.owner as string) || '',
@@ -203,33 +327,54 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           contentFingerprint: (row.content_fingerprint as string) || undefined,
           creatorSignature: (row.creator_signature as string) || undefined,
           storageMode: (row.storage_mode as Wart['storageMode']) || 'hybrid',
+          priceFiat: row.price_fiat != null ? Number(row.price_fiat) : undefined,
+          fiatCurrency: (row.fiat_currency as Wart['fiatCurrency']) || undefined,
           vaultBackup: false,
         };
         engine.addFromCloud(wartData);
 
-        if (row.media_path) {
-          sync.pullWartWithMedia(wartId).then(fullWart => {
-            if (fullWart?.imageData) {
-              const local = engine.getWart(wartId);
-              if (local) {
-                local.imageData = fullWart.imageData;
-                if (fullWart.contentFingerprint) {
-                  WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
-                }
-                engine.savePublic();
-              }
-            }
-          });
-        }
+        // Queue background download for local caching
+        if (mediaPath) needsMediaDownload.push({ wartId, mediaPath });
       }
     }
     engine.savePublic();
+
+    // Background: download full-quality media for local caching (non-blocking)
+    if (needsMediaDownload.length > 0) {
+      const downloadBatch = async () => {
+        for (const { wartId } of needsMediaDownload) {
+          try {
+            const fullWart = await sync.pullWartWithMedia(wartId);
+            if (fullWart?.imageData) {
+              const local = engine.getWart(wartId);
+              if (local) {
+                // Create immutable copy with updated media
+                const updated = { ...local, imageData: fullWart.imageData };
+                if (fullWart.audioCover) updated.audioCover = fullWart.audioCover;
+                engine.addFromCloud(updated);
+                if (fullWart.contentFingerprint) {
+                  WartMediaStore.store(fullWart.contentFingerprint, fullWart.imageData);
+                }
+                storeMedia(wartId, fullWart.imageData, fullWart.audioCover);
+              }
+            }
+          } catch { /* continue with next */ }
+        }
+        engine.savePublic();
+        const currentWallet = loadWallet();
+        refreshWartsState(currentWallet?.address);
+      };
+      // Delay background downloads to not block initial render
+      setTimeout(downloadBatch, 2000);
+    }
   }
 
   // ─── Load wallet on mount + Supabase sync ──────────────
   useEffect(() => {
     const w = loadWallet();
     if (w) {
+      // Set address header for Supabase RLS ownership checks
+      setSupabaseAddress(w.address);
       // Restore session: if private key is in sessionStorage, auto-unlock
       const sessionPk = loadSessionKey();
       if (sessionPk) {
@@ -243,21 +388,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       // Pull cloud data and persist to localStorage for cross-device sync
       if (isBackendAvailable()) {
-        sync.fullSync(w.address).then(cloudData => {
+        sync.fullSync(w.address, (id) => getWartEngine().getWart(id)).then(cloudData => {
           if (!cloudData) return;
 
-          // Sync profile: use cloud balance as source of truth if higher
+          // Sync profile: reconcile local and cloud state
           if (cloudData.profile) {
             let changed = false;
-            if (cloudData.profile.balance > w.balance) {
-              w.balance = cloudData.profile.balance;
-              changed = true;
+            // Use cloud balance when it differs (cloud is source of truth for cross-device sync)
+            if (cloudData.profile.balance !== w.balance) {
+              // Cloud wins when it has a different balance (server-side credits, other-device transactions)
+              // Local wins only if we have unsent local transactions not yet synced
+              const cloudTxCount = cloudData.transactions?.length || 0;
+              const localTxCount = w.transactions?.length || 0;
+              if (cloudTxCount >= localTxCount || cloudData.profile.balance > w.balance) {
+                w.balance = cloudData.profile.balance;
+                changed = true;
+              }
             }
             if (cloudData.profile.alias && !w.alias) {
               w.alias = cloudData.profile.alias;
               changed = true;
             }
-            if (cloudData.profile.level > w.level) {
+            // Sync level/XP: use the higher of local or cloud
+            if (cloudData.profile.level > w.level || (cloudData.profile.level === w.level && cloudData.profile.xp > w.xp)) {
               w.level = cloudData.profile.level;
               w.levelName = cloudData.profile.levelName;
               w.levelTitle = cloudData.profile.levelTitle;
@@ -298,15 +451,59 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(cloudData.warts);
             refreshWartsState(w.address);
           }
-        }).catch(() => { /* Sync failed — continue in offline mode */ });
 
-        // Pull ALL listed warts from Supabase (marketplace — includes other users' artworks)
-        sync.pullWarts({ listed: true }).then(listedWarts => {
-          if (listedWarts && listedWarts.length > 0) {
-            mergeCloudWarts(listedWarts);
-            refreshWartsState(w.address);
+          // Sync wart likes/bookmarks from cloud
+          Promise.all([
+            fetchWartLikes(w.address).catch((e) => { logErr('fetchLikes', e); return []; }),
+            fetchWartBookmarks(w.address).catch((e) => { logErr('fetchBookmarks', e); return []; }),
+          ]).then(([cloudLikes, cloudBookmarks]) => {
+            const engine = getWartEngine();
+            let changed = false;
+            for (const wartId of cloudLikes) {
+              const wart = engine.getWart(wartId);
+              if (wart && (!wart.likes || !wart.likes.includes(w.address))) {
+                engine.toggleLike(wartId, w.address); // adds like + saves
+                changed = true;
+              }
+            }
+            for (const wartId of cloudBookmarks) {
+              const wart = engine.getWart(wartId);
+              if (wart && (!wart.bookmarks || !wart.bookmarks.includes(w.address))) {
+                engine.toggleBookmark(wartId, w.address); // adds bookmark + saves
+                changed = true;
+              }
+            }
+            if (changed) refreshWartsState(w.address);
+          }).catch((e) => logErr('syncLikesBookmarks', e));
+
+          // Sync playlists: merge cloud playlists into localStorage
+          if (cloudData.playlists && cloudData.playlists.length > 0) {
+            try {
+              const raw = storage.getItem('strangrz_playlists');
+              const localAll = raw ? JSON.parse(raw) as Array<{ id: string; owner: string }> : [];
+              const localIds = new Set(localAll.map(p => p.id));
+              const newPls = cloudData.playlists
+                .filter(p => !localIds.has(p.id))
+                .map(p => ({ ...p, owner: p.owner || w.address }));
+              if (newPls.length > 0) {
+                storage.setItem('strangrz_playlists', JSON.stringify([...localAll, ...newPls]));
+              }
+            } catch { /* ignore */ }
           }
-        }).catch(() => { /* Pull failed — use local data */ });
+
+          // Sync articles: merge cloud articles into localStorage
+          if (cloudData.articles && cloudData.articles.length > 0) {
+            try {
+              const raw = storage.getItem('strangrz_curator_articles');
+              const localArticles = raw ? JSON.parse(raw) as Array<{ id: string }> : [];
+              const localIds = new Set(localArticles.map(a => a.id));
+              const newArticles = cloudData.articles.filter(a => !localIds.has(a.id));
+              if (newArticles.length > 0) {
+                storage.setItem('strangrz_curator_articles', JSON.stringify([...localArticles, ...newArticles]));
+              }
+            } catch { /* ignore */ }
+          }
+        }).catch((e) => logErr('fullSync', e));
 
         // Pull ALL warts from Supabase (full gallery — all artworks across all users)
         sync.pullWarts().then(allWarts => {
@@ -314,7 +511,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             mergeCloudWarts(allWarts);
             refreshWartsState(w.address);
           }
-        }).catch(() => { /* Pull failed — use local data */ });
+        }).catch((e) => logErr('pullWarts(all)', e));
+
+        // Pull Phase 2 data on mount (collections, auctions, tags)
+        pullPhase2Data(w.address).then(phase2 => {
+          if (phase2.collections.length > 0) CollectionEngine.load().mergeCloud(phase2.collections);
+          if (phase2.auctions.length > 0) AuctionEngine.load().mergeCloud(phase2.auctions);
+          if (phase2.tagMap.size > 0) {
+            for (const [wartId, tags] of phase2.tagMap) setWartTags(wartId, tags);
+          }
+        }).catch((e) => logErr('pullPhase2Data', e));
+
+        // Pull KYC state on mount
+        pullKYCState(w.address).catch((e) => logErr('pullKYCState', e));
+      }
+    } else {
+      // No wallet (unauthenticated) — still load public gallery from cloud
+      if (isBackendAvailable()) {
+        sync.pullWarts().then(allWarts => {
+          if (allWarts && allWarts.length > 0) {
+            mergeCloudWarts(allWarts);
+            refreshWartsState(undefined);
+          }
+        }).catch((e) => logErr('pullWarts(public)', e));
       }
     }
     setGlobalTxs(getGlobalTransactions());
@@ -325,8 +544,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     refreshWartsState(w?.address);
 
     // Rehydrate media from IndexedDB (async — images appear after DB loads)
-    getWartEngine().rehydrateMedia().then(changed => {
-      if (changed) refreshWartsState(w?.address);
+    const engine = getWartEngine();
+    Promise.all([
+      engine.rehydrateMedia(),
+      engine.rehydrateLazyMedia(),
+    ]).then(([changed1, changed2]) => {
+      if (changed1 || changed2) refreshWartsState(w?.address);
     });
 
     // Start realtime subscriptions + wire up listener
@@ -376,6 +599,36 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             sync.fullSync(addr);
           }
           break;
+        // Phase 2 realtime events
+        case 'collection_new':
+        case 'collection_update':
+        case 'collection_delete':
+        case 'auction_update':
+        case 'bid_new':
+          // Re-pull Phase 2 data to stay in sync
+          if (addr) {
+            pullPhase2Data(addr).then(phase2 => {
+              if (phase2.collections.length > 0) CollectionEngine.load().mergeCloud(phase2.collections);
+              if (phase2.auctions.length > 0) AuctionEngine.load().mergeCloud(phase2.auctions);
+            }).catch((e) => logErr('phase2Realtime', e));
+          }
+          break;
+        // Phase 3 realtime events
+        case 'dm_new':
+          // DM thread updated — messaging hook will pick up on next render
+          break;
+        case 'profile_update':
+          // Profile updated (e.g. verification status changed)
+          if (addr) {
+            sync.fullSync(addr).then(cloudData => {
+              if (cloudData?.profile && currentWallet) {
+                currentWallet.balance = cloudData.profile.balance;
+                saveWallet(currentWallet);
+                setWallet({ ...currentWallet });
+              }
+            }).catch((e) => logErr('profileUpdateRealtime', e));
+          }
+          break;
       }
     });
 
@@ -388,6 +641,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   // ─── Wallet creation ──────────────────────────────────
   const initWallet = useCallback(async (password: string, alias?: string) => {
     const w = await createWallet(password, alias);
+    setSupabaseAddress(w.address);
     setWallet({ ...w });
     setUnlocked(true);
     saveSessionKey(w.privateKey);
@@ -405,6 +659,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // ─── Complete login (shared between initial login and 2FA verification) ──
   const completeLogin = useCallback(async (w: WarpWallet, username: string, password: string, isNew: boolean) => {
+    setSupabaseAddress(w.address);
     setWallet({ ...w });
     setUnlocked(true);
     saveSessionKey(w.privateKey);
@@ -425,13 +680,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // Pull cloud data and persist locally for cross-device sync
     const cloudData = await sync.fullSync(w.address);
     if (cloudData) {
-      if (cloudData.profile && cloudData.profile.balance > w.balance) {
-        w.balance = cloudData.profile.balance;
-        w.level = Math.max(w.level, cloudData.profile.level);
-        w.xp = Math.max(w.xp, cloudData.profile.xp);
-        if (cloudData.profile.alias && !w.alias) w.alias = cloudData.profile.alias;
-        saveWallet(w);
-        setWallet({ ...w });
+      if (cloudData.profile) {
+        let profileChanged = false;
+        // Use cloud balance as source of truth after login (most up-to-date cross-device)
+        if (cloudData.profile.balance !== w.balance) {
+          const cloudTxCount = cloudData.transactions?.length || 0;
+          const localTxCount = w.transactions?.length || 0;
+          if (cloudTxCount >= localTxCount || cloudData.profile.balance > w.balance) {
+            w.balance = cloudData.profile.balance;
+            profileChanged = true;
+          }
+        }
+        if (cloudData.profile.level > w.level || (cloudData.profile.level === w.level && cloudData.profile.xp > w.xp)) {
+          w.level = cloudData.profile.level;
+          w.xp = cloudData.profile.xp;
+          profileChanged = true;
+        }
+        if (cloudData.profile.alias && !w.alias) { w.alias = cloudData.profile.alias; profileChanged = true; }
+        if (profileChanged) {
+          saveWallet(w);
+          setWallet({ ...w });
+        }
       }
       if (cloudData.transactions.length > 0) {
         const localTxs = getGlobalTransactions();
@@ -455,15 +724,59 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
 
     // Pull ALL warts from Supabase (full gallery — all artworks across all users)
-    sync.pullWarts().then(allWarts => {
+    try {
+      const allWarts = await sync.pullWarts();
       if (allWarts && allWarts.length > 0) {
         mergeCloudWarts(allWarts);
         refreshWartsState(w.address);
       }
-    });
+    } catch { /* Pull failed — use local data */ }
+
+    // Pull Phase 2 data (collections, auctions, tags) from Supabase
+    try {
+      const phase2 = await pullPhase2Data(w.address);
+      if (phase2.collections.length > 0) {
+        CollectionEngine.load().mergeCloud(phase2.collections);
+      }
+      if (phase2.auctions.length > 0) {
+        AuctionEngine.load().mergeCloud(phase2.auctions);
+      }
+      if (phase2.tagMap.size > 0) {
+        for (const [wartId, tags] of phase2.tagMap) {
+          setWartTags(wartId, tags);
+        }
+      }
+    } catch (e) { logErr('pullPhase2Data', e); }
+
+    // Pull KYC state from Supabase (cross-device persistence)
+    pullKYCState(w.address).catch((e) => logErr('pullKYCState', e));
+
+    // Sync social profile from Supabase (cross-device: pull remote alias, bio, links)
+    try {
+      const { fetchSocialProfile } = await import('../lib/supabase-db');
+      const remoteSocial = await fetchSocialProfile(w.address);
+      if (remoteSocial) {
+        const s = SocialEngine.load();
+        const bestAlias = (remoteSocial.alias && remoteSocial.alias !== w.address.slice(0, 10) && remoteSocial.alias !== shortAddress(w.address))
+          ? remoteSocial.alias
+          : w.alias || shortAddress(w.address);
+        s.ensureProfile(w.address, bestAlias);
+        if (remoteSocial.bio) s.updateBio(w.address, remoteSocial.bio);
+        if (remoteSocial.website || remoteSocial.instagram || remoteSocial.twitter) {
+          s.updateLinks(w.address, {
+            website: remoteSocial.website || '',
+            instagram: remoteSocial.instagram || '',
+            twitter: remoteSocial.twitter || '',
+          });
+        }
+      }
+    } catch { /* non-critical */ }
 
     sync.syncProfile(w);
     for (const tx of w.transactions) sync.syncTransaction(tx);
+    // Also sync local social profile to Supabase
+    const socialProfile = SocialEngine.load().getProfile(w.address);
+    if (socialProfile) sync.syncSocialProfile(socialProfile);
 
     // Auto-export Recovery Kit for new wallets
     if (isNew) {
@@ -495,6 +808,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const existingBefore = loadWallet();
       const w = await loginStrangrzID(username, password);
       const isNew = !existingBefore;
+
+      // Pull 2FA config from Supabase (ensures cross-device persistence)
+      await pull2FAConfig(w.address);
 
       // Check if 2FA is enabled for this address
       if (is2FAEnabled(w.address)) {
@@ -577,6 +893,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setMarketplace([]);
     setMyCollection([]);
     setMyCreated([]);
+    // Navigate to wallet view to show auth modal for reconnection
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
   }, []);
 
   // ─── Delete account (permanently remove profile + reintegrate tokens) ──
@@ -598,6 +916,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setMyCollection([]);
     setMyCreated([]);
     setVaultStats(null);
+    // Navigate to wallet view to show auth modal for reconnection
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
   }, [wallet]);
 
   // ─── Migration ─────────────────────────────────────────
@@ -631,6 +951,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       refreshWartsState(w.address);
+      // Sync social profile from Supabase for cross-device handle resolution
+      SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
+      const socialProfile = SocialEngine.load().getProfile(w.address);
+      if (socialProfile) sync.syncSocialProfile(socialProfile);
       return true;
     } catch {
       return false;
@@ -657,6 +981,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       saveSessionKey(w.privateKey);
       setNeedsMigration(false);
       refreshWartsState(w.address);
+      // Sync social profile from Supabase for cross-device handle resolution
+      SocialEngine.load().ensureProfile(w.address, w.alias || shortAddress(w.address));
+      const socialProfile = SocialEngine.load().getProfile(w.address);
+      if (socialProfile) sync.syncSocialProfile(socialProfile);
       return true;
     } catch {
       return false;
@@ -758,13 +1086,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const txs = JSON.parse(storage.getItem('strangrz_global_tx') || '[]');
     txs.unshift(tx);
     storage.setItem('strangrz_global_tx', JSON.stringify(txs.slice(0, 200)));
-    wallet.transactions.unshift(tx);
+    const updatedWallet = { ...wallet, transactions: [tx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
 
-    setWallet({ ...wallet });
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
-    // Sync to Supabase (wart + media + transaction)
-    sync.syncWart(wart);
+    // Sync to Supabase with preview thumbnail only — NO full media upload.
+    // Full media stays on creator's device until the artwork is sold.
+    // This prevents storage cost explosion from unsold mints.
+    sync.syncWartWithPreview(wart);
     sync.syncProfile(wallet);
     if (wart.certId) {
       sync.syncCertificate({
@@ -787,12 +1118,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!wart) return { success: false, error: 'Strangrz not found' };
     if (!wart.listed || wart.price === null) return { success: false, error: 'Not for sale' };
     if (wart.owner === wallet.address) return { success: false, error: 'You already own this' };
-    if (wallet.balance < wart.price) return { success: false, error: 'Insufficient STZ' };
 
     const seller = wart.owner;
     const creator = wart.creator;
     const price = wart.price;
     const isResale = seller !== creator;
+
+    // Platform fee: 10% primary market, 5% secondary market
+    const feePercent = isResale ? SECONDARY_MARKET_FEE_PERCENT : PRIMARY_MARKET_FEE_PERCENT;
+    const platformFee = Math.round(price * feePercent / 100 * 100) / 100;
+    const totalCost = price + platformFee;
+
+    if (wallet.balance < totalCost) {
+      return { success: false, error: `Insufficient STZ. Need ${totalCost} ⬣ (${price} + ${feePercent}% fee)` };
+    }
+
     const royaltyAmount = isResale ? Math.round(price * wart.royaltyPercent / 100 * 100) / 100 : 0;
     const sellerAmount = price - royaltyAmount;
 
@@ -803,6 +1143,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // Pay royalty to creator if resale
     if (royaltyAmount > 0 && creator !== seller) {
       await sendWarps(wallet, creator, royaltyAmount, `Strangrz royalty: ${wart.title}`);
+    }
+
+    // Pay platform fee
+    if (platformFee > 0) {
+      const PLATFORM_ADDRESS = 'STZ_PLATFORM_FEE';
+      await sendWarps(wallet, PLATFORM_ADDRESS, platformFee, `Platform fee: ${wart.title} (${feePercent}%)`);
     }
 
     // Transfer ownership
@@ -820,9 +1166,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_buy',
       memo: `Bought Strangrz: ${wart.title}`,
     };
-    wallet.transactions.unshift(buyTx);
+    const updatedWallet = { ...wallet, transactions: [buyTx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
 
-    setWallet({ ...wallet });
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
     // Sync purchase to Supabase (atomic operation)
@@ -835,6 +1182,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       seller,
       txId,
     });
+    // Upload full-quality media now that the artwork has been sold.
+    // At mint time only a preview thumbnail was uploaded to save storage costs.
+    const soldWart = engine.getWart(wartId);
+    if (soldWart) {
+      sync.syncWart(soldWart);
+
+      // Model C: Crypto buyer pays Irys directly via their wallet (best-effort).
+      // If browser upload fails, server-side replication handles it as fallback.
+      if (window.ethereum) {
+        sync.replicateToArweaveViaBrowser(soldWart).catch(() => {});
+      }
+    }
     sync.syncProfile(wallet);
     sync.syncTransaction(buyTx);
     sync.syncNotification({
@@ -892,8 +1251,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       type: 'wart_transfer',
       memo: `Transferred Strangrz: ${wart.title}`,
     };
-    wallet.transactions.unshift(tx);
-    setWallet({ ...wallet });
+    const updatedWallet = { ...wallet, transactions: [tx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
+    setWallet(updatedWallet);
     refreshWartsState(wallet.address);
     setGlobalTxs(getGlobalTransactions());
     // Sync transfer to Supabase
@@ -912,13 +1272,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, [wallet]);
 
-  const doDeleteWart = useCallback((wartId: string): boolean => {
+  const doDeleteWart = useCallback(async (wartId: string): Promise<boolean> => {
     if (!wallet) return false;
     const engine = getWartEngine();
     const ok = engine.delete(wartId, wallet.address);
     if (ok) {
+      markWartDeleted(wartId);
       refreshWartsState(wallet.address);
-      sync.syncWartDelete(wartId);
+      await sync.syncWartDelete(wartId);
     }
     return ok;
   }, [wallet]);
@@ -967,6 +1328,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const liked = engine.toggleLike(wartId, wallet.address);
     refreshWartsState(wallet.address);
+    if (liked) { insertWartLike(wartId, wallet.address).catch((e) => logErr('insertLike', e)); }
+    else { deleteWartLike(wartId, wallet.address).catch((e) => logErr('deleteLike', e)); }
     return liked;
   }, [wallet]);
 
@@ -975,6 +1338,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const engine = getWartEngine();
     const bookmarked = engine.toggleBookmark(wartId, wallet.address);
     refreshWartsState(wallet.address);
+    if (bookmarked) { insertWartBookmark(wartId, wallet.address).catch((e) => logErr('insertBookmark', e)); }
+    else { deleteWartBookmark(wartId, wallet.address).catch((e) => logErr('deleteBookmark', e)); }
     return bookmarked;
   }, [wallet]);
 
@@ -1083,6 +1448,145 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return engine.getActiveAuctions();
   }, []);
 
+  // ─── Lazy Minting (Buyer-Pays-All) ─────────────────────
+
+  const doCreateLazyListing = useCallback(async (params: {
+    title: string; description: string; imageData: string; price: number;
+    royaltyPercent?: number; editionType?: 'unique' | 'limited' | 'unlimited';
+    maxEditions?: number | null; durationHours?: number | null;
+    mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';
+    audioCover?: string; priceFiat?: number; fiatCurrency?: FiatCurrency;
+    mintChain?: 'strangrz' | 'ethereum';
+  }): Promise<LazyMintTemplate> => {
+    if (!wallet || !wallet.privateKey) throw new Error('Wallet locked');
+    const engine = getWartEngine();
+    const template = await engine.createLazyListing({
+      ...params,
+      creator: wallet.address,
+      privateKey: wallet.privateKey,
+    });
+
+    refreshWartsState(wallet.address);
+    setGlobalTxs(getGlobalTransactions());
+
+    // Sync template metadata to Supabase — NO media upload.
+    // Media stays local until a buyer purchases and pays the storage fee.
+    sync.syncLazyTemplate({
+      id: template.id,
+      title: template.title,
+      description: template.description,
+      imageData: template.imageData,
+      creator: template.creator,
+      owner: template.creator,
+      price: template.price,
+      listed: true,
+      createdAt: template.createdAt,
+      mediaType: template.mediaType,
+      history: [],
+      royaltyPercent: template.royaltyPercent,
+      comments: [],
+      editionType: template.editionType,
+      maxEditions: template.maxEditions,
+      editionNumber: 0,
+      availableUntil: template.availableUntil,
+      storageMode: 'local',
+      vaultBackup: false,
+    } as Wart);
+
+    return template;
+  }, [wallet]);
+
+  const doBuyLazyMint = useCallback(async (templateId: string): Promise<{
+    success: boolean; wart?: Wart;
+    fees?: { price: number; serviceFee: number; storageFee: number; total: number };
+    error?: string;
+  }> => {
+    if (!wallet || !wallet.privateKey) return { success: false, error: 'Wallet locked' };
+    const engine = getWartEngine();
+    const template = engine.getLazyTemplate(templateId);
+    if (!template) return { success: false, error: 'Listing not found' };
+
+    // Calculate total cost for buyer (price + service fee + storage fee)
+    // The buyer pays for ALL storage — the platform pays nothing.
+    const fees = calculateBuyerTotal(template.price, template.imageData);
+
+    // Check buyer balance covers total
+    if (wallet.balance < fees.total) {
+      return { success: false, error: `Insufficient STZ. Need ${fees.total} ⬣ (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service + ${fees.storageFee} ⬣ storage)` };
+    }
+
+    // Execute the lazy mint
+    const result = await engine.buyLazyMint(templateId, wallet.address, wallet.privateKey);
+    if (!result) return { success: false, error: 'Purchase failed' };
+
+    // Pay creator the full listed price
+    const payResult = await sendWarps(wallet, template.creator, fees.price, `Strangrz lazy mint: ${template.title}`);
+    if (!payResult.success) return { success: false, error: payResult.error };
+
+    // Pay service fee + storage fee to platform
+    // Storage fee covers: Supabase hosting, IPFS pinning, CDN bandwidth
+    const PLATFORM_ADDRESS = 'STZ_PLATFORM_FEE';
+    const platformTotal = fees.serviceFee + fees.storageFee;
+    if (platformTotal > 0) {
+      await sendWarps(wallet, PLATFORM_ADDRESS, platformTotal, `Fees: ${template.title} (service: ${fees.serviceFee} ⬣, storage: ${fees.storageFee} ⬣)`);
+    }
+
+    // Record transaction
+    const buyTx: Transaction = {
+      id: payResult.tx?.id || Date.now().toString(36),
+      from: wallet.address,
+      to: template.creator,
+      amount: fees.total,
+      timestamp: Date.now(),
+      signature: 'wart_buy',
+      type: 'wart_buy',
+      memo: `Lazy mint purchase: ${template.title} (${fees.price} ⬣ + ${fees.serviceFee} ⬣ service + ${fees.storageFee} ⬣ storage)`,
+    };
+    const updatedWallet = { ...wallet, transactions: [buyTx, ...wallet.transactions] };
+    saveWallet(updatedWallet);
+
+    setWallet(updatedWallet);
+    refreshWartsState(wallet.address);
+    setGlobalTxs(getGlobalTransactions());
+
+    // NOW upload media to Supabase — buyer has paid for storage.
+    // This is the moment the media leaves the creator's local device
+    // and gets replicated to cloud storage.
+    sync.syncWart(result.wart);
+
+    // Model C: Crypto buyer pays Irys directly via their wallet (best-effort).
+    if (window.ethereum) {
+      sync.replicateToArweaveViaBrowser(result.wart).catch(() => {});
+    }
+
+    sync.syncProfile(updatedWallet);
+    sync.syncTransaction(buyTx);
+    sync.syncNotification({
+      recipient: template.creator,
+      sender: wallet.address,
+      type: 'sale',
+      title: 'Artwork sold!',
+      body: `${template.title} was purchased for ${fees.price} ⬣ (buyer paid ${fees.total} ⬣ total incl. ${fees.storageFee} ⬣ storage)`,
+      refId: result.wart.id,
+    });
+
+    return { success: true, wart: result.wart, fees };
+  }, [wallet]);
+
+  const doCancelLazyListing = useCallback((templateId: string): boolean => {
+    if (!wallet) return false;
+    const engine = getWartEngine();
+    const ok = engine.cancelLazyListing(templateId, wallet.address);
+    if (ok) refreshWartsState(wallet.address);
+    return ok;
+  }, [wallet]);
+
+  const doRefreshLazyListings = useCallback(() => {
+    const engine = getWartEngine();
+    setLazyListings(engine.getLazyListings());
+    if (wallet) setMyLazyListings(engine.getLazyListingsByCreator(wallet.address));
+  }, [wallet]);
+
   return (
     <WalletContext.Provider value={{
       wallet, unlocked, needsMigration, globalTxs, meshStats, supplyInfo,
@@ -1111,6 +1615,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       createAuction: doCreateAuction,
       getWartContracts: doGetWartContracts,
       getActiveAuctions: doGetActiveAuctions,
+      // Lazy minting (buyer-pays-all)
+      lazyListings,
+      myLazyListings,
+      createLazyListing: doCreateLazyListing,
+      buyLazyMint: doBuyLazyMint,
+      cancelLazyListing: doCancelLazyListing,
+      refreshLazyListings: doRefreshLazyListings,
     }}>
       {children}
     </WalletContext.Provider>

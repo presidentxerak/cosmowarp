@@ -1,37 +1,40 @@
 import { storage } from './storage';
 
 /**
- * Strangrz Tokenomics — Supply Management & Resonance Decay
+ * Strangrz Tokenomics — Reward Points & Resonance Decay
+ *
+ * Strngrz Coins (STZ) are NON-MONETARY reward tokens.
+ * They reward collectors: 1 artwork purchased = 100 STZ.
+ * At 2000 STZ (20 artworks collected), the collector qualifies
+ * for an airdrop of an exclusive limited-edition digital artwork
+ * curated by the platform.
  *
  * Total Supply: 69,000,000 STZ (Strangrz)
  * Creator Lock: 1,000,000 STZ (unlockable by admin)
- * Airdrop: 1,000 STZ per new account
+ * Signup Bonus: 300 STZ per new account (first 100 signups promo)
  * Mining: Resonance Decay (better than halving)
  * Streak Rewards: 10,000 STZ for 365-day daily TX streak
+ * Purchase Reward: 100 STZ per artwork collected
+ * Airdrop Threshold: 2000 STZ = 1 exclusive limited edition artwork
  *
  * RESONANCE DECAY (replaces Bitcoin halving):
  * Instead of abrupt 50% cuts every N blocks, mining rewards decay
  * continuously following: reward = base * φ^(-totalMined / decayConstant)
  * where φ = 1.618... (golden ratio)
- *
- * Benefits over halving:
- * - No "halving shock" creating speculation bubbles
- * - Mathematically smooth and predictable
- * - Never reaches absolute zero — always an incentive
- * - Aligned with Strangrz's fractal/harmonic philosophy
- * - Self-adjusting based on actual mining activity
  */
 
 // ─── Constants ───────────────────────────────────────────
 
 export const TOTAL_SUPPLY = 69_000_000;
 export const CREATOR_LOCKED = 1_000_000;
-export const AIRDROP_AMOUNT = 1_000;
+export const AIRDROP_AMOUNT = 300;
 export const AIRDROP_POOL = 10_000_000;       // Reserved for airdrops
 export const MINING_POOL = TOTAL_SUPPLY - CREATOR_LOCKED - AIRDROP_POOL; // 58M
 export const BASE_MINING_REWARD = 50;          // Starting reward per mine
 export const STREAK_REWARD = 10_000;           // 365-day streak bonus
 export const STREAK_DAYS_REQUIRED = 365;
+export const PURCHASE_REWARD = 100;              // STZ earned per artwork collected
+export const AIRDROP_THRESHOLD = 2000;           // STZ needed for exclusive artwork airdrop
 export const GOLDEN_RATIO = 1.618033988749895;
 export const DECAY_CONSTANT = 5_000_000;       // Controls decay speed
 
@@ -222,6 +225,22 @@ export class TokenomicsEngine {
     });
 
     return amount;
+  }
+
+  // ─── Purchase Reward ────────────────────────────────
+
+  /** Award STZ for collecting an artwork. Returns amount awarded. */
+  processPurchaseReward(): number {
+    const amount = PURCHASE_REWARD;
+    this.state.totalMinted += amount;
+    this.state.circulatingSupply += amount;
+    this.state.lastUpdated = Date.now();
+    return amount;
+  }
+
+  /** Check if address qualifies for exclusive artwork airdrop */
+  checkAirdropEligibility(balance: number): boolean {
+    return balance >= AIRDROP_THRESHOLD;
   }
 
   // ─── Mining Reward ───────────────────────────────────

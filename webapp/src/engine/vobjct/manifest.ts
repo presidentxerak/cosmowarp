@@ -5,7 +5,8 @@
  * Integrates with the Strangrz Wart system and any chain adapter.
  */
 
-import { sha256, signTransaction, verifySignature } from '../crypto';
+import { sha256, signWithAlgorithm, verifyWithAlgorithm } from '../crypto';
+import { computeCID } from '../cid';
 import type {
   StrangrzManifest, TokenBinding, AssetDescriptor, StrangrzMetadata,
   StrangrzRights, StrangrzPolicy, StorageRoute, RecoveryRoute,
@@ -56,6 +57,7 @@ export interface ManifestBuildInput {
   // Signing
   creatorPrivateKey?: string;
   creatorPublicKey?: string;
+  signatureAlgorithm?: 'ed25519' | 'dilithium3' | 'dilithium5' | 'sphincs_sha256_128f' | 'sphincs_sha256_256f';
 }
 
 /**
@@ -65,24 +67,29 @@ export interface ManifestBuildInput {
 export async function buildManifest(input: ManifestBuildInput): Promise<StrangrzManifest> {
   const now = new Date().toISOString();
 
-  // Compute asset hashes
+  // Compute asset hashes and CIDs
   const canonicalSha256 = await sha256(input.canonicalData);
+  const canonicalCID = await computeCID(input.canonicalData);
   const canonicalSize = new TextEncoder().encode(input.canonicalData).length;
 
   const canonicalAsset: AssetDescriptor = {
     mime_type: input.canonicalMimeType,
     sha256: canonicalSha256,
+    cid: canonicalCID,
     size_bytes: canonicalSize,
     canonical: true,
   };
 
   let previewAsset: AssetDescriptor | undefined;
+  let previewCID: string | undefined;
   if (input.previewData) {
     const previewSha256 = await sha256(input.previewData);
+    previewCID = await computeCID(input.previewData);
     const previewSize = new TextEncoder().encode(input.previewData).length;
     previewAsset = {
       mime_type: input.previewMimeType || 'image/webp',
       sha256: previewSha256,
+      cid: previewCID,
       size_bytes: previewSize,
     };
   }
@@ -129,14 +136,15 @@ export async function buildManifest(input: ManifestBuildInput): Promise<Strangrz
   // Recovery routes
   const recoveryRoutes: RecoveryRoute[] = input.recoveryRoutes || [];
 
-  // Signatures
+  // Signatures (supports Ed25519 and post-quantum algorithms)
+  const sigAlgorithm = input.signatureAlgorithm || 'ed25519';
   const signatures: StrangrzSignature[] = [];
   if (input.creatorPrivateKey && input.creatorPublicKey) {
     try {
-      const sig = await signTransaction(canonicalSha256, input.creatorPrivateKey);
+      const sig = await signWithAlgorithm(canonicalSha256, input.creatorPrivateKey, sigAlgorithm);
       signatures.push({
         role: 'creator',
-        algorithm: 'ed25519',
+        algorithm: sigAlgorithm,
         public_key: input.creatorPublicKey,
         signature: sig,
         signed_at: now,
@@ -148,7 +156,9 @@ export async function buildManifest(input: ManifestBuildInput): Promise<Strangrz
   const integrity: StrangrzIntegrity = {
     manifest_sha256: '', // computed below
     canonical_asset_sha256: canonicalSha256,
+    canonical_asset_cid: canonicalCID,
     preview_asset_sha256: previewAsset?.sha256,
+    preview_asset_cid: previewCID,
     status: 'verified',
     last_verified_at: now,
   };
@@ -232,20 +242,21 @@ export async function verifyManifest(
     if (!previewHashValid) errors.push('Preview asset hash mismatch');
   }
 
-  // Verify signatures
+  // Verify signatures (supports Ed25519 and post-quantum algorithms)
   const sigResults: Array<{ role: string; valid: boolean }> = [];
   for (const sig of manifest.signatures) {
     try {
-      const valid = await verifySignature(
+      const valid = await verifyWithAlgorithm(
         manifest.canonical_asset.sha256,
         sig.signature,
         sig.public_key,
+        sig.algorithm,
       );
       sigResults.push({ role: sig.role, valid });
-      if (!valid) errors.push(`Invalid ${sig.role} signature`);
+      if (!valid) errors.push(`Invalid ${sig.role} signature (${sig.algorithm})`);
     } catch {
       sigResults.push({ role: sig.role, valid: false });
-      errors.push(`Failed to verify ${sig.role} signature`);
+      errors.push(`Failed to verify ${sig.role} signature (${sig.algorithm})`);
     }
   }
 

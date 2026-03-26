@@ -90,7 +90,7 @@ export async function updateBalance(address: string, balance: number): Promise<b
 
 // ─── Warts ───────────────────────────────────────────────────
 
-function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string) {
+function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string, previewPath?: string) {
   return {
     id: wart.id,
     title: wart.title,
@@ -116,8 +116,14 @@ function wartToRow(wart: Wart, mediaPath?: string, audioCoverPath?: string) {
     price_fiat: wart.priceFiat,
     fiat_currency: wart.fiatCurrency,
     vault_backup: wart.vaultBackup,
+    royalty_contract_id: wart.royaltyContractId || null,
+    active_contract_ids: wart.activeContractIds || [],
+    vobjct_id: wart.vobjctId || null,
+    vobjct_protected: wart.vobjctProtected || false,
+    mint_chain: wart.mintChain || 'strangrz',
     media_path: mediaPath || null,
     audio_cover_path: audioCoverPath || null,
+    preview_path: previewPath || null,
     created_at: wart.createdAt,
     updated_at: Date.now(),
   };
@@ -154,14 +160,19 @@ function rowToWart(row: Record<string, unknown>, imageData: string, audioCover?:
     priceFiat: row.price_fiat != null ? Number(row.price_fiat) : undefined,
     fiatCurrency: (row.fiat_currency as Wart['fiatCurrency']) || undefined,
     vaultBackup: (row.vault_backup as boolean) || false,
+    royaltyContractId: (row.royalty_contract_id as string) || undefined,
+    activeContractIds: Array.isArray(row.active_contract_ids) ? row.active_contract_ids as string[] : undefined,
+    vobjctId: (row.vobjct_id as string) || undefined,
+    vobjctProtected: (row.vobjct_protected as boolean) || false,
+    mintChain: (row.mint_chain as Wart['mintChain']) || 'strangrz',
   };
 }
 
-export async function upsertWart(wart: Wart, mediaPath?: string, audioCoverPath?: string): Promise<boolean> {
+export async function upsertWart(wart: Wart, mediaPath?: string, audioCoverPath?: string, previewPath?: string): Promise<boolean> {
   if (!isBackendAvailable()) return false;
   const { error } = await supabase!
     .from('warts')
-    .upsert(wartToRow(wart, mediaPath, audioCoverPath), { onConflict: 'id' });
+    .upsert(wartToRow(wart, mediaPath, audioCoverPath, previewPath), { onConflict: 'id' });
 
   if (error) console.error('[Supabase] upsertWart:', error.message);
   return !error;
@@ -179,15 +190,34 @@ export async function fetchWarts(filters?: {
   creator?: string;
 }): Promise<Record<string, unknown>[]> {
   if (!isBackendAvailable()) return [];
-  let query = supabase!.from('warts').select('*').order('created_at', { ascending: false });
 
-  if (filters?.listed !== undefined) query = query.eq('listed', filters.listed);
-  if (filters?.owner) query = query.eq('owner', filters.owner);
-  if (filters?.creator) query = query.eq('creator', filters.creator);
+  const PAGE_SIZE = 500;
+  const allRows: Record<string, unknown>[] = [];
+  let offset = 0;
+  let hasMore = true;
 
-  const { data, error } = await query.limit(500);
-  if (error) { console.error('[Supabase] fetchWarts:', error.message); return []; }
-  return (data || []) as Record<string, unknown>[];
+  while (hasMore) {
+    let query = supabase!.from('warts').select('*').order('created_at', { ascending: false });
+    if (filters?.listed !== undefined) query = query.eq('listed', filters.listed);
+    if (filters?.owner) query = query.eq('owner', filters.owner);
+    if (filters?.creator) query = query.eq('creator', filters.creator);
+
+    const { data, error } = await query.range(offset, offset + PAGE_SIZE - 1);
+    if (error) { console.error('[Supabase] fetchWarts:', error.message); break; }
+
+    const rows = (data || []) as Record<string, unknown>[];
+    allRows.push(...rows);
+
+    if (rows.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      offset += PAGE_SIZE;
+      // Safety limit: stop after 5000 warts to prevent infinite loops
+      if (offset >= 5000) break;
+    }
+  }
+
+  return allRows;
 }
 
 export async function fetchWartById(wartId: string): Promise<Record<string, unknown> | null> {
@@ -469,6 +499,82 @@ export async function fetchFollowing(address: string): Promise<string[]> {
   return data.map((r: Record<string, unknown>) => r.following_address as string);
 }
 
+/** Fetch all addresses with a given relationship type from a user */
+export async function fetchRelationships(address: string, relationship: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('social_follows')
+    .select('following_address')
+    .eq('follower_address', address)
+    .eq('relationship', relationship);
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.following_address as string);
+}
+
+/** Fetch who blocked this address */
+export async function fetchBlockedBy(address: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('social_follows')
+    .select('follower_address')
+    .eq('following_address', address)
+    .eq('relationship', 'block');
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.follower_address as string);
+}
+
+// ─── Wart Likes & Bookmarks ──────────────────────────────────
+
+export async function insertWartLike(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_likes').upsert({
+    wart_id: wartId,
+    user_address: userAddress,
+    created_at: Date.now(),
+  }, { onConflict: 'wart_id,user_address' });
+  return !error;
+}
+
+export async function deleteWartLike(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_likes').delete()
+    .eq('wart_id', wartId).eq('user_address', userAddress);
+  return !error;
+}
+
+export async function fetchWartLikes(userAddress: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!.from('wart_likes')
+    .select('wart_id').eq('user_address', userAddress);
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.wart_id as string);
+}
+
+export async function insertWartBookmark(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_bookmarks').upsert({
+    wart_id: wartId,
+    user_address: userAddress,
+    created_at: Date.now(),
+  }, { onConflict: 'wart_id,user_address' });
+  return !error;
+}
+
+export async function deleteWartBookmark(wartId: string, userAddress: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('wart_bookmarks').delete()
+    .eq('wart_id', wartId).eq('user_address', userAddress);
+  return !error;
+}
+
+export async function fetchWartBookmarks(userAddress: string): Promise<string[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!.from('wart_bookmarks')
+    .select('wart_id').eq('user_address', userAddress);
+  if (error || !data) return [];
+  return data.map((r: Record<string, unknown>) => r.wart_id as string);
+}
+
 // ─── Notifications ───────────────────────────────────────────
 
 export interface Notification {
@@ -605,11 +711,12 @@ export async function fetchAllChannels(): Promise<Array<{
 
 export async function upsertPost(post: {
   id: string; author: string; authorAlias: string; content: string;
-  mediaType?: string; wartLink?: string; timestamp: number;
+  mediaType?: string; mediaPath?: string; wartLink?: string; timestamp: number;
   tipCount: number; rewarpCount: number; views: number;
+  comments?: unknown[]; tips?: Record<string, boolean>; rewarps?: string[]; bookmarkedBy?: string[];
 }): Promise<boolean> {
   if (!isBackendAvailable()) return false;
-  const { error } = await supabase!.from('chat_posts').upsert({
+  const row: Record<string, unknown> = {
     id: post.id,
     author: post.author,
     author_alias: post.authorAlias,
@@ -621,15 +728,22 @@ export async function upsertPost(post: {
     rewarp_count: post.rewarpCount,
     views: post.views,
     updated_at: Date.now(),
-  }, { onConflict: 'id' });
+  };
+  if (post.mediaPath) row.media_path = post.mediaPath;
+  if (post.comments) row.comments_json = JSON.stringify(post.comments);
+  if (post.tips) row.tips_json = JSON.stringify(post.tips);
+  if (post.rewarps) row.rewarps_json = JSON.stringify(post.rewarps);
+  if (post.bookmarkedBy) row.bookmarked_by_json = JSON.stringify(post.bookmarkedBy);
+  const { error } = await supabase!.from('chat_posts').upsert(row, { onConflict: 'id' });
   if (error) console.error('[Supabase] upsertPost:', error.message);
   return !error;
 }
 
 export async function fetchAllPosts(): Promise<Array<{
   id: string; author: string; authorAlias: string; content: string;
-  mediaType?: string; wartLink?: string; timestamp: number;
+  mediaType?: string; mediaPath?: string; wartLink?: string; timestamp: number;
   tipCount: number; rewarpCount: number; views: number;
+  comments?: unknown[]; tips?: Record<string, boolean>; rewarps?: string[]; bookmarkedBy?: string[];
 }>> {
   if (!isBackendAvailable()) return [];
   const { data, error } = await supabase!
@@ -644,12 +758,252 @@ export async function fetchAllPosts(): Promise<Array<{
     authorAlias: (row.author_alias as string) || '',
     content: (row.content as string) || '',
     mediaType: (row.media_type as string) || undefined,
+    mediaPath: (row.media_path as string) || undefined,
     wartLink: (row.wart_link as string) || undefined,
     timestamp: Number(row.timestamp),
     tipCount: Number(row.tip_count) || 0,
     rewarpCount: Number(row.rewarp_count) || 0,
     views: Number(row.views) || 0,
+    comments: row.comments_json ? (typeof row.comments_json === 'string' ? JSON.parse(row.comments_json) : row.comments_json) as unknown[] : undefined,
+    tips: row.tips_json ? (typeof row.tips_json === 'string' ? JSON.parse(row.tips_json) : row.tips_json) as Record<string, boolean> : undefined,
+    rewarps: row.rewarps_json ? (typeof row.rewarps_json === 'string' ? JSON.parse(row.rewarps_json) : row.rewarps_json) as string[] : undefined,
+    bookmarkedBy: row.bookmarked_by_json ? (typeof row.bookmarked_by_json === 'string' ? JSON.parse(row.bookmarked_by_json) : row.bookmarked_by_json) as string[] : undefined,
   }));
+}
+
+// ─── Curator Articles (Global Sync) ─────────────────────────
+
+export async function upsertArticle(article: {
+  id: string; authorAddress: string; authorAlias: string; title: string;
+  subtitle: string; coverWartId: string; body: string; embeddedBlocks: unknown[];
+  featuredWartIds: string[]; featuredArtists: string[]; tags: string[];
+  createdAt: number; updatedAt: number; likes: string[]; views: number;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('curator_articles').upsert({
+    id: article.id,
+    author_address: article.authorAddress,
+    author_alias: article.authorAlias,
+    title: article.title,
+    subtitle: article.subtitle,
+    cover_wart_id: article.coverWartId,
+    body: article.body,
+    embedded_blocks: JSON.stringify(article.embeddedBlocks),
+    featured_wart_ids: JSON.stringify(article.featuredWartIds),
+    featured_artists: JSON.stringify(article.featuredArtists),
+    tags: JSON.stringify(article.tags),
+    created_at: article.createdAt,
+    updated_at: article.updatedAt,
+    likes: JSON.stringify(article.likes),
+    views: article.views,
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertArticle:', error.message);
+  return !error;
+}
+
+export async function fetchAllArticles(): Promise<Array<{
+  id: string; authorAddress: string; authorAlias: string; title: string;
+  subtitle: string; coverWartId: string; body: string; embeddedBlocks: unknown[];
+  featuredWartIds: string[]; featuredArtists: string[]; tags: string[];
+  createdAt: number; updatedAt: number; likes: string[]; views: number;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('curator_articles')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error || !data) return [];
+  const parse = (v: unknown) => typeof v === 'string' ? JSON.parse(v) : (v || []);
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    authorAddress: row.author_address as string,
+    authorAlias: (row.author_alias as string) || '',
+    title: (row.title as string) || '',
+    subtitle: (row.subtitle as string) || '',
+    coverWartId: (row.cover_wart_id as string) || '',
+    body: (row.body as string) || '',
+    embeddedBlocks: parse(row.embedded_blocks),
+    featuredWartIds: parse(row.featured_wart_ids),
+    featuredArtists: parse(row.featured_artists),
+    tags: parse(row.tags),
+    createdAt: Number(row.created_at),
+    updatedAt: Number(row.updated_at),
+    likes: parse(row.likes),
+    views: Number(row.views) || 0,
+  }));
+}
+
+export async function deleteArticleCloud(articleId: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('curator_articles').delete().eq('id', articleId);
+  if (error) console.error('[Supabase] deleteArticle:', error.message);
+  return !error;
+}
+
+// ─── Direct Messages (Global Sync) ──────────────────────────
+
+export async function upsertDMThread(thread: {
+  id: string; participants: string[]; messages: unknown[]; lastActivity: number;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('chat_dms').upsert({
+    id: thread.id,
+    participants: JSON.stringify(thread.participants),
+    messages_json: JSON.stringify(thread.messages.slice(-200)),
+    last_activity: thread.lastActivity,
+    updated_at: Date.now(),
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertDMThread:', error.message);
+  return !error;
+}
+
+export async function fetchDMThreads(userAddress: string): Promise<Array<{
+  id: string; participants: string[]; messages: unknown[]; lastActivity: number;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('chat_dms')
+    .select('*')
+    .or(`participants.cs.["${userAddress}"],id.like.%${userAddress}%`)
+    .order('last_activity', { ascending: false })
+    .limit(100);
+  if (error || !data) return [];
+  const parse = (v: unknown) => typeof v === 'string' ? JSON.parse(v) : (v || []);
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    participants: parse(row.participants),
+    messages: parse(row.messages_json),
+    lastActivity: Number(row.last_activity),
+  }));
+}
+
+// ─── Channel Messages (Global Sync) ─────────────────────────
+
+export async function upsertChannelMessages(channelId: string, messages: unknown[]): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('chat_channel_messages').upsert({
+    channel_id: channelId,
+    messages_json: JSON.stringify(messages.slice(-500)),
+    updated_at: Date.now(),
+  }, { onConflict: 'channel_id' });
+  if (error) console.error('[Supabase] upsertChannelMessages:', error.message);
+  return !error;
+}
+
+export async function fetchChannelMessages(channelId: string): Promise<unknown[]> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('chat_channel_messages')
+    .select('messages_json')
+    .eq('channel_id', channelId)
+    .single();
+  if (error || !data) return [];
+  const raw = data.messages_json;
+  return typeof raw === 'string' ? JSON.parse(raw) : (raw || []);
+}
+
+// ─── Playlists (Global Sync) ────────────────────────────────
+
+export async function upsertPlaylist(playlist: {
+  id: string; owner: string; title: string; description: string;
+  type: string; wartIds: string[]; createdAt: number; coverWartId?: string;
+}): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('playlists').upsert({
+    id: playlist.id,
+    owner: playlist.owner,
+    title: playlist.title,
+    description: playlist.description,
+    type: playlist.type,
+    wart_ids: JSON.stringify(playlist.wartIds),
+    created_at: playlist.createdAt,
+    cover_wart_id: playlist.coverWartId || null,
+    updated_at: Date.now(),
+  }, { onConflict: 'id' });
+  if (error) console.error('[Supabase] upsertPlaylist:', error.message);
+  return !error;
+}
+
+export async function fetchPlaylists(owner: string): Promise<Array<{
+  id: string; owner: string; title: string; description: string;
+  type: string; wartIds: string[]; createdAt: number; coverWartId?: string;
+}>> {
+  if (!isBackendAvailable()) return [];
+  const { data, error } = await supabase!
+    .from('playlists')
+    .select('*')
+    .eq('owner', owner)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error || !data) return [];
+  const parse = (v: unknown) => typeof v === 'string' ? JSON.parse(v) : (v || []);
+  return data.map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    owner: row.owner as string,
+    title: (row.title as string) || '',
+    description: (row.description as string) || '',
+    type: (row.type as string) || 'music',
+    wartIds: parse(row.wart_ids),
+    createdAt: Number(row.created_at),
+    coverWartId: (row.cover_wart_id as string) || undefined,
+  }));
+}
+
+export async function deletePlaylistCloud(playlistId: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('playlists').delete().eq('id', playlistId);
+  if (error) console.error('[Supabase] deletePlaylist:', error.message);
+  return !error;
+}
+
+// ─── TOTP 2FA Configs ────────────────────────────────────────
+
+import type { TOTPConfig } from '../engine/totp';
+
+export async function upsertTOTPConfig(address: string, config: TOTPConfig): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!.from('totp_configs').upsert({
+    address,
+    secret: config.secret,
+    username: config.username,
+    enabled: config.enabled,
+    enabled_at: config.enabledAt,
+    backup_codes: config.backupCodes,
+    used_backup_codes: config.usedBackupCodes,
+    updated_at: Date.now(),
+  }, { onConflict: 'address' });
+
+  if (error) console.error('[Supabase] upsertTOTPConfig:', error.message);
+  return !error;
+}
+
+export async function fetchTOTPConfig(address: string): Promise<TOTPConfig | null> {
+  if (!isBackendAvailable()) return null;
+  const { data, error } = await supabase!
+    .from('totp_configs')
+    .select('*')
+    .eq('address', address)
+    .single();
+
+  if (error || !data) return null;
+  return {
+    secret: data.secret,
+    username: data.username,
+    enabled: data.enabled,
+    enabledAt: Number(data.enabled_at),
+    backupCodes: data.backup_codes as string[],
+    usedBackupCodes: data.used_backup_codes as string[],
+  };
+}
+
+export async function deleteTOTPConfig(address: string): Promise<boolean> {
+  if (!isBackendAvailable()) return false;
+  const { error } = await supabase!
+    .from('totp_configs')
+    .delete()
+    .eq('address', address);
+  return !error;
 }
 
 // ─── Export rowToWart for sync layer ─────────────────────────

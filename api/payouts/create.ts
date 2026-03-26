@@ -4,9 +4,13 @@
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_RATES, calculateFees, generateTxId } from '../_shared/rates';
+import { checkRateLimitAsync, getClientIp } from '../_shared/rate-limit';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const allowedOrigin = process.env.CORS_ORIGIN || 'https://strangrz.com';
@@ -16,6 +20,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Rate limit: 5 payout requests per minute per IP
+  const ip = getClientIp(req.headers as Record<string, string | string[] | undefined>);
+  const limit = await checkRateLimitAsync(`payout:${ip}`, 5, 60_000);
+  if (!limit.allowed) {
+    res.setHeader('Retry-After', String(limit.retryAfter));
+    return res.status(429).json({ error: 'Too many requests', retryAfter: limit.retryAfter });
+  }
 
   // Authentication: require a valid API key
   const authHeader = req.headers.authorization;
@@ -27,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { warpAmount, currency, paymentMethod, sellerAddress } = req.body;
 
   if (!warpAmount || !currency || !sellerAddress) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ error: 'Missing required fields: warpAmount, currency, sellerAddress' });
   }
 
   if (typeof warpAmount !== 'number' || warpAmount <= 0 || !Number.isFinite(warpAmount)) {
@@ -43,6 +55,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Stripe Connect transfer
   if (STRIPE_SECRET_KEY) {
+    // Resolve the Stripe Connect account ID from the seller's wallet address
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return res.status(501).json({ error: 'Supabase not configured — cannot resolve Stripe Connect account' });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const { data: connectAccount } = await supabase
+      .from('stripe_connect_accounts')
+      .select('stripe_account_id, onboarding_complete')
+      .eq('seller_address', sellerAddress)
+      .single();
+
+    if (!connectAccount?.stripe_account_id) {
+      return res.status(400).json({
+        error: 'Seller has no Stripe Connect account. Set up payouts in Settings first.',
+        txId,
+      });
+    }
+
+    if (!connectAccount.onboarding_complete) {
+      return res.status(400).json({
+        error: 'Seller Stripe Connect onboarding is not complete.',
+        txId,
+      });
+    }
+
     try {
       const Stripe = (await import('stripe')).default;
       const stripe = new (Stripe as any)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
@@ -50,8 +88,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const transfer = await stripe.transfers.create({
         amount: Math.round((fiatAmount - fees.total) * 100),
         currency: currency.toLowerCase(),
-        destination: sellerAddress,
-        metadata: { strangrz_tx_id: txId },
+        destination: connectAccount.stripe_account_id,
+        metadata: { strangrz_tx_id: txId, seller_address: sellerAddress },
       });
 
       return res.json({

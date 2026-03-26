@@ -1,10 +1,19 @@
 /**
  * Vercel Serverless Function — Stripe Webhook
  * POST /api/payments/webhook
+ *
+ * Handles checkout.session.completed by atomically:
+ *   1. Crediting buyer with ⬣ (mint from gateway)
+ *   2. Transferring wart ownership (if artwork purchase)
+ *   3. Paying seller + creator royalties via purchase_wart RPC
+ *   4. Recording transaction history
+ *   5. Sending notifications to buyer & seller
+ *   6. Auto-payout to seller via Stripe Connect
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT } from '../_shared/rates';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -31,6 +40,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(501).json({ error: 'Stripe not configured' });
   }
 
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return res.status(501).json({ error: 'Supabase not configured' });
+  }
+
   try {
     const Stripe = (await import('stripe')).default;
     const stripe = new (Stripe as any)(STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' });
@@ -44,48 +57,289 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const session = event.data.object;
       const txId = session.metadata?.strangrz_tx_id;
       const buyerAddress = session.metadata?.buyer_address;
+      const sellerAddress = session.metadata?.seller_address;
+      const wartId = session.metadata?.wart_id;
       const warpAmount = parseFloat(session.metadata?.warp_amount || '0');
 
-      console.log(`[Webhook] Payment completed: ${txId} — ${warpAmount} Ω → ${buyerAddress}`);
+      if (!txId || !buyerAddress || warpAmount <= 0) {
+        return res.json({ received: true, skipped: 'missing metadata' });
+      }
 
-      // Credit buyer's balance atomically via Supabase RPC
-      if (SUPABASE_URL && SUPABASE_SERVICE_KEY && txId && buyerAddress && warpAmount > 0) {
-        try {
-          const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-          // Update fiat transaction status
-          const { error: updateError } = await supabase.from('fiat_transactions').update({
-            status: 'completed',
-            processor_ref: session.id,
-            updated_at: Date.now(),
-          }).eq('tx_id', txId);
+      // Check idempotency: don't process the same tx twice
+      const { data: existingTx } = await supabase
+        .from('fiat_transactions')
+        .select('status')
+        .eq('tx_id', txId)
+        .single();
 
-          if (updateError) {
-            console.error(`[Webhook] Failed to update tx ${txId}:`, updateError.message);
-          }
+      if (existingTx?.status === 'completed') {
+        return res.json({ received: true, skipped: 'already processed' });
+      }
 
-          // Atomic credit via RPC (prevents race conditions)
-          const memo = `Fiat purchase: ${warpAmount} ⬣ (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`;
-          const { data: credited, error: creditError } = await supabase.rpc('credit_warps', {
-            p_address: buyerAddress,
-            p_amount: warpAmount,
-            p_tx_id: `${txId}_credit`,
-            p_memo: memo,
-          });
+      // ─── ARTWORK PURCHASE (wart_id present) ─────────────────
+      if (wartId && sellerAddress) {
+        // Fetch wart to get royalty info
+        const { data: wart } = await supabase
+          .from('warts')
+          .select('creator, royalty_percent, price, owner')
+          .eq('id', wartId)
+          .single();
 
-          if (creditError) {
-            console.error(`[Webhook] RPC error crediting ${warpAmount} ⬣ to ${buyerAddress}:`, creditError.message);
-          } else if (!credited) {
-            console.error(`[Webhook] Failed to credit ${warpAmount} ⬣ to ${buyerAddress}`);
-          }
-        } catch (supaErr) {
-          console.error(`[Webhook] Supabase error for tx ${txId}:`, supaErr instanceof Error ? supaErr.message : supaErr);
+        if (!wart) {
+          await updateFiatTx(supabase, txId, 'failed', session.id, 'Artwork not found');
+          return res.json({ received: true, error: 'wart not found' });
         }
+
+        // Calculate royalty (only on resale: seller !== creator)
+        const isResale = wart.creator !== sellerAddress;
+        const royaltyPercent = isResale ? (wart.royalty_percent || 5) : 0;
+        const royaltyAmount = Math.round(warpAmount * royaltyPercent / 100 * 100) / 100;
+
+        // First: credit buyer with ⬣ (mint from fiat gateway)
+        const { error: creditError } = await supabase.rpc('credit_warps', {
+          p_address: buyerAddress,
+          p_amount: warpAmount,
+          p_tx_id: `${txId}_credit`,
+          p_memo: `Fiat purchase: ${warpAmount} ⬣ (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`,
+        });
+
+        if (creditError) {
+          await updateFiatTx(supabase, txId, 'failed', session.id, creditError.message);
+          return res.status(500).json({ received: true, error: 'credit failed' });
+        }
+
+        // Then: atomic purchase (debit buyer → credit seller + creator → transfer ownership)
+        const { data: purchased, error: purchaseError } = await supabase.rpc('purchase_wart', {
+          p_wart_id: wartId,
+          p_buyer: buyerAddress,
+          p_price: warpAmount,
+          p_royalty_amount: royaltyAmount,
+          p_creator: wart.creator,
+          p_seller: sellerAddress,
+          p_tx_id: txId,
+        });
+
+        if (purchaseError || !purchased) {
+          // Refund the credited ⬣ since purchase failed
+          await supabase.rpc('credit_warps', {
+            p_address: buyerAddress,
+            p_amount: -warpAmount,
+            p_tx_id: `${txId}_refund`,
+            p_memo: `Refund: purchase failed`,
+          });
+          await updateFiatTx(supabase, txId, 'failed', session.id, purchaseError?.message || 'purchase_wart returned false');
+          return res.status(500).json({ received: true, error: 'purchase failed' });
+        }
+
+        // Record transaction in global feed
+        const now = Date.now();
+        await supabase.from('transactions').insert({
+          id: txId,
+          from_addr: buyerAddress,
+          to_addr: sellerAddress,
+          amount: warpAmount,
+          tx_type: 'wart_buy',
+          memo: `Purchased "${wartId}" for ${warpAmount} ⬣ via fiat`,
+          created_at: now,
+        });
+
+        // Auto-payout: if seller has a Stripe Connect account, transfer fiat
+        let payoutStatus = 'pending_connect';
+        const { data: connectAccount } = await supabase
+          .from('stripe_connect_accounts')
+          .select('stripe_account_id, onboarding_complete')
+          .eq('seller_address', sellerAddress)
+          .single();
+
+        if (connectAccount?.onboarding_complete && connectAccount.stripe_account_id) {
+          try {
+            const totalPaidCents = (session.amount_total || 0); // total paid by buyer (price + platform fee) in cents
+            // Extract the platform fee from the total — seller receives artwork price only
+            const feePercent = parseFloat(session.metadata?.platform_fee_percent || '0');
+            // Reverse: totalPaid = artworkPrice * (1 + feePercent/100), so artworkPrice = totalPaid / (1 + feePercent/100)
+            const sellerReceivesCents = feePercent > 0
+              ? Math.round(totalPaidCents / (1 + feePercent / 100))
+              : totalPaidCents;
+
+            if (sellerReceivesCents > 0) {
+              await stripe.transfers.create({
+                amount: sellerReceivesCents,
+                currency: session.currency || 'eur',
+                destination: connectAccount.stripe_account_id,
+                metadata: { strangrz_tx_id: txId, wart_id: wartId },
+              });
+              payoutStatus = 'completed';
+            }
+          } catch {
+            payoutStatus = 'payout_failed';
+          }
+        }
+
+        // Send notifications
+        const sellerPayoutMsg = payoutStatus === 'completed'
+          ? ' Payment has been sent to your bank account.'
+          : payoutStatus === 'pending_connect'
+            ? ' Set up payouts in Settings to receive your earnings in EUR.'
+            : ' Payout failed — please contact support.';
+
+        await Promise.allSettled([
+          supabase.from('notifications').insert({
+            recipient: buyerAddress,
+            sender: sellerAddress,
+            notif_type: 'buy',
+            title: 'Artwork purchased',
+            body: `You now own "${wartId}". It has been added to your collection.`,
+            ref_id: wartId,
+            created_at: now,
+          }),
+          supabase.from('notifications').insert({
+            recipient: sellerAddress,
+            sender: buyerAddress,
+            notif_type: 'sale',
+            title: 'Artwork sold',
+            body: `Your artwork "${wartId}" was purchased for ${warpAmount} ⬣.${sellerPayoutMsg}`,
+            ref_id: wartId,
+            created_at: now,
+          }),
+        ]);
+
+        // Upload full media to Arweave via Irys (permanent storage, platform pays)
+        // Non-blocking: don't fail the purchase if storage fails
+        uploadToIrys(supabase, wartId, txId).catch((err) => {
+          console.error('[Webhook] Irys upload failed (non-blocking):', err);
+        });
+
+        // Mark fiat transaction as completed
+        await updateFiatTx(supabase, txId, 'completed', session.id);
+
+      } else {
+        // ─── PURE TOKEN PURCHASE (no wart) ──────────────────────
+        const { error: creditError } = await supabase.rpc('credit_warps', {
+          p_address: buyerAddress,
+          p_amount: warpAmount,
+          p_tx_id: `${txId}_credit`,
+          p_memo: `Fiat purchase: ${warpAmount} ⬣ (${session.currency?.toUpperCase()} ${(session.amount_total || 0) / 100})`,
+        });
+
+        if (creditError) {
+          await updateFiatTx(supabase, txId, 'failed', session.id, creditError.message);
+          return res.status(500).json({ received: true, error: 'credit failed' });
+        }
+
+        await updateFiatTx(supabase, txId, 'completed', session.id);
       }
     }
 
     return res.json({ received: true });
   } catch (err) {
-    return res.status(400).json({ error: 'Invalid webhook signature' });
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    if (message.includes('signature') || message.includes('Webhook')) {
+      return res.status(400).json({ error: 'Invalid webhook signature' });
+    }
+    return res.status(500).json({ error: 'Webhook processing failed' });
   }
+}
+
+/** Update fiat_transactions table status */
+async function updateFiatTx(
+  supabase: SupabaseClient,
+  txId: string,
+  status: string,
+  processorRef: string,
+  error?: string,
+) {
+  await supabase.from('fiat_transactions').update({
+    status,
+    processor_ref: processorRef,
+    error: error || null,
+    updated_at: Date.now(),
+  }).eq('tx_id', txId);
+}
+
+/**
+ * Upload artwork media to Arweave via Irys after a fiat sale.
+ * Platform pays from IRYS_PRIVATE_KEY wallet — cost absorbed in commission.
+ *
+ * Flow:
+ * 1. Fetch full media from Supabase Storage
+ * 2. Upload to Arweave via Irys SDK (platform wallet)
+ * 3. Store the ar:// locator in the wart's storage_routes
+ *
+ * Cost: ~€0.02 per 5MB artwork — negligible vs 10% commission.
+ */
+async function uploadToIrys(
+  supabase: SupabaseClient,
+  wartId: string,
+  txId: string,
+): Promise<void> {
+  const IRYS_PRIVATE_KEY = process.env.IRYS_PRIVATE_KEY;
+  if (!IRYS_PRIVATE_KEY) {
+    console.log('[Webhook] Irys not configured — skipping permanent storage');
+    return;
+  }
+
+  // 1. Get media path from the wart record
+  const { data: wart } = await supabase
+    .from('warts')
+    .select('media_path')
+    .eq('id', wartId)
+    .single();
+
+  if (!wart?.media_path) {
+    console.log(`[Webhook] No media_path for wart ${wartId} — Irys upload deferred to client sync`);
+    return;
+  }
+
+  // 2. Download the full media from Supabase Storage
+  const { data: mediaBlob, error: dlError } = await supabase.storage
+    .from('media')
+    .download(wart.media_path);
+
+  if (dlError || !mediaBlob) {
+    console.error('[Webhook] Failed to download media from Supabase:', dlError?.message);
+    return;
+  }
+
+  const buffer = Buffer.from(await mediaBlob.arrayBuffer());
+  const mimeType = mediaBlob.type || 'application/octet-stream';
+
+  // 3. Upload to Arweave via Irys
+  const { Uploader } = await import('@irys/upload');
+  const { Ethereum } = await import('@irys/upload-ethereum');
+
+  const irysUploader = await Uploader(Ethereum).withWallet(IRYS_PRIVATE_KEY);
+
+  // Auto-fund if needed
+  const price = await irysUploader.getPrice(buffer.length);
+  const balance = await irysUploader.getBalance();
+  if (BigInt(balance.toString()) < BigInt(price.toString())) {
+    const needed = (BigInt(price.toString()) * 120n) / 100n; // 20% buffer
+    await irysUploader.fund(needed);
+  }
+
+  const receipt = await irysUploader.upload(buffer, {
+    tags: [
+      { name: 'App-Name', value: 'Strangrz' },
+      { name: 'Content-Type', value: mimeType },
+      { name: 'Wart-ID', value: wartId },
+      { name: 'TX-ID', value: txId },
+      { name: 'Payment', value: 'fiat-stripe' },
+      { name: 'Timestamp', value: new Date().toISOString() },
+    ],
+  });
+
+  const arLocator = `ar://${receipt.id}`;
+  const gatewayUrl = `${process.env.VITE_ARWEAVE_GATEWAY_URL || 'https://arweave.net'}/${receipt.id}`;
+
+  // 4. Store the Arweave locator in the wart's storage metadata
+  await supabase.from('warts').update({
+    arweave_tx: receipt.id,
+    storage_routes: [
+      { network: 'arweave', locator: arLocator, priority: 1, status: 'active' },
+    ],
+  }).eq('id', wartId);
+
+  console.log(`[Webhook] Wart ${wartId} stored permanently on Arweave: ${gatewayUrl} (${buffer.length} bytes)`);
 }

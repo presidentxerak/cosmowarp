@@ -7,6 +7,7 @@
 
 import { supabase, isBackendAvailable } from './supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { EventBatcher, HeartbeatMonitor, ConnectionTracker, getReconnectDelay } from './realtime-optimizer';
 
 // ─── Event Types ─────────────────────────────────────────────
 
@@ -18,7 +19,16 @@ export type RealtimeEvent =
   | { type: 'comment_new'; payload: Record<string, unknown> }
   | { type: 'notification_new'; payload: Record<string, unknown> }
   | { type: 'follow_new'; payload: Record<string, unknown> }
-  | { type: 'follow_delete'; payload: Record<string, unknown> };
+  | { type: 'follow_delete'; payload: Record<string, unknown> }
+  // Phase 2
+  | { type: 'collection_new'; payload: Record<string, unknown> }
+  | { type: 'collection_update'; payload: Record<string, unknown> }
+  | { type: 'collection_delete'; payload: Record<string, unknown> }
+  | { type: 'auction_update'; payload: Record<string, unknown> }
+  | { type: 'bid_new'; payload: Record<string, unknown> }
+  // Phase 3
+  | { type: 'dm_new'; payload: Record<string, unknown> }
+  | { type: 'profile_update'; payload: Record<string, unknown> };
 
 type RealtimeListener = (event: RealtimeEvent) => void;
 
@@ -28,6 +38,20 @@ class RealtimeManager {
   private channels: RealtimeChannel[] = [];
   private listeners: Set<RealtimeListener> = new Set();
   private started = false;
+  private reconnectAttempts = 0;
+
+  /** Event batcher — debounces rapid-fire events to reduce re-renders */
+  private batcher = new EventBatcher<RealtimeEvent>((batch) => {
+    for (const event of batch) this.emitDirect(event);
+  }, 150, 20);
+
+  /** Heartbeat monitor — detects degraded connections */
+  private heartbeat = new HeartbeatMonitor(() => {
+    this.tracker.setHealth('degraded');
+  });
+
+  /** Connection health tracker */
+  readonly tracker = new ConnectionTracker();
 
   /** Register a listener for all realtime events */
   subscribe(fn: RealtimeListener): () => void {
@@ -35,16 +59,25 @@ class RealtimeManager {
     return () => this.listeners.delete(fn);
   }
 
-  private emit(event: RealtimeEvent) {
+  private emitDirect(event: RealtimeEvent) {
+    this.tracker.recordEvent();
+    this.heartbeat.receivePong();
     this.listeners.forEach(fn => {
       try { fn(event); } catch { /* listener error */ }
     });
+  }
+
+  private emit(event: RealtimeEvent) {
+    this.batcher.add(event);
   }
 
   /** Start all realtime channels */
   start() {
     if (this.started || !isBackendAvailable() || !supabase) return;
     this.started = true;
+    this.tracker.setHealth('connected');
+    this.heartbeat.start();
+    this.reconnectAttempts = 0;
 
     // ─── Warts channel ──────────────────────────────────
     const wartsChannel = supabase
@@ -120,10 +153,83 @@ class RealtimeManager {
       .subscribe();
 
     this.channels.push(followsChannel);
+
+    // ─── Collections channel (Phase 2) ─────────────────
+    const collectionsChannel = supabase
+      .channel('collections-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'collections' },
+        (payload) => this.emit({ type: 'collection_new', payload: payload.new as Record<string, unknown> }),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'collections' },
+        (payload) => this.emit({ type: 'collection_update', payload: payload.new as Record<string, unknown> }),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'collections' },
+        (payload) => this.emit({ type: 'collection_delete', payload: payload.old as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(collectionsChannel);
+
+    // ─── Auctions channel (Phase 2) ────────────────────
+    const auctionsChannel = supabase
+      .channel('auctions-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'auctions' },
+        (payload) => this.emit({ type: 'auction_update', payload: (payload.new || payload.old) as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(auctionsChannel);
+
+    // ─── Bids channel (Phase 2) ─────────────────────────
+    const bidsChannel = supabase
+      .channel('bids-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bids' },
+        (payload) => this.emit({ type: 'bid_new', payload: payload.new as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(bidsChannel);
+
+    // ─── DM threads channel (Phase 3) ───────────────────
+    const dmsChannel = supabase
+      .channel('dms-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_dms' },
+        (payload) => this.emit({ type: 'dm_new', payload: (payload.new || payload.old) as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(dmsChannel);
+
+    // ─── Profile updates channel (Phase 3 — verification) ─
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => this.emit({ type: 'profile_update', payload: payload.new as Record<string, unknown> }),
+      )
+      .subscribe();
+
+    this.channels.push(profilesChannel);
   }
 
   /** Stop all realtime channels */
   stop() {
+    this.batcher.clear();
+    this.heartbeat.stop();
+    this.tracker.setHealth('disconnected');
     for (const ch of this.channels) {
       supabase?.removeChannel(ch);
     }
@@ -131,10 +237,13 @@ class RealtimeManager {
     this.started = false;
   }
 
-  /** Restart (e.g., after reconnect) */
+  /** Restart with exponential backoff */
   restart() {
     this.stop();
-    this.start();
+    this.reconnectAttempts++;
+    this.tracker.recordReconnectAttempt();
+    const delay = getReconnectDelay(this.reconnectAttempts);
+    setTimeout(() => this.start(), delay);
   }
 }
 

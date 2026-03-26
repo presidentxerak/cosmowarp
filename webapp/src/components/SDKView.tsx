@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-type Tab = 'overview' | 'wallet' | 'crypto' | 'mining' | 'events' | 'extension';
+type Tab = 'overview' | 'wallet' | 'crypto' | 'rewards' | 'events' | 'extension';
 
 export default function SDKView() {
   const [tab, setTab] = useState<Tab>('overview');
@@ -9,7 +9,7 @@ export default function SDKView() {
     { id: 'overview', label: 'Overview' },
     { id: 'wallet', label: 'Wallet API' },
     { id: 'crypto', label: 'Crypto' },
-    { id: 'mining', label: 'Mining' },
+    { id: 'rewards', label: 'Rewards' },
     { id: 'events', label: 'Events' },
     { id: 'extension', label: 'Extension' },
   ];
@@ -22,12 +22,12 @@ export default function SDKView() {
           <span className="text-title-lg">{'\u2B21'}</span>
           <div>
             <h2 className="text-title-md font-bold opacity-100 font-title">Strangrz SDK</h2>
-            <p className="text-body-sm opacity-40">Developer API & Extension Guide</p>
+            <p className="text-body-sm opacity-60">Developer API & Extension Guide</p>
           </div>
         </div>
         <p className="text-base opacity-50">
           Build apps, extensions, and integrations on the Strangrz multi-chain ecosystem (Strangrz SZ-721 + Ethereum ERC-721).
-          The SDK provides wallet creation, cryptographic utilities, mining calculators,
+          The SDK provides wallet creation, cryptographic utilities, reward calculators,
           and an event system.
         </p>
       </div>
@@ -42,7 +42,7 @@ export default function SDKView() {
               className={`px-3 py-1.5 rounded-none text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 tab === t.id
                   ? 'bg-current/10 opacity-80'
-                  : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                  : 'opacity-60 hover:opacity-70 hover:bg-current/5'
               }`}
             >
               {t.label}
@@ -56,7 +56,7 @@ export default function SDKView() {
         {tab === 'overview' && <OverviewTab />}
         {tab === 'wallet' && <WalletTab />}
         {tab === 'crypto' && <CryptoTab />}
-        {tab === 'mining' && <MiningTab />}
+        {tab === 'rewards' && <MiningTab />}
         {tab === 'events' && <EventsTab />}
         {tab === 'extension' && <ExtensionTab />}
       </div>
@@ -69,7 +69,7 @@ function CodeBlock({ title, code }: { title?: string; code: string }) {
     <div className="rounded-none bg-current/5 border border-gray-700/20 overflow-hidden mb-4">
       {title && (
         <div className="px-3 py-1.5 border-b border-gray-700/20">
-          <span className="text-label opacity-40">{title}</span>
+          <span className="text-label opacity-60">{title}</span>
         </div>
       )}
       <pre className="p-3 text-[11px] opacity-80 overflow-x-auto whitespace-pre-wrap">{code}</pre>
@@ -85,7 +85,7 @@ function ApiMethod({ name, desc, params, returns }: {
       <code className="text-base opacity-80 font-bold">{name}</code>
       <p className="text-body-sm opacity-50 mt-1 mb-2">{desc}</p>
       {params && params.length > 0 && (
-        <div className="text-label opacity-40 mb-1">
+        <div className="text-label opacity-60 mb-1">
           <span className="opacity-50">Params:</span> {params.join(', ')}
         </div>
       )}
@@ -121,8 +121,8 @@ console.log(info.layers);      // ['GRID', 'HELIX', ...]
 // Hash data
 const hash = await cosmo.hash('hello world');
 
-// Calculate mining reward
-const reward = cosmo.calculateReward(0); // 50 STZ
+// Calculate STZ reward
+const reward = cosmo.calculateReward(0);
 
 // Listen for events
 cosmo.on('balance_changed', (event) => {
@@ -133,7 +133,7 @@ cosmo.on('balance_changed', (event) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-body-sm">
         {[
           ['Total Supply', '69,000,000 STZ'],
-          ['Airdrop/Wallet', '1,000 STZ'],
+          ['Airdrop/Wallet', '300 STZ'],
           ['Base Mining Reward', '50 STZ'],
           ['Decay Constant', '5,000,000'],
           ['Golden Ratio', '1.618033...'],
@@ -142,7 +142,7 @@ cosmo.on('balance_changed', (event) => {
           ['Hierarchy Levels', '7'],
         ].map(([k, v]) => (
           <div key={k} className="flex justify-between p-2 rounded-none bg-current/5">
-            <span className="opacity-40">{k}</span>
+            <span className="opacity-60">{k}</span>
             <span className="opacity-80">{v}</span>
           </div>
         ))}
@@ -217,10 +217,10 @@ console.log(keys.privateKey); // hex string`} />
 function MiningTab() {
   return (
     <div>
-      <h3 className="text-title-sm font-bold opacity-80 mb-3">Mining Calculator</h3>
+      <h3 className="text-title-sm font-bold opacity-80 mb-3">Reward Calculator</h3>
       <ApiMethod
         name="cosmo.calculateReward(totalMined)"
-        desc="Calculate the current mining reward based on total STZ already mined (Resonance Decay)."
+        desc="Calculate the current STZ reward based on collection activity."
         params={['totalMined: number']}
         returns="number (STZ reward)"
       />
@@ -277,7 +277,7 @@ function EventsTab() {
         ].map(([name, desc]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5 text-body-sm">
             <code className="opacity-80 shrink-0">{name}</code>
-            <span className="opacity-40">{desc}</span>
+            <span className="opacity-60">{desc}</span>
           </div>
         ))}
       </div>
@@ -321,7 +321,7 @@ function ExtensionTab() {
 
       <h3 className="text-base font-bold opacity-80 mb-2 mt-5">Features</h3>
       <ul className="text-body-sm opacity-50 space-y-1 list-disc list-inside">
-        <li>Ed25519 wallet creation with 1,000 STZ airdrop</li>
+        <li>Ed25519 wallet creation with 300 STZ airdrop</li>
         <li>Send transactions with recipient validation</li>
         <li>Balance display with hierarchy level</li>
         <li>Transaction history</li>

@@ -6,7 +6,7 @@
  *
  * ─── Why Not Turing-Complete? ────────────────────────────────
  *
- * 1. 99% of NFT smart contracts do the same 5 things
+ * 1. 99% of digital art smart contracts do the same 5 things
  * 2. Turing-complete = attack surface (reentrancy, overflow, etc.)
  * 3. Declarative contracts are auditable by non-developers
  * 4. Zero gas means no economic attack vectors

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { SocialEngine } from '../engine/social';
+import { CosmoChatEngine } from '../engine/cosmochat';
 import { shortAddress } from '../engine/crypto';
 import HexAvatar from './HexAvatar';
 
@@ -18,7 +19,7 @@ interface SearchResult {
 }
 
 export default function TopBar({ onNavigate }: TopBarProps) {
-  const { warts, globalTxs } = useWallet();
+  const { wallet, warts, globalTxs } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -26,8 +27,16 @@ export default function TopBar({ onNavigate }: TopBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const notifCount = globalTxs?.length || 0;
-  // Message badge: count DM threads (visual indicator)
-  const msgCount = 0;
+  // Message badge: count DM threads with recent activity
+  const msgCount = useMemo(() => {
+    if (!wallet) return 0;
+    try {
+      const engine = CosmoChatEngine.load();
+      const threads = engine.getThreads(wallet.address);
+      const lastSeen = parseInt(localStorage.getItem('strangrz_dm_last_seen') || '0', 10);
+      return threads.filter(t => t.lastActivity > lastSeen && t.messages.length > 0).length;
+    } catch { return 0; }
+  }, [wallet, globalTxs]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -142,6 +151,10 @@ export default function TopBar({ onNavigate }: TopBarProps) {
       sessionStorage.setItem('strangrz_open_wart', result.id);
       sessionStorage.setItem('strangrz_gallery_tab', 'detail');
       onNavigate('gallery');
+      // Dispatch after navigation so MarketplaceView listener is mounted
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
+      });
     } else if (result.type === 'collection' && result.address) {
       sessionStorage.setItem('strangrz_view_user', result.address);
       onNavigate('user-profile');
@@ -159,8 +172,27 @@ export default function TopBar({ onNavigate }: TopBarProps) {
   const collectionResults = results.filter(r => r.type === 'collection');
 
   return (
-    <header className="sticky top-0 z-50 glass-panel">
+    <header className="sticky top-0 z-50">
+      {/* Promo banner */}
+      <div
+        className="text-center py-1 px-3 text-[10px] sm:text-[11px] font-medium tracking-wide"
+        style={{
+          background: 'linear-gradient(90deg, #d4af37, #e91e8c, #339af0, #51cf66, #d4af37)',
+          backgroundSize: '300% 100%',
+          animation: 'promoBannerScroll 6s linear infinite',
+          color: '#000',
+        }}
+      >
+        First 100 signups: 2000 Strngrz Coins = 1 Exclusive Limited Edition artwork by Xerak!
+      </div>
+      <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
+      <div className="glass-panel">
       <div className="flex items-center gap-2 px-3 py-2 sm:px-[10px]">
+        {/* Logo */}
+        <div className="shrink-0 flex items-center gap-1.5">
+          <img src="/strangrz-logo-white.svg" alt="Strangrz" className="w-6 h-6" />
+          <span className="font-logo text-base font-bold tracking-wide hidden sm:inline" style={{ fontFamily: "'Hoodlrz', sans-serif" }}>Strangrz</span>
+        </div>
         {/* Search bar */}
         <div className="flex-1 relative" ref={containerRef}>
           <div className={`flex items-center gap-3 px-4 py-2 transition-all duration-200 ${
@@ -168,7 +200,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
               ? 'bg-white/10 dark:bg-white/10'
               : 'bg-white/5 dark:bg-white/5'
           }`}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40 shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-60 shrink-0">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
@@ -185,7 +217,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
-                className="opacity-40 hover:opacity-80 cursor-pointer shrink-0"
+                className="opacity-60 hover:opacity-80 cursor-pointer shrink-0"
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 5l10 10M15 5L5 15" />
@@ -196,18 +228,18 @@ export default function TopBar({ onNavigate }: TopBarProps) {
 
           {/* Search results dropdown — three columns: artists | artworks | collections */}
           {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 glass-panel z-[60] max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 z-[60] max-h-80 overflow-y-auto search-dropdown">
               {results.length === 0 ? (
-                <div className="px-4 py-4 text-base opacity-40 text-center">
+                <div className="px-4 py-4 text-base opacity-60 text-center">
                   Aucun résultat pour "{searchQuery}"
                 </div>
               ) : (
-                <div className="grid grid-cols-3 divide-x divide-current/5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-current/5">
                   {/* Left column: Artists */}
                   <div>
-                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Artists</p>
+                    <p className="text-label opacity-50 px-3 pt-2 pb-1">Artists</p>
                     {userResults.length === 0 ? (
-                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                      <p className="px-3 py-2 text-body-sm opacity-40">—</p>
                     ) : userResults.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
@@ -217,16 +249,16 @@ export default function TopBar({ onNavigate }: TopBarProps) {
                         {result.address && <HexAvatar address={result.address} size={28} />}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-sm truncate">{result.title}</p>
-                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                          <p className="text-label opacity-50 truncate">{result.subtitle}</p>
                         </div>
                       </button>
                     ))}
                   </div>
                   {/* Middle column: Artworks */}
                   <div>
-                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Strangrz</p>
+                    <p className="text-label opacity-50 px-3 pt-2 pb-1">Strangrz</p>
                     {wartResults.length === 0 ? (
-                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                      <p className="px-3 py-2 text-body-sm opacity-40">—</p>
                     ) : wartResults.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
@@ -239,21 +271,21 @@ export default function TopBar({ onNavigate }: TopBarProps) {
                           </div>
                         ) : (
                           <div className="w-7 h-7 bg-current/5 flex items-center justify-center shrink-0">
-                            <span className="opacity-30">{'\u25C8'}</span>
+                            <span className="opacity-50">{'\u25C8'}</span>
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-sm truncate">{result.title}</p>
-                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                          <p className="text-label opacity-50 truncate">{result.subtitle}</p>
                         </div>
                       </button>
                     ))}
                   </div>
                   {/* Right column: Collections */}
                   <div>
-                    <p className="text-label opacity-30 px-3 pt-2 pb-1">Collections</p>
+                    <p className="text-label opacity-50 px-3 pt-2 pb-1">Collections</p>
                     {collectionResults.length === 0 ? (
-                      <p className="px-3 py-2 text-body-sm opacity-20">—</p>
+                      <p className="px-3 py-2 text-body-sm opacity-40">—</p>
                     ) : collectionResults.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
@@ -266,12 +298,12 @@ export default function TopBar({ onNavigate }: TopBarProps) {
                           </div>
                         ) : (
                           <div className="w-7 h-7 bg-current/5 flex items-center justify-center shrink-0">
-                            <span className="opacity-30">{'\u25C8'}</span>
+                            <span className="opacity-50">{'\u25C8'}</span>
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
                           <p className="text-body-sm truncate">{result.title}</p>
-                          <p className="text-label opacity-30 truncate">{result.subtitle}</p>
+                          <p className="text-label opacity-50 truncate">{result.subtitle}</p>
                         </div>
                       </button>
                     ))}
@@ -284,7 +316,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
 
         {/* Create button */}
         <button
-          onClick={() => { sessionStorage.setItem('strangrz_gallery_tab', 'create'); onNavigate('gallery'); }}
+          onClick={() => { sessionStorage.setItem('strangrz_gallery_tab', 'create'); onNavigate('gallery'); requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'create' }))); }}
           className="shrink-0 flex items-center gap-1.5 px-3 py-2 text-body-sm font-medium cursor-pointer transition-all hover:opacity-80 bg-pink-600 text-white"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -326,6 +358,7 @@ export default function TopBar({ onNavigate }: TopBarProps) {
             </span>
           )}
         </button>
+      </div>
       </div>
     </header>
   );

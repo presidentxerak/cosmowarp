@@ -32,6 +32,7 @@
  */
 
 import { storage } from './storage';
+import { PRIMARY_MARKET_FEE_PERCENT, SECONDARY_MARKET_FEE_PERCENT, PROCESSOR_FEES as CONFIG_PROCESSOR_FEES } from '../config/constants';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -116,14 +117,10 @@ const RATES_KEY = 'strangrz_fiat_rates';
 const FIAT_TX_KEY = 'strangrz_fiat_tx';
 const FIAT_LISTINGS_KEY = 'strangrz_fiat_listings';
 
-const DEFAULT_PLATFORM_FEE = 2.5;   // 2.5% platform fee
+const PRIMARY_MARKET_FEE = PRIMARY_MARKET_FEE_PERCENT;
+const SECONDARY_MARKET_FEE = SECONDARY_MARKET_FEE_PERCENT;
 const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> = {
-  card: { percent: 2.9, fixed: 0.30 },
-  paypal: { percent: 3.49, fixed: 0.49 },
-  sepa: { percent: 0.8, fixed: 0 },
-  apple_pay: { percent: 2.9, fixed: 0.30 },
-  google_pay: { percent: 2.9, fixed: 0.30 },
-  bank_transfer: { percent: 0, fixed: 1.50 },
+  ...(CONFIG_PROCESSOR_FEES as Record<PaymentMethod, { percent: number; fixed: number }>),
   internal: { percent: 0, fixed: 0 },
 };
 
@@ -136,8 +133,8 @@ const PROCESSOR_FEES: Record<PaymentMethod, { percent: number; fixed: number }> 
  * Circulating at launch (~11M via airdrops+mining): ~€1,100,000
  *
  * Utility check at €0.10/STZ:
- *   Airdrop (1,000 STZ)  = €100   — onboarding incentive ✓
- *   Min listing (100 STZ) = €10   — accessible NFT floor  ✓
+ *   Airdrop (300 STZ)    = €30    — 3 free artworks at 100 STZ ✓
+ *   Min listing (100 STZ) = €10   — accessible price floor ✓
  *   Mining reward (50 STZ) = €5   — motivating            ✓
  *   Streak (10,000 STZ)   = €1000 — yearly loyalty reward ✓
  *   Tip (1-10 STZ)        = €0.10-1.00 — micro-tip       ✓
@@ -312,13 +309,14 @@ export class FiatGateway {
   /**
    * Calculate fees for a transaction.
    */
-  calculateFees(fiatAmount: number, paymentMethod: PaymentMethod): {
+  calculateFees(fiatAmount: number, paymentMethod: PaymentMethod, isResale = false): {
     platformFee: number;
     processorFee: number;
     totalFees: number;
     sellerReceives: number;
   } {
-    const platformFee = Math.round(fiatAmount * DEFAULT_PLATFORM_FEE / 100 * 100) / 100;
+    const feePercent = isResale ? SECONDARY_MARKET_FEE : PRIMARY_MARKET_FEE;
+    const platformFee = Math.round(fiatAmount * feePercent / 100 * 100) / 100;
     const procFee = PROCESSOR_FEES[paymentMethod] || { percent: 0, fixed: 0 };
     const processorFee = Math.round((fiatAmount * procFee.percent / 100 + procFee.fixed) * 100) / 100;
     const totalFees = platformFee + processorFee;
@@ -448,7 +446,7 @@ export class FiatGateway {
       wartId: params.wartId,
       wartTitle: params.wartTitle,
       timestamp: Date.now(),
-      platformFeePercent: DEFAULT_PLATFORM_FEE,
+      platformFeePercent: PRIMARY_MARKET_FEE,
       platformFeeAmount: fees.platformFee,
       processorFeeAmount: fees.processorFee,
       sellerReceives: fees.sellerReceives,
@@ -529,7 +527,7 @@ export class FiatGateway {
       exchangeRate: rate.warpsPerUnit,
       paymentMethod: params.paymentMethod,
       timestamp: Date.now(),
-      platformFeePercent: DEFAULT_PLATFORM_FEE,
+      platformFeePercent: PRIMARY_MARKET_FEE,
       platformFeeAmount: fees.platformFee,
       processorFeeAmount: fees.processorFee,
       sellerReceives: fees.sellerReceives,

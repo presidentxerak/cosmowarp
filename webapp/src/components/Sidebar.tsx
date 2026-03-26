@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useWallet } from '../context/WalletContext';
 import Logo from './Logo';
@@ -70,6 +70,20 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { wallet } = useWallet();
+  const [advancedMode, setAdvancedMode] = useState(() => localStorage.getItem('strangrz_advanced') === '1');
+
+  // Listen for advanced mode changes from Settings
+  useEffect(() => {
+    const handler = (e: Event) => setAdvancedMode((e as CustomEvent).detail);
+    window.addEventListener('strangrz-advanced-mode', handler);
+    return () => window.removeEventListener('strangrz-advanced-mode', handler);
+  }, []);
+
+  // Filter menu items based on advanced mode
+  const visibleItems = menuItems.filter(item => {
+    if (!advancedMode && item.id === 'wallet') return false;
+    return true;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -98,7 +112,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
     <>
       {/* Desktop mini sidebar */}
       <div className="hidden sm:flex fixed top-[52px] left-0 bottom-0 z-40 w-[56px] flex-col items-center py-3 gap-1 glass-panel overflow-y-auto sidebar-mini">
-        {menuItems.map((item) => {
+        {visibleItems.map((item) => {
           if (item.id.startsWith('divider')) {
             return <div key={item.id} className="w-8 my-0.5 border-b border-current/10" />;
           }
@@ -109,7 +123,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
               className={`w-10 h-10 flex items-center justify-center transition-all cursor-pointer ${
                 activeTab === item.id
                   ? 'opacity-100'
-                  : 'opacity-40 hover:opacity-80'
+                  : 'opacity-60 hover:opacity-80'
               }`}
               title={item.label}
               aria-label={item.label}
@@ -121,7 +135,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
         <div className="mt-auto pt-2 border-t border-current/10 w-8">
           <button
             onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-all mx-auto"
+            className="w-10 h-10 flex items-center justify-center opacity-60 hover:opacity-80 cursor-pointer transition-all mx-auto"
             title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           >
             {theme === 'dark' ? (
@@ -153,11 +167,11 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Logo className="w-8 h-8 animate-float" />
-              <span className="font-title text-base">Strangrz</span>
+              <span className="font-logo text-base">Strangrz</span>
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer transition-opacity"
+              className="w-9 h-9 flex items-center justify-center opacity-60 hover:opacity-80 cursor-pointer transition-opacity"
               aria-label="Close menu"
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -173,7 +187,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
               <HexAvatar address={wallet.address} size={44} animate />
               <div className="min-w-0 flex-1">
                 <p className="text-base font-bold truncate">{wallet.alias || shortAddress(wallet.address)}</p>
-                <p className="text-body-sm opacity-40 truncate">{shortAddress(wallet.address)}</p>
+                <p className="text-body-sm opacity-60 truncate">{shortAddress(wallet.address)}</p>
               </div>
             </button>
           )}
@@ -181,7 +195,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, setActiveTab }: Si
 
         {/* Menu */}
         <nav className="py-2">
-          {menuItems.map((item) => {
+          {visibleItems.map((item) => {
             if (item.id.startsWith('divider')) {
               return <div key={item.id} className="my-1 border-b border-current/10" />;
             }

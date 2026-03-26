@@ -6,61 +6,61 @@ import { useWallet } from '../context/WalletContext';
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   fr: {
     concept: 'Concept',
-    publish: 'Publier',
+    publish: 'Créer',
     collect: 'Collectionner',
-    protocol: 'Protocole',
+    protocol: 'Confiance',
     signIn: 'Se connecter',
     signUp: 'S\'inscrire',
-    heroSubtitle: 'Protocole et marketplace multi-chaîne de certification pour œuvres rares',
-    heroDesc: 'Publiez, certifiez et collectionnez des oeuvres numériques et physiques. Chaque objet reçoit un certificat d\'authenticité infalsifiable sur Strangrz (SZ-721) et Ethereum (ERC-721).',
+    heroSubtitle: 'Découvrez, achetez et collectionnez des oeuvres d\'art uniques',
+    heroDesc: 'Une plateforme sociale pour l\'art et les objets de collection. Achetez en un clic par carte bancaire, connectez-vous directement avec les artistes, et revendez à tout moment.',
     mySpace: 'Mon Espace',
     createAccount: 'Créer un compte',
     learnMore: 'En savoir plus',
     conceptTitle: 'C\'est quoi Strangrz ?',
-    conceptDesc: 'Strangrz est un protocole de certification pour objets rares. Cartes Pokémon, sneakers, vinyles, montres, art numérique : chaque objet rare mérite un certificat d\'authenticité infalsifiable. C\'est exactement ce que Strangrz propose, grâce à des certificats cryptographiques appelés STCERT.',
-    conceptDesc2: 'Contrairement aux blockchains classiques qui chaînent des blocs de manière linéaire, Strangrz utilise un graphe acyclique orienté (DAG) avec 7 couches de validation parallèles, permettant un débit massif sans le goulot d\'étranglement de la confirmation séquentielle.',
-    conceptDesc3: 'Là où les systèmes fiat dépendent d\'intermédiaires centralisés (banques, processeurs de paiement), Strangrz fonctionne comme un maillage pair-à-pair où chaque transaction valide deux transactions précédentes, créant un réseau de confiance auto-renforçant.',
-    certify: 'Certifier',
-    certifyDesc: 'Chaque oeuvre reçoit un certificat STCERT multi-chaîne (SZ-721 + ERC-721) : empreinte SHA-256, signature Ed25519 du créateur, horodatage. Infalsifiable et vérifiable par tous.',
+    conceptDesc: 'Strangrz est une plateforme sociale pour l\'art et les objets de collection. Cartes Pokémon, sneakers, vinyles, montres, art numérique : découvrez, achetez et revendez des pièces uniques, certifiées et authentifiées automatiquement.',
+    conceptDesc2: 'Chaque oeuvre publiée reçoit un certificat d\'authenticité infalsifiable (STCERT). Ce certificat garantit l\'origine, l\'auteur et la provenance — sans aucune manipulation technique de votre part.',
+    conceptDesc3: 'Payez par carte bancaire, Apple Pay ou Google Pay. L\'artiste reçoit ses revenus directement. Strangrz gère la certification, les royalties et la traçabilité en arrière-plan.',
+    certify: 'Authentifié',
+    certifyDesc: 'Chaque oeuvre reçoit un certificat d\'authenticité (STCERT) : empreinte numérique unique, signature du créateur, horodatage. Infalsifiable et vérifiable par tous.',
     publishTitle: 'Publier',
-    publishDesc: 'Publiez vos créations — art numérique, photo, musique, objets physiques. Votre certificat prouve que vous en êtes l\'auteur et le premier propriétaire.',
+    publishDesc: 'Publiez vos créations — art numérique, photos, musique, objets physiques. Votre certificat prouve que vous en êtes l\'auteur et le premier propriétaire.',
     exchange: 'Échanger',
-    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Le certificat suit l\'objet et prouve son origine. Paiement en Strangrz (⬣) ou en euros.',
+    exchangeDesc: 'Achetez et vendez des oeuvres certifiées en toute confiance. Paiement par carte bancaire en euros — la plateforme gère le reste.',
     forCreators: 'Pour les créateurs',
     publishWorks: 'Publiez vos oeuvres',
     step1: 'Créez votre profil',
-    step1Desc: 'Un nom d\'utilisateur et un mot de passe suffisent. Strangrz génère votre clé cryptographique Ed25519. Aucun email requis.',
+    step1Desc: 'Un nom d\'utilisateur et un mot de passe suffisent. Aucun email requis. Commencez à publier en moins de 30 secondes.',
     step2: 'Uploadez votre oeuvre',
     step2Desc: 'Photo, vidéo, illustration, musique, objet 3D — tout format est accepté. Ajoutez un titre, une description et un prix.',
     step3: 'Certification automatique',
-    step3Desc: 'Strangrz calcule l\'empreinte SHA-256 du fichier et la signe avec votre clé privée. Le certificat STCERT est créé instantanément sur Strangrz (SZ-721) et Ethereum (ERC-721).',
+    step3Desc: 'Strangrz génère automatiquement un certificat d\'authenticité infalsifiable. Votre oeuvre est protégée et vérifiable instantanément.',
     step4: 'Mise en vente',
-    step4Desc: 'Votre oeuvre apparaît sur la marketplace. Les collectionneurs peuvent l\'acheter en Strangrz (⬣) ou via la passerelle de paiement en euros.',
+    step4Desc: 'Votre oeuvre apparaît sur la plateforme avec un prix en euros. Les acheteurs paient par carte bancaire. Vous recevez vos euros directement.',
     publishWork: 'Publier une oeuvre',
     forCollectors: 'Pour les collectionneurs',
-    collectCertified: 'Collectionnez des oeuvres certifiées',
-    collectDesc: 'Explorez la marketplace, découvrez des créateurs, et constituez votre collection d\'oeuvres authentifiées par le protocole Strangrz.',
+    collectCertified: 'Collectionnez des oeuvres uniques',
+    collectDesc: 'Explorez la galerie, découvrez des artistes, et constituez votre collection d\'oeuvres authentifiées.',
     explore: 'Explorer',
-    exploreDesc: 'Parcourez la marketplace et découvrez des oeuvres de créateurs du monde entier.',
+    exploreDesc: 'Parcourez la galerie et découvrez des oeuvres d\'artistes du monde entier.',
     buy: 'Acheter',
-    buyDesc: 'Payez en Strangrz (⬣) ou en euros via la passerelle de paiement intégrée.',
+    buyDesc: 'Payez par carte bancaire en euros. La plateforme transfère la propriété et verse les royalties automatiquement.',
     own: 'Posséder',
-    ownDesc: 'Chaque achat transfère le certificat STCERT sur votre wallet. Vous êtes le propriétaire vérifié.',
+    ownDesc: 'Chaque achat vous rend propriétaire vérifié de l\'oeuvre. Votre collection est sécurisée et accessible partout.',
     resell: 'Revendre',
     resellDesc: 'Mettez vos oeuvres en vente à tout moment. Le certificat suit l\'objet et prouve la chaîne de propriété.',
-    exploreMarketplace: 'Explorer la marketplace',
+    exploreMarketplace: 'Explorer la galerie',
     forCurators: 'Pour les curateurs',
     curateTitle: 'Devenez Curateur',
-    curateDesc: 'Collectionnez 100 oeuvres et devenez Curateur. Créez des articles éditoriaux, mettez en valeur des artistes et partagez vos collections comme un magazine d\'art.',
+    curateDesc: 'Collectionnez 10 oeuvres et devenez Curateur. Créez des articles éditoriaux, mettez en valeur des artistes et partagez vos collections comme un magazine d\'art.',
     curateStep1: 'Collectionnez',
-    curateStep1Desc: 'Achetez 100 oeuvres certifiées pour débloquer le statut Curateur et le badge doré sur votre profil.',
+    curateStep1Desc: 'Achetez 10 oeuvres certifiées pour débloquer le statut Curateur et le badge doré sur votre profil.',
     curateStep2: 'Curatez',
     curateStep2Desc: 'Créez des articles, mettez en avant des artistes et des collections. Partagez votre vision artistique.',
     curateStep3: 'Influencez',
     curateStep3Desc: 'Vos sélections apparaissent dans le magazine Curate. Devenez une référence dans l\'univers Strangrz.',
-    tradingTitle: 'Trading Floor',
-    tradingDesc: 'Un marché d\'oeuvres numériques propulsé par STRNGRZ (⬣). Visualisez les cours, volumes, classements et gérez votre portfolio comme sur OpenSea — en mieux.',
-    whatObjects: 'Quels objets certifier ?',
+    tradingTitle: 'Marché secondaire',
+    tradingDesc: 'Suivez les prix, les tendances et les ventes en temps réel. Gérez votre collection comme un portfolio et revendez vos oeuvres à tout moment.',
+    whatObjects: 'Quels objets ?',
     digitalArt: 'Art numérique',
     digitalArtDesc: 'Illustrations, 3D, photo',
     music: 'Musique',
@@ -73,110 +73,120 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     watchesDesc: 'Rolex, Omega, Seiko',
     vinyl: 'Vinyles',
     vinylDesc: 'Pressages limités',
-    technology: 'Technologie',
-    protocolTitle: 'Le Protocole Strangrz',
-    crcert: 'Certificat STCERT',
-    crcertDesc: 'Empreinte SHA-256 du contenu + signature Ed25519 du créateur + horodatage. Impossible à falsifier, vérifiable par tous.',
-    strangrmesh: 'StrangrzMesh — Réseau en graphe',
-    strangrmeshDesc: 'Un graphe acyclique dirigé (DAG) à 7 couches de validation parallèles. Chaque transaction en valide deux autres.',
-    crypto: 'Cryptographie de pointe',
-    cryptoDesc: 'Signatures Ed25519, hachage SHA-256, chiffrement AES-GCM. Les mêmes standards que Signal et Tor.',
-    tokenomics: 'Tokenomics équitable',
-    tokenomicsDesc: 'Le token Strangrz (⬣) a une offre fixe de 69M. Les récompenses de minage suivent le nombre d\'or (φ).',
-    vobjct: 'Strangrz Safe — Résilience',
-    vobjctDesc: 'Chaque oeuvre est protégée par un manifeste Strangrz : intégrité SHA-256, routes de stockage multi-réseau (on-chain, IPFS, cloud), monitoring actif, et réparation automatique. Vos actifs numériques sont vérifiables, récupérables et permanents.',
-    totalSupply: 'Supply totale',
-    goldenRatio: 'Ratio d\'or (minage)',
-    layers: 'Couches du réseau',
-    offlineOnline: 'Offline + Online',
-    whyNotFree: 'Pourquoi l\'art n\'est pas gratuit sur Strangrz',
+    technology: 'Confiance',
+    protocolTitle: 'Comment ça marche ?',
+    crcert: 'Certificat d\'authenticité',
+    crcertDesc: 'Chaque oeuvre reçoit un certificat unique et infalsifiable : empreinte numérique du contenu, signature du créateur, horodatage. Vérifiable par tous, impossible à falsifier.',
+    strangrmesh: 'Infrastructure haute performance',
+    strangrmeshDesc: 'Un réseau de validation à 7 couches parallèles qui garantit des transactions instantanées et une fiabilité maximale.',
+    crypto: 'Sécurité de niveau bancaire',
+    cryptoDesc: 'Signatures numériques, chiffrement de bout en bout, et les mêmes standards de sécurité que Signal et les applications bancaires.',
+    tokenomics: 'Royalties automatiques',
+    tokenomicsDesc: 'Les artistes reçoivent des royalties sur chaque revente (5% par défaut, configurable). Un revenu passif à vie, géré automatiquement par la plateforme.',
+    vobjct: 'Protection des oeuvres',
+    vobjctDesc: 'Chaque oeuvre est protégée par un manifeste de sécurité : vérification d\'intégrité, stockage multi-couches, monitoring actif et réparation automatique. Vos oeuvres sont permanentes.',
+    totalSupply: 'Artistes actifs',
+    goldenRatio: 'Royalties à vie',
+    layers: 'De sécurité',
+    offlineOnline: 'Fonctionne partout',
+    whyNotFree: 'Pourquoi l\'art a un prix sur Strangrz',
     whyNotFreeDesc: 'Un écosystème durable pour les créateurs et les collectionneurs',
     whyArg1Title: 'Valoriser la création',
-    whyArg1Desc: 'Prix minimum de 100 ⬣ par oeuvre. Chaque création mérite un prix qui respecte le travail de l\'artiste.',
+    whyArg1Desc: 'Prix minimum de 10€ par oeuvre. Chaque création mérite un prix qui respecte le travail de l\'artiste.',
     whyArg2Title: 'Économie circulaire',
-    whyArg2Desc: 'Royalties de 5% à chaque revente sur le marché secondaire. Les artistes gagnent à vie sur leur oeuvre.',
+    whyArg2Desc: 'Royalties automatiques à chaque revente. Les artistes gagnent à vie sur leur oeuvre.',
     whyArg3Title: 'Anti-spam, pro-qualité',
-    whyArg3Desc: 'Le prix plancher filtre le bruit et garantit un marketplace de qualité pour les collectionneurs.',
+    whyArg3Desc: 'Le prix plancher filtre le bruit et garantit une galerie de qualité pour les collectionneurs.',
     whyArg4Title: 'Impact écologique minimal',
-    whyArg4Desc: '~0.001 Wh par transaction. 30x moins énergivore qu\'Ethereum. Zéro gas, zéro gaspillage.',
+    whyArg4Desc: '~0.001 Wh par transaction. 99.9% plus efficace que les plateformes traditionnelles. Zéro gaspillage.',
     whyCompare: 'Comparatif',
     whyCompareStrangrz: 'Strangrz',
-    whyCompareEth: 'Ethereum',
-    whyCompareTezos: 'Tezos',
-    whyCompareSolana: 'Solana',
-    whyMintCost: 'Frais de mint',
+    whyCompareEth: 'Marketplaces classiques',
+    whyCompareTezos: 'Galeries en ligne',
+    whyCompareSolana: 'Réseaux sociaux',
+    whyMintCost: 'Frais de publication',
     whyMinPrice: 'Prix min. vente',
-    whyEnergy: 'Énergie/TX',
-    whyCo2: 'CO₂/TX',
-    whyOnChain: 'Stockage on-chain',
-    whyFiat: 'Paiement fiat',
-    ctaTitle: 'Prêt à certifier vos trésors ?',
-    ctaDesc: 'Créez votre compte en 10 secondes. Pas d\'email, pas de tiers. Juste vous et le protocole.',
-    ctaSignUp: 'Sign Up — Créer un compte',
-    readWhitepaper: 'Lire le White Paper',
-    footer: 'Strangrz Foundation — Protocole et marketplace multi-chaîne de certification pour œuvres rares',
-    whitePaper: 'White Paper',
+    whyEnergy: 'Énergie/transaction',
+    whyCo2: 'Certificat d\'authenticité',
+    whyOnChain: 'Royalties automatiques',
+    whyFiat: 'Paiement par carte',
+    howPaymentWorks: 'Comment fonctionne l\'achat ?',
+    howPaymentDesc: 'Payez en euros, la plateforme s\'occupe du reste',
+    howPayStep1: 'Vous payez en euros',
+    howPayStep1Desc: 'Carte bancaire, Apple Pay ou Google Pay. Paiement sécurisé par Stripe.',
+    howPayStep2: 'Certification automatique',
+    howPayStep2Desc: 'Le certificat d\'authenticité est généré et transféré à votre compte instantanément. Infalsifiable.',
+    howPayStep3: 'Le créateur est payé',
+    howPayStep3Desc: 'Le vendeur reçoit 100% du prix affiché sur son compte bancaire. Les frais plateforme (10% 1er marché, 5% 2nd marché) sont payés par l\'acheteur.',
+    howPayStep4: 'Provenance garantie',
+    howPayStep4Desc: 'Chaque revente est tracée automatiquement. Le certificat suit l\'oeuvre pour toujours.',
+    ctaTitle: 'Prêt à découvrir ?',
+    ctaDesc: 'Créez votre compte en 10 secondes. Commencez à explorer, acheter et collectionner des oeuvres uniques.',
+    ctaSignUp: 'Créer un compte gratuit',
+    readWhitepaper: 'En savoir plus',
+    footer: 'Strangrz — Plateforme sociale pour l\'art et les objets de collection',
+    whitePaper: 'À propos',
     legal: 'Légal',
     privacy: 'Confidentialité',
     help: 'Aide',
   },
   en: {
     concept: 'Concept',
-    publish: 'Publish',
+    publish: 'Create',
     collect: 'Collect',
-    protocol: 'Protocol',
+    protocol: 'Trust',
     signIn: 'Sign In',
     signUp: 'Sign Up',
-    heroSubtitle: 'Multi-chain certification protocol and marketplace for rare works',
-    heroDesc: 'Publish, certify and collect digital and physical works. Each object receives a tamper-proof certificate of authenticity on Strangrz (SZ-721) and Ethereum (ERC-721).',
+    heroSubtitle: 'Discover, buy and collect unique artworks',
+    heroDesc: 'A social platform for art and collectibles. Buy in one click with your credit card, connect directly with artists, and resell anytime.',
     mySpace: 'My Space',
     createAccount: 'Create Account',
     learnMore: 'Learn More',
     conceptTitle: 'What is Strangrz?',
-    conceptDesc: 'Strangrz is a certification protocol for rare objects. Pokémon cards, sneakers, vinyl records, watches, digital art: every rare object deserves a tamper-proof certificate of authenticity. That\'s exactly what Strangrz offers, through cryptographic certificates called STCERT.',
-    conceptDesc2: 'Unlike traditional blockchains that chain blocks linearly, Strangrz uses a directed acyclic graph (DAG) with 7 parallel validation layers, enabling massive throughput without the bottleneck of sequential confirmation.',
-    conceptDesc3: 'Where fiat systems depend on centralized intermediaries (banks, payment processors), Strangrz operates as a peer-to-peer mesh where each transaction validates two previous transactions, creating a self-reinforcing trust network.',
-    certify: 'Certify',
-    certifyDesc: 'Each work receives a multi-chain STCERT certificate (SZ-721 + ERC-721): SHA-256 fingerprint, Ed25519 signature from the creator, timestamp. Tamper-proof and verifiable by all.',
+    conceptDesc: 'Strangrz is a social platform for art and collectibles. Pokémon cards, sneakers, vinyl records, watches, digital art: discover, buy and resell unique pieces, automatically certified and authenticated.',
+    conceptDesc2: 'Every published work receives a tamper-proof certificate of authenticity (STCERT). This certificate guarantees origin, authorship and provenance — without any technical effort on your part.',
+    conceptDesc3: 'Pay by credit card, Apple Pay or Google Pay. The artist receives their earnings directly. Strangrz handles certification, royalties and traceability behind the scenes.',
+    certify: 'Authenticated',
+    certifyDesc: 'Each work receives a certificate of authenticity (STCERT): unique digital fingerprint, creator signature, timestamp. Tamper-proof and verifiable by all.',
     publishTitle: 'Publish',
     publishDesc: 'Publish your creations — digital art, photos, music, physical objects. Your certificate proves you are the author and first owner.',
     exchange: 'Exchange',
-    exchangeDesc: 'Buy and sell certified works with confidence. The certificate follows the object and proves its origin. Pay in Strangrz (⬣) or in euros.',
+    exchangeDesc: 'Buy and sell certified works with confidence. Pay by credit card in euros — the platform handles the rest.',
     forCreators: 'For creators',
     publishWorks: 'Publish your works',
     step1: 'Create your profile',
-    step1Desc: 'A username and password is all you need. Strangrz generates your Ed25519 cryptographic key. No email required.',
+    step1Desc: 'A username and password is all you need. No email required. Start publishing in under 30 seconds.',
     step2: 'Upload your work',
     step2Desc: 'Photo, video, illustration, music, 3D object — all formats are accepted. Add a title, description and price.',
     step3: 'Automatic certification',
-    step3Desc: 'Strangrz computes the SHA-256 fingerprint of the file and signs it with your private key. The STCERT certificate is minted instantly on Strangrz (SZ-721) and Ethereum (ERC-721).',
+    step3Desc: 'Strangrz automatically generates a tamper-proof certificate of authenticity. Your work is protected and verifiable instantly.',
     step4: 'Listed for sale',
-    step4Desc: 'Your work appears on the marketplace. Collectors can buy it in Strangrz (⬣) or via the integrated euro payment gateway.',
+    step4Desc: 'Your work appears on the platform with a price in euros. Buyers pay by credit card. You receive your euros directly.',
     publishWork: 'Publish a work',
     forCollectors: 'For collectors',
-    collectCertified: 'Collect certified works',
-    collectDesc: 'Explore the marketplace, discover creators, and build your collection of works authenticated by the Strangrz protocol.',
+    collectCertified: 'Collect unique works',
+    collectDesc: 'Explore the gallery, discover artists, and build your collection of authenticated works.',
     explore: 'Explore',
-    exploreDesc: 'Browse the marketplace and discover works from creators worldwide.',
+    exploreDesc: 'Browse the gallery and discover works from artists worldwide.',
     buy: 'Buy',
-    buyDesc: 'Pay in Strangrz (⬣) or in euros via the integrated payment gateway.',
+    buyDesc: 'Pay by credit card in euros. The platform transfers ownership and pays royalties automatically.',
     own: 'Own',
-    ownDesc: 'Each purchase transfers the STCERT certificate to your wallet. You are the verified owner.',
+    ownDesc: 'Each purchase makes you the verified owner. Your collection is secured and accessible anywhere.',
     resell: 'Resell',
     resellDesc: 'List your works for sale at any time. The certificate follows the object and proves the chain of ownership.',
-    exploreMarketplace: 'Explore the marketplace',
+    exploreMarketplace: 'Explore the gallery',
     forCurators: 'For curators',
     curateTitle: 'Become a Curator',
-    curateDesc: 'Collect 100 artworks and unlock Curator status. Create editorial articles, highlight artists and share your curated collections like an art magazine.',
+    curateDesc: 'Collect 10 artworks and unlock Curator status. Create editorial articles, highlight artists and share your curated collections like an art magazine.',
     curateStep1: 'Collect',
-    curateStep1Desc: 'Buy 100 certified artworks to unlock Curator status and the golden badge on your profile.',
+    curateStep1Desc: 'Buy 10 certified artworks to unlock Curator status and the golden badge on your profile.',
     curateStep2: 'Curate',
     curateStep2Desc: 'Write articles, feature artists and collections. Share your artistic vision with the community.',
     curateStep3: 'Influence',
     curateStep3Desc: 'Your selections appear in the Curate magazine. Become a tastemaker in the Strangrz universe.',
-    tradingTitle: 'Trading Floor',
-    tradingDesc: 'A digital art marketplace powered by STRNGRZ (⬣). View prices, volumes, rankings and manage your portfolio like OpenSea — but better.',
-    whatObjects: 'What objects to certify?',
+    tradingTitle: 'Secondary Market',
+    tradingDesc: 'Track prices, trends and sales in real time. Manage your collection like a portfolio and resell your works anytime.',
+    whatObjects: 'What can you collect?',
     digitalArt: 'Digital Art',
     digitalArtDesc: 'Illustrations, 3D, photo',
     music: 'Music',
@@ -189,49 +199,59 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     watchesDesc: 'Rolex, Omega, Seiko',
     vinyl: 'Vinyl',
     vinylDesc: 'Limited pressings',
-    technology: 'Technology',
-    protocolTitle: 'The Strangrz Protocol',
-    crcert: 'STCERT Certificate',
-    crcertDesc: 'SHA-256 content fingerprint + Ed25519 creator signature + timestamp. Impossible to forge, verifiable by all.',
-    strangrmesh: 'StrangrzMesh — Graph Network',
-    strangrmeshDesc: 'A directed acyclic graph (DAG) with 7 parallel validation layers. Each transaction validates two others.',
-    crypto: 'Cutting-edge Cryptography',
-    cryptoDesc: 'Ed25519 signatures, SHA-256 hashing, AES-GCM encryption. The same standards as Signal and Tor.',
-    tokenomics: 'Fair Tokenomics',
-    tokenomicsDesc: 'The Strangrz (⬣) token has a fixed supply of 69M. Mining rewards follow the golden ratio (φ).',
-    vobjct: 'Strangrz Safe — Resilience',
-    vobjctDesc: 'Every artwork is protected by a Strangrz manifest: SHA-256 integrity, multi-network storage routes (on-chain, IPFS, cloud), active monitoring, and automated repair. Your digital assets are verifiable, recoverable, and permanent.',
-    totalSupply: 'Total Supply',
-    goldenRatio: 'Golden Ratio (mining)',
-    layers: 'Network Layers',
-    offlineOnline: 'Offline + Online',
-    whyNotFree: 'Why art isn\'t free on Strangrz',
+    technology: 'Trust',
+    protocolTitle: 'How does it work?',
+    crcert: 'Certificate of Authenticity',
+    crcertDesc: 'Each work receives a unique and tamper-proof certificate: digital fingerprint of the content, creator signature, timestamp. Verifiable by all, impossible to forge.',
+    strangrmesh: 'High-performance infrastructure',
+    strangrmeshDesc: 'A 7-layer parallel validation network that guarantees instant transactions and maximum reliability.',
+    crypto: 'Bank-grade security',
+    cryptoDesc: 'Digital signatures, end-to-end encryption, and the same security standards as Signal and banking applications.',
+    tokenomics: 'Automatic royalties',
+    tokenomicsDesc: 'Artists receive royalties on every resale (5% default, configurable). A lifetime passive income, managed automatically by the platform.',
+    vobjct: 'Artwork protection',
+    vobjctDesc: 'Every artwork is protected by a security manifest: integrity verification, multi-layer storage, active monitoring and automated repair. Your artworks are permanent.',
+    totalSupply: 'Active artists',
+    goldenRatio: 'Lifetime royalties',
+    layers: 'Security layers',
+    offlineOnline: 'Works everywhere',
+    whyNotFree: 'Why art has a price on Strangrz',
     whyNotFreeDesc: 'A sustainable ecosystem for creators and collectors',
     whyArg1Title: 'Value creation',
-    whyArg1Desc: 'Minimum price of 100 ⬣ per work. Every creation deserves a price that respects the artist\'s work.',
+    whyArg1Desc: 'Minimum price of \u20AC10 per work. Every creation deserves a price that respects the artist\'s work.',
     whyArg2Title: 'Circular economy',
-    whyArg2Desc: '5% royalties on every secondary market resale. Artists earn for life on their work.',
+    whyArg2Desc: 'Automatic royalties on every resale. Artists earn for life on their work.',
     whyArg3Title: 'Anti-spam, pro-quality',
-    whyArg3Desc: 'The price floor filters noise and guarantees a quality marketplace for collectors.',
+    whyArg3Desc: 'The price floor filters noise and guarantees a quality gallery for collectors.',
     whyArg4Title: 'Minimal ecological impact',
-    whyArg4Desc: '~0.001 Wh per transaction. 30x less energy than Ethereum. Zero gas, zero waste.',
+    whyArg4Desc: '~0.001 Wh per transaction. 99.9% more efficient than traditional platforms. Zero waste.',
     whyCompare: 'Comparison',
     whyCompareStrangrz: 'Strangrz',
-    whyCompareEth: 'Ethereum',
-    whyCompareTezos: 'Tezos',
-    whyCompareSolana: 'Solana',
-    whyMintCost: 'Mint cost',
+    whyCompareEth: 'Traditional marketplaces',
+    whyCompareTezos: 'Online galleries',
+    whyCompareSolana: 'Social networks',
+    whyMintCost: 'Publishing fee',
     whyMinPrice: 'Min. sale price',
-    whyEnergy: 'Energy/TX',
-    whyCo2: 'CO₂/TX',
-    whyOnChain: 'On-chain storage',
-    whyFiat: 'Fiat payment',
-    ctaTitle: 'Ready to certify your treasures?',
-    ctaDesc: 'Create your account in 10 seconds. No email, no middleman. Just you and the protocol.',
-    ctaSignUp: 'Sign Up — Create Account',
-    readWhitepaper: 'Read the White Paper',
-    footer: 'Strangrz Foundation — Multi-chain certification protocol and marketplace for rare works',
-    whitePaper: 'White Paper',
+    whyEnergy: 'Energy/transaction',
+    whyCo2: 'Certificate of authenticity',
+    whyOnChain: 'Automatic royalties',
+    whyFiat: 'Card payment',
+    howPaymentWorks: 'How does buying work?',
+    howPaymentDesc: 'Pay in euros, the platform handles the rest',
+    howPayStep1: 'You pay in euros',
+    howPayStep1Desc: 'Credit card, Apple Pay or Google Pay. Secure payment powered by Stripe.',
+    howPayStep2: 'Automatic certification',
+    howPayStep2Desc: 'The certificate of authenticity is generated and transferred to your account instantly. Tamper-proof.',
+    howPayStep3: 'The creator gets paid',
+    howPayStep3Desc: 'The seller receives 100% of the listed price to their bank account. Platform fees (10% primary, 5% secondary market) are paid by the buyer.',
+    howPayStep4: 'Provenance guaranteed',
+    howPayStep4Desc: 'Every resale is tracked automatically. The certificate follows the work forever.',
+    ctaTitle: 'Ready to discover?',
+    ctaDesc: 'Create your account in 10 seconds. Start exploring, buying and collecting unique artworks.',
+    ctaSignUp: 'Create a free account',
+    readWhitepaper: 'Learn more',
+    footer: 'Strangrz — Social platform for art and collectibles',
+    whitePaper: 'About',
     legal: 'Legal',
     privacy: 'Privacy',
     help: 'Help',
@@ -468,6 +488,30 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
   const logoSrc = import.meta.env.BASE_URL + 'strangrz-logo-white.svg';
 
+  // Safari video autoplay fix
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('x-webkit-airplay', 'allow');
+    // Safari requires muted to be set before play() for autoplay policy
+    v.muted = true;
+    v.defaultMuted = true;
+    // Safari may block autoplay; retry on user interaction
+    const tryPlay = () => { v.play().catch(() => {}); };
+    tryPlay();
+    // Safari sometimes needs a slight delay after mount
+    const timer = setTimeout(tryPlay, 300);
+    document.addEventListener('touchstart', tryPlay, { once: true });
+    document.addEventListener('click', tryPlay, { once: true });
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('touchstart', tryPlay);
+      document.removeEventListener('click', tryPlay);
+    };
+  }, []);
+
   // Parallax scroll tracking
   useEffect(() => {
     let ticking = false;
@@ -495,20 +539,36 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
   return (
     <div className="min-h-screen relative text-white" style={{ background: '#000' }}>
 
+      {/* ─── Promo Banner ────────────────────────────────── */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[60] text-center py-1.5 px-3 text-[11px] font-medium tracking-wide"
+        style={{
+          background: 'linear-gradient(90deg, #d4af37, #e91e8c, #339af0, #51cf66, #d4af37)',
+          backgroundSize: '300% 100%',
+          animation: 'promoBannerScroll 6s linear infinite',
+          color: '#000',
+        }}
+      >
+        First 100 signups: 2000 Strngrz Coins = 1 Exclusive Limited Edition artwork by Xerak!
+      </div>
+      <style>{`@keyframes promoBannerScroll { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }`}</style>
+
       {/* ─── Header ─────────────────────────────────────── */}
       <header
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        className="fixed top-[28px] left-0 right-0 z-50 transition-all duration-300"
         style={{
           background: `rgba(0,0,0,${headerBgOpacity})`,
           backdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
+          WebkitBackdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
           borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 h-16">
           {/* Logo + name */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 cursor-pointer group">
             <img src={logoSrc} alt="Strangrz" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
-            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title uppercase">Strangrz</span>
+            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-logo uppercase">Strangrz</span>
           </button>
 
           {/* Desktop nav */}
@@ -617,18 +677,15 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))' }}
           />
           <h1
-            className="text-title-xl sm:text-[4rem] lg:text-[5rem] font-bold font-title mb-2 tracking-wide uppercase"
+            className="text-title-xl sm:text-[4rem] lg:text-[5rem] font-bold font-logo mb-2 tracking-wide uppercase"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
             Strangrz
           </h1>
-          <p className="text-base sm:text-lg opacity-30 mb-4 tracking-[0.2em]">
-            Protocole et marketplace multi-chaîne de certification pour œuvres rares
-          </p>
           <p className="text-base sm:text-lg opacity-70 font-bold mb-3">
             {t('heroSubtitle')}
           </p>
-          <p className="text-sm sm:text-base opacity-40 max-w-xl mx-auto mb-10 leading-relaxed">
+          <p className="text-sm sm:text-base opacity-60 max-w-xl mx-auto mb-10 leading-relaxed">
             {t('heroDesc')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -649,7 +706,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-30 animate-bounce-slow">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-50 animate-bounce-slow">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12l7 7 7-7" />
           </svg>
@@ -660,7 +717,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="concept" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('concept')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">{t('concept')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-6">
               {t('conceptTitle')}
             </h2>
@@ -671,10 +728,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               <p className="text-sm sm:text-base opacity-50 leading-relaxed">
                 {t('conceptDesc')}
               </p>
-              <p className="text-sm sm:text-base opacity-40 leading-relaxed">
+              <p className="text-sm sm:text-base opacity-60 leading-relaxed">
                 {t('conceptDesc2')}
               </p>
-              <p className="text-sm sm:text-base opacity-40 leading-relaxed">
+              <p className="text-sm sm:text-base opacity-60 leading-relaxed">
                 {t('conceptDesc3')}
               </p>
             </div>
@@ -691,9 +748,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-6 sm:p-8 cursor-default landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="block mb-4 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="block mb-4 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-lg font-bold opacity-90 mb-3">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -707,7 +764,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <Reveal>
               <div>
-                <p className="text-label tracking-[0.3em] opacity-30 mb-3">{t('forCreators')}</p>
+                <p className="text-label tracking-[0.3em] opacity-50 mb-3">{t('forCreators')}</p>
                 <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-6">
                   {t('publishWorks')}
                 </h2>
@@ -719,10 +776,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                     { step: '04', title: t('step4'), desc: t('step4Desc') },
                   ].map(s => (
                     <div key={s.step} className="flex gap-4 group">
-                      <span className="text-2xl font-bold opacity-10 shrink-0 w-10 text-right group-hover:opacity-30 transition-opacity">{s.step}</span>
+                      <span className="text-2xl font-bold opacity-10 shrink-0 w-10 text-right group-hover:opacity-50 transition-opacity">{s.step}</span>
                       <div>
                         <h3 className="text-base font-bold opacity-90 mb-1">{s.title}</h3>
-                        <p className="text-sm opacity-40 leading-relaxed">{s.desc}</p>
+                        <p className="text-sm opacity-60 leading-relaxed">{s.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -747,16 +804,16 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="relative p-8 text-center"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <svg className="w-20 h-20 mx-auto mb-4 opacity-20" viewBox="0 0 100 100">
+                  <svg className="w-20 h-20 mx-auto mb-4 opacity-60" viewBox="0 0 100 100">
                     <polygon points="50,2 93,25 93,75 50,98 7,75 7,25" fill="none" stroke="currentColor" strokeWidth="2" />
                     <polygon points="50,18 78,33 78,67 50,82 22,67 22,33" fill="none" stroke="currentColor" strokeWidth="1" />
                   </svg>
                   <p className="text-lg font-bold opacity-60 mb-1">STCERT</p>
-                  <p className="text-xs opacity-30 font-mono">SHA-256 · Ed25519 · Horodaté</p>
+                  <p className="text-xs opacity-50">Certificat d'authenticité</p>
                   <div className="mt-4 flex gap-2 justify-center">
-                    <span className="px-2 py-1 text-[10px] opacity-40" style={{ background: 'rgba(255,255,255,0.05)' }}>Signé</span>
-                    <span className="px-2 py-1 text-[10px] opacity-40" style={{ background: 'rgba(255,255,255,0.05)' }}>Vérifié</span>
-                    <span className="px-2 py-1 text-[10px] opacity-40" style={{ background: 'rgba(255,255,255,0.05)' }}>Infalsifiable</span>
+                    <span className="px-2 py-1 text-[10px] opacity-60" style={{ background: 'rgba(255,255,255,0.05)' }}>Signé</span>
+                    <span className="px-2 py-1 text-[10px] opacity-60" style={{ background: 'rgba(255,255,255,0.05)' }}>Vérifié</span>
+                    <span className="px-2 py-1 text-[10px] opacity-60" style={{ background: 'rgba(255,255,255,0.05)' }}>Permanent</span>
                   </div>
                 </TiltCard>
               </div>
@@ -769,11 +826,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="collectionner" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('forCollectors')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">{t('forCollectors')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('collectCertified')}
             </h2>
-            <p className="text-sm sm:text-base opacity-40 text-center max-w-2xl mx-auto mb-12 leading-relaxed">
+            <p className="text-sm sm:text-base opacity-60 text-center max-w-2xl mx-auto mb-12 leading-relaxed">
               {t('collectDesc')}
             </p>
           </Reveal>
@@ -790,9 +847,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-5 sm:p-6 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="block mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="block mb-3 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-2">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -816,11 +873,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="curate" className="relative py-20 sm:py-32 px-4 sm:px-8" style={{ background: 'rgba(212,175,55,0.02)' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3" style={{ color: '#d4af37' }}>{t('forCurators')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3" style={{ color: '#d4af37' }}>{t('forCurators')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('curateTitle')}
             </h2>
-            <p className="text-base opacity-40 text-center max-w-2xl mx-auto mb-12">
+            <p className="text-base opacity-60 text-center max-w-2xl mx-auto mb-12">
               {t('curateDesc')}
             </p>
           </Reveal>
@@ -836,10 +893,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-5 sm:p-6 landing-card group text-center"
                   style={{ background: 'rgba(212,175,55,0.03)', border: '1px solid rgba(212,175,55,0.1)' }}
                 >
-                  <span className="text-[10px] tracking-[0.3em] opacity-20 block mb-3">{card.step}</span>
-                  <span className="flex justify-center mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="text-[10px] tracking-[0.3em] opacity-60 block mb-3">{card.step}</span>
+                  <span className="flex justify-center mb-3 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-2">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -863,30 +920,30 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="trading" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3 flex items-center justify-center gap-2">STRNGRZ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8" /></svg></p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">MARKETPLACE</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('tradingTitle')}
             </h2>
-            <p className="text-base opacity-40 text-center max-w-2xl mx-auto mb-12">
+            <p className="text-base opacity-60 text-center max-w-2xl mx-auto mb-12">
               {t('tradingDesc')}
             </p>
           </Reveal>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Live Listings', desc: 'Real-time marketplace', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10" /></svg> },
-              { label: 'Portfolio', desc: 'Track your P&L', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg> },
-              { label: 'Rankings', desc: 'Collections & Artists', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg> },
-              { label: 'Activity', desc: 'Sales & transfers', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15" /></svg> },
+              { label: 'Ventes en direct', desc: 'Marché en temps réel', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10" /></svg> },
+              { label: 'Ma collection', desc: 'Suivez vos oeuvres', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6" /></svg> },
+              { label: 'Classements', desc: 'Artistes & Collections', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg> },
+              { label: 'Activité', desc: 'Ventes récentes', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15" /></svg> },
             ].map((item, i) => (
               <Reveal key={item.label} delay={i * 0.05}>
                 <TiltCard
                   className="p-4 text-center landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="flex justify-center mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
+                  <span className="flex justify-center mb-2 opacity-60 group-hover:opacity-70 transition-opacity">{item.icon}</span>
                   <p className="text-sm font-bold opacity-80">{item.label}</p>
-                  <p className="text-[10px] opacity-30 mt-1">{item.desc}</p>
+                  <p className="text-[10px] opacity-50 mt-1">{item.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -899,7 +956,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                 className="px-6 py-3 text-sm font-bold cursor-pointer transition-all hover:bg-white/12 active:scale-95"
                 style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
               >
-                Open Trading Floor →
+                Explorer le marché →
               </button>
             </div>
           </Reveal>
@@ -928,9 +985,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-4 text-center landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="flex justify-center mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
+                  <span className="flex justify-center mb-2 opacity-60 group-hover:opacity-70 transition-opacity">{item.icon}</span>
                   <p className="text-sm font-bold opacity-80">{item.label}</p>
-                  <p className="text-[10px] opacity-30 mt-1">{item.desc}</p>
+                  <p className="text-[10px] opacity-50 mt-1">{item.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -942,7 +999,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="protocole" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('technology')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">{t('technology')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-12">
               {t('protocolTitle')}
             </h2>
@@ -981,9 +1038,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-6 sm:p-8 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="block mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="block mb-3 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-lg font-bold opacity-90 mb-2">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -995,8 +1052,8 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section className="py-16 sm:py-24 px-4 sm:px-8">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { value: '69M', label: t('totalSupply') },
-            { value: 'φ', label: t('goldenRatio') },
+            { value: '500+', label: t('totalSupply') },
+            { value: '5%', label: t('goldenRatio') },
             { value: '7', label: t('layers') },
             { value: '∞', label: t('offlineOnline') },
           ].map((s, i) => (
@@ -1006,7 +1063,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
                 <p className="text-3xl sm:text-4xl font-bold opacity-80 group-hover:opacity-100 transition-opacity">{s.value}</p>
-                <p className="text-[11px] opacity-30 mt-2">{s.label}</p>
+                <p className="text-[11px] opacity-50 mt-2">{s.label}</p>
               </div>
             </Reveal>
           ))}
@@ -1019,7 +1076,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           <Reveal>
             <div className="text-center mb-12">
               <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-3">{t('whyNotFree')}</h2>
-              <p className="text-sm sm:text-base opacity-40">{t('whyNotFreeDesc')}</p>
+              <p className="text-sm sm:text-base opacity-60">{t('whyNotFreeDesc')}</p>
             </div>
           </Reveal>
 
@@ -1036,9 +1093,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-6 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="opacity-40 block mb-2">{card.icon}</span>
+                  <span className="opacity-60 block mb-2">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-1">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </div>
               </Reveal>
             ))}
@@ -1051,7 +1108,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <th className="text-left py-3 px-3 opacity-40 font-medium"></th>
+                    <th className="text-left py-3 px-3 opacity-60 font-medium"></th>
                     <th className="py-3 px-3 opacity-90 font-bold">{t('whyCompareStrangrz')}</th>
                     <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareEth')}</th>
                     <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareTezos')}</th>
@@ -1060,17 +1117,17 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                 </thead>
                 <tbody>
                   {[
-                    { label: t('whyMintCost'), vals: ['0 \u2B23', '2-100 $', '~0.50 $', '~0.01 $'] },
-                    { label: t('whyMinPrice'), vals: ['100 \u2B23', '0.01 ETH', '\u2014', '\u2014'] },
-                    { label: t('whyEnergy'), vals: ['~0.001 Wh', '~0.03 Wh', '~0.002 Wh', '~0.002 Wh'] },
-                    { label: t('whyCo2'), vals: ['~0 g', '~20 g', '~1 g', '~1 g'] },
+                    { label: t('whyMintCost'), vals: ['Gratuit', '2-100 \u20AC', '10-50 \u20AC', '\u2014'] },
+                    { label: t('whyMinPrice'), vals: ['10 \u20AC', '\u2014', '\u2014', '\u2014'] },
+                    { label: t('whyEnergy'), vals: ['~0.001 Wh', '~0.5 Wh', '~0.1 Wh', '~0.3 Wh'] },
+                    { label: t('whyCo2'), vals: ['\u2713', '\u2717', '\u2717', '\u2717'] },
                     { label: t('whyOnChain'), vals: ['\u2713', '\u2717', '\u2717', '\u2717'] },
-                    { label: t('whyFiat'), vals: ['\u2713', '\u2717', '\u2717', '\u2717'] },
+                    { label: t('whyFiat'), vals: ['\u2713', '\u2713', '\u2713', '\u2717'] },
                   ].map((row, i) => (
                     <tr key={row.label} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
                       <td className="py-2.5 px-3 opacity-50 font-medium">{row.label}</td>
                       {row.vals.map((v, j) => (
-                        <td key={j} className={`py-2.5 px-3 text-center ${j === 0 ? 'opacity-90 font-bold' : 'opacity-40'}`}>{v}</td>
+                        <td key={j} className={`py-2.5 px-3 text-center ${j === 0 ? 'opacity-90 font-bold' : 'opacity-60'}`}>{v}</td>
                       ))}
                     </tr>
                   ))}
@@ -1078,6 +1135,37 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               </table>
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ─── How Payment Works ─────────────────────────────── */}
+      <section className="relative py-20 sm:py-28 px-4 sm:px-8">
+        <Reveal>
+          <div className="text-center mb-12">
+            <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-3">
+              {t('howPaymentWorks')}
+            </h2>
+            <p className="text-sm sm:text-base opacity-40 max-w-xl mx-auto">
+              {t('howPaymentDesc')}
+            </p>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {[
+            { num: '1', title: t('howPayStep1'), desc: t('howPayStep1Desc'), icon: '\u20AC' },
+            { num: '2', title: t('howPayStep2'), desc: t('howPayStep2Desc'), icon: '\u2B21' },
+            { num: '3', title: t('howPayStep3'), desc: t('howPayStep3Desc'), icon: '\u2192' },
+            { num: '4', title: t('howPayStep4'), desc: t('howPayStep4Desc'), icon: '\u2B23' },
+          ].map((step) => (
+            <Reveal key={step.num}>
+              <div className="glass-panel p-5 text-center h-full">
+                <div className="text-3xl mb-3 opacity-60">{step.icon}</div>
+                <p className="text-[10px] opacity-30 mb-1">STEP {step.num}</p>
+                <h3 className="text-base font-bold mb-2 opacity-90">{step.title}</h3>
+                <p className="text-body-sm opacity-40 leading-relaxed">{step.desc}</p>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 
@@ -1091,7 +1179,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-4">
               {t('ctaTitle')}
             </h2>
-            <p className="text-sm sm:text-base opacity-40 mb-8 leading-relaxed">
+            <p className="text-sm sm:text-base opacity-60 mb-8 leading-relaxed">
               {t('ctaDesc')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1117,10 +1205,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <footer className="py-10 px-4 sm:px-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src={logoSrc} alt="Strangrz" className="w-6 h-6 opacity-40" />
-            <span className="text-xs opacity-30">{t('footer')}</span>
+            <img src={logoSrc} alt="Strangrz" className="w-6 h-6 opacity-60" />
+            <span className="text-xs opacity-50">{t('footer')}</span>
           </div>
-          <div className="flex gap-4 text-xs opacity-30">
+          <div className="flex gap-4 text-xs opacity-50">
             <button onClick={() => onNavigate('whitepaper')} className="hover:opacity-80 cursor-pointer transition-opacity">{t('whitePaper')}</button>
             <button onClick={() => onNavigate('legals')} className="hover:opacity-80 cursor-pointer transition-opacity">{t('legal')}</button>
             <button onClick={() => onNavigate('privacy')} className="hover:opacity-80 cursor-pointer transition-opacity">{t('privacy')}</button>

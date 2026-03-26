@@ -29,6 +29,14 @@ export const supabase: SupabaseClient | null =
         },
         global: {
           headers: { 'x-strangrz-client': 'webapp/2.0' },
+          // Inject wallet address header for RLS ownership checks
+          fetch: (url, options = {}) => {
+            const headers = new Headers(options.headers);
+            if (_currentAddress) {
+              headers.set('x-strangrz-address', _currentAddress);
+            }
+            return fetch(url, { ...options, headers });
+          },
         },
       })
     : null;
@@ -36,6 +44,18 @@ export const supabase: SupabaseClient | null =
 /** Returns true if Supabase backend is configured and available */
 export function isBackendAvailable(): boolean {
   return supabase !== null;
+}
+
+/**
+ * Set the wallet address header for RLS ownership checks.
+ * Must be called after wallet is loaded/unlocked.
+ */
+let _currentAddress = '';
+export function setSupabaseAddress(address: string): void {
+  _currentAddress = address;
+}
+export function getSupabaseAddress(): string {
+  return _currentAddress;
 }
 
 /** Supabase Storage bucket names */

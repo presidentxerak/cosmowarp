@@ -29,6 +29,7 @@ import { HierarchyEngine, HIERARCHY_LEVELS, type HierarchyLevel, type LevelUpRes
 import { AdminRegistry, type RegistryDashboard } from './registry';
 import { SecurityManager } from './security';
 import { StrangrzChain, type ChainStats } from './cosmochain';
+import { MeshNetwork, type MeshNetworkStatus } from './mesh-network';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -93,6 +94,7 @@ let hierarchyInstance: HierarchyEngine | null = null;
 let registryInstance: AdminRegistry | null = null;
 let securityInstance: SecurityManager | null = null;
 let strangrzChainInstance: StrangrzChain | null = null;
+let meshNetworkInstance: MeshNetwork | null = null;
 
 export function getMesh(): StrangrzMesh {
   if (!meshInstance) {
@@ -167,6 +169,41 @@ export function getStrangrzChain(): StrangrzChain {
 /** Get StrangrzChain statistics */
 export function getChainStats(): ChainStats {
   return getStrangrzChain().getStats();
+}
+
+/** Get or create the MeshNetwork instance (P2P + gossip + discovery) */
+export function getMeshNetwork(address: string): MeshNetwork {
+  if (!meshNetworkInstance) {
+    meshNetworkInstance = new MeshNetwork(getMesh(), address);
+  }
+  return meshNetworkInstance;
+}
+
+/** Start the mesh network (P2P + signaling + discovery + gossip) */
+export function startMeshNetwork(address: string): MeshNetwork {
+  const network = getMeshNetwork(address);
+  if (!network.isRunning) {
+    network.start({
+      onTransactionReceived: () => {
+        // Save mesh when remote TX is received
+        saveMesh();
+      },
+    });
+  }
+  return network;
+}
+
+/** Stop the mesh network */
+export function stopMeshNetwork(): void {
+  if (meshNetworkInstance) {
+    meshNetworkInstance.stop();
+    meshNetworkInstance = null;
+  }
+}
+
+/** Get mesh network status */
+export function getMeshNetworkStatus(): MeshNetworkStatus | null {
+  return meshNetworkInstance?.getStatus() ?? null;
 }
 
 function saveMesh(): void {
@@ -541,6 +578,11 @@ export async function loginStrangrzID(
     if (existing.address === keyPair.address) {
       // Same wallet — just unlock it
       existing.privateKey = keyPair.privateKey;
+      // Ensure alias is set from username (cross-device: old wallet may lack alias)
+      if (!existing.alias || existing.alias === existing.address.slice(0, 10)) {
+        existing.alias = username.trim();
+        saveWallet(existing);
+      }
       enrichWalletWithHierarchy(existing);
       return existing;
     }
@@ -753,6 +795,9 @@ export async function sendWarps(
     // Run consensus
     await consensus.startRound(meshTx);
 
+    // Gossip the transaction to P2P mesh network
+    mesh.gossipTransaction(meshTx);
+
     // Record activity for streaks
     tokenomics.recordActivity(wallet.address);
 
@@ -797,7 +842,6 @@ export async function sendWarps(
 
     // Process level-up bonus if applicable
     if (levelUp) {
-      wallet.balance += levelUp.airdropBonus;
       const levelUpTx: Transaction = {
         id: genId(),
         from: 'COSMO_HIERARCHY',
@@ -808,7 +852,9 @@ export async function sendWarps(
         type: 'level_up',
         memo: `Level up! ${HIERARCHY_LEVELS[levelUp.oldLevel].name} \u2192 ${levelUp.levelDef.name}: ${levelUp.levelDef.title}`,
       };
+      // Record transaction BEFORE updating balance for consistency
       wallet.transactions.unshift(levelUpTx);
+      wallet.balance += levelUp.airdropBonus;
       addGlobalTx(levelUpTx);
       saveWallet(wallet);
 
@@ -905,7 +951,6 @@ export async function mineWarps(
 
   // Process level-up
   if (levelUp) {
-    wallet.balance += levelUp.airdropBonus;
     const levelUpTx: Transaction = {
       id: genId(),
       from: 'COSMO_HIERARCHY',
@@ -916,7 +961,9 @@ export async function mineWarps(
       type: 'level_up',
       memo: `Level up! ${HIERARCHY_LEVELS[levelUp.oldLevel].name} \u2192 ${levelUp.levelDef.name}: ${levelUp.levelDef.title}`,
     };
+    // Record transaction BEFORE updating balance for consistency
     wallet.transactions.unshift(levelUpTx);
+    wallet.balance += levelUp.airdropBonus;
     addGlobalTx(levelUpTx);
     saveWallet(wallet);
   }

@@ -238,7 +238,7 @@ export default function PFPCollectionView() {
                   {col.items.length > 0 ? (
                     <img src={col.items[0].compositeImage} alt="" className="w-20 h-20 object-cover" />
                   ) : (
-                    <div className="w-20 h-20 bg-current/5 flex items-center justify-center text-4xl opacity-30">
+                    <div className="w-20 h-20 bg-current/5 flex items-center justify-center text-4xl opacity-50">
                       {'\u2B21'}
                     </div>
                   )}
@@ -296,7 +296,7 @@ export default function PFPCollectionView() {
                     className={`p-3 text-center transition-all cursor-pointer ${
                       mintChain === ch.id
                         ? 'bg-current/10 border border-current/20 opacity-90'
-                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                        : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
                     }`}
                   >
                     <div className="text-base mb-1">{ch.icon}</div>
@@ -305,7 +305,7 @@ export default function PFPCollectionView() {
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] opacity-30 mt-1.5">
+              <p className="text-[10px] opacity-50 mt-1.5">
                 {mintChain === 'strangrz'
                   ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Strangrz Safe inclus.'
                   : 'Mint sur Ethereum via ERC-721. N\u00E9cessite MetaMask. Gas fees requis.'}
@@ -336,7 +336,7 @@ export default function PFPCollectionView() {
             {col.items.length > 0 ? (
               <img src={col.items[col.items.length - 1].compositeImage} alt="" className="w-24 h-24 object-cover" />
             ) : (
-              <div className="w-24 h-24 bg-current/5 flex items-center justify-center text-5xl opacity-20">{'\u2B21'}</div>
+              <div className="w-24 h-24 bg-current/5 flex items-center justify-center text-5xl opacity-40">{'\u2B21'}</div>
             )}
             <div>
               <h3 className="text-title-lg font-bold font-title">{col.name}</h3>
@@ -347,7 +347,7 @@ export default function PFPCollectionView() {
                 <span>{col.items.length}/{col.maxSupply} minted</span>
                 {col.basePrice !== null && <span>{col.basePrice} {'\u2B23'}</span>}
               </div>
-              <p className="text-label opacity-30 mt-1 font-mono">ID: {col.fingerprint}</p>
+              <p className="text-label opacity-50 mt-1 font-mono">ID: {col.fingerprint}</p>
             </div>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function PFPCollectionView() {
               key={s}
               onClick={() => setStep(s)}
               className={`flex-1 px-4 py-3 text-base font-medium cursor-pointer border-b-2 transition-all ${
-                step === s ? 'border-current opacity-100' : 'border-transparent opacity-40 hover:opacity-70'
+                step === s ? 'border-current opacity-100' : 'border-transparent opacity-60 hover:opacity-70'
               }`}
             >
               {s === 'edit' ? 'Layers & Traits' : s === 'rarity' ? 'Rarity' : s === 'mint' ? 'Mint' : `Gallery (${col.items.length})`}
@@ -384,13 +384,13 @@ export default function PFPCollectionView() {
             </div>
 
             {col.layers.length > 0 && (
-              <p className="text-body-sm opacity-40">Layers render bottom to top. Drag to reorder.</p>
+              <p className="text-body-sm opacity-60">Layers render bottom to top. Drag to reorder.</p>
             )}
 
             {col.layers.length === 0 ? (
               <div className="glass-panel p-10 text-center">
                 <p className="text-title-sm font-bold opacity-60 mb-2">Add layers to define your PFP structure</p>
-                <p className="text-base opacity-40">Layers are stacked: Background {'\u2192'} Body {'\u2192'} Eyes {'\u2192'} Mouth {'\u2192'} Accessories</p>
+                <p className="text-base opacity-60">Layers are stacked: Background {'\u2192'} Body {'\u2192'} Eyes {'\u2192'} Mouth {'\u2192'} Accessories</p>
               </div>
             ) : (
               col.layers.map((layer, idx) => (
@@ -417,10 +417,10 @@ export default function PFPCollectionView() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-label opacity-30 w-6 cursor-grab">{'\u2630'}</span>
-                      <span className="text-label opacity-40">{idx + 1}.</span>
+                      <span className="text-label opacity-50 w-6 cursor-grab">{'\u2630'}</span>
+                      <span className="text-label opacity-60">{idx + 1}.</span>
                       <h4 className="text-title-sm font-bold">{layer.name}</h4>
-                      <span className="text-body-sm opacity-40">({layer.variants.length} variants)</span>
+                      <span className="text-body-sm opacity-60">({layer.variants.length} variants)</span>
                     </div>
                     <div className="flex gap-3 items-center">
                       <button
@@ -438,7 +438,7 @@ export default function PFPCollectionView() {
                       >
                         + Add variant
                       </button>
-                      <button onClick={() => handleRemoveLayer(layer.id)} className="text-body-sm opacity-30 hover:opacity-70 cursor-pointer transition-opacity">
+                      <button onClick={() => handleRemoveLayer(layer.id)} className="text-body-sm opacity-50 hover:opacity-70 cursor-pointer transition-opacity">
                         Remove
                       </button>
                       {bulkProgress && (
@@ -453,7 +453,7 @@ export default function PFPCollectionView() {
                         <div key={v.id} className="group relative card p-2">
                           <img src={v.imageData} alt={v.name} className="w-full aspect-square object-cover" style={{ imageRendering: 'pixelated' }} />
                           <p className="text-label truncate mt-1">{v.name}</p>
-                          <p className="text-label opacity-40">{v.rarity}%</p>
+                          <p className="text-label opacity-60">{v.rarity}%</p>
                           <button
                             onClick={() => handleRemoveVariant(layer.id, v.id)}
                             className="absolute -top-1 -right-1 w-5 h-5 bg-current/20 text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
@@ -536,7 +536,7 @@ export default function PFPCollectionView() {
                   <div key={layer.id} className="glass-panel p-6">
                     <h4 className="text-title-sm font-bold mb-4">{layer.name}</h4>
                     {layer.variants.length === 0 ? (
-                      <p className="text-base opacity-40">No variants yet</p>
+                      <p className="text-base opacity-60">No variants yet</p>
                     ) : (
                       <div className="space-y-3">
                         {dist.map(v => (
@@ -594,7 +594,7 @@ export default function PFPCollectionView() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="text-label opacity-40 block mb-2">MINT COUNT (1-50)</label>
+                  <label className="text-label opacity-60 block mb-2">MINT COUNT (1-50)</label>
                   <input
                     className="warp-input text-center text-title-sm"
                     type="number"
@@ -628,7 +628,7 @@ export default function PFPCollectionView() {
 
             {(previewImage || col.items.length > 0) && (
               <div className="mt-6">
-                <p className="text-label opacity-40 mb-3">{previewImage ? 'Preview:' : 'Last minted:'}</p>
+                <p className="text-label opacity-60 mb-3">{previewImage ? 'Preview:' : 'Last minted:'}</p>
                 <div className="inline-block">
                   <img
                     src={previewImage || col.items[col.items.length - 1].compositeImage}
@@ -639,7 +639,7 @@ export default function PFPCollectionView() {
                   {!previewImage && col.items.length > 0 && (
                     <>
                       <p className="text-base mt-2">PFP #{col.items[col.items.length - 1].tokenIndex}</p>
-                      <p className="text-label opacity-30 font-mono">sig: {col.items[col.items.length - 1].signature}</p>
+                      <p className="text-label opacity-50 font-mono">sig: {col.items[col.items.length - 1].signature}</p>
                     </>
                   )}
                 </div>
@@ -661,12 +661,12 @@ export default function PFPCollectionView() {
                 <div key={item.id} className="card p-3">
                   <img src={item.compositeImage} alt="" className="w-full aspect-square object-cover" style={{ imageRendering: 'pixelated' }} />
                   <p className="text-body-sm mt-2 text-center font-medium">#{item.tokenIndex}</p>
-                  <div className="text-label opacity-40 space-y-0.5 mt-1">
+                  <div className="text-label opacity-60 space-y-0.5 mt-1">
                     {item.traits.map((t, i) => (
                       <p key={i} className="truncate">{t.layerName}: {t.variantName}</p>
                     ))}
                   </div>
-                  <p className="text-label opacity-20 font-mono mt-1 truncate">sig: {item.signature}</p>
+                  <p className="text-label opacity-40 font-mono mt-1 truncate">sig: {item.signature}</p>
                 </div>
               ))}
             </div>

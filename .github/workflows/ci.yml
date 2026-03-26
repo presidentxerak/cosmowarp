@@ -1,0 +1,117 @@
+name: CI — Lint, Type-check, Test, Build
+
+on:
+  push:
+    branches: ['main', 'develop', 'claude/*']
+  pull_request:
+    branches: ['main', 'develop']
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Protocol Tests (root /src) ───────────────────────────
+  protocol-tests:
+    name: Protocol Tests (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Run protocol tests
+        run: npm test -- --ci --coverage
+
+  # ─── Webapp CI ────────────────────────────────────────────
+  webapp:
+    name: Webapp — Lint, Type-check, Test, Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webapp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npx tsc -b --noEmit
+
+      - name: Test
+        run: npm test -- --run --reporter=verbose
+
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle size (500KB main chunk budget)
+        run: |
+          MAX_MAIN_KB=500
+          MAX_TOTAL_KB=2048
+          MAIN_CHUNK=$(find dist/assets -name 'index-*.js' -type f | head -1)
+          if [ -n "$MAIN_CHUNK" ]; then
+            SIZE_KB=$(du -k "$MAIN_CHUNK" | cut -f1)
+            echo "Main chunk: ${SIZE_KB}KB (budget: ${MAX_MAIN_KB}KB)"
+            if [ "$SIZE_KB" -gt "$MAX_MAIN_KB" ]; then
+              echo "::warning::Main chunk (${SIZE_KB}KB) exceeds ${MAX_MAIN_KB}KB budget"
+            fi
+          fi
+          TOTAL_KB=$(du -sk dist/assets/ | cut -f1)
+          echo "Total assets: ${TOTAL_KB}KB (budget: ${MAX_TOTAL_KB}KB)"
+          if [ "$TOTAL_KB" -gt "$MAX_TOTAL_KB" ]; then
+            echo "::warning::Total assets (${TOTAL_KB}KB) exceed ${MAX_TOTAL_KB}KB budget"
+          fi
+
+  # ─── API Type-check ──────────────────────────────────────
+  api:
+    name: API — Type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Type-check API functions
+        run: npx tsc --noEmit --strict --esModuleInterop --resolveJsonModule --skipLibCheck api/**/*.ts
+
+  # ─── Security: Dependency Audit ──────────────────────────
+  security-audit:
+    name: Security — npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Audit root dependencies
+        run: npm audit --audit-level=high || true
+
+      - name: Audit webapp dependencies
+        run: cd webapp && npm ci && npm audit --audit-level=high || true
+        # Using || true to not fail the build on moderate vulnerabilities
+        # Set to strict (remove || true) once all deps are updated

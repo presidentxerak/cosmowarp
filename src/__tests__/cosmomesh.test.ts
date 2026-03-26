@@ -18,7 +18,7 @@ const storage = new Map<string, string>();
 // Import after mocking
 import { sha256, doubleSha256, generateKeyPair, signTransaction, verifySignature, isValidAddress, randomHex, computeTxId } from '../../webapp/src/engine/crypto';
 import { MerkleDAG } from '../../webapp/src/engine/merkle';
-import { CosmoMesh, MeshLayer, assignLayer, LAYER_NAMES } from '../../webapp/src/engine/cosmomesh';
+import { StrangrzMesh as CosmoMesh, MeshLayer, assignLayer, LAYER_NAMES } from '../../webapp/src/engine/strangrmesh';
 import { ResonanceConsensus } from '../../webapp/src/engine/consensus';
 
 // ─── SHA-256 Hashing ─────────────────────────────────────
@@ -309,7 +309,7 @@ describe('CosmoMesh', () => {
     });
 
     expect(validation.valid).toBe(false);
-    expect(validation.errors.some(e => e.includes('Insufficient'))).toBe(true);
+    expect(validation.errors.some((e: string) => e.includes('Insufficient'))).toBe(true);
   });
 
   test('tracks mesh statistics', async () => {

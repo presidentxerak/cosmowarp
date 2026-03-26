@@ -1,6 +1,19 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { initSentry } from './lib/sentry'
+import { initInstallPrompt, observeWebVitals } from './lib/pwa'
+
+// ─── Initialize error reporting ──────────────────────────
+initSentry();
+
+// ─── Initialize PWA install prompt + Web Vitals ──────────
+initInstallPrompt();
+observeWebVitals((vitals) => {
+  if (import.meta.env.DEV) {
+    console.info('[WebVitals]', vitals);
+  }
+});
 
 // ─── Migrate old cosmorare_* storage keys to strangrz_* ─────
 // The rebrand changed all localStorage keys, orphaning existing data.
@@ -26,20 +39,20 @@ for (const [oldKey, newKey] of Object.entries(MIGRATION_MAP)) {
   }
 }
 
-// Cap existing wallets that had the old 1,000,000 admin bonus to 1,000
+// Cap existing wallets that had the old 1,000,000 admin bonus to 300
 const walletKey = 'strangrz_wallet';
 const walletRaw = localStorage.getItem(walletKey);
 if (walletRaw) {
   try {
     const w = JSON.parse(walletRaw);
     if (w.balance >= 1_000_000) {
-      w.balance = 1_000;
+      w.balance = 300;
       // Remove the admin grant transaction and fix airdrop amount
       if (Array.isArray(w.transactions)) {
         w.transactions = w.transactions.filter((tx: { type?: string }) => tx && tx.type !== 'genesis');
         w.transactions = w.transactions.map((tx: { type?: string; amount?: number }) => {
-          if (tx.type === 'airdrop' && tx.amount && tx.amount > 1_000) {
-            return { ...tx, amount: 1_000 };
+          if (tx.type === 'airdrop' && tx.amount && tx.amount > 300) {
+            return { ...tx, amount: 300 };
           }
           return tx;
         });
@@ -50,49 +63,51 @@ if (walletRaw) {
 }
 
 // Migrate IndexedDB: cosmorare_media → strangrz_media
-if (typeof indexedDB !== 'undefined') {
-  const oldDbReq = indexedDB.open('cosmorare_media', 1);
-  oldDbReq.onerror = () => { /* Old DB doesn't exist — nothing to migrate */ };
-  oldDbReq.onsuccess = () => {
-    const oldDb = oldDbReq.result;
-    try {
-      const tx = oldDb.transaction('media', 'readonly');
-      const store = tx.objectStore('media');
-      const getAll = store.getAll();
-      const getAllKeys = store.getAllKeys();
-      getAll.onerror = () => { oldDb.close(); };
-      getAllKeys.onerror = () => { oldDb.close(); };
-      getAll.onsuccess = () => {
-        getAllKeys.onsuccess = () => {
-          if (getAll.result.length === 0 || getAllKeys.result.length === 0) { oldDb.close(); return; }
-          const newDbReq = indexedDB.open('strangrz_media', 1);
-          newDbReq.onerror = () => { oldDb.close(); };
-          newDbReq.onupgradeneeded = () => {
-            const db = newDbReq.result;
-            if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
-          };
-          newDbReq.onsuccess = () => {
-            const newDb = newDbReq.result;
-            const writeTx = newDb.transaction('media', 'readwrite');
-            const writeStore = writeTx.objectStore('media');
-            for (let i = 0; i < getAll.result.length; i++) {
-              writeStore.put(getAll.result[i], getAllKeys.result[i]);
-            }
-            writeTx.oncomplete = () => {
-              newDb.close();
-              oldDb.close();
-              indexedDB.deleteDatabase('cosmorare_media');
+// Wrapped in try/catch for Safari Private Browsing where IndexedDB can throw
+try {
+  if (typeof indexedDB !== 'undefined') {
+    const oldDbReq = indexedDB.open('cosmorare_media', 1);
+    oldDbReq.onerror = () => { /* Old DB doesn't exist — nothing to migrate */ };
+    oldDbReq.onsuccess = () => {
+      const oldDb = oldDbReq.result;
+      try {
+        const tx = oldDb.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const getAll = store.getAll();
+        const getAllKeys = store.getAllKeys();
+        getAll.onerror = () => { oldDb.close(); };
+        getAllKeys.onerror = () => { oldDb.close(); };
+        getAll.onsuccess = () => {
+          getAllKeys.onsuccess = () => {
+            if (getAll.result.length === 0 || getAllKeys.result.length === 0) { oldDb.close(); return; }
+            const newDbReq = indexedDB.open('strangrz_media', 1);
+            newDbReq.onerror = () => { oldDb.close(); };
+            newDbReq.onupgradeneeded = () => {
+              const db = newDbReq.result;
+              if (!db.objectStoreNames.contains('media')) db.createObjectStore('media');
             };
-            writeTx.onerror = () => { newDb.close(); oldDb.close(); };
+            newDbReq.onsuccess = () => {
+              const newDb = newDbReq.result;
+              const writeTx = newDb.transaction('media', 'readwrite');
+              const writeStore = writeTx.objectStore('media');
+              for (let i = 0; i < getAll.result.length; i++) {
+                writeStore.put(getAll.result[i], getAllKeys.result[i]);
+              }
+              writeTx.oncomplete = () => {
+                newDb.close();
+                oldDb.close();
+                indexedDB.deleteDatabase('cosmorare_media');
+              };
+              writeTx.onerror = () => { newDb.close(); oldDb.close(); };
+            };
           };
         };
-      };
-    } catch {
-      oldDb.close();
-    }
-  };
-  oldDbReq.onerror = () => {};
-}
+      } catch {
+        oldDb.close();
+      }
+    };
+  }
+} catch { /* IndexedDB unavailable (Safari Private Browsing) */ }
 
 createRoot(document.getElementById('root')!).render(<App />)
 
@@ -116,12 +131,20 @@ if ('serviceWorker' in navigator) {
                 'background:#111111;border:1px solid rgba(255,255,255,0.15);padding:12px 20px;' +
                 'color:#cccccc;font-size:13px;font-family:Inter,sans-serif;display:flex;gap:12px;align-items:center;'
               );
-              banner.innerHTML = '<span>\u2B21 Strangrz update available</span>' +
-                '<button style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);' +
-                'color:#ffffff;padding:4px 12px;cursor:pointer;font-size:12px" ' +
-                'onclick="window.location.reload()">Reload</button>' +
-                '<button style="background:none;border:none;color:#666666;cursor:pointer;font-size:14px" ' +
-                'onclick="this.parentElement.remove()">\u2715</button>';
+              const label = document.createElement('span');
+              label.textContent = '\u2B21 Strangrz update available';
+              const reloadBtn = document.createElement('button');
+              reloadBtn.textContent = 'Reload';
+              reloadBtn.setAttribute('style',
+                'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);' +
+                'color:#ffffff;padding:4px 12px;cursor:pointer;font-size:12px');
+              reloadBtn.addEventListener('click', () => window.location.reload());
+              const closeBtn = document.createElement('button');
+              closeBtn.textContent = '\u2715';
+              closeBtn.setAttribute('style',
+                'background:none;border:none;color:#666666;cursor:pointer;font-size:14px');
+              closeBtn.addEventListener('click', () => banner.remove());
+              banner.append(label, reloadBtn, closeBtn);
               document.body.appendChild(banner);
             }
           });

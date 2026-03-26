@@ -132,21 +132,21 @@ export default function VaultView() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           <div className="p-4 bg-current/5 text-center card">
             <p className="text-title-md font-bold">{stats?.totalArtworks || 0}</p>
-            <p className="text-label opacity-40">ARTWORKS</p>
+            <p className="text-label opacity-60">ARTWORKS</p>
           </div>
           <div className="p-4 bg-current/5 text-center card">
             <p className="text-title-md font-bold">{stats?.hybridBackups || 0}</p>
-            <p className="text-label opacity-40">HYBRID</p>
+            <p className="text-label opacity-60">HYBRID</p>
           </div>
           <div className="p-4 bg-current/5 text-center card">
             <p className="text-title-md font-bold">{stats?.localBackups || 0}</p>
-            <p className="text-label opacity-40">LOCAL</p>
+            <p className="text-label opacity-60">LOCAL</p>
           </div>
           <div className="p-4 bg-current/5 text-center card">
             <p className="text-title-md font-bold">
               {stats ? (stats.totalSizeBytes / 1024).toFixed(0) : 0} KB
             </p>
-            <p className="text-label opacity-40">TOTAL SIZE</p>
+            <p className="text-label opacity-60">TOTAL SIZE</p>
           </div>
         </div>
 
@@ -242,7 +242,7 @@ export default function VaultView() {
         <h3 className="text-title-sm font-bold mb-4">Your Collection ({myCollection.length})</h3>
 
         {myCollection.length === 0 ? (
-          <p className="text-base opacity-40 text-center py-6">No artworks yet. Create one in the Marketplace.</p>
+          <p className="text-base opacity-60 text-center py-6">No artworks yet. Create one in the Marketplace.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {myCollection.map(wart => (

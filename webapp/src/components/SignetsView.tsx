@@ -48,11 +48,11 @@ export default function SignetsView() {
     return (
       <div className="flex items-center justify-center h-[calc(100dvh-120px)]">
         <div className="text-center px-6">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto opacity-30 mb-3">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto opacity-50 mb-3">
             <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
           </svg>
           <p className="opacity-50 text-base">Unlock your wallet to view signets</p>
-          <p className="opacity-30 text-body-sm mt-1">Your saved posts and bookmarks</p>
+          <p className="opacity-50 text-body-sm mt-1">Your saved posts and bookmarks</p>
         </div>
       </div>
     );
@@ -64,23 +64,23 @@ export default function SignetsView() {
     <div className="space-y-3 pb-4">
       <div className="flex items-center justify-between px-1 pt-2">
         <h2 className="text-title-sm font-bold opacity-100 font-title">Signets</h2>
-        <span className="text-body-sm opacity-40">{totalCount} saved</span>
+        <span className="text-body-sm opacity-60">{totalCount} saved</span>
       </div>
 
       {totalCount === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-30 mb-3">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-50 mb-3">
             <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
           </svg>
           <p className="opacity-50 text-base">No signets yet</p>
-          <p className="opacity-30 text-body-sm mt-1">Bookmark posts from the Wall or artworks from the Gallery</p>
+          <p className="opacity-50 text-body-sm mt-1">Bookmark posts from the Wall or artworks from the Gallery</p>
         </div>
       ) : (
         <div className="space-y-2">
           {/* Bookmarked Warts */}
           {bookmarkedWarts.length > 0 && (
             <>
-              <p className="text-label opacity-40 px-1">{'\u2B22'} Artworks ({bookmarkedWarts.length})</p>
+              <p className="text-label opacity-60 px-1">{'\u2B22'} Artworks ({bookmarkedWarts.length})</p>
               {bookmarkedWarts.map((wart: Wart) => (
                 <div key={wart.id} className="glass-panel p-3 cursor-pointer hover:border-current/10 transition-all" onClick={() => navigateToWart(wart.id)}>
                   <div className="flex items-start gap-3">
@@ -92,7 +92,7 @@ export default function SignetsView() {
                       <div className="flex items-center gap-2">
                         <span className="text-body-sm opacity-50">by {shortAddress(wart.creator)}</span>
                       </div>
-                      {wart.description && <p className="text-body-sm opacity-40 mt-1 line-clamp-2">{wart.description}</p>}
+                      {wart.description && <p className="text-body-sm opacity-60 mt-1 line-clamp-2">{wart.description}</p>}
                     </div>
                     <button
                       onClick={e => { e.stopPropagation(); handleRemoveWart(wart.id); }}
@@ -112,7 +112,7 @@ export default function SignetsView() {
           {/* Bookmarked Posts */}
           {bookmarks.length > 0 && (
             <>
-              {bookmarkedWarts.length > 0 && <p className="text-label opacity-40 px-1 mt-2">Wall Posts ({bookmarks.length})</p>}
+              {bookmarkedWarts.length > 0 && <p className="text-label opacity-60 px-1 mt-2">Wall Posts ({bookmarks.length})</p>}
               {bookmarks.map(post => (
                 <div key={post.id} className="glass-panel p-3 cursor-pointer hover:border-current/10 transition-all" onClick={() => navigateToPost(post.id)}>
                   <div className="flex items-start gap-3">
@@ -122,7 +122,7 @@ export default function SignetsView() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-body-sm font-medium opacity-90">{shortAddress(post.author)}</span>
-                        <span className="text-label opacity-30">
+                        <span className="text-label opacity-50">
                           {new Date(post.timestamp).toLocaleDateString()}
                         </span>
                       </div>

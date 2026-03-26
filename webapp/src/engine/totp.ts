@@ -4,6 +4,12 @@
  * Implements RFC 6238 TOTP using Web Crypto API (no dependencies).
  * Uses HMAC-SHA1 with 6-digit codes, 30-second time steps.
  *
+ * Storage strategy (write-through):
+ *   - localStorage = fast local cache
+ *   - Supabase = persistent cloud storage (source of truth)
+ *   - Writes go to BOTH localStorage and Supabase
+ *   - On login, pull from Supabase into localStorage
+ *
  * Flow:
  *   1. User enables 2FA → generateSecret() → display QR URI
  *   2. User scans QR with authenticator app (Google Auth, Authy, etc.)
@@ -12,6 +18,7 @@
  */
 
 import { storage } from './storage';
+import { upsertTOTPConfig, fetchTOTPConfig, deleteTOTPConfig } from '../lib/supabase-db';
 
 // ─── Constants ────────────────────────────────────────────
 
@@ -191,7 +198,7 @@ export function generateTOTPUri(secret: string, username: string): string {
   return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=${DIGITS}&period=${PERIOD}`;
 }
 
-// ─── Storage (per-address) ────────────────────────────────
+// ─── Local Storage (per-address, fast cache) ──────────────
 
 function loadAllConfigs(): Record<string, TOTPConfig> {
   const raw = storage.getItem(TOTP_STORAGE_KEY);
@@ -204,7 +211,7 @@ function saveAllConfigs(configs: Record<string, TOTPConfig>): void {
 }
 
 /**
- * Get 2FA config for an address (null if not set up).
+ * Get 2FA config for an address from local cache (null if not set up).
  */
 export function getTOTPConfig(address: string): TOTPConfig | null {
   const configs = loadAllConfigs();
@@ -212,7 +219,7 @@ export function getTOTPConfig(address: string): TOTPConfig | null {
 }
 
 /**
- * Check if 2FA is enabled for an address.
+ * Check if 2FA is enabled for an address (sync, reads local cache).
  */
 export function is2FAEnabled(address: string): boolean {
   const config = getTOTPConfig(address);
@@ -220,22 +227,58 @@ export function is2FAEnabled(address: string): boolean {
 }
 
 /**
- * Save a TOTP config (called after setup or modification).
+ * Save a TOTP config to local cache AND Supabase (write-through).
  */
 export function saveTOTPConfig(address: string, config: TOTPConfig): void {
+  // Write to local cache immediately
   const configs = loadAllConfigs();
   configs[address] = config;
   saveAllConfigs(configs);
+
+  // Write-through to Supabase (fire-and-forget, non-blocking)
+  upsertTOTPConfig(address, config).catch(err => {
+    console.error('[TOTP] Supabase sync failed:', err);
+  });
 }
 
 /**
- * Remove 2FA for an address (disable).
+ * Remove 2FA config from local cache AND Supabase.
  */
 export function removeTOTPConfig(address: string): void {
+  // Remove from local cache
   const configs = loadAllConfigs();
   delete configs[address];
   saveAllConfigs(configs);
+
+  // Remove from Supabase (fire-and-forget)
+  deleteTOTPConfig(address).catch(err => {
+    console.error('[TOTP] Supabase delete failed:', err);
+  });
 }
+
+/**
+ * Pull 2FA config from Supabase and cache locally.
+ * Called on login to ensure cross-device persistence.
+ * Also handles migration: if config exists locally but not in cloud, push it up.
+ */
+export async function pull2FAConfig(address: string): Promise<void> {
+  const cloudConfig = await fetchTOTPConfig(address);
+  const localConfig = getTOTPConfig(address);
+
+  if (cloudConfig) {
+    // Cloud has config → cache it locally (cloud is source of truth)
+    const configs = loadAllConfigs();
+    configs[address] = cloudConfig;
+    saveAllConfigs(configs);
+  } else if (localConfig && localConfig.enabled) {
+    // Local has config but cloud doesn't → migrate to cloud
+    await upsertTOTPConfig(address, localConfig).catch(err => {
+      console.error('[TOTP] Migration to cloud failed:', err);
+    });
+  }
+}
+
+// ─── 2FA Management ───────────────────────────────────────
 
 /**
  * Setup 2FA: generates secret and backup codes, returns them for display.

@@ -1,14 +1,17 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { useWallet } from '../context/WalletContext';
 import { shortAddress } from '../engine/crypto';
-import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR } from '../engine/warts';
+import VirtualGrid from './VirtualGrid';
+import { getMediaUrl, getSrcSet, getSizes } from '../lib/media-cdn';
+import { computeRarity, RARITY_CONFIG, isExpired, formatTimeRemaining, formatDateFR, calculateBuyerTotal, BUYER_SERVICE_FEE_PERCENT } from '../engine/warts';
 import type { Wart } from '../engine/warts';
-import { getCurrencySymbol, type FiatCurrency } from '../engine/fiatgateway';
+import { getCurrencySymbol, FiatGateway, type FiatCurrency } from '../engine/fiatgateway';
 import { generatePhygitalCert, verifyCert, generatePrintableSVG, generateSignaturePDF, type PhygitalCertificate } from '../engine/phygital';
 import { SocialEngine } from '../engine/social';
-import { CosmoChatEngine } from '../engine/cosmochat';
 import { getStrangrzEngine } from '../engine/vobjct';
 import HexAvatar from './HexAvatar';
+import { copyToClipboard } from '../lib/clipboard';
+import ShareModal from './ShareModal';
 
 import PFPCollectionView from './PFPCollectionView';
 import MusicView from './MusicView';
@@ -56,12 +59,25 @@ type GalleryTab = 'all' | 'art' | 'video' | 'music' | 'cards' | 'rwa' | 'phygita
 type EditionFilter = 'all' | 'unique' | 'collection' | 'limited';
 type SalesMarketFilter = '1st' | '2nd';
 
+/** Compute EUR price for any wart — uses explicit priceFiat or auto-converts from STZ */
+const _fiatGateway = new FiatGateway();
+function getEurPrice(wart: Wart): number {
+  if (wart.priceFiat && wart.fiatCurrency) return wart.priceFiat;
+  if (wart.price != null) return _fiatGateway.warpsToFiat(wart.price, 'EUR');
+  return 0;
+}
+function getEurSymbol(wart: Wart): string {
+  return getCurrencySymbol(wart.fiatCurrency || 'EUR');
+}
+
+
 export default function MarketplaceView() {
   const {
-    wallet, unlocked, marketplace, myCollection, myCreated,
-    mintWart, buyWart, listWart, delistWart, transferWart, send,
+    wallet, unlocked, warts: allWartsRaw, marketplace, myCollection, myCreated,
+    mintWart, delistWart, transferWart, send,
     deleteWart, editWart, addWartComment, toggleWartLike, toggleWartBookmark, verifyWartCertificate, refreshWarts,
-    listWartFiat, buyWartFiat, getWartFiatPrice,
+    listWartFiat, buyWartFiat,
+    lazyListings, createLazyListing, buyLazyMint, cancelLazyListing,
   } = useWallet();
 
   const [tab, setTab] = useState<GalleryTab>(() => {
@@ -83,16 +99,25 @@ export default function MarketplaceView() {
       }
     };
     window.addEventListener('storage', handleStorage);
-    // Also poll for same-window sessionStorage changes
-    const interval = setInterval(() => {
-      const stored = sessionStorage.getItem('strangrz_gallery_tab');
-      if (stored) {
-        sessionStorage.removeItem('strangrz_gallery_tab');
-        setTab(stored as GalleryTab);
-      }
-    }, 200);
-    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
+    // Listen for same-window custom event (avoids polling race condition)
+    const handleGalleryTab = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) setTab(detail as GalleryTab);
+    };
+    window.addEventListener('strangrz_gallery_tab', handleGalleryTab);
+    // Check once on mount for any pending tab change
+    handleStorage();
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('strangrz_gallery_tab', handleGalleryTab);
+    };
   }, []);
+
+  // Broadcast tab changes so BottomBar can highlight the correct icon
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: tab }));
+  }, [tab]);
+
   const [selectedWart, setSelectedWart] = useState<Wart | null>(null);
   const [editionFilter, setEditionFilter] = useState<EditionFilter>('all');
   const [salesMarketFilter, setSalesMarketFilter] = useState<SalesMarketFilter>('1st');
@@ -111,6 +136,13 @@ export default function MarketplaceView() {
   const [maxEditions, setMaxEditions] = useState('');
   const [durationHours, setDurationHours] = useState('');
   const [mintChain, setMintChain] = useState<'strangrz' | 'ethereum'>('strangrz');
+  const [lazyMintMode] = useState(true); // Always lazy mint
+  const [saleMode, setSaleMode] = useState<'fixed' | 'auction'>('fixed');
+  const [auctionType, setAuctionType] = useState<'no-reserve' | 'minimum' | 'reserve' | 'dutch'>('no-reserve');
+  const [auctionStartPrice, setAuctionStartPrice] = useState('');
+  const [auctionReservePrice, setAuctionReservePrice] = useState('');
+  const [auctionEndPrice, setAuctionEndPrice] = useState('');
+  const [auctionDurationHours, setAuctionDurationHours] = useState('24');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
@@ -131,9 +163,7 @@ export default function MarketplaceView() {
   const [searchQuery] = useState('');
 
   // Buy / List state
-  const [buying, setBuying] = useState(false);
   const [buyResult, setBuyResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [listPrice, setListPrice] = useState('');
   const [transferTo, setTransferTo] = useState('');
 
   // Edit state
@@ -152,8 +182,7 @@ export default function MarketplaceView() {
 
   // Fiat pricing
   const [fiatPriceInput, setFiatPriceInput] = useState('');
-  const [fiatCurrency, setFiatCurrency] = useState<FiatCurrency>('EUR');
-  const [pricingMode, setPricingMode] = useState<'crypto' | 'fiat'>('crypto');
+  const [fiatCurrency] = useState<FiatCurrency>('EUR');
   const [buyingFiat, setBuyingFiat] = useState(false);
 
   // Phygital certificate
@@ -162,17 +191,25 @@ export default function MarketplaceView() {
   const [phygitalVerifyInput, setPhygitalVerifyInput] = useState('');
   const [phygitalVerifyResult, setPhygitalVerifyResult] = useState<PhygitalCertificate | null | undefined>(undefined);
 
+  // Foundation-style detail sections
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+
   // Transfer & list state (must be before early returns to respect hooks rules)
   const [transferError, setTransferError] = useState('');
   const [shareSuccess, setShareSuccess] = useState('');
+  const [shareMenuWartId, setShareMenuWartId] = useState<string | null>(null);
   const [listSuccess, setListSuccess] = useState('');
 
-  // ─── All warts (marketplace + collections) ──────────────
+  // ─── All warts (all platform warts from cloud + local) ──────────────
   const allWarts = useMemo(() => {
-    const combined = [...marketplace, ...myCollection, ...myCreated];
+    // Use allWartsRaw (engine.getAll()) which includes cloud-synced warts from all users
+    const combined = [...allWartsRaw, ...marketplace, ...myCollection, ...myCreated];
     const unique = combined.filter((w, i, arr) => arr.findIndex(x => x.id === w.id) === i);
     return unique.filter(w => !isExpired(w));
-  }, [marketplace, myCollection, myCreated]);
+  }, [allWartsRaw, marketplace, myCollection, myCreated]);
 
   // ─── RWA filter ───────────────────────────────────────
   const rwaWarts = useMemo(() => {
@@ -247,9 +284,68 @@ export default function MarketplaceView() {
       .sort((a, b) => b.totalVolume - a.totalVolume || b.count - a.count);
   }, [allWarts]);
 
+  // ─── Featured: affordable warts for "Start Collecting" ──
+  const affordableWarts = useMemo(() => {
+    return allWarts
+      .filter(w => w.listed && w.price !== null && w.price > 0 && getEurPrice(w) <= 3 && w.imageData)
+      .sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0))
+      .slice(0, 20);
+  }, [allWarts]);
+
+  // ─── Featured: "Last Editions" — limited warts almost gone
+  const lastEditions = useMemo(() => {
+    return allWarts
+      .filter(w => {
+        if (!w.imageData) return false;
+        if (w.editionType !== 'limited' || !w.maxEditions) return false;
+        const remaining = w.maxEditions - (w.editionNumber || 1);
+        return remaining >= 0 && remaining <= 3;
+      })
+      .sort((a, b) => {
+        const remA = (a.maxEditions || 0) - (a.editionNumber || 1);
+        const remB = (b.maxEditions || 0) - (b.editionNumber || 1);
+        return remA - remB;
+      })
+      .slice(0, 20);
+  }, [allWarts]);
+
+  // ─── Featured: latest activity (Created / Collected) ────
+  const latestActivity = useMemo(() => {
+    const events: Array<{ wart: Wart; type: 'Created' | 'Collected'; address: string; ts: number }> = [];
+    allWarts.forEach(w => {
+      if (!w.imageData) return;
+      events.push({ wart: w, type: 'Created', address: w.creator, ts: w.createdAt });
+      (w.history || []).forEach(h => {
+        if (h.price > 0) {
+          events.push({ wart: w, type: 'Collected', address: h.to, ts: h.timestamp });
+        }
+      });
+    });
+    return events.sort((a, b) => b.ts - a.ts).slice(0, 30);
+  }, [allWarts]);
+
+  // ─── Featured: "Creator Spotlight" — top performing creator
+  const spotlightCreator = useMemo(() => {
+    if (topCreators.length === 0) return null;
+    const creator = topCreators[0];
+    const wartsWithImages = creator.warts.filter(w => w.imageData && (!w.mediaType || w.mediaType === 'image' || w.mediaType === 'svg'));
+    if (wartsWithImages.length === 0) return null;
+    return { ...creator, wartsWithImages };
+  }, [topCreators]);
+
+  // ─── Scroll refs for carousels ───────────────────────────
+  const affordableScrollRef = useRef<HTMLDivElement>(null);
+  const lastEditionsScrollRef = useRef<HTMLDivElement>(null);
+  const activityScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollCarousel = (ref: React.RefObject<HTMLDivElement | null>, dir: 'left' | 'right') => {
+    if (!ref.current) return;
+    ref.current.scrollBy({ left: dir === 'left' ? -300 : 300, behavior: 'smooth' });
+  };
+
   // ─── Resolve creator alias ─────────────────────────────
   const getCreatorName = (address: string): string => {
-    if (wallet && address === wallet.address) return 'you';
+    if (wallet && address === wallet?.address) return 'you';
     const social = SocialEngine.load();
     const profile = social.getProfile(address);
     return profile?.alias || shortAddress(address);
@@ -273,21 +369,22 @@ export default function MarketplaceView() {
     }
   }, [allWarts]);
 
-  if (!wallet) {
-    return (
-      <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Créez un portefeuille pour accéder à la marketplace Strangrz.</p>
-      </div>
-    );
-  }
+  // Redirect to wallet/auth view when not connected
+  const isAuth = !!(wallet && unlocked);
+  const requireAuth = () => {
+    if (isAuth) return true;
+    window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+    return false;
+  };
 
-  if (!unlocked) {
-    return (
-      <div className="glass-panel p-8 text-center max-w-md mx-auto">
-        <p className="text-base opacity-50">Déverrouillez votre portefeuille pour accéder à la marketplace Strangrz.</p>
-      </div>
-    );
-  }
+  // Redirect auth-only tabs to wallet sign-in for unauthenticated users
+  const authOnlyTabs: GalleryTab[] = ['create', 'curate', 'trading'];
+  useEffect(() => {
+    if (!isAuth && authOnlyTabs.includes(tab)) {
+      window.dispatchEvent(new CustomEvent('strangrz-navigate', { detail: 'wallet' }));
+      setTab('all');
+    }
+  }, [tab, isAuth]);
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -303,6 +400,36 @@ export default function MarketplaceView() {
     else if (['svg'].includes(ext)) mType = 'svg';
     else if (mediaType !== 'cards') mType = 'image';
 
+    // Validate video duration (max 30s) before reading full file
+    if (mType === 'video') {
+      setUploadProgress(0);
+      setUploadStatus('Vérification de la durée...');
+      const videoEl = document.createElement('video');
+      videoEl.preload = 'metadata';
+      const objectUrl = URL.createObjectURL(file);
+      videoEl.onloadedmetadata = () => {
+        URL.revokeObjectURL(objectUrl);
+        if (isFinite(videoEl.duration) && videoEl.duration > 30) {
+          setUploadStatus('');
+          setCreateError(`Vidéo trop longue (${Math.round(videoEl.duration)}s). Maximum : 30 secondes.`);
+          return;
+        }
+        // Duration OK — proceed to read
+        readFileAsDataUrl(file, mType);
+      };
+      videoEl.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        // Can't read duration — allow upload anyway
+        readFileAsDataUrl(file, mType);
+      };
+      videoEl.src = objectUrl;
+      return;
+    }
+
+    readFileAsDataUrl(file, mType);
+  };
+
+  const readFileAsDataUrl = (file: File, mType: 'image' | 'audio' | 'video' | 'svg' | 'cards') => {
     setUploadProgress(0);
     setUploadStatus(`Lecture de ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)...`);
 
@@ -335,6 +462,10 @@ export default function MarketplaceView() {
     reader.readAsDataURL(file);
   };
 
+  // State for buying lazy mint listings
+  const [buyingLazy, setBuyingLazy] = useState(false);
+  const [buyLazyResult, setBuyLazyResult] = useState<{ success: boolean; message: string } | null>(null);
+
   const handleMint = async () => {
     if (!title.trim()) { setCreateError('Title required'); return; }
     if (!imageData) { setCreateError('Image required'); return; }
@@ -352,44 +483,95 @@ export default function MarketplaceView() {
     const durH = durationHours ? parseFloat(durationHours) : null;
     if (durH !== null && durH <= 0) { setCreateError('Duration must be positive'); return; }
 
+    // ─── Minimum price validation ───
+    const minPrice = 1;
+
+    // ─── Publish Mode: creator pays NOTHING ───
+    if (lazyMintMode) {
+      if (!priceVal || priceVal < minPrice) { setCreateError(`Un prix est requis (min ${minPrice} \u20AC)`); return; }
+
+      setCreating(true);
+      setCreateError('');
+      setUploadProgress(0);
+
+      try {
+        setUploadStatus('Préparation du template...');
+        setUploadProgress(25);
+        await new Promise(r => setTimeout(r, 100));
+
+        setUploadStatus('Signature du créateur...');
+        setUploadProgress(50);
+        await new Promise(r => setTimeout(r, 100));
+
+        setUploadStatus('Publication du listing...');
+        setUploadProgress(75);
+
+        const template = await createLazyListing({
+          title, description, imageData, price: priceVal,
+          royaltyPercent: royaltyVal, editionType, maxEditions: maxEd,
+          durationHours: durH, mediaType, audioCover: audioCover || undefined,
+          mintChain,
+        });
+
+        setUploadProgress(100);
+        setUploadStatus('');
+        const fees = calculateBuyerTotal(priceVal, imageData);
+        setCreateSuccess(
+          `"${template.title}" publi\u00E9 ! ` +
+          `L'acheteur paiera ${fees.total} \u20AC (${fees.price} \u20AC + ${fees.serviceFee} \u20AC service + ${fees.storageFee} \u20AC stockage). ` +
+          `Vous recevrez ${fees.price} \u20AC \u00E0 chaque vente. ` +
+          `Un aper\u00E7u compress\u00E9 est visible dans la galerie \u2014 le m\u00E9dia HD sera upload\u00E9 automatiquement lors de la vente.`
+        );
+        setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
+        setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
+        setMediaType('image'); setAudioCover('');
+        setTimeout(() => { setCreateSuccess(''); setUploadProgress(0); }, 8000);
+      } catch (err) {
+        setCreateError(err instanceof Error ? err.message : 'Échec de la publication');
+        setUploadProgress(0);
+        setUploadStatus('');
+      } finally {
+        setCreating(false);
+      }
+      return;
+    }
+
+    // ─── Standard Mint (legacy) ───
+    if (!priceVal || priceVal < minPrice) {
+      setCreateError(`Un prix est requis (min ${minPrice} \u20AC)`);
+      return;
+    }
     setCreating(true);
     setCreateError('');
     setUploadProgress(0);
 
     try {
-      // Step 1: Fingerprinting
       setUploadStatus('Calcul de l\'empreinte SHA-256...');
       setUploadProgress(15);
-      await new Promise(r => setTimeout(r, 100)); // yield to UI
+      await new Promise(r => setTimeout(r, 100));
 
-      // Step 2: Certificate
       setUploadStatus('Génération du certificat d\'authenticité...');
       setUploadProgress(30);
       await new Promise(r => setTimeout(r, 100));
 
-      // Step 3: Signature
       setUploadStatus('Signature cryptographique Ed25519...');
       setUploadProgress(50);
       await new Promise(r => setTimeout(r, 100));
 
-      // Step 4: Mint
-      setUploadStatus(mintChain === 'ethereum'
-        ? 'Inscription ERC-721 sur Ethereum...'
-        : 'Inscription sur le protocole Strangrz...');
+      setUploadStatus('Certification en cours...');
       setUploadProgress(70);
 
       const wart = await mintWart(title, description, imageData, priceVal, royaltyVal, editionType, maxEd, durH, mediaType, audioCover || undefined, mintChain);
 
-      // Step 5: Done
       setUploadProgress(100);
       setUploadStatus('');
-      setCreateSuccess(`"${wart.title}" certifié avec succès sur ${mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (SZ-721)'} (Édition #${wart.editionNumber}) !`);
+      setCreateSuccess(`"${wart.title}" certifi\u00E9 avec succ\u00E8s (\u00C9dition #${wart.editionNumber}) ! Aper\u00E7u compress\u00E9 en ligne \u2014 m\u00E9dia HD upload\u00E9 automatiquement \u00E0 la vente.`);
       setTitle(''); setDescription(''); setImageData(''); setPrice(''); setRoyalty('5');
       setEditionType('unique'); setMaxEditions(''); setDurationHours(''); setMintChain('strangrz');
       setMediaType('image'); setAudioCover('');
       setTimeout(() => { setCreateSuccess(''); setUploadProgress(0); }, 5000);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Échec du minting');
+      setCreateError(err instanceof Error ? err.message : '\u00C9chec de la publication');
       setUploadProgress(0);
       setUploadStatus('');
     } finally {
@@ -397,29 +579,23 @@ export default function MarketplaceView() {
     }
   };
 
-  const handleBuy = async (wart: Wart) => {
-    setBuying(true);
-    setBuyResult(null);
-    const timeout = setTimeout(() => {
-      setBuying(false);
-      setBuyResult({ success: false, message: 'Request timed out — please try again' });
-    }, 30000);
+  const handleBuyLazyMint = async (templateId: string) => {
+    setBuyingLazy(true);
+    setBuyLazyResult(null);
     try {
-      const result = await buyWart(wart.id);
-      clearTimeout(timeout);
-      setBuyResult({
-        success: result.success,
-        message: result.success ? `Bought "${wart.title}"!` : result.error || 'Failed',
-      });
-      setBuying(false);
-      if (result.success) {
-        setSelectedWart(null);
-        setTimeout(() => setBuyResult(null), 3000);
+      const result = await buyLazyMint(templateId);
+      if (result.success && result.fees) {
+        setBuyLazyResult({
+          success: true,
+          message: `Achet\u00E9 pour ${result.fees.total} \u20AC (${result.fees.price} \u20AC + ${result.fees.serviceFee} \u20AC frais de service)`,
+        });
+      } else {
+        setBuyLazyResult({ success: false, message: result.error || 'Échec de l\'achat' });
       }
-    } catch {
-      clearTimeout(timeout);
-      setBuying(false);
-      setBuyResult({ success: false, message: 'Purchase failed — please try again' });
+    } catch (err) {
+      setBuyLazyResult({ success: false, message: err instanceof Error ? err.message : 'Erreur' });
+    } finally {
+      setBuyingLazy(false);
     }
   };
 
@@ -441,22 +617,14 @@ export default function MarketplaceView() {
   };
 
   const handleList = (wart: Wart) => {
-    let ok = false;
-    if (pricingMode === 'fiat') {
-      const fp = parseFloat(fiatPriceInput);
-      if (isNaN(fp) || fp <= 0) return;
-      ok = listWartFiat(wart.id, fp, fiatCurrency);
-      setFiatPriceInput('');
-    } else {
-      const p = parseFloat(listPrice);
-      if (isNaN(p) || p < 100) {
-        setListSuccess('Prix minimum : 100 \u2B23');
-        setTimeout(() => setListSuccess(''), 3000);
-        return;
-      }
-      ok = listWart(wart.id, p);
-      setListPrice('');
+    const fp = parseFloat(fiatPriceInput);
+    if (isNaN(fp) || fp < 1) {
+      setListSuccess('Prix minimum : 1 \u20AC');
+      setTimeout(() => setListSuccess(''), 3000);
+      return;
     }
+    const ok = listWartFiat(wart.id, fp, fiatCurrency);
+    setFiatPriceInput('');
     if (ok) {
       setListSuccess('Listed successfully!');
       setTimeout(() => setListSuccess(''), 3000);
@@ -480,7 +648,7 @@ export default function MarketplaceView() {
       setTransferError('Invalid address — must start with STZ');
       return;
     }
-    if (addr === wallet.address) {
+    if (addr === wallet?.address) {
       setTransferError('Cannot transfer to yourself');
       return;
     }
@@ -494,8 +662,8 @@ export default function MarketplaceView() {
     }
   };
 
-  const handleDelete = (wart: Wart) => {
-    deleteWart(wart.id);
+  const handleDelete = async (wart: Wart) => {
+    await deleteWart(wart.id);
     setSelectedWart(null);
     setConfirmDelete(false);
     setTab('all');
@@ -511,7 +679,7 @@ export default function MarketplaceView() {
 
   const handleSaveEdit = (wart: Wart) => {
     const priceVal = editPrice ? parseFloat(editPrice) : null;
-    if (priceVal !== null && (isNaN(priceVal) || priceVal <= 0)) return;
+    if (priceVal !== null && (isNaN(priceVal) || priceVal < 100)) return;
     const royaltyVal = parseFloat(editRoyalty);
     if (isNaN(royaltyVal) || royaltyVal < 0 || royaltyVal > 50) return;
 
@@ -528,7 +696,7 @@ export default function MarketplaceView() {
       description: editDescription,
       price: priceVal,
       listed: priceVal !== null,
-      royaltyPercent: wart.creator === wallet.address ? royaltyVal : wart.royaltyPercent,
+      royaltyPercent: wart.creator === wallet?.address ? royaltyVal : wart.royaltyPercent,
     });
   };
 
@@ -536,7 +704,7 @@ export default function MarketplaceView() {
     setSelectedWart(wart);
     setTab('detail');
     setBuyResult(null);
-    setListPrice('');
+    setFiatPriceInput('');
     setTransferTo('');
     setEditing(false);
     setConfirmDelete(false);
@@ -544,6 +712,7 @@ export default function MarketplaceView() {
   };
 
   const handleAddComment = (wartId: string) => {
+    if (!requireAuth()) return;
     if (!commentText.trim()) return;
     addWartComment(wartId, commentText);
     setCommentText('');
@@ -568,8 +737,8 @@ export default function MarketplaceView() {
     if (!wart.imageData) {
       return (
         <div className={`bg-current/5 flex items-center justify-center ${className}`}>
-          <span className="text-2xl opacity-30">
-            {wart.mediaType === 'video' ? '\u25B6' : wart.mediaType === 'audio' ? '\u266B' : wart.mediaType === 'cards' ? '\uD83C\uDCCF' : '\u25C8'}
+          <span className="text-2xl opacity-50">
+            {wart.mediaType === 'video' ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> : wart.mediaType === 'audio' ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> : wart.mediaType === 'cards' ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="2" width="14" height="20" rx="2"/><rect x="7" y="2" width="14" height="20" rx="2"/></svg> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="m21 15-5-5L5 21"/></svg>}
           </span>
         </div>
       );
@@ -580,7 +749,7 @@ export default function MarketplaceView() {
           {wart.audioCover ? (
             <img src={wart.audioCover} alt={wart.title} className="w-full h-auto max-h-[200px] object-cover mb-2" />
           ) : (
-            <div className="text-4xl mb-2">{'\u266B'}</div>
+            <div className="text-4xl mb-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
           )}
           <audio controls className="w-full h-8" src={audioBlobUrl} />
         </div>
@@ -589,15 +758,27 @@ export default function MarketplaceView() {
     if (wart.mediaType === 'video') {
       return (
         <video
-          controls
+          controls={className.includes('object-contain')}
           playsInline
-          preload="auto"
-          className={`w-full bg-black ${className}`}
+          muted
+          preload="metadata"
+          className={`w-full h-full object-cover bg-black ${className}`}
           src={videoBlobUrl}
         />
       );
     }
-    return <img src={wart.imageData} alt={wart.title} className={`w-full h-full object-cover ${className}`} />;
+    const imgSrc = wart.imageData.startsWith('data:') ? wart.imageData : getMediaUrl(wart.imageData);
+    const srcSet = getSrcSet(wart.imageData);
+    return (
+      <img
+        src={imgSrc}
+        srcSet={srcSet || undefined}
+        sizes={srcSet ? getSizes('grid') : undefined}
+        alt={wart.title}
+        className={`w-full h-full object-cover ${className}`}
+        loading="lazy"
+      />
+    );
   };
 
   // ─── Rarity Badge ────────────────────────────────────────
@@ -621,7 +802,7 @@ export default function MarketplaceView() {
         ) : wart.editionType === 'limited' && wart.maxEditions !== null ? (
           <span className="opacity-80">#{wart.editionNumber}/{wart.maxEditions}</span>
         ) : (
-          <span className="opacity-40">#{wart.editionNumber}</span>
+          <span className="opacity-60">#{wart.editionNumber}</span>
         )}
         {wart.availableUntil !== null && (
           expired ? (
@@ -669,58 +850,47 @@ export default function MarketplaceView() {
         <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
         <div
           className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={(e) => { e.stopPropagation(); if (wart.creator !== wallet.address) navigateToProfile(wart.creator); }}
+          onClick={(e) => { e.stopPropagation(); if (wart.creator !== wallet?.address) navigateToProfile(wart.creator); }}
         >
           <HexAvatar address={wart.creator} size={16} />
-          <p className="text-[10px] opacity-40 truncate">
-            {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
+          <p className="text-[10px] opacity-60 truncate">
+            {getCreatorName(wart.creator)}
           </p>
         </div>
         <EditionInfo wart={wart} compact />
         <div className="flex items-center justify-between mt-2">
           {wart.listed && wart.price !== null ? (
             <div>
-              <span className="text-base font-bold opacity-80">{wart.price} {'\u2B23'}</span>
-              {wart.priceFiat && wart.fiatCurrency && (
-                <span className="text-[10px] opacity-50 text-current ml-1">
-                  ({getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)})
-                </span>
-              )}
-              {!wart.priceFiat && (
-                <span className="text-[10px] opacity-40 ml-1">
-                  ({getWartFiatPrice(wart.id) || ''})
-                </span>
-              )}
+              <span className="text-base font-bold opacity-80">{getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}</span>
             </div>
           ) : (
-            <span className="text-body-sm opacity-40">Not listed</span>
+            <span className="text-body-sm opacity-60">Not listed</span>
           )}
           {wart.history.length > 0 && (
-            <span className="text-[10px] opacity-40">{wart.history.length} sales</span>
+            <span className="text-[10px] opacity-60">{wart.history.length} sales</span>
           )}
         </div>
         {/* Social bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-current/10">
           {/* Tip 1 STRNGRZ */}
           <button
-            className={`flex items-center gap-1 cursor-pointer transition-all ${wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-40 hover:opacity-80'}`}
-            onClick={e => { e.stopPropagation(); if (!wart.likes?.includes(wallet.address) && wart.creator !== wallet.address) { send(wart.creator, 1, `Tip for ${wart.title}`); } toggleWartLike(wart.id); }}
+            className={`flex items-center gap-1 cursor-pointer transition-all ${wallet?.address && wart.likes?.includes(wallet.address) ? 'opacity-90' : 'opacity-60 hover:opacity-80'}`}
+            onClick={e => { e.stopPropagation(); if (!requireAuth()) return; if (!wart.likes?.includes(wallet!.address) && wart.creator !== wallet!.address) { send(wart.creator, 1, `Tip for ${wart.title}`); } toggleWartLike(wart.id); }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length}{'\u2B23'}</span>}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={wallet?.address && wart.likes?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {(wart.likes?.length || 0) > 0 && <span className="text-[10px]">{wart.likes!.length} {'\u2764'}</span>}
           </button>
-          {/* Share to Wall */}
-          <button className="opacity-40 hover:opacity-80 cursor-pointer" title="Share to Wall" onClick={e => {
+          {/* Share */}
+          <button className="opacity-60 hover:opacity-80 cursor-pointer" title="Share" onClick={e => {
             e.stopPropagation();
-            const chatEngine = CosmoChatEngine.load();
-            const creatorName = getCreatorName(wart.creator);
-            chatEngine.createPost(wallet.address, wallet.alias || shortAddress(wallet.address), `${wart.title} by ${creatorName}`, undefined, 'image', undefined, wart.id);
+            setShareMenuWartId(wart.id);
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
           {/* Comment — go to detail + focus input */}
-          <button className="flex items-center gap-1 opacity-40 hover:opacity-80 cursor-pointer" onClick={e => {
+          <button className="flex items-center gap-1 opacity-60 hover:opacity-80 cursor-pointer" onClick={e => {
             e.stopPropagation();
+            if (!requireAuth()) return;
             openDetail(wart);
             setTimeout(() => commentInputRef.current?.focus(), 300);
           }}>
@@ -728,31 +898,22 @@ export default function MarketplaceView() {
             {wart.comments?.length > 0 && <span className="text-[10px]">{wart.comments.length}</span>}
           </button>
           {/* Bookmark */}
-          <button className={`cursor-pointer transition-all ${wart.bookmarks?.includes(wallet.address) ? 'opacity-90' : 'opacity-40 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); toggleWartBookmark(wart.id); }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <button className={`cursor-pointer transition-all ${wallet?.address && wart.bookmarks?.includes(wallet.address) ? 'opacity-90' : 'opacity-60 hover:opacity-80'}`} onClick={e => { e.stopPropagation(); if (!requireAuth()) return; toggleWartBookmark(wart.id); }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={wallet?.address && wart.bookmarks?.includes(wallet.address) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
-        {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet.address && (
+        {showBuy && !expired && wart.listed && wart.price !== null && wart.owner !== wallet?.address && (
           <div className="flex gap-1 mt-2">
             <button
               className="warp-button flex-1 text-body-sm py-1.5"
-              onClick={e => { e.stopPropagation(); handleBuy(wart); }}
-              disabled={buying || wallet.balance < wart.price}
+              onClick={e => { e.stopPropagation(); if (!requireAuth()) return; handleBuyFiat(wart); }}
+              disabled={buyingFiat}
             >
-              Collect {wart.price} {'\u2B23'}
+              Collect {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
             </button>
-            {wart.priceFiat && wart.fiatCurrency && (
-              <button
-                className="flex-1 text-body-sm py-1.5 bg-current/10 opacity-80 border border-current/15 hover:bg-current/15 transition-colors cursor-pointer"
-                onClick={e => { e.stopPropagation(); handleBuyFiat(wart); }}
-                disabled={buyingFiat}
-              >
-                {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)}
-              </button>
-            )}
           </div>
         )}
-        {wart.owner === wallet.address && (
+        {wart.owner === wallet?.address && (
           <div className="flex gap-1 mt-2">
             {!wart.listed && (
               <button
@@ -763,7 +924,7 @@ export default function MarketplaceView() {
               </button>
             )}
             <button
-              className={`${!wart.listed ? 'flex-1' : 'w-full'} py-1.5 text-[11px] opacity-40 border border-current/10 hover:opacity-70 hover:bg-current/5 transition-all cursor-pointer`}
+              className={`${!wart.listed ? 'flex-1' : 'w-full'} py-1.5 text-[11px] opacity-60 border border-current/10 hover:opacity-70 hover:bg-current/5 transition-all cursor-pointer`}
               onClick={e => { e.stopPropagation(); setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}
             >
               Transfer
@@ -775,660 +936,466 @@ export default function MarketplaceView() {
   };
 
   // ─── Detail View ───────────────────────────────────────
-  if (tab === 'detail' && selectedWart && wallet) {
+  if (tab === 'detail' && selectedWart) {
     const wart = selectedWart;
-    const isMine = wart.owner === wallet.address;
-    const isCreator = wart.creator === wallet.address;
+    const isMine = isAuth && wart.owner === wallet?.address;
+    const isCreator = isAuth && wart.creator === wallet?.address;
     const expired = isExpired(wart);
     const rarity = computeRarity(wart);
     const rarityCfg = RARITY_CONFIG[rarity];
 
     return (
-      <div className="space-y-4 px-[10px] sm:px-0">
+      <div className="px-[10px] sm:px-0">
+        {/* Back button — minimal, Foundation-style */}
         <button
-          className="sticky top-16 z-40 text-body-sm opacity-50 text-current hover:opacity-90 cursor-pointer py-2"
-          style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }}
-          onClick={() => { setTab('all'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); }}
+          className="sticky top-16 z-40 text-body-lg opacity-50 text-current hover:opacity-90 cursor-pointer py-3 px-1"
+          onClick={() => { setTab('all'); setSelectedWart(null); setEditing(false); setConfirmDelete(false); setShowMoreDetails(false); setShowCertificate(false); setShowHistory(false); setShowComments(false); }}
         >
-          {'\u2190'} Back to Gallery
+          {'\u2190'}
         </button>
 
-        <div className="glass-panel p-4">
-          <div className="max-w-2xl mx-auto">
-            <div className={`${wart.mediaType === 'video' ? '' : 'aspect-square'} mb-4 overflow-hidden rounded-none bg-current/5 relative`}>
+        {/* Foundation-style two-column layout */}
+        <div className="flex flex-col lg:flex-row gap-0 lg:gap-12 max-w-7xl mx-auto">
+
+          {/* LEFT: Artwork Media */}
+          <div className="lg:w-[58%] w-full lg:sticky lg:top-20 lg:self-start">
+            <div className={`${wart.mediaType === 'video' ? '' : 'aspect-square'} w-full overflow-hidden bg-current/3 relative`}>
               <WartMedia wart={wart} className="w-full h-full object-contain" />
               {expired && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <span className="opacity-70 text-title-sm font-bold">EXPIRED</span>
+                  <span className="text-title-lg font-bold opacity-80">EXPIRED</span>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* RIGHT: Details Panel */}
+          <div className="lg:w-[42%] w-full py-6 lg:py-2 space-y-6">
 
             {editing ? (
-              /* ─── Edit Mode ─────────────────────────────── */
-              <div className="space-y-3">
+              /* Edit Mode */
+              <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] opacity-50 text-current block mb-1">TITLE</label>
-                  <input
-                    className="warp-input"
-                    value={editTitle}
-                    onChange={e => setEditTitle(e.target.value)}
-                    maxLength={100}
-                  />
+                  <label className="text-label opacity-50 text-current block mb-2">TITLE</label>
+                  <input className="warp-input text-body-lg" value={editTitle} onChange={e => setEditTitle(e.target.value)} maxLength={100} />
                 </div>
                 <div>
-                  <label className="text-[10px] opacity-50 text-current block mb-1">DESCRIPTION</label>
-                  <textarea
-                    className="warp-input min-h-[80px] resize-y"
-                    value={editDescription}
-                    onChange={e => setEditDescription(e.target.value)}
-                    maxLength={500}
-                  />
+                  <label className="text-label opacity-50 text-current block mb-2">DESCRIPTION</label>
+                  <textarea className="warp-input min-h-[100px] resize-y text-body-md" value={editDescription} onChange={e => setEditDescription(e.target.value)} maxLength={500} />
                 </div>
                 <div>
-                  <label className="text-[10px] opacity-50 text-current block mb-1">PRICE IN {'\u2B23'} (empty = not for sale)</label>
-                  <input
-                    className="warp-input"
-                    type="number"
-                    placeholder="0"
-                    min="0"
-                    step="1"
-                    value={editPrice}
-                    onChange={e => setEditPrice(e.target.value)}
-                  />
+                  <label className="text-label opacity-50 text-current block mb-2">PRIX EN {'\u20AC'} (vide = pas en vente, min 1)</label>
+                  <input className="warp-input text-body-lg" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)} />
                 </div>
                 {isCreator && (
                   <div>
-                    <label className="text-[10px] opacity-50 text-current block mb-1">ROYALTY (%)</label>
-                    <input
-                      className="warp-input"
-                      type="number"
-                      min="0"
-                      max="50"
-                      step="1"
-                      value={editRoyalty}
-                      onChange={e => setEditRoyalty(e.target.value)}
-                    />
+                    <label className="text-label opacity-50 text-current block mb-2">ROYALTY (%)</label>
+                    <input className="warp-input text-body-lg" type="number" min="0" max="50" step="1" value={editRoyalty} onChange={e => setEditRoyalty(e.target.value)} />
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <button
-                    className="warp-button flex-1 py-2 text-base"
-                    onClick={() => handleSaveEdit(wart)}
-                    disabled={!editTitle.trim()}
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    className="warp-button flex-1 py-2 text-base opacity-60 hover:opacity-100"
-                    onClick={() => setEditing(false)}
-                  >
-                    Cancel
-                  </button>
+                <div className="flex gap-3 pt-2">
+                  <button className="collect-btn flex-1 py-4 text-body-lg" onClick={() => handleSaveEdit(wart)} disabled={!editTitle.trim()}>Save Changes</button>
+                  <button className="warp-button flex-1 py-4 text-body-lg opacity-60 hover:opacity-100" onClick={() => setEditing(false)}>Cancel</button>
                 </div>
               </div>
             ) : (
-              /* ─── View Mode ─────────────────────────────── */
+              /* View Mode — Foundation-style */
               <>
-                {/* Rarity + Edition header */}
-                <div className="flex items-center gap-3 mb-2">
-                  <span className={`text-base font-bold ${rarityCfg.color}`}>
+                {/* Strangrz Badge + Rarity */}
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 border border-current/15 text-body-sm font-medium opacity-80">
+                    {'\u25CF'} Strangrz
+                  </span>
+                  <span className={`text-body-sm font-bold ${rarityCfg.color}`}>
                     {rarityCfg.badge} {rarityCfg.label}
                   </span>
                   <EditionInfo wart={wart} />
                 </div>
 
-                <h2 className="text-title-md font-bold opacity-100 mb-1 font-title">{wart.title}</h2>
-                {wart.description && (
-                  <p className="text-base opacity-50 text-current mb-3">{wart.description}</p>
-                )}
+                {/* Title — very large like Foundation */}
+                <h1 className="text-title-xl font-bold font-title leading-tight">{wart.title}</h1>
 
-                <div className="grid grid-cols-2 gap-3 text-body-sm mb-4">
-                  <div>
-                    <span className="opacity-40">Creator:</span>
-                    <span
-                      className={`opacity-80 ml-1 inline-flex items-center gap-1 ${!isCreator ? 'cursor-pointer hover:opacity-100' : ''}`}
-                      onClick={() => { if (!isCreator) navigateToProfile(wart.creator); }}
-                    >
-                      <HexAvatar address={wart.creator} size={16} />
-                      {isCreator ? 'You' : `${getCreatorName(wart.creator)} · ${shortAddress(wart.creator)}`}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="opacity-40">Owner:</span>
-                    <span
-                      className={`opacity-80 ml-1 inline-flex items-center gap-1 ${!isMine ? 'cursor-pointer hover:opacity-100' : ''}`}
-                      onClick={() => { if (!isMine) navigateToProfile(wart.owner); }}
-                    >
-                      <HexAvatar address={wart.owner} size={16} />
-                      {isMine ? 'You' : `${getCreatorName(wart.owner)} · ${shortAddress(wart.owner)}`}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="opacity-40">Royalty:</span>
-                    <span className="opacity-80 ml-1">{wart.royaltyPercent}%</span>
-                  </div>
-                  <div>
-                    <span className="opacity-40">Chain:</span>
-                    <span className="opacity-80 ml-1">{wart.mintChain === 'ethereum' ? 'Ethereum (ERC-721)' : 'Strangrz (SZ-721)'}</span>
-                  </div>
-                  <div>
-                    <span className="opacity-40">Sales:</span>
-                    <span className="opacity-80 ml-1">{wart.history.length}</span>
-                  </div>
-                  <div>
-                    <span className="opacity-40">Edition:</span>
-                    <span className="opacity-70 ml-1">
-                      {wart.editionType === 'unique' ? '1/1 Unique' :
-                       wart.editionType === 'limited' ? `#${wart.editionNumber}/${wart.maxEditions}` :
-                       `#${wart.editionNumber} (Unlimited)`}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="opacity-40">Created:</span>
-                    <span className="opacity-70 ml-1">{formatDateFR(wart.createdAt)}</span>
-                  </div>
+                {/* Creator — with avatar and @handle */}
+                <div
+                  className={`flex items-center gap-3 ${!isCreator ? 'cursor-pointer hover:opacity-80' : ''}`}
+                  onClick={() => { if (!isCreator) navigateToProfile(wart.creator); }}
+                >
+                  <HexAvatar address={wart.creator} size={28} />
+                  <span className="text-body-lg opacity-60">
+                    @{isCreator ? (wallet?.alias || 'you') : getCreatorName(wart.creator)}
+                  </span>
                 </div>
+
+                {/* Description — truncated with "See details" */}
+                {wart.description && (
+                  <div>
+                    <p className="text-body-lg opacity-50 text-current leading-relaxed" style={!showMoreDetails ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' } : undefined}>
+                      {wart.description}
+                    </p>
+                    <button
+                      className="text-body-md font-bold opacity-90 hover:opacity-100 cursor-pointer mt-1"
+                      onClick={() => setShowMoreDetails(!showMoreDetails)}
+                    >
+                      {showMoreDetails ? 'Hide details' : 'See details'}
+                    </button>
+                  </div>
+                )}
 
                 {/* Time limit info */}
                 {wart.availableUntil !== null && (
-                  <div className={`text-body-sm p-2 mb-3 border ${
-                    expired
-                      ? 'bg-current/5 border-current/10 opacity-70'
-                      : 'bg-current/5 border-current/10 opacity-80'
-                  }`}>
+                  <div className={`text-body-md p-3 border border-current/10 ${expired ? 'opacity-50' : 'opacity-70'}`}>
                     {expired ? (
-                      <>{'\u23F0'} Expired on {formatDateFR(wart.availableUntil)} (Paris)</>
+                      <>{'\u23F0'} Expired on {formatDateFR(wart.availableUntil)}</>
                     ) : (
-                      <>{'\u23F0'} Available until {formatDateFR(wart.availableUntil)} (Paris) — {formatTimeRemaining(wart.availableUntil)} remaining</>
+                      <>{'\u23F0'} {formatTimeRemaining(wart.availableUntil)} remaining</>
                     )}
                   </div>
                 )}
 
-                {/* Certificate of Authenticity */}
-                {wart.certId && (
-                  <div className="glass-panel p-3 mb-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-body-sm font-bold opacity-70">{'\u2726'} Certificate of Authenticity</h4>
-                      <button
-                        className="text-[10px] opacity-80 hover:opacity-80 cursor-pointer"
-                        onClick={() => handleVerifyCert(wart.id)}
-                        disabled={verifying}
-                      >
-                        {verifying ? 'Verifying...' : '\u2714 Verify'}
-                      </button>
-                    </div>
-                    <div className="text-[10px] opacity-40 space-y-1">
-                      <p>
-                        <span className="opacity-50 text-current">Cert ID:</span>{' '}
-                        <span className="opacity-80 font-mono break-all">{wart.certId}</span>
-                      </p>
-                      <p>
-                        <span className="opacity-50 text-current">Fingerprint:</span>{' '}
-                        <span className="opacity-70 font-mono">{wart.contentFingerprint?.slice(0, 16)}...</span>
-                      </p>
-                      {wart.creatorSignature && (
-                        <p>
-                          <span className="opacity-50 text-current">Signed:</span>{' '}
-                          <span className="opacity-80">{'\u2714'} Creator Ed25519 signature</span>
-                        </p>
-                      )}
-                    </div>
-                    {certStatus && (
-                      <div className={`text-body-sm p-2 border ${
-                        certStatus.valid
-                          ? 'bg-current/5 border-current/10 opacity-80'
-                          : 'bg-current/5 border-current/15 opacity-70'
-                      }`}>
-                        {certStatus.valid ? '\u2714' : '\u2718'} {certStatus.reason}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Strangrz Trust Signals */}
-                {wart.vobjctProtected && (() => {
-                  const vobjct = getStrangrzEngine();
-                  const badges = vobjct.getTrustBadges(wart.id);
-                  const manifest = vobjct.getManifest(wart.id);
-                  return (
-                    <div className="glass-panel p-3 mb-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-body-sm font-bold opacity-70">{'\u26E8'} Strangrz Safe</h4>
-                        <span className="text-[9px] opacity-50">v{manifest?.vobjct_version || '1.0.0'}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {badges.map((badge, i) => (
-                          <span key={i} className="text-[9px] px-1.5 py-0.5 bg-current/5 border border-current/10 opacity-70">
-                            {badge === 'Integrity Verified' ? '\u2714' :
-                             badge === 'Permanent Storage' ? '\u221E' :
-                             badge === 'Multi-Network Backup' ? '\u2726' :
-                             badge === 'Safe Protected' ? '\u26E8' :
-                             badge === 'Rights Embedded' ? '\u00A9' :
-                             badge === 'Recovery Active' ? '\u21BB' : '\u2022'} {badge}
-                          </span>
-                        ))}
-                      </div>
-                      {manifest && (
-                        <div className="text-[10px] opacity-40 space-y-1">
-                          <p>
-                            <span className="opacity-50">Object ID:</span>{' '}
-                            <span className="opacity-70 font-mono break-all">{manifest.object_id}</span>
-                          </p>
-                          <p>
-                            <span className="opacity-50">Storage:</span>{' '}
-                            <span className="opacity-70">{manifest.storage_routes.length} route(s)</span>
-                            {manifest.storage_routes.map((r, i) => (
-                              <span key={i} className={`ml-1 ${r.status === 'active' ? 'opacity-70' : 'opacity-40'}`}>
-                                [{r.network}]
-                              </span>
-                            ))}
-                          </p>
-                          <p>
-                            <span className="opacity-50">Policy:</span>{' '}
-                            <span className="opacity-70">{manifest.policy.mutability}</span>
-                          </p>
-                          <p>
-                            <span className="opacity-50">Rights:</span>{' '}
-                            <span className="opacity-70">Display: {manifest.rights.display} | Commercial: {manifest.rights.commercial_use}</span>
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* Phygital Authentication */}
-                {wart.certId && (isCreator || isMine) && (
-                  <div className="glass-panel p-3 mb-3 space-y-2">
-                    <h4 className="text-body-sm font-bold opacity-70">{'\u2B22'} Phygital Authentication</h4>
-                    <p className="text-[10px] opacity-40">
-                      Generate a printable hash signature to physically attach to your artwork and authenticate it.
-                    </p>
-                    {phygitalCert && phygitalCert.wartId === wart.id ? (
-                      <div className="space-y-2">
-                        <div className="p-3 bg-current/5 border border-current/10 text-center">
-                          <p className="text-label opacity-40 mb-1">VERIFICATION CODE</p>
-                          <p className="text-title-md font-bold opacity-90 tracking-widest">{phygitalCert.verificationCode}</p>
-                          <p className="text-[10px] opacity-30 mt-1 font-mono break-all">{phygitalCert.certHash}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            className="warp-button flex-1 text-body-sm py-2"
-                            onClick={() => {
-                              navigator.clipboard.writeText(phygitalCert.verificationCode);
-                            }}
-                          >
-                            Copy Code
-                          </button>
-                          <button
-                            className="warp-button flex-1 text-body-sm py-2"
-                            onClick={() => {
-                              const svg = generatePrintableSVG(phygitalCert);
-                              const blob = new Blob([svg], { type: 'image/svg+xml' });
-                              const url = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `phygital-${phygitalCert.verificationCode}.svg`;
-                              a.click();
-                              URL.revokeObjectURL(url);
-                            }}
-                          >
-                            Download Print
-                          </button>
-                        </div>
-                        <p className="text-[10px] opacity-30">Print the SVG and attach it to your physical artwork. Anyone can verify with the code above.</p>
-                      </div>
-                    ) : (
-                      <button
-                        className="warp-button w-full text-body-sm py-2"
-                        onClick={async () => {
-                          setGeneratingPhygital(true);
-                          try {
-                            const cert = await generatePhygitalCert(
-                              wart.id,
-                              wart.title,
-                              wart.creator,
-                              wart.owner,
-                              wart.contentFingerprint || '',
-                              wart.editionNumber,
-                              wart.maxEditions,
-                            );
-                            setPhygitalCert(cert);
-                          } catch { setCreateError('Failed to generate phygital certificate'); }
-                          setGeneratingPhygital(false);
-                        }}
-                        disabled={generatingPhygital}
-                      >
-                        {generatingPhygital ? 'Generating...' : 'Generate Phygital Certificate'}
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Print Signature for 1/1 artworks with physical counterpart */}
-                {(wart.editionType === 'unique' || wart.maxEditions === 1) && wart.certId && (isMine || isCreator) && (
-                  <div className="glass-panel p-3 mb-3 space-y-2">
-                    <h4 className="text-body-sm font-bold opacity-70">{'\u2399'} Physical Artwork Signature</h4>
-                    <p className="text-[10px] opacity-40">
-                      Print a business card with the transaction signature to authenticate the physical artwork associated with this 1/1 piece.
-                    </p>
-                    <button
-                      className="warp-button w-full py-2.5 text-body-sm font-bold flex items-center justify-center gap-2"
-                      onClick={() => {
-                        const lastTx = wart.history.length > 0 ? wart.history[wart.history.length - 1] : null;
-                        const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
-                        const artistName = isCreator
-                          ? (wallet.alias || shortAddress(wallet.address))
-                          : shortAddress(wart.creator);
-                        generateSignaturePDF({
-                          artworkName: wart.title,
-                          artistName,
-                          transactionId: txId,
-                        });
-                      }}
-                    >
-                      {'\u2399'} Print Signature
-                    </button>
-                  </div>
-                )}
-
-                {/* Phygital Verification (anyone) */}
-                <div className="glass-panel p-3 mb-3 space-y-2">
-                  <h4 className="text-body-sm font-bold opacity-70">{'\u2714'} Verify Phygital</h4>
-                  <p className="text-[10px] opacity-40">Enter a verification code from a physical artwork to check authenticity.</p>
-                  <div className="flex gap-2">
-                    <input
-                      className="warp-input flex-1 text-body-sm py-2"
-                      placeholder="XXXX-XXXX-XXXX"
-                      value={phygitalVerifyInput}
-                      onChange={e => { setPhygitalVerifyInput(e.target.value); setPhygitalVerifyResult(undefined); }}
-                    />
-                    <button
-                      className="warp-button text-body-sm px-3 py-2"
-                      onClick={() => {
-                        const result = verifyCert(phygitalVerifyInput);
-                        setPhygitalVerifyResult(result);
-                      }}
-                      disabled={!phygitalVerifyInput.trim()}
-                    >
-                      Verify
-                    </button>
-                  </div>
-                  {phygitalVerifyResult !== undefined && (
-                    phygitalVerifyResult ? (
-                      <div className="p-2 bg-current/5 border border-current/10 text-body-sm">
-                        <p className="opacity-80 font-bold">{'\u2714'} Authentic</p>
-                        <p className="text-[10px] opacity-50">Title: {phygitalVerifyResult.wartTitle}</p>
-                        <p className="text-[10px] opacity-50">Creator: {shortAddress(phygitalVerifyResult.creatorAddress)}</p>
-                        <p className="text-[10px] opacity-50">Edition: {phygitalVerifyResult.editionInfo}</p>
-                        <p className="text-[10px] opacity-50">Date: {new Date(phygitalVerifyResult.createdAt).toLocaleDateString('fr-FR')}</p>
-                      </div>
-                    ) : (
-                      <div className="p-2 bg-current/5 border border-current/15 text-body-sm opacity-70">
-                        {'\u2718'} No certificate found for this code.
-                      </div>
-                    )
-                  )}
-                </div>
-
-                {/* Price & Actions */}
+                {/* Price + Collect — EUR primary */}
                 {wart.listed && wart.price !== null && (
-                  <div className="glass-panel p-3 mb-3 text-center">
-                    <p className="text-[10px] opacity-40">CURRENT PRICE</p>
-                    <p className="text-2xl font-bold opacity-80">{wart.price} {'\u2B23'}</p>
-                    {wart.priceFiat && wart.fiatCurrency && (
-                      <p className="text-base opacity-50 text-current">
-                        {getCurrencySymbol(wart.fiatCurrency)}{wart.priceFiat.toFixed(2)} {wart.fiatCurrency}
-                      </p>
-                    )}
-                    {!wart.priceFiat && (
-                      <p className="text-body-sm opacity-40">{getWartFiatPrice(wart.id)}</p>
-                    )}
+                  <div className="pt-2">
+                    <p className="text-body-md opacity-50 mb-1">
+                      {!isMine && !expired ? 'Buy Now' : 'Current Price'}
+                    </p>
+                    <p className="text-title-xl font-bold">
+                      {getEurSymbol(wart)}{getEurPrice(wart).toFixed(2)}
+                    </p>
                   </div>
                 )}
 
                 {buyResult && (
-                  <div className={`text-base p-3 rounded-none mb-3 ${
-                    buyResult.success
-                      ? 'bg-current/5 border border-current/15 opacity-80'
-                      : 'bg-current/5 border border-current/15 opacity-70'
-                  }`}>
+                  <div className={`text-body-md p-4 ${buyResult.success ? 'bg-current/5 border border-current/10 opacity-80' : 'bg-current/5 border border-current/15 opacity-70'}`}>
                     {buyResult.message}
                   </div>
                 )}
 
-                {/* Buy buttons (not mine, listed, not expired) */}
+                {/* COLLECT BUTTON — EUR primary, crypto secondary */}
                 {!isMine && wart.listed && wart.price !== null && !expired && (
-                  <div className="space-y-2 mb-3">
+                  <div className="space-y-3">
                     <button
-                      className="warp-button w-full py-3 text-base"
-                      onClick={() => handleBuy(wart)}
-                      disabled={buying || wallet.balance < wart.price}
+                      className="collect-btn w-full py-5 text-title-sm font-bold tracking-wide"
+                      onClick={() => { if (!requireAuth()) return; handleBuyFiat(wart); }}
+                      disabled={buyingFiat}
                     >
-                      {buying ? 'Processing...' : `Collect ${wart.price} \u2B23`}
+                      {buyingFiat ? 'Processing...' : `Collect ${getEurSymbol(wart)}${getEurPrice(wart).toFixed(2)}`}
                     </button>
-                    {wart.priceFiat && wart.fiatCurrency && (
-                      <button
-                        className="w-full py-3 text-base bg-current/10 opacity-80 border border-current/15 hover:bg-current/15 transition-colors cursor-pointer"
-                        onClick={() => handleBuyFiat(wart)}
-                        disabled={buyingFiat}
-                      >
-                        {buyingFiat ? 'Processing payment...' : `Pay ${getCurrencySymbol(wart.fiatCurrency)}${wart.priceFiat.toFixed(2)} (Card/PayPal)`}
-                      </button>
-                    )}
                   </div>
                 )}
 
+                {/* Expandable Details Section */}
+                <div className="border-t border-current/10 pt-6 space-y-0">
+                  {/* Details toggle */}
+                  <button
+                    className="w-full flex items-center justify-between py-4 text-body-lg font-bold opacity-80 hover:opacity-100 cursor-pointer border-b border-current/8"
+                    onClick={() => setShowMoreDetails(!showMoreDetails)}
+                  >
+                    <span>Details</span>
+                    <span className="text-title-sm">{showMoreDetails ? '\u2212' : '\u002B'}</span>
+                  </button>
+                  {showMoreDetails && (
+                    <div className="py-5 space-y-4 text-body-md border-b border-current/8">
+                      <div className="flex justify-between">
+                        <span className="opacity-60">Owner</span>
+                        <span className={`opacity-80 inline-flex items-center gap-2 ${!isMine ? 'cursor-pointer hover:opacity-100' : ''}`} onClick={() => { if (!isMine) navigateToProfile(wart.owner); }}>
+                          <HexAvatar address={wart.owner} size={20} />
+                          {isMine ? 'You' : getCreatorName(wart.owner)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="opacity-60">Royalty</span>
+                        <span className="opacity-80">{wart.royaltyPercent}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="opacity-60">Edition</span>
+                        <span className="opacity-80">
+                          {wart.editionType === 'unique' ? '1/1 Unique' :
+                           wart.editionType === 'limited' ? `#${wart.editionNumber}/${wart.maxEditions}` :
+                           `#${wart.editionNumber} (Open)`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="opacity-60">Sales</span>
+                        <span className="opacity-80">{wart.history.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="opacity-60">Created</span>
+                        <span className="opacity-80">{formatDateFR(wart.createdAt)}</span>
+                      </div>
+
+                      {/* Strangrz Trust Signals — inline */}
+                      {wart.vobjctProtected && (() => {
+                        const vobjct = getStrangrzEngine();
+                        const badges = vobjct.getTrustBadges(wart.id);
+                        const manifest = vobjct.getManifest(wart.id);
+                        return (
+                          <div className="pt-3 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="opacity-60">{'\u26E8'} Strangrz Safe</span>
+                              <span className="text-body-sm opacity-60">v{manifest?.vobjct_version || '1.0.0'}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {badges.map((badge, i) => (
+                                <span key={i} className="text-body-sm px-2 py-1 bg-current/5 border border-current/8 opacity-60">
+                                  {badge === 'Integrity Verified' ? '\u2714' :
+                                   badge === 'Permanent Storage' ? '\u221E' :
+                                   badge === 'Multi-Network Backup' ? '\u2726' :
+                                   badge === 'Safe Protected' ? '\u26E8' :
+                                   badge === 'Rights Embedded' ? '\u00A9' :
+                                   badge === 'Recovery Active' ? '\u21BB' : '\u2022'} {badge}
+                                </span>
+                              ))}
+                            </div>
+                            {manifest && (
+                              <div className="text-body-sm opacity-60 space-y-1">
+                                <p><span className="opacity-50">Storage:</span> <span className="opacity-70">{manifest.storage_routes.length} route(s)</span>
+                                  {manifest.storage_routes.map((r, i) => (
+                                    <span key={i} className={`ml-1 ${r.status === 'active' ? 'opacity-70' : 'opacity-60'}`}>[{r.network}]</span>
+                                  ))}
+                                </p>
+                                <p><span className="opacity-50">Policy:</span> <span className="opacity-70">{manifest.policy.mutability}</span></p>
+                                <p><span className="opacity-50">Rights:</span> <span className="opacity-70">Display: {manifest.rights.display} | Commercial: {manifest.rights.commercial_use}</span></p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Certificate toggle */}
+                  {wart.certId && (
+                    <>
+                      <button
+                        className="w-full flex items-center justify-between py-4 text-body-lg font-bold opacity-80 hover:opacity-100 cursor-pointer border-b border-current/8"
+                        onClick={() => setShowCertificate(!showCertificate)}
+                      >
+                        <span>{'\u2726'} Certificate</span>
+                        <span className="text-title-sm">{showCertificate ? '\u2212' : '\u002B'}</span>
+                      </button>
+                      {showCertificate && (
+                        <div className="py-5 space-y-4 border-b border-current/8">
+                          <div className="flex items-center justify-between">
+                            <span className="text-body-md opacity-60">Certificate of Authenticity</span>
+                            <button
+                              className="text-body-sm font-bold opacity-80 hover:opacity-100 cursor-pointer"
+                              onClick={() => handleVerifyCert(wart.id)}
+                              disabled={verifying}
+                            >
+                              {verifying ? 'Verifying...' : '\u2714 Verify'}
+                            </button>
+                          </div>
+                          <div className="text-body-sm opacity-60 space-y-2">
+                            <p><span className="opacity-50">Cert ID:</span> <span className="opacity-70 font-mono break-all">{wart.certId}</span></p>
+                            <p><span className="opacity-50">Fingerprint:</span> <span className="opacity-70 font-mono">{wart.contentFingerprint?.slice(0, 16)}...</span></p>
+                            {wart.creatorSignature && (
+                              <p><span className="opacity-50">Signed:</span> <span className="opacity-70">{'\u2714'} Ed25519</span></p>
+                            )}
+                          </div>
+                          {certStatus && (
+                            <div className={`text-body-md p-3 border ${certStatus.valid ? 'border-current/10 opacity-80' : 'border-current/15 opacity-60'}`}>
+                              {certStatus.valid ? '\u2714' : '\u2718'} {certStatus.reason}
+                            </div>
+                          )}
+
+                          {/* Phygital Auth — inside certificate section */}
+                          {(isCreator || isMine) && (
+                            <div className="pt-3 space-y-3">
+                              <p className="text-body-md font-bold opacity-70">{'\u2B22'} Phygital</p>
+                              {phygitalCert && phygitalCert.wartId === wart.id ? (
+                                <div className="space-y-3">
+                                  <div className="p-4 bg-current/3 border border-current/8 text-center">
+                                    <p className="text-label opacity-60 mb-2">VERIFICATION CODE</p>
+                                    <p className="text-title-lg font-bold opacity-90 tracking-widest">{phygitalCert.verificationCode}</p>
+                                    <p className="text-body-sm opacity-25 mt-2 font-mono break-all">{phygitalCert.certHash}</p>
+                                  </div>
+                                  <div className="flex gap-3">
+                                    <button className="warp-button flex-1 text-body-md py-3" onClick={() => copyToClipboard(phygitalCert.verificationCode)}>Copy Code</button>
+                                    <button className="warp-button flex-1 text-body-md py-3" onClick={() => {
+                                      const svg = generatePrintableSVG(phygitalCert);
+                                      const blob = new Blob([svg], { type: 'image/svg+xml' });
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url; a.download = `phygital-${phygitalCert.verificationCode}.svg`; a.click();
+                                      URL.revokeObjectURL(url);
+                                    }}>Download</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  className="warp-button w-full text-body-md py-3"
+                                  onClick={async () => {
+                                    setGeneratingPhygital(true);
+                                    try {
+                                      const cert = await generatePhygitalCert(wart.id, wart.title, wart.creator, wart.owner, wart.contentFingerprint || '', wart.editionNumber, wart.maxEditions);
+                                      setPhygitalCert(cert);
+                                    } catch { setCreateError('Failed to generate phygital certificate'); }
+                                    setGeneratingPhygital(false);
+                                  }}
+                                  disabled={generatingPhygital}
+                                >
+                                  {generatingPhygital ? 'Generating...' : 'Generate Phygital Certificate'}
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Print Signature for 1/1 */}
+                          {(wart.editionType === 'unique' || wart.maxEditions === 1) && (isMine || isCreator) && (
+                            <button
+                              className="warp-button w-full py-3 text-body-md font-bold flex items-center justify-center gap-2"
+                              onClick={() => {
+                                const lastTx = wart.history.length > 0 ? wart.history[wart.history.length - 1] : null;
+                                const txId = wart.onChainTxId || lastTx?.txId || wart.certId || wart.id;
+                                const artistName = isCreator ? (wallet?.alias || 'you') : getCreatorName(wart.creator);
+                                generateSignaturePDF({ artworkName: wart.title, artistName, transactionId: txId });
+                              }}
+                            >
+                              {'\u2399'} Print Signature
+                            </button>
+                          )}
+
+                          {/* Phygital Verification (anyone) */}
+                          <div className="pt-3 space-y-3">
+                            <p className="text-body-md font-bold opacity-70">{'\u2714'} Verify Phygital</p>
+                            <div className="flex gap-2">
+                              <input className="warp-input flex-1 text-body-md py-3" placeholder="XXXX-XXXX-XXXX" value={phygitalVerifyInput} onChange={e => { setPhygitalVerifyInput(e.target.value); setPhygitalVerifyResult(undefined); }} />
+                              <button className="warp-button text-body-md px-4 py-3" onClick={() => setPhygitalVerifyResult(verifyCert(phygitalVerifyInput))} disabled={!phygitalVerifyInput.trim()}>Verify</button>
+                            </div>
+                            {phygitalVerifyResult !== undefined && (
+                              phygitalVerifyResult ? (
+                                <div className="p-3 bg-current/3 border border-current/8 text-body-md">
+                                  <p className="opacity-80 font-bold">{'\u2714'} Authentic</p>
+                                  <p className="text-body-sm opacity-50">Title: {phygitalVerifyResult.wartTitle}</p>
+                                  <p className="text-body-sm opacity-50">Creator: {shortAddress(phygitalVerifyResult.creatorAddress)}</p>
+                                  <p className="text-body-sm opacity-50">Edition: {phygitalVerifyResult.editionInfo}</p>
+                                </div>
+                              ) : (
+                                <div className="p-3 bg-current/3 border border-current/15 text-body-md opacity-60">
+                                  {'\u2718'} No certificate found for this code.
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Activity / History toggle */}
+                  <button
+                    className="w-full flex items-center justify-between py-4 text-body-lg font-bold opacity-80 hover:opacity-100 cursor-pointer border-b border-current/8"
+                    onClick={() => setShowHistory(!showHistory)}
+                  >
+                    <span>Activity ({wart.history.length})</span>
+                    <span className="text-title-sm">{showHistory ? '\u2212' : '\u002B'}</span>
+                  </button>
+                  {showHistory && wart.history.length > 0 && (
+                    <div className="py-4 space-y-3 border-b border-current/8">
+                      {wart.history.map((h, i) => (
+                        <div key={i} className="flex items-center gap-4 py-2 text-body-md">
+                          <span className="opacity-60">{'\u21C4'}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="opacity-70 truncate">{getCreatorName(h.from)} {'\u2192'} {getCreatorName(h.to)}</p>
+                            <p className="text-body-sm opacity-60">{formatDateFR(h.timestamp)}</p>
+                          </div>
+                          <span className="font-bold opacity-80 shrink-0 text-body-lg">{h.price > 0 ? `${h.price} \u20AC` : 'Gift'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Comments toggle */}
+                  <button
+                    className="w-full flex items-center justify-between py-4 text-body-lg font-bold opacity-80 hover:opacity-100 cursor-pointer border-b border-current/8"
+                    onClick={() => setShowComments(!showComments)}
+                  >
+                    <span>Comments ({(wart.comments || []).length})</span>
+                    <span className="text-title-sm">{showComments ? '\u2212' : '\u002B'}</span>
+                  </button>
+                  {showComments && (
+                    <div className="py-4 space-y-4 border-b border-current/8">
+                      <div className="flex gap-3">
+                        <input ref={commentInputRef} className="warp-input flex-1 text-body-md py-3" placeholder="Add a comment..." value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddComment(wart.id); }} />
+                        <button className="collect-btn text-body-md px-6 py-3" onClick={() => handleAddComment(wart.id)} disabled={!commentText.trim()}>Post</button>
+                      </div>
+                      <div className="space-y-4">
+                        {(!wart.comments || wart.comments.length === 0) ? (
+                          <p className="text-body-md opacity-60 text-center py-4">No comments yet</p>
+                        ) : (
+                          wart.comments.map(c => (
+                            <div key={c.id} className="flex gap-3">
+                              <div className="w-8 h-8 bg-current/5 border border-current/8 flex items-center justify-center text-body-sm opacity-80 font-bold shrink-0 mt-0.5">
+                                {c.authorAlias.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-body-md font-bold opacity-90">@{c.authorAlias}</span>
+                                  <span className="text-body-sm opacity-60">{formatDateFR(c.timestamp)}</span>
+                                </div>
+                                <p className="text-body-md opacity-50 text-current">{c.content}</p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Share */}
+                <div className="pt-2">
+                  <button
+                    className="warp-button w-full py-3 text-body-lg flex items-center justify-center gap-2"
+                    onClick={() => setShareMenuWartId(wart.id)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    Share
+                  </button>
+                  {shareSuccess && <p className="text-body-sm opacity-70 mt-2 text-center">{'\u2714'} {shareSuccess}</p>}
+                </div>
+
                 {/* Owner actions */}
                 {isMine && (
-                  <div className="space-y-3">
-                    {/* Edit & Delete buttons */}
-                    <div className="flex gap-2">
-                      <button
-                        className="warp-button flex-1 py-2 text-base"
-                        onClick={() => startEditing(wart)}
-                      >
-                        {'\u270E'} Edit
-                      </button>
-                      {!confirmDelete ? (
-                        <button
-                          className="flex-1 py-2 text-base font-bold border transition-all cursor-pointer bg-current/5 border-current/15 opacity-70 hover:bg-current/10"
-                          onClick={() => setConfirmDelete(true)}
-                        >
-                          {'\u2716'} Delete
-                        </button>
+                  <div className="space-y-4 pt-4 border-t border-current/10">
+                    <div className="flex gap-3">
+                      <button className="warp-button flex-1 py-3 text-body-lg" onClick={() => startEditing(wart)}>{'\u270E'} Edit</button>
+                      {wart.history.length > 0 || wart.creator !== wart.owner ? (
+                        /* Purchased artwork — cannot delete, only hide (delist) */
+                        wart.listed ? null : (
+                          <span className="flex-1 py-3 text-body-lg text-center opacity-40 border border-current/10">Cannot delete (sold)</span>
+                        )
                       ) : (
-                        <button
-                          className="flex-1 py-2 text-base font-bold border transition-all cursor-pointer bg-current/10 border-current/20 opacity-70 hover:bg-current/10"
-                          onClick={() => handleDelete(wart)}
-                        >
-                          Confirm Delete?
-                        </button>
+                        /* Unsold artwork — can delete */
+                        !confirmDelete ? (
+                          <button className="flex-1 py-3 text-body-lg font-bold border border-current/15 opacity-60 hover:opacity-90 transition-all cursor-pointer" onClick={() => setConfirmDelete(true)}>{'\u2716'} Delete</button>
+                        ) : (
+                          <button className="flex-1 py-3 text-body-lg font-bold border border-current/20 opacity-70 hover:opacity-100 transition-all cursor-pointer" onClick={() => handleDelete(wart)}>Confirm Delete?</button>
+                        )
                       )}
                     </div>
 
                     {wart.listed ? (
-                      <button
-                        className="warp-button w-full py-2 text-base"
-                        onClick={() => handleDelist(wart)}
-                      >
-                        Remove from Sale
-                      </button>
+                      <button className="warp-button w-full py-3 text-body-lg" onClick={() => handleDelist(wart)}>Remove from Sale</button>
                     ) : (
-                      <div className="space-y-2">
-                        {/* Pricing mode toggle */}
-                        <div className="flex gap-1">
-                          <button
-                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'crypto' ? 'bg-current/5 opacity-80 border border-current/10' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
-                            onClick={() => setPricingMode('crypto')}
-                          >
-                            {'\u2B23'} Crypto
-                          </button>
-                          <button
-                            className={`flex-1 py-1.5 text-[11px] font-medium transition-all cursor-pointer ${pricingMode === 'fiat' ? 'bg-current/10 opacity-80 border border-current/15' : 'opacity-40 border border-current/10 hover:bg-white/5'}`}
-                            onClick={() => setPricingMode('fiat')}
-                          >
-                            {'\u20AC'} Fiat
-                          </button>
+                      <div className="space-y-3">
+                        <div className="flex gap-3">
+                          <input className="warp-input flex-1 text-body-lg" type="number" placeholder="Prix en \u20AC" min="1" step="0.01" value={fiatPriceInput} onChange={e => setFiatPriceInput(e.target.value)} />
+                          <button className="collect-btn text-body-lg px-6" onClick={() => handleList(wart)} disabled={!fiatPriceInput}>Vendre</button>
                         </div>
-
-                        {pricingMode === 'crypto' ? (
-                          <div className="flex gap-2">
-                            <input
-                              className="warp-input flex-1 text-base"
-                              type="number"
-                              placeholder="Price in \u2B23"
-                              value={listPrice}
-                              onChange={e => setListPrice(e.target.value)}
-                            />
-                            <button
-                              className="warp-button text-base px-4"
-                              onClick={() => handleList(wart)}
-                              disabled={!listPrice}
-                            >
-                              List
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            <select
-                              className="warp-input text-base w-20"
-                              value={fiatCurrency}
-                              onChange={e => setFiatCurrency(e.target.value as FiatCurrency)}
-                            >
-                              <option value="EUR">{'\u20AC'} EUR</option>
-                              <option value="USD">$ USD</option>
-                              <option value="GBP">{'\u00A3'} GBP</option>
-                            </select>
-                            <input
-                              className="warp-input flex-1 text-base"
-                              type="number"
-                              placeholder="Price"
-                              value={fiatPriceInput}
-                              onChange={e => setFiatPriceInput(e.target.value)}
-                            />
-                            <button
-                              className="text-base px-4 bg-current/10 opacity-80 border border-current/15 hover:bg-current/15 transition-colors cursor-pointer"
-                              onClick={() => handleList(wart)}
-                              disabled={!fiatPriceInput}
-                            >
-                              List
-                            </button>
-                          </div>
-                        )}
-                        <p className="text-[10px] opacity-40">
-                          {pricingMode === 'fiat' ? 'Paiement par carte, PayPal ou virement' : 'Paiement en Strangrz (\u2B23)'}
-                        </p>
+                        <p className="text-body-sm opacity-60">Paiement par carte, PayPal ou virement</p>
                       </div>
                     )}
 
-                    <button
-                      className="warp-button w-full py-2 text-base"
-                      onClick={() => { setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}
-                    >
-                      Transfer to Another Wallet
-                    </button>
+                    <button className="warp-button w-full py-3 text-body-lg" onClick={() => { setTransferWartId(wart.id); setShowTransferModal(true); setTransferTo(''); setTransferError(''); }}>Transfer</button>
                   </div>
                 )}
               </>
             )}
           </div>
         </div>
-
-        {/* Share to Wall */}
-        <div className="glass-panel p-3 flex items-center gap-3">
-          <button
-            className="warp-button flex-1 py-2 text-base flex items-center justify-center gap-2"
-            onClick={() => {
-              const chatEngine = CosmoChatEngine.load();
-              const creatorName = getCreatorName(wart.creator);
-              const content = `${wart.title} by ${creatorName}`;
-              chatEngine.createPost(
-                wallet.address,
-                wallet.alias || shortAddress(wallet.address),
-                content,
-                undefined,
-                'image',
-                undefined,
-                wart.id
-              );
-              setShareSuccess('Shared to Wall!');
-              setTimeout(() => setShareSuccess(''), 3000);
-            }}
-          >
-            {'\u2197'} Share to Wall
-          </button>
-          {shareSuccess && (
-            <span className="text-body-sm opacity-70">{'\u2714'} {shareSuccess}</span>
-          )}
-        </div>
-
-        {/* Comments */}
-        <div className="glass-panel p-4">
-          <h3 className="text-base font-bold opacity-70 mb-3">Comments ({(wart.comments || []).length})</h3>
-          <div className="flex gap-2 mb-4">
-            <input
-              ref={commentInputRef}
-              className="warp-input flex-1 text-base"
-              placeholder="Add a comment..."
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleAddComment(wart.id); }}
-            />
-            <button className="warp-button text-body-sm px-3" onClick={() => handleAddComment(wart.id)} disabled={!commentText.trim()}>
-              Post
-            </button>
-          </div>
-          <div className="space-y-3">
-            {(!wart.comments || wart.comments.length === 0) ? (
-              <p className="text-body-sm opacity-40 text-center py-2">No comments yet</p>
-            ) : (
-              wart.comments.map(c => (
-                <div key={c.id} className="flex gap-2">
-                  <div className="w-6 h-6 bg-current/5 border border-current/10 flex items-center justify-center text-[10px] opacity-80 font-bold shrink-0 mt-0.5">
-                    {c.authorAlias.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-body-sm font-bold opacity-90">@{c.authorAlias}</span>
-                      <span className="text-[10px] opacity-40">{formatDateFR(c.timestamp)}</span>
-                    </div>
-                    <p className="text-body-sm opacity-50 text-current">{c.content}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Transfer History */}
-        {wart.history.length > 0 && (
-          <div className="glass-panel p-4">
-            <h3 className="text-base font-bold opacity-70 mb-3">Transfer History</h3>
-            <div className="space-y-2">
-              {wart.history.map((h, i) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-none bg-current/5 text-body-sm">
-                  <span className="opacity-80">{'\u21C4'}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="opacity-70 truncate">
-                      {shortAddress(h.from)} {'\u2192'} {shortAddress(h.to)}
-                    </p>
-                    <p className="text-[10px] opacity-40">
-                      {formatDateFR(h.timestamp)}
-                    </p>
-                  </div>
-                  <span className="font-bold opacity-80 shrink-0">
-                    {h.price > 0 ? `${h.price} \u2B23` : 'Gift'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
-    );
-  }
+    );  }
 
   // ─── Edition filter logic ──────────────────────────────────
   const applyEditionFilter = (warts: Wart[]) => {
@@ -1520,7 +1487,7 @@ export default function MarketplaceView() {
           <div className="flex items-center justify-between">
             <h3 className="text-title-sm font-bold opacity-90 font-title">Transfer Artwork</h3>
             <button
-              className="w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-80 cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center opacity-60 hover:opacity-80 cursor-pointer"
               onClick={() => { setShowTransferModal(false); setTransferWartId(null); setTransferTo(''); setTransferError(''); }}
             >
               {'\u2716'}
@@ -1535,8 +1502,8 @@ export default function MarketplaceView() {
               <h4 className="text-base font-bold opacity-90 truncate">{wart.title}</h4>
               <div className="flex items-center gap-1 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigateToProfile(wart.creator)}>
                 <HexAvatar address={wart.creator} size={16} />
-                <p className="text-[10px] opacity-40 truncate">
-                  {getCreatorName(wart.creator)} · {shortAddress(wart.creator)}
+                <p className="text-[10px] opacity-60 truncate">
+                  {getCreatorName(wart.creator)}
                 </p>
               </div>
               <EditionInfo wart={wart} compact />
@@ -1573,7 +1540,7 @@ export default function MarketplaceView() {
             </button>
           </div>
 
-          <p className="text-[10px] opacity-30 text-center">
+          <p className="text-[10px] opacity-50 text-center">
             This action is irreversible. The artwork will be transferred to the recipient wallet.
           </p>
         </div>
@@ -1595,7 +1562,7 @@ export default function MarketplaceView() {
               className={`px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                 tab === t.id
                   ? 'bg-current/10 opacity-90'
-                  : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                  : 'opacity-60 hover:opacity-70 hover:bg-current/5'
               }`}
             >
               {t.label}
@@ -1614,7 +1581,7 @@ export default function MarketplaceView() {
               className={`px-4 py-2 text-xs font-medium whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                 editionFilter === f.id
                   ? 'bg-current/10 border border-current/20 opacity-80'
-                  : 'bg-transparent border border-current/10 opacity-40 hover:border-current/20 hover:opacity-60'
+                  : 'bg-transparent border border-current/10 opacity-60 hover:border-current/20 hover:opacity-60'
               }`}
             >
               {f.label}
@@ -1633,7 +1600,7 @@ export default function MarketplaceView() {
               className={`px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition-all cursor-pointer ${
                 salesMarketFilter === f.id
                   ? 'bg-current/10 border border-current/20 opacity-80'
-                  : 'bg-transparent border border-current/10 opacity-40 hover:border-current/20 hover:opacity-60'
+                  : 'bg-transparent border border-current/10 opacity-60 hover:border-current/20 hover:opacity-60'
               }`}
             >
               {f.label}
@@ -1665,7 +1632,7 @@ export default function MarketplaceView() {
             <>
               <div className="glass-panel p-4 text-center">
                 <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">{tabLabels[tab] || 'Gallery'}</h2>
-                <p className="text-body-sm opacity-40">
+                <p className="text-body-sm opacity-60">
                   {tab === 'all' && 'Objets rares certifiés sur le protocole Strangrz.'}
                   {tab === 'art' && 'Art visuel — images, illustrations et oeuvres graphiques.'}
                   {tab === 'video' && 'Oeuvres vidéo certifiées.'}
@@ -1676,24 +1643,320 @@ export default function MarketplaceView() {
                 </p>
               </div>
 
-              {warts.length === 0 ? (
+              {/* ─── Featured Sections (Gallery 'all' tab only) ─────── */}
+              {tab === 'all' && (
+                <>
+                  {/* ─── Start Collecting (affordable warts < €3) ────── */}
+                  {affordableWarts.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h3 className="text-base font-bold opacity-90 flex items-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Start Collecting
+                          </h3>
+                          <p className="text-[10px] opacity-50">Support for under {'\u20AC'}3</p>
+                        </div>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => { setEditionFilter('all'); }}>View all</button>
+                      </div>
+                      <div className="relative group">
+                        <button className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(affordableScrollRef, 'left')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <div ref={affordableScrollRef} className="flex gap-3 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory">
+                          {affordableWarts.map(w => (
+                            <div key={w.id} className="shrink-0 w-[160px] sm:w-[180px] cursor-pointer snap-start" onClick={() => openDetail(w)}>
+                              <div className="aspect-[3/4] overflow-hidden bg-current/5 rounded-sm">
+                                <img src={w.imageData} alt={w.title} className="w-full h-full object-cover" loading="lazy" />
+                              </div>
+                              <p className="text-body-sm font-bold opacity-80 mt-1.5 truncate">{w.title}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <HexAvatar address={w.creator} size={14} />
+                                <span className="text-[10px] opacity-50 truncate">@{getCreatorName(w.creator)}</span>
+                              </div>
+                              {w.price !== null && w.owner !== wallet?.address && (
+                                <button
+                                  className="cta-gradient-btn mt-1.5 w-full py-1.5 text-[11px] font-bold flex items-center justify-center gap-1"
+                                  onClick={e => { e.stopPropagation(); if (!requireAuth()) return; handleBuyFiat(w); }}
+                                >
+                                  <span className="w-2 h-2 bg-white rounded-full inline-block" />
+                                  Collect {'\u00B7'} {getEurSymbol(w)}{getEurPrice(w).toFixed(2)}
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <button className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(affordableScrollRef, 'right')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Last Editions (almost gone) ──────────────── */}
+                  {lastEditions.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h3 className="text-base font-bold opacity-90 flex items-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Last Editions
+                          </h3>
+                          <p className="text-[10px] opacity-50">1-3 editions left</p>
+                        </div>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => setEditionFilter('limited')}>View all</button>
+                      </div>
+                      <div className="relative group">
+                        <button className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(lastEditionsScrollRef, 'left')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <div ref={lastEditionsScrollRef} className="flex gap-3 overflow-x-auto scrollbar-none pb-2 snap-x snap-mandatory">
+                          {lastEditions.map(w => {
+                            const remaining = (w.maxEditions || 0) - (w.editionNumber || 1);
+                            return (
+                              <div key={w.id} className="shrink-0 w-[160px] sm:w-[180px] cursor-pointer snap-start" onClick={() => openDetail(w)}>
+                                <div className="aspect-[3/4] overflow-hidden bg-current/5 rounded-sm relative">
+                                  <img src={w.imageData} alt={w.title} className="w-full h-full object-cover" loading="lazy" />
+                                  <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold">
+                                    {remaining} left
+                                  </div>
+                                </div>
+                                <p className="text-body-sm font-bold opacity-80 mt-1.5 truncate">{w.title}</p>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <HexAvatar address={w.creator} size={14} />
+                                  <span className="text-[10px] opacity-50 truncate">@{getCreatorName(w.creator)}</span>
+                                </div>
+                                {w.listed && w.price !== null && w.owner !== wallet?.address && (
+                                  <button
+                                    className="cta-gradient-btn mt-1.5 w-full py-1.5 text-[11px] font-bold flex items-center justify-center gap-1"
+                                    onClick={e => { e.stopPropagation(); if (!requireAuth()) return; handleBuyFiat(w); }}
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    Collect
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <button className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 dark:bg-black/80 border border-current/10 flex items-center justify-center opacity-0 group-hover:opacity-80 transition-opacity cursor-pointer" onClick={() => scrollCarousel(lastEditionsScrollRef, 'right')}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Latest Activity (Created / Collected) ────── */}
+                  {latestActivity.length > 0 && (
+                    <div className="glass-panel p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        <h3 className="text-base font-bold opacity-90">Latest Activity</h3>
+                      </div>
+                      <div className="relative group">
+                        <div ref={activityScrollRef} className="flex gap-3 overflow-x-auto scrollbar-none pb-1 snap-x snap-mandatory">
+                          {latestActivity.slice(0, 20).map((ev, i) => (
+                            <div key={`${ev.wart.id}-${ev.ts}-${i}`} className="shrink-0 w-[120px] cursor-pointer snap-start" onClick={() => openDetail(ev.wart)}>
+                              <div className="aspect-square overflow-hidden bg-current/5 rounded-sm">
+                                <WartMedia wart={ev.wart} className="w-full h-full object-cover" />
+                              </div>
+                              <p className="text-[10px] font-bold opacity-70 mt-1">{ev.type}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <HexAvatar address={ev.address} size={12} />
+                                <span className="text-[9px] opacity-50 truncate">@{getCreatorName(ev.address)}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Top Collectors (ranked grid) ────────────── */}
+                  {topCollectors.length >= 2 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <div>
+                          <h3 className="text-title-sm font-bold opacity-90 font-title">Top Collectors</h3>
+                          <p className="text-[10px] opacity-50">Growing this month</p>
+                        </div>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => setTab('top-collectors')}>View all</button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {topCollectors.slice(0, 6).map((coll, idx) => {
+                          const collWarts = allWarts.filter(w => w.owner === coll.address && w.imageData);
+                          const thumbWart = collWarts[0];
+                          const recentCount = allWarts.filter(w => w.owner === coll.address && w.createdAt > Date.now() - 30 * 86400000).length;
+                          return (
+                            <div
+                              key={coll.address}
+                              className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors"
+                              onClick={() => navigateToProfile(coll.address)}
+                            >
+                              <div className="relative shrink-0">
+                                <span className="absolute -top-1 -left-1 w-5 h-5 bg-current/10 border border-current/20 flex items-center justify-center text-[9px] font-bold opacity-70 z-10">
+                                  {idx + 1}
+                                </span>
+                                <div className="w-12 h-12 overflow-hidden rounded-sm bg-current/5">
+                                  {thumbWart ? (
+                                    <img src={thumbWart.mediaType === 'video' || thumbWart.mediaType === 'audio' ? '' : thumbWart.imageData} alt="" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  ) : (
+                                    <div className="w-full h-full bg-current/5" />
+                                  )}
+                                </div>
+                              </div>
+                              <HexAvatar address={coll.address} size={24} className="shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-body-sm font-bold opacity-80 truncate">
+                                  {coll.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(coll.address)}
+                                </p>
+                                <p className="text-[10px] opacity-50">@{coll.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(coll.address)}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-body-sm font-bold opacity-70">{coll.count >= 1000 ? `${(coll.count / 1000).toFixed(1)}k` : coll.count} pieces</p>
+                                {recentCount > 0 && (
+                                  <p className="text-[10px] text-emerald-500 font-bold flex items-center justify-end gap-0.5">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                                    +{recentCount} this month
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right shrink-0 pl-2 border-l border-current/10">
+                                <p className="text-body-sm font-bold opacity-80">{coll.totalSpent >= 1000 ? `${(coll.totalSpent / 1000).toFixed(1)}k` : coll.totalSpent.toFixed(0)} {'\u20AC'}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Creator Spotlight ────────────────────────── */}
+                  {spotlightCreator && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <h3 className="text-title-sm font-bold opacity-90 font-title">
+                          Creator Spotlight {'\u2014'} {getCreatorName(spotlightCreator.address)}
+                        </h3>
+                        <button className="text-[11px] opacity-60 hover:opacity-80 underline cursor-pointer" onClick={() => navigateToProfile(spotlightCreator.address)}>View all</button>
+                      </div>
+                      <div
+                        className="w-full aspect-[21/9] overflow-hidden bg-current/5 cursor-pointer relative"
+                        onClick={() => navigateToProfile(spotlightCreator.address)}
+                      >
+                        <img
+                          src={spotlightCreator.wartsWithImages[0].imageData}
+                          alt={spotlightCreator.wartsWithImages[0].title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="flex items-center gap-2">
+                            <HexAvatar address={spotlightCreator.address} size={28} />
+                            <div>
+                              <p className="text-body-sm font-bold text-white/90">@{getCreatorName(spotlightCreator.address)}</p>
+                              <p className="text-[10px] text-white/60">{spotlightCreator.count} artworks {'\u00B7'} {spotlightCreator.totalVolume.toFixed(0)} {'\u20AC'} volume</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ─── Listings ───────────────────── */}
+              {lazyListings.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-[10px] opacity-60 uppercase tracking-wider">{'\u2728'} En vente</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {lazyListings.map(template => {
+                      const fees = calculateBuyerTotal(template.price, template.imageData);
+                      const isOwn = template.creator === wallet?.address;
+                      return (
+                        <div key={template.id} className="glass-panel p-0 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform">
+                          {template.imageData && (template.mediaType === 'image' || template.mediaType === 'svg' || template.mediaType === 'cards' || !template.mediaType) && (
+                            <div className="aspect-square overflow-hidden bg-current/5">
+                              <img src={template.imageData} alt={template.title} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                          <div className="p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-body-sm font-bold opacity-80 truncate">{template.title}</p>
+                              <span className="text-[9px] px-1.5 py-0.5 bg-current/10 border border-current/20 opacity-60">{'\u20AC'}</span>
+                            </div>
+                            <p className="text-[10px] opacity-60 truncate">{getCreatorName(template.creator)}</p>
+                            <div className="text-[10px] opacity-50 space-y-0.5">
+                              <p>Prix : <strong>{template.price} {'\u20AC'}</strong></p>
+                              <p>+ service : <strong>{fees.serviceFee} {'\u20AC'}</strong> ({BUYER_SERVICE_FEE_PERCENT}%)</p>
+                              <p>+ stockage : <strong>{fees.storageFee} {'\u20AC'}</strong></p>
+                              <p className="font-bold opacity-80">Total : {fees.total} {'\u20AC'}</p>
+                            </div>
+                            {template.editionType !== 'unique' && (
+                              <p className="text-[9px] opacity-60">
+                                {template.mintedEditions}/{template.maxEditions || '\u221E'} vendu(s)
+                              </p>
+                            )}
+                            {template.availableUntil && (
+                              <p className="text-[9px] opacity-60">{'\u23F1'} {formatTimeRemaining(template.availableUntil)}</p>
+                            )}
+                            {!isOwn && wallet && (
+                              <button
+                                className="warp-button w-full py-2 text-[11px] font-bold"
+                                onClick={() => handleBuyLazyMint(template.id)}
+                                disabled={buyingLazy || (wallet?.balance || 0) < fees.total}
+                              >
+                                {buyingLazy ? 'Achat...' : `Acheter ${fees.total} \u20AC`}
+                              </button>
+                            )}
+                            {isOwn && (
+                              <button
+                                className="w-full py-2 text-[10px] opacity-60 border border-current/10 hover:opacity-60 cursor-pointer"
+                                onClick={() => cancelLazyListing(template.id)}
+                              >
+                                Annuler le listing
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* ─── Buy Lazy Result Toast ─────────────────── */}
+              {buyLazyResult && (
+                <div className={`glass-panel p-3 text-center text-body-sm ${buyLazyResult.success ? 'opacity-80' : 'opacity-60'}`}>
+                  {buyLazyResult.success ? '\u2713' : '\u2717'} {buyLazyResult.message}
+                </div>
+              )}
+
+              {warts.length === 0 && lazyListings.length === 0 ? (
                 <div className="glass-panel p-8 text-center">
                   <p className="text-2xl mb-2">{'\u2742'}</p>
-                  <p className="opacity-50 text-base">Aucune Strangrz dans cette catégorie.</p>
+                  <p className="opacity-50 text-base">Aucune Strangrz dans cette cat{'\u00E9'}gorie.</p>
                   <button
                     className="warp-button text-body-sm mt-3 px-4 py-2"
                     onClick={() => setTab('create')}
                   >
-                    Créer une Strangrz
+                    Cr{'\u00E9'}er une Strangrz
                   </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {warts.map(wart => (
+              ) : warts.length > 0 ? (
+                <VirtualGrid
+                  items={warts}
+                  columns={window.innerWidth >= 640 ? 3 : 2}
+                  rowHeight={340}
+                  gap={12}
+                  className="max-h-[70vh]"
+                  emptyMessage="Aucune Strangrz"
+                  renderItem={(wart) => (
                     <WartCard key={wart.id} wart={wart} showBuy />
-                  ))}
-                </div>
-              )}
+                  )}
+                />
+              ) : null}
             </>
           );
         })()
@@ -1707,7 +1970,7 @@ export default function MarketplaceView() {
         <>
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Creators</h2>
-            <p className="text-body-sm opacity-40">Les créateurs les plus actifs et performants.</p>
+            <p className="text-body-sm opacity-60">Les créateurs les plus actifs et performants.</p>
           </div>
           {topCreators.length === 0 ? (
             <div className="glass-panel p-8 text-center">
@@ -1717,20 +1980,20 @@ export default function MarketplaceView() {
             <div className="space-y-2">
               {topCreators.slice(0, 50).map((creator, idx) => (
                 <div key={creator.address} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(creator.address)}>
-                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
-                    #{idx + 1}
+                  <div className={`w-8 h-8 flex items-center justify-center text-base font-bold shrink-0 rounded-full border ${idx === 0 ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' : idx === 1 ? 'bg-gray-400/20 border-gray-400/40 text-gray-300' : idx === 2 ? 'bg-amber-700/20 border-amber-700/40 text-amber-600' : 'opacity-50 border-current/10'}`}>
+                    {idx < 3 ? idx + 1 : `#${idx + 1}`}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
-                      {creator.address === wallet.address ? (wallet.alias || 'You') : shortAddress(creator.address)}
+                      {creator.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(creator.address)}
                     </p>
-                    <p className="text-[10px] opacity-40">
+                    <p className="text-[10px] opacity-60">
                       {creator.count} artwork{creator.count > 1 ? 's' : ''} created
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u2B23'}</p>
-                    <p className="text-[10px] opacity-40">total volume</p>
+                    <p className="text-base font-bold opacity-80">{creator.totalVolume.toFixed(1)} {'\u20AC'}</p>
+                    <p className="text-[10px] opacity-60">total volume</p>
                   </div>
                 </div>
               ))}
@@ -1744,7 +2007,7 @@ export default function MarketplaceView() {
         <>
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Collectors</h2>
-            <p className="text-body-sm opacity-40">Les plus grands collectionneurs de Strangrz.</p>
+            <p className="text-body-sm opacity-60">Les plus grands collectionneurs de Strangrz.</p>
           </div>
           {topCollectors.length === 0 ? (
             <div className="glass-panel p-8 text-center">
@@ -1754,20 +2017,20 @@ export default function MarketplaceView() {
             <div className="space-y-2">
               {topCollectors.slice(0, 50).map((collector, idx) => (
                 <div key={collector.address} className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(collector.address)}>
-                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
-                    #{idx + 1}
+                  <div className={`w-8 h-8 flex items-center justify-center text-base font-bold shrink-0 rounded-full border ${idx === 0 ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' : idx === 1 ? 'bg-gray-400/20 border-gray-400/40 text-gray-300' : idx === 2 ? 'bg-amber-700/20 border-amber-700/40 text-amber-600' : 'opacity-50 border-current/10'}`}>
+                    {idx < 3 ? idx + 1 : `#${idx + 1}`}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">
-                      {collector.address === wallet.address ? (wallet.alias || 'You') : shortAddress(collector.address)}
+                      {collector.address === wallet?.address ? (wallet?.alias || 'You') : getCreatorName(collector.address)}
                     </p>
-                    <p className="text-[10px] opacity-40">
+                    <p className="text-[10px] opacity-60">
                       {collector.count} artwork{collector.count > 1 ? 's' : ''} owned
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u2B23'}</p>
-                    <p className="text-[10px] opacity-40">total spent</p>
+                    <p className="text-base font-bold opacity-80">{collector.totalSpent.toFixed(1)} {'\u20AC'}</p>
+                    <p className="text-[10px] opacity-60">total spent</p>
                   </div>
                 </div>
               ))}
@@ -1781,7 +2044,7 @@ export default function MarketplaceView() {
         <>
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Sales</h2>
-            <p className="text-body-sm opacity-40">
+            <p className="text-body-sm opacity-60">
               {salesMarketFilter === '1st' ? 'Les meilleures ventes du marché primaire (première vente).' : 'Les meilleures reventes sur le marché secondaire.'}
             </p>
           </div>
@@ -1797,22 +2060,22 @@ export default function MarketplaceView() {
                   className="glass-panel p-3 flex items-center gap-3 cursor-pointer hover:bg-current/5 transition-all"
                   onClick={() => openDetail(sale.wart)}
                 >
-                  <div className="w-8 h-8 flex items-center justify-center text-base font-bold opacity-50 shrink-0">
-                    #{idx + 1}
+                  <div className={`w-8 h-8 flex items-center justify-center text-base font-bold shrink-0 rounded-full border ${idx === 0 ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' : idx === 1 ? 'bg-gray-400/20 border-gray-400/40 text-gray-300' : idx === 2 ? 'bg-amber-700/20 border-amber-700/40 text-amber-600' : 'opacity-50 border-current/10'}`}>
+                    {idx < 3 ? idx + 1 : `#${idx + 1}`}
                   </div>
                   <div className="w-12 h-12 bg-current/5 overflow-hidden shrink-0">
                     <WartMedia wart={sale.wart} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">{sale.wart.title}</p>
-                    <p className="text-[10px] opacity-40">
-                      {shortAddress(sale.transfer.from)} {'\u2192'} {shortAddress(sale.transfer.to)}
+                    <p className="text-[10px] opacity-60">
+                      {getCreatorName(sale.transfer.from)} {'\u2192'} {getCreatorName(sale.transfer.to)}
                     </p>
-                    <p className="text-[10px] opacity-30">{formatDateFR(sale.transfer.timestamp)}</p>
+                    <p className="text-[10px] opacity-50">{formatDateFR(sale.transfer.timestamp)}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u2B23'}</p>
-                    <p className="text-[10px] opacity-40">{sale.isFirstSale ? '1st market' : '2nd market'}</p>
+                    <p className="text-base font-bold opacity-90">{sale.transfer.price} {'\u20AC'}</p>
+                    <p className="text-[10px] opacity-60">{sale.isFirstSale ? '1st market' : '2nd market'}</p>
                   </div>
                 </div>
               ))}
@@ -1826,7 +2089,7 @@ export default function MarketplaceView() {
         <>
           <div className="glass-panel p-4 text-center">
             <h2 className="text-title-sm font-bold opacity-100 mb-1 font-title">Top Collections</h2>
-            <p className="text-body-sm opacity-40">Les collections les plus populaires de Strangrz.</p>
+            <p className="text-body-sm opacity-60">Les collections les plus populaires de Strangrz.</p>
           </div>
           {topCollections.length === 0 ? (
             <div className="glass-panel p-8 text-center">
@@ -1846,13 +2109,13 @@ export default function MarketplaceView() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-base font-bold opacity-80 truncate">{coll.title}</p>
-                    <p className="text-[10px] opacity-40">
+                    <p className="text-[10px] opacity-60">
                       {getCreatorName(coll.creator)} {'\u00B7'} {coll.count} item{coll.count > 1 ? 's' : ''}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u2B23'}</p>
-                    <p className="text-[10px] opacity-40">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u2B23` : 'Not listed'}</p>
+                    <p className="text-base font-bold opacity-80">{coll.totalVolume.toFixed(1)} {'\u20AC'}</p>
+                    <p className="text-[10px] opacity-60">{coll.floorPrice !== null ? `Floor: ${coll.floorPrice} \u20AC` : 'Not listed'}</p>
                   </div>
                 </div>
               ))}
@@ -1882,7 +2145,7 @@ export default function MarketplaceView() {
           {/* Create header */}
           <div className="p-5 pb-3 border-b border-current/10">
             <h2 className="text-title-sm font-bold opacity-100 font-title">Create a Strangrz</h2>
-            <p className="text-body-sm opacity-40 mt-1">
+            <p className="text-body-sm opacity-60 mt-1">
               Certify a rare digital object on the Strangrz protocol. Earn royalties on every resale.
             </p>
           </div>
@@ -1905,7 +2168,7 @@ export default function MarketplaceView() {
                     className={`py-2.5 px-2 text-[11px] font-medium transition-all cursor-pointer text-center ${
                       mediaType === cat.id
                         ? 'bg-current/10 border border-current/20 opacity-90'
-                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                        : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
                     }`}
                   >
                     <div className="text-base mb-0.5">{cat.icon}</div>
@@ -1915,33 +2178,16 @@ export default function MarketplaceView() {
               </div>
             </div>
 
-            {/* ─── Chain Selection ──────────────────────── */}
-            <div>
-              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Blockchain</label>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { id: 'strangrz' as const, label: 'Strangrz', sub: 'SZ-721 \u00B7 0 gas', icon: '\u2B22' },
-                  { id: 'ethereum' as const, label: 'Ethereum', sub: 'ERC-721 \u00B7 Gas fees', icon: '\u039E' },
-                ]).map(ch => (
-                  <button
-                    key={ch.id}
-                    onClick={() => setMintChain(ch.id)}
-                    className={`p-3 text-center transition-all cursor-pointer ${
-                      mintChain === ch.id
-                        ? 'bg-current/10 border border-current/20 opacity-90'
-                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
-                    }`}
-                  >
-                    <div className="text-base mb-1">{ch.icon}</div>
-                    <div className="text-[11px] font-medium">{ch.label}</div>
-                    <div className="text-[9px] opacity-60 mt-0.5">{ch.sub}</div>
-                  </button>
-                ))}
-              </div>
-              <p className="text-[10px] opacity-30 mt-1.5">
-                {mintChain === 'strangrz'
-                  ? 'Mint gratuit sur StrangrzChain. Certificat STCERT + Strangrz Safe inclus.'
-                  : 'Mint sur Ethereum via ERC-721. N\u00E9cessite un wallet Ethereum connect\u00E9 (MetaMask). Gas fees requis.'}
+            {/* ─── Publication Info ─────────────────────── */}
+            <div className="p-3 border border-current/10 bg-current/5 space-y-1.5">
+              <p className="text-[10px] opacity-60 leading-relaxed">
+                La publication est gratuite. L'acheteur paie le prix affich{'\u00E9'} + {BUYER_SERVICE_FEE_PERCENT}% de frais plateforme.
+                Vous recevez 100% du prix affich{'\u00E9'}.
+              </p>
+              <p className="text-[10px] opacity-50 leading-relaxed">
+                {'\uD83D\uDCC2'} Stockage intelligent : seul un aper{'\u00E7'}u compress{'\u00E9'} (~50 Ko) est envoy{'\u00E9'} dans le cloud {'\u00E0'} la publication.
+                L'oeuvre originale reste sur votre appareil. Le m{'\u00E9'}dia en pleine qualit{'\u00E9'} est upload{'\u00E9'} automatiquement
+                lors de la premi{'\u00E8'}re vente — les co{'\u00FB'}ts de stockage (IPFS, Arweave, Supabase) sont couverts par les frais de transaction.
               </p>
             </div>
 
@@ -1965,7 +2211,7 @@ export default function MarketplaceView() {
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
-                  <p className="text-[10px] opacity-30 text-center">{uploadProgress}%</p>
+                  <p className="text-[10px] opacity-50 text-center">{uploadProgress}%</p>
                 </div>
               )}
               {imageData ? (
@@ -1987,17 +2233,17 @@ export default function MarketplaceView() {
                           <div className="flex-1">
                             <p className="text-[10px] opacity-50">Cover image</p>
                           </div>
-                          <button className="text-[10px] opacity-40 hover:opacity-70 cursor-pointer" onClick={() => setAudioCover('')}>Remove</button>
+                          <button className="text-[10px] opacity-60 hover:opacity-70 cursor-pointer" onClick={() => setAudioCover('')}>Remove</button>
                         </div>
                       ) : (
-                        <button className="w-full py-2 text-[11px] opacity-40 border border-dashed border-current/15 hover:opacity-60 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
+                        <button className="w-full py-2 text-[11px] opacity-60 border border-dashed border-current/15 hover:opacity-60 cursor-pointer" onClick={() => audioCoverRef.current?.click()}>
                           + Add cover image
                         </button>
                       )}
                     </div>
                   )}
                   <button
-                    className="text-[11px] opacity-40 hover:opacity-70 cursor-pointer"
+                    className="text-[11px] opacity-60 hover:opacity-70 cursor-pointer"
                     onClick={() => { setImageData(''); setAudioCover(''); }}
                   >
                     Remove file
@@ -2010,7 +2256,7 @@ export default function MarketplaceView() {
                 >
                   <div className="text-2xl mb-1">{'\u2B06'}</div>
                   <div className="text-[11px]">Click to upload (max 50MB)</div>
-                  <div className="text-[10px] opacity-60 mt-1">.gif .jpeg .png .svg .mp3 .mp4 .mov</div>
+                  <div className="text-[10px] opacity-60 mt-1">.gif .jpeg .png .svg .mp3 .mp4 .mov (video max 30s)</div>
                 </button>
               )}
             </div>
@@ -2053,7 +2299,7 @@ export default function MarketplaceView() {
                     className={`p-3 text-center transition-all cursor-pointer ${
                       editionType === et.id
                         ? 'bg-current/10 border border-current/20 opacity-90'
-                        : 'border border-current/10 opacity-40 hover:opacity-60 hover:border-current/15'
+                        : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
                     }`}
                     onClick={() => { setEditionType(et.id); if (et.id !== 'limited') setMaxEditions(''); }}
                   >
@@ -2083,16 +2329,33 @@ export default function MarketplaceView() {
             {/* ─── Price & Royalty (side by side) ───────── */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Price in {'\u2B23'}</label>
+                <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">
+                  Prix de vente en {'\u20AC'}
+                </label>
                 <input
                   className="warp-input w-full"
                   type="number"
-                  placeholder="Not for sale"
-                  min="0"
-                  step="1"
+                  placeholder="Min 1 \u20AC (requis)"
+                  min="1"
+                  step="0.01"
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                 />
+                {price && parseFloat(price) >= 1 && (() => {
+                  const fees = calculateBuyerTotal(parseFloat(price), imageData || undefined);
+                  return (
+                    <>
+                      <p className="text-[10px] opacity-50 mt-1">
+                        L'acheteur paiera {fees.total} {'\u20AC'} ({price} {'\u20AC'} + {fees.serviceFee} {'\u20AC'} service{fees.storageFee > 0 ? ` + ${fees.storageFee} \u20AC stockage cloud` : ''})
+                      </p>
+                      {fees.storageFee > 0 && (
+                        <p className="text-[9px] opacity-40 mt-0.5">
+                          Stockage cloud = r{'\u00E9'}plication IPFS + Arweave + Supabase ({'\u00E0'} la vente uniquement)
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               <div>
                 <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Royalty (%)</label>
@@ -2122,15 +2385,165 @@ export default function MarketplaceView() {
                 onChange={e => setDurationHours(e.target.value)}
               />
               {durationHours && (
-                <p className="text-[10px] opacity-40 mt-1">
+                <p className="text-[10px] opacity-60 mt-1">
                   Expires {formatDateFR(Date.now() + parseFloat(durationHours) * 3600000)} (Paris)
                 </p>
               )}
             </div>
 
+            {/* ─── Sale Mode: Fixed Price or Auction ──── */}
+            <div>
+              <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Sale Mode</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setSaleMode('fixed')}
+                  className={`p-3 text-center transition-all cursor-pointer ${
+                    saleMode === 'fixed'
+                      ? 'bg-current/10 border border-current/20 opacity-90'
+                      : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
+                  }`}
+                >
+                  <div className="text-base mb-1">{'\u20AC'}</div>
+                  <div className="text-[11px] font-medium">Prix fixe</div>
+                  <div className="text-[9px] opacity-60 mt-0.5">Vente imm{'\u00E9'}diate au prix affich{'\u00E9'}</div>
+                </button>
+                <button
+                  onClick={() => setSaleMode('auction')}
+                  className={`p-3 text-center transition-all cursor-pointer ${
+                    saleMode === 'auction'
+                      ? 'bg-current/10 border border-current/20 opacity-90'
+                      : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
+                  }`}
+                >
+                  <div className="text-base mb-1">{'\u2696'}</div>
+                  <div className="text-[11px] font-medium">Ench{'\u00E8'}res</div>
+                  <div className="text-[9px] opacity-60 mt-0.5">Les acheteurs se disputent le prix</div>
+                </button>
+              </div>
+            </div>
+
+            {saleMode === 'auction' && (
+              <div className="space-y-4 p-4 border border-current/10 bg-current/5">
+                <label className="text-[10px] opacity-50 block mb-2 uppercase tracking-wider">Type d'ench{'\u00E8'}res</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { id: 'no-reserve' as const, label: 'Sans r\u00E9serve', icon: '\u2B06', desc: 'Le plus haut ench\u00E9risseur gagne' },
+                    { id: 'minimum' as const, label: 'Prix minimum', icon: '\u20AC', desc: 'Ench\u00E8re minimale requise' },
+                    { id: 'reserve' as const, label: 'Prix de r\u00E9serve', icon: '\u2B21', desc: 'Prix cach\u00E9 \u00E0 atteindre' },
+                    { id: 'dutch' as const, label: 'Dutch Auction', icon: '\u2B07', desc: 'Le prix baisse avec le temps' },
+                  ]).map(at => (
+                    <button
+                      key={at.id}
+                      onClick={() => setAuctionType(at.id)}
+                      className={`p-2.5 text-center transition-all cursor-pointer ${
+                        auctionType === at.id
+                          ? 'bg-current/10 border border-current/20 opacity-90'
+                          : 'border border-current/10 opacity-60 hover:opacity-60 hover:border-current/15'
+                      }`}
+                    >
+                      <div className="text-base mb-0.5">{at.icon}</div>
+                      <div className="text-[10px] font-medium">{at.label}</div>
+                      <div className="text-[9px] opacity-50 mt-0.5">{at.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Auction explanation */}
+                <div className="p-3 border border-current/10" style={{ background: 'rgba(212,175,55,0.03)' }}>
+                  {auctionType === 'no-reserve' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Ench{'\u00E8'}res sans prix de r{'\u00E9'}serve</p>
+                      <p>L'oeuvre est vendue au plus offrant, quel que soit le prix final. Les ench{'\u00E9'}risseurs placent des offres croissantes pendant la dur{'\u00E9'}e de l'ench{'\u00E8'}re. {'\u00C0'} la fin, le dernier ench{'\u00E9'}risseur remporte l'oeuvre. Id{'\u00E9'}al pour maximiser la visibilit{'\u00E9'} et laisser le march{'\u00E9'} d{'\u00E9'}cider du prix.</p>
+                    </div>
+                  )}
+                  {auctionType === 'minimum' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Ench{'\u00E8'}res {'\u00E0'} prix minimum</p>
+                      <p>Vous d{'\u00E9'}finissez un prix de d{'\u00E9'}part minimum. Les offres doivent {'\u00EA'}tre sup{'\u00E9'}rieures ou {'\u00E9'}gales {'\u00E0'} ce montant. Le plus offrant remporte l'oeuvre {'\u00E0'} la fin. Si aucune offre n'atteint le minimum, l'oeuvre n'est pas vendue. Id{'\u00E9'}al pour fixer un prix plancher tout en laissant le march{'\u00E9'} surench{'\u00E9'}rir.</p>
+                    </div>
+                  )}
+                  {auctionType === 'reserve' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Ench{'\u00E8'}res avec prix de r{'\u00E9'}serve</p>
+                      <p>Vous fixez un prix de r{'\u00E9'}serve secret (non visible par les ench{'\u00E9'}risseurs). Les offres montent librement. Si la meilleure offre atteint ou d{'\u00E9'}passe le prix de r{'\u00E9'}serve, l'oeuvre est vendue. Sinon, la vente est annul{'\u00E9'}e. Prot{'\u00E8'}ge contre une vente {'\u00E0'} prix trop bas tout en cr{'\u00E9'}ant de la comp{'\u00E9'}tition.</p>
+                    </div>
+                  )}
+                  {auctionType === 'dutch' && (
+                    <div className="text-[10px] opacity-60 leading-relaxed space-y-1">
+                      <p className="font-bold opacity-80">Dutch Auction (ench{'\u00E8'}res hollandaises)</p>
+                      <p>Le prix commence haut et descend progressivement dans le temps. Le premier acheteur qui accepte le prix en cours remporte l'oeuvre imm{'\u00E9'}diatement. Pas de surench{'\u00E8'}re : c'est une course {'\u00E0'} la d{'\u00E9'}cision. Id{'\u00E9'}al pour une vente rapide avec un prix d{'\u00E9'}gressif.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Auction fields */}
+                <div className="space-y-3">
+                  {auctionType === 'no-reserve' && (
+                    <div>
+                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (optionnel, en {'\u20AC'})</label>
+                      <input className="warp-input w-full" type="number" placeholder="1 \u20AC minimum" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      <p className="text-[9px] opacity-40 mt-1">Laisser vide pour d{'\u00E9'}marrer {'\u00E0'} 1 {'\u20AC'}</p>
+                    </div>
+                  )}
+                  {auctionType === 'minimum' && (
+                    <div>
+                      <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix minimum (en {'\u20AC'})</label>
+                      <input className="warp-input w-full" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                    </div>
+                  )}
+                  {auctionType === 'reserve' && (
+                    <>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part visible (en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Ex: 50 \u20AC" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de r{'\u00E9'}serve secret (en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={auctionReservePrice} onChange={e => setAuctionReservePrice(e.target.value)} />
+                        <p className="text-[9px] opacity-40 mt-1">Ce prix ne sera pas visible par les ench{'\u00E9'}risseurs</p>
+                      </div>
+                    </>
+                  )}
+                  {auctionType === 'dutch' && (
+                    <>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix de d{'\u00E9'}part (haut, en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Ex: 1000 \u20AC" min="1" step="0.01" value={auctionStartPrice} onChange={e => setAuctionStartPrice(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Prix final minimum (en {'\u20AC'})</label>
+                        <input className="warp-input w-full" type="number" placeholder="Min 1 \u20AC" min="1" step="0.01" value={auctionEndPrice} onChange={e => setAuctionEndPrice(e.target.value)} />
+                        <p className="text-[9px] opacity-40 mt-1">Le prix descend lin{'\u00E9'}airement du prix de d{'\u00E9'}part au prix final pendant la dur{'\u00E9'}e</p>
+                      </div>
+                    </>
+                  )}
+
+                  <div>
+                    <label className="text-[10px] opacity-50 block mb-1.5 uppercase tracking-wider">Dur{'\u00E9'}e de l'ench{'\u00E8'}re (heures)</label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {['6', '12', '24', '48'].map(h => (
+                        <button
+                          key={h}
+                          onClick={() => setAuctionDurationHours(h)}
+                          className={`py-2 text-[11px] font-medium transition-all cursor-pointer ${
+                            auctionDurationHours === h
+                              ? 'bg-current/10 border border-current/20 opacity-90'
+                              : 'border border-current/10 opacity-60 hover:opacity-60'
+                          }`}
+                        >
+                          {h}h
+                        </button>
+                      ))}
+                    </div>
+                    <input className="warp-input w-full mt-2" type="number" placeholder="Ou saisir une dur\u00E9e personnalis\u00E9e" min="1" value={auctionDurationHours} onChange={e => setAuctionDurationHours(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ─── Rarity Preview ──────────────────────── */}
             <div className="p-3 border border-current/10 bg-current/5 flex items-center justify-between">
-              <span className="text-body-sm opacity-40">Estimated rarity</span>
+              <span className="text-body-sm opacity-60">Estimated rarity</span>
               <span className="text-body-sm">
                 {(() => {
                   const previewRarity = editionType === 'unique' ? 'legendary'
@@ -2170,19 +2583,19 @@ export default function MarketplaceView() {
               <div className="text-body-sm p-3 bg-current/5 border border-current/15 opacity-80">{'\u2713'} {createSuccess}</div>
             )}
 
-            {/* ─── Mint Button ─────────────────────────── */}
+            {/* ─── Sell Button ─────────────────────────── */}
             <button
               className="warp-button w-full py-3.5 text-base font-bold"
               onClick={handleMint}
-              disabled={creating || !title || !imageData}
+              disabled={creating || !title || !imageData || !price || parseFloat(price) < 1}
             >
               {creating ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="inline-block w-4 h-4 border-2 border-current/10 border-t-current rounded-none animate-spin" />
-                  {uploadStatus || 'Minting...'}
+                  {uploadStatus || 'Publication...'}
                 </span>
               ) : (
-                mintChain === 'ethereum' ? 'Certifier & Mint (Ethereum)' : 'Certifier & Mint (Strangrz)'
+                'Vendre'
               )}
             </button>
           </div>
@@ -2191,6 +2604,24 @@ export default function MarketplaceView() {
 
       {/* ─── Music Tab (embedded) ──────────────────────────── */}
       {tab === 'music' && !showEditionFilters && <MusicView />}
+
+      {/* ─── Share Modal ──────────────────────────────────── */}
+      {shareMenuWartId && (() => {
+        // Look in all lists AND the currently selected wart (which may have been edited in-memory)
+        const shareWart = selectedWart?.id === shareMenuWartId
+          ? selectedWart
+          : [...allWartsRaw, ...marketplace, ...myCollection, ...myCreated].find(w => w.id === shareMenuWartId);
+        if (!shareWart) return null;
+        return (
+          <ShareModal
+            wart={shareWart}
+            walletAddress={wallet?.address ?? ''}
+            walletAlias={wallet?.alias ?? ''}
+            onClose={() => setShareMenuWartId(null)}
+            onSuccess={msg => { setShareSuccess(msg); setTimeout(() => setShareSuccess(''), 3000); }}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -28,7 +28,7 @@
  *
  *   Shard 0 (GRID)    → Micro-transactions (<10 ⬣)
  *   Shard 1 (HELIX)   → Standard transfers (10-100 ⬣)
- *   Shard 2 (GLYPH)   → Large transfers (100-1000 ⬣) + NFT ops
+ *   Shard 2 (GLYPH)   → Large transfers (100-1000 ⬣) + Strangrz ops
  *   Shard 3 (COSMO)   → System ops (governance, staking)
  *   Shard 4 (CHRONOS) → Time-locked transactions
  *   Shard 5 (NEXUS)   → Cross-shard bridges & atomic swaps
@@ -831,7 +831,7 @@ export class StrangrzChain {
     return result;
   }
 
-  // ─── On-Chain Wart/NFT Storage ─────────────────────────
+  // ─── On-Chain Wart/Strangrz Storage ─────────────────────
 
   async mintWartOnChain(params: {
     creator: string;
