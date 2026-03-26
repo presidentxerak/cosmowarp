@@ -1,0 +1,238 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Strangrz API",
+    "version": "3.0.0",
+    "description": "API for the Strangrz decentralized digital art marketplace. Handles payments, storage, and notifications."
+  },
+  "servers": [
+    { "url": "https://strangrz.com/api", "description": "Production" },
+    { "url": "http://localhost:3000/api", "description": "Local development" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "getHealth",
+        "responses": {
+          "200": { "description": "Service is healthy" }
+        }
+      }
+    },
+    "/rates": {
+      "get": {
+        "summary": "Get exchange rates",
+        "operationId": "getRates",
+        "responses": {
+          "200": {
+            "description": "Current exchange rates (STZ per unit of fiat)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rates": {
+                      "type": "object",
+                      "properties": {
+                        "EUR": { "type": "number", "example": 10 },
+                        "USD": { "type": "number", "example": 9.1 },
+                        "GBP": { "type": "number", "example": 11.7 },
+                        "JPY": { "type": "number", "example": 0.061 },
+                        "CHF": { "type": "number", "example": 10.3 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/create": {
+      "post": {
+        "summary": "Create a Stripe checkout session",
+        "operationId": "createPayment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "currency", "buyerAddress"],
+                "properties": {
+                  "amount": { "type": "number", "description": "Fiat amount" },
+                  "currency": { "type": "string", "enum": ["EUR", "USD", "GBP", "JPY", "CHF"] },
+                  "buyerAddress": { "type": "string" },
+                  "sellerAddress": { "type": "string" },
+                  "wartId": { "type": "string" },
+                  "isResale": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Checkout session created with URL" },
+          "400": { "description": "Invalid input" },
+          "429": { "description": "Rate limited" }
+        }
+      }
+    },
+    "/payments/webhook": {
+      "post": {
+        "summary": "Stripe webhook handler",
+        "operationId": "paymentWebhook",
+        "description": "Processes checkout.session.completed events. Stripe signature verification required.",
+        "responses": {
+          "200": { "description": "Event processed" },
+          "400": { "description": "Invalid signature" }
+        }
+      }
+    },
+    "/connect/onboard": {
+      "post": {
+        "summary": "Start Stripe Connect onboarding for a seller",
+        "operationId": "connectOnboard",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sellerAddress"],
+                "properties": {
+                  "sellerAddress": { "type": "string" },
+                  "email": { "type": "string" },
+                  "returnUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Onboarding URL returned" },
+          "429": { "description": "Rate limited" }
+        }
+      }
+    },
+    "/connect/status": {
+      "get": {
+        "summary": "Check Stripe Connect account status",
+        "operationId": "connectStatus",
+        "parameters": [
+          { "name": "address", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Account status (none, pending, active)" }
+        }
+      }
+    },
+    "/payouts/create": {
+      "post": {
+        "summary": "Create a payout to seller via Stripe Connect",
+        "operationId": "createPayout",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["warpAmount", "currency", "sellerAddress"],
+                "properties": {
+                  "warpAmount": { "type": "number" },
+                  "currency": { "type": "string" },
+                  "sellerAddress": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payout created" },
+          "401": { "description": "Unauthorized" },
+          "429": { "description": "Rate limited" }
+        }
+      }
+    },
+    "/storage/irys-upload": {
+      "post": {
+        "summary": "Upload media to Arweave via Irys",
+        "operationId": "irysUpload",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["data", "wartId"],
+                "properties": {
+                  "data": { "type": "string", "description": "Base64 data URL" },
+                  "wartId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Upload receipt with Arweave transaction ID" },
+          "413": { "description": "File too large (max 50MB)" },
+          "429": { "description": "Rate limited" }
+        }
+      }
+    },
+    "/notifications/email": {
+      "post": {
+        "summary": "Send email notification via Resend",
+        "operationId": "sendEmail",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["to", "type", "data"],
+                "properties": {
+                  "to": { "type": "string", "format": "email" },
+                  "type": { "type": "string", "enum": ["sale", "follow", "comment", "digest"] },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "title": { "type": "string" },
+                      "body": { "type": "string" },
+                      "actionUrl": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Email sent" },
+          "429": { "description": "Rate limited" },
+          "501": { "description": "Resend not configured" }
+        }
+      }
+    },
+    "/csp-report": {
+      "post": {
+        "summary": "Collect CSP violation reports",
+        "operationId": "cspReport",
+        "responses": {
+          "204": { "description": "Report received" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "PAYOUT_SECRET_KEY for payout endpoints"
+      }
+    }
+  }
+}

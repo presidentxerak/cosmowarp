@@ -49,6 +49,12 @@ import { computePlatformMetrics, computeCreatorAnalytics, downloadCSV } from '..
 import { isMobile, getGridColumns } from '../lib/responsive';
 import { runSecurityChecklist, sanitizeText, sanitizeAlias } from '../lib/security-audit';
 import {
+  getOnboardingState, isOnboardingActive, getCurrentStep, getProgress,
+  completeStep, skipOnboarding, type OnboardingStep,
+} from '../engine/onboarding';
+import { setMetaTags, resetMetaTags, setArtworkMeta, setGalleryMeta } from '../lib/seo';
+import { getPerformanceScore, generateVitalsReport, PERFORMANCE_BUDGET } from '../lib/performance';
+import {
   filterWarts, setWartTags, getWartTags, getAllTags,
   DEFAULT_FILTERS, type SearchFilters,
 } from '../engine/search';
@@ -674,4 +680,47 @@ export function useAnalytics() {
     sanitizeText,
     sanitizeAlias,
   };
+}
+
+// ─── Phase 8 Hooks ────────────────────────────────────────
+
+/**
+ * Onboarding — step-by-step guide for new users.
+ */
+export function useOnboarding() {
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+
+  return useMemo(() => ({
+    state: getOnboardingState(),
+    isActive: isOnboardingActive(),
+    currentStep: getCurrentStep(),
+    progress: getProgress(),
+    complete: (step: OnboardingStep) => { completeStep(step); bump(); },
+    skip: () => { skipOnboarding(); bump(); },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [version]);
+}
+
+/**
+ * SEO — meta tags, Open Graph, structured data.
+ */
+export function useSEO() {
+  return useMemo(() => ({
+    setMeta: setMetaTags,
+    resetMeta: resetMetaTags,
+    setArtworkMeta,
+    setGalleryMeta,
+  }), []);
+}
+
+/**
+ * Performance — budget checking, vitals scoring.
+ */
+export function usePerformance() {
+  return useMemo(() => ({
+    budget: PERFORMANCE_BUDGET,
+    getScore: getPerformanceScore,
+    getReport: generateVitalsReport,
+  }), []);
 }
