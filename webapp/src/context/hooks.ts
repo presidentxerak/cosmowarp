@@ -42,6 +42,11 @@ import {
 import {
   isVerified, getVerification, getAllVerified, computeCreatorStats, getFeatured,
 } from '../engine/verification';
+import { GovernanceEngine } from '../engine/governance';
+import { DisputeEngine, type DisputeReason } from '../engine/disputes';
+import { SubscriptionEngine, type SubscriptionTier } from '../engine/subscriptions';
+import { computePlatformMetrics, computeCreatorAnalytics, downloadCSV } from '../engine/analytics';
+import { isMobile, getGridColumns } from '../lib/responsive';
 import {
   filterWarts, setWartTags, getWartTags, getAllTags,
   DEFAULT_FILTERS, type SearchFilters,
@@ -524,4 +529,144 @@ export function useCurrency() {
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [version]);
+}
+
+// ─── Phase 6 Hooks ────────────────────────────────────────
+
+/**
+ * DAO Governance — proposals, voting, execution.
+ */
+export function useGovernance() {
+  const { wallet } = useWallet();
+  const engineRef = useRef(GovernanceEngine.load());
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+  const engine = engineRef.current;
+
+  return useMemo(() => ({
+    activeProposals: engine.getActive(),
+    allProposals: engine.getAll(),
+    getProposal: (id: string) => engine.get(id),
+    getVotes: (id: string) => engine.getVotes(id),
+    hasVoted: (id: string) => wallet ? engine.hasVoted(id, wallet.address) : false,
+    createProposal: (title: string, description: string, type: Parameters<typeof engine.createProposal>[3], circulatingSupply: number, options?: Parameters<typeof engine.createProposal>[5]) => {
+      if (!wallet) return null;
+      const p = engine.createProposal(wallet.address, title, description, type, circulatingSupply, options);
+      bump();
+      return p;
+    },
+    vote: (proposalId: string, choice: 'for' | 'against' | 'abstain', weight: number) => {
+      if (!wallet) return { success: false, error: 'No wallet' };
+      const result = engine.vote(proposalId, wallet.address, choice, weight);
+      if (result.success) bump();
+      return result;
+    },
+    settle: (proposalId: string) => {
+      const result = engine.settle(proposalId);
+      if (result.success) bump();
+      return result;
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Dispute resolution — report, counter-notice, resolve.
+ */
+export function useDisputes() {
+  const { wallet } = useWallet();
+  const engineRef = useRef(DisputeEngine.load());
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+  const engine = engineRef.current;
+
+  return useMemo(() => ({
+    pending: engine.getPending(),
+    all: engine.getAll(),
+    getDispute: (id: string) => engine.get(id),
+    getByWart: (wartId: string) => engine.getByWart(wartId),
+    report: (wartId: string, creator: string, reason: DisputeReason, evidence: string) => {
+      if (!wallet) return null;
+      const d = engine.report(wallet.address, wartId, creator, reason, evidence);
+      bump();
+      return d;
+    },
+    resolve: (disputeId: string, action: 'remove' | 'dismiss' | 'warn', resolution: string) => {
+      if (!wallet) return false;
+      const ok = engine.resolve(disputeId, wallet.address, action, resolution);
+      if (ok) bump();
+      return ok;
+    },
+    counterNotice: (disputeId: string, notice: string) => {
+      if (!wallet) return false;
+      const ok = engine.counterNotice(disputeId, wallet.address, notice);
+      if (ok) bump();
+      return ok;
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Subscriptions — tiers, subscribe, gated content access.
+ */
+export function useSubscriptions() {
+  const { wallet } = useWallet();
+  const engineRef = useRef(SubscriptionEngine.load());
+  const [version, setVersion] = useState(0);
+  const bump = useCallback(() => setVersion(v => v + 1), []);
+  const engine = engineRef.current;
+
+  return useMemo(() => ({
+    mySubscriptions: wallet ? engine.getMySubscriptions(wallet.address) : [],
+    getSubscribers: (creatorAddress: string) => engine.getSubscribers(creatorAddress),
+    getSubscriberCounts: (creatorAddress: string) => engine.getSubscriberCounts(creatorAddress),
+    getTiers: (creatorAddress: string) => engine.getTiers(creatorAddress),
+    hasAccess: (creatorAddress: string, tier: SubscriptionTier) =>
+      wallet ? engine.hasAccess(wallet.address, creatorAddress, tier) : tier === 'free',
+    subscribe: (creatorAddress: string, tier: SubscriptionTier) => {
+      if (!wallet) return null;
+      const sub = engine.subscribe(wallet.address, creatorAddress, tier);
+      bump();
+      return sub;
+    },
+    unsubscribe: (creatorAddress: string) => {
+      if (!wallet) return false;
+      const ok = engine.unsubscribe(wallet.address, creatorAddress);
+      if (ok) bump();
+      return ok;
+    },
+    setupTiers: (tiers?: Parameters<typeof engine.setupTiers>[1]) => {
+      if (!wallet) return null;
+      const config = engine.setupTiers(wallet.address, tiers);
+      bump();
+      return config;
+    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [wallet, version]);
+}
+
+/**
+ * Analytics — platform metrics, creator dashboard, CSV export.
+ */
+export function useAnalytics() {
+  const { wallet, warts, globalTxs } = useWallet();
+
+  const platformMetrics = useMemo(() =>
+    computePlatformMetrics(warts, globalTxs, 0),
+    [warts, globalTxs],
+  );
+
+  const creatorAnalytics = useMemo(() =>
+    wallet ? computeCreatorAnalytics(wallet.address, warts, globalTxs) : null,
+    [wallet, warts, globalTxs],
+  );
+
+  return {
+    platformMetrics,
+    creatorAnalytics,
+    downloadCSV,
+    isMobile: isMobile(),
+    gridColumns: getGridColumns('gallery'),
+  };
 }
