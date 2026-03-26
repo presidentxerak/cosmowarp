@@ -60,16 +60,22 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check bundle size
+      - name: Check bundle size (500KB main chunk budget)
         run: |
-          MAX_SIZE_KB=2048
+          MAX_MAIN_KB=500
+          MAX_TOTAL_KB=2048
           MAIN_CHUNK=$(find dist/assets -name 'index-*.js' -type f | head -1)
           if [ -n "$MAIN_CHUNK" ]; then
             SIZE_KB=$(du -k "$MAIN_CHUNK" | cut -f1)
-            echo "Main chunk: ${SIZE_KB}KB (max: ${MAX_SIZE_KB}KB)"
-            if [ "$SIZE_KB" -gt "$MAX_SIZE_KB" ]; then
-              echo "::warning::Main chunk exceeds ${MAX_SIZE_KB}KB budget (${SIZE_KB}KB)"
+            echo "Main chunk: ${SIZE_KB}KB (budget: ${MAX_MAIN_KB}KB)"
+            if [ "$SIZE_KB" -gt "$MAX_MAIN_KB" ]; then
+              echo "::warning::Main chunk (${SIZE_KB}KB) exceeds ${MAX_MAIN_KB}KB budget"
             fi
+          fi
+          TOTAL_KB=$(du -sk dist/assets/ | cut -f1)
+          echo "Total assets: ${TOTAL_KB}KB (budget: ${MAX_TOTAL_KB}KB)"
+          if [ "$TOTAL_KB" -gt "$MAX_TOTAL_KB" ]; then
+            echo "::warning::Total assets (${TOTAL_KB}KB) exceed ${MAX_TOTAL_KB}KB budget"
           fi
 
   # ─── API Type-check ──────────────────────────────────────

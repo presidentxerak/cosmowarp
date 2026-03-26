@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { WalletProvider } from './context/WalletContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { setMetaTags, resetMetaTags, setGalleryMeta } from './lib/seo';
+import { isOnboardingActive, getCurrentStep, completeStep, skipOnboarding } from './engine/onboarding';
 import { Sentry } from './lib/sentry';
 import TopBar from './components/TopBar';
 import BottomBar from './components/BottomBar';
@@ -188,6 +190,20 @@ function NavigationBridge({ children }: { children: ReactNode }) {
   // Clear chunk reload flag on successful app load
   useEffect(() => { sessionStorage.removeItem('chunk_reload'); }, []);
 
+  // Update SEO meta tags on route change
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/gallery') {
+      setGalleryMeta();
+    } else if (path === '/discover') {
+      setMetaTags({ title: 'Discover', description: 'Trending artworks, top creators, and personalized recommendations on Strangrz.' });
+    } else if (path === '/whitepaper') {
+      setMetaTags({ title: 'Whitepaper', description: 'Strangrz protocol documentation — StrangrzChain, tokenomics, and architecture.' });
+    } else {
+      resetMetaTags();
+    }
+  }, [location.pathname]);
+
   // Listen for legacy strangrz-navigate custom events
   useEffect(() => {
     const handler = (e: Event) => {
@@ -205,6 +221,33 @@ function NavigationBridge({ children }: { children: ReactNode }) {
       </BackgroundErrorBoundary>
       <div className="min-h-screen min-h-[-webkit-fill-available] supports-[min-height:100dvh]:min-h-[100dvh] relative z-10 flex flex-col">
         <TopBar onNavigate={navigateTab} />
+
+        {/* Onboarding banner for new users */}
+        {isOnboardingActive() && (() => {
+          const step = getCurrentStep();
+          if (!step) return null;
+          return (
+            <div className="mx-2.5 sm:mx-[10px] mt-2 glass-panel p-4 border-current/20 flex items-center gap-4">
+              <span className="text-2xl shrink-0">{step.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-body-sm font-bold opacity-90">{step.title}</p>
+                <p className="text-[11px] opacity-60 mt-0.5">{step.description}</p>
+              </div>
+              <button
+                className="warp-button text-[11px] py-1.5 px-3 shrink-0"
+                onClick={() => { completeStep(step.id); navigateTab(PATH_TO_TAB[step.route.slice(1)] || 'wall'); }}
+              >
+                {step.action}
+              </button>
+              <button
+                className="text-[10px] opacity-40 hover:opacity-70 shrink-0"
+                onClick={() => skipOnboarding()}
+              >
+                Skip
+              </button>
+            </div>
+          );
+        })()}
 
         <main className="flex-1 px-2.5 sm:px-[10px] pb-16">
           <Suspense fallback={<ViewLoader />}>
