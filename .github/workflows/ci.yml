@@ -89,3 +89,23 @@ jobs:
 
       - name: Type-check API functions
         run: npx tsc --noEmit --strict --esModuleInterop --resolveJsonModule --skipLibCheck api/**/*.ts
+
+  # ─── Security: Dependency Audit ──────────────────────────
+  security-audit:
+    name: Security — npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Audit root dependencies
+        run: npm audit --audit-level=high || true
+
+      - name: Audit webapp dependencies
+        run: cd webapp && npm ci && npm audit --audit-level=high || true
+        # Using || true to not fail the build on moderate vulnerabilities
+        # Set to strict (remove || true) once all deps are updated

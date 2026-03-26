@@ -47,6 +47,7 @@ import { DisputeEngine, type DisputeReason } from '../engine/disputes';
 import { SubscriptionEngine, type SubscriptionTier } from '../engine/subscriptions';
 import { computePlatformMetrics, computeCreatorAnalytics, downloadCSV } from '../engine/analytics';
 import { isMobile, getGridColumns } from '../lib/responsive';
+import { runSecurityChecklist, sanitizeText, sanitizeAlias } from '../lib/security-audit';
 import {
   filterWarts, setWartTags, getWartTags, getAllTags,
   DEFAULT_FILTERS, type SearchFilters,
@@ -668,5 +669,9 @@ export function useAnalytics() {
     downloadCSV,
     isMobile: isMobile(),
     gridColumns: getGridColumns('gallery'),
+    // Security
+    securityChecklist: runSecurityChecklist(),
+    sanitizeText,
+    sanitizeAlias,
   };
 }
