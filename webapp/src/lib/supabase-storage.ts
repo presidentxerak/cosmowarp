@@ -122,6 +122,39 @@ export async function uploadAvatar(
 }
 
 /**
+ * Upload a profile banner to Supabase Storage.
+ */
+export async function uploadBanner(
+  data: string,
+  address: string,
+): Promise<string | null> {
+  if (!isBackendAvailable() || !data) return null;
+
+  try {
+    const { blob, ext } = dataUrlToBlob(data);
+    const path = `profiles/${address}/banner.${ext}`;
+
+    const { error } = await supabase!.storage
+      .from(BUCKETS.AVATARS)
+      .upload(path, blob, {
+        contentType: blob.type,
+        upsert: true,
+        cacheControl: '86400',
+      });
+
+    if (error) {
+      console.error('[Storage] uploadBanner:', error.message);
+      return null;
+    }
+
+    return path;
+  } catch (err) {
+    console.error('[Storage] uploadBanner failed:', err);
+    return null;
+  }
+}
+
+/**
  * Get the public URL for a media file.
  */
 export function getMediaUrl(path: string): string {

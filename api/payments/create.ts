@@ -54,8 +54,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${req.headers.origin || 'https://strangrz.com'}/payment-success?tx=${txId}`,
-        cancel_url: `${req.headers.origin || 'https://strangrz.com'}/payment-cancel?tx=${txId}`,
+        success_url: `${req.headers.origin || process.env.CORS_ORIGIN || 'https://strangrz.com'}/payment-success?tx=${txId}`,
+        cancel_url: `${req.headers.origin || process.env.CORS_ORIGIN || 'https://strangrz.com'}/payment-cancel?tx=${txId}`,
         metadata: {
           strangrz_tx_id: txId,
           buyer_address: buyerAddress,

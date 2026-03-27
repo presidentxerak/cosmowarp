@@ -123,7 +123,8 @@ function resonanceMix(seedBytes: Uint8Array, phiKey: Uint8Array): Uint8Array {
  */
 async function phiChainHash(input: string, phiKey: Uint8Array): Promise<{ finalHash: string; seedHash: string }> {
   // Phase 1: SHA-256 seed
-  const seedBuffer = await sha256Raw(new TextEncoder().encode(input).buffer);
+  const encoded = new TextEncoder().encode(input);
+  const seedBuffer = await sha256Raw(encoded.slice().buffer);
   const seedBytes = new Uint8Array(seedBuffer);
   const seedHash = Array.from(seedBytes).map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -131,7 +132,8 @@ async function phiChainHash(input: string, phiKey: Uint8Array): Promise<{ finalH
   const resonanceBytes = resonanceMix(seedBytes, phiKey);
 
   // Phase 3: SHA-256 of resonance data → final proof hash
-  const finalBuffer = await sha256Raw(new Uint8Array(resonanceBytes).buffer as ArrayBuffer);
+  const resU8 = new Uint8Array(resonanceBytes);
+  const finalBuffer = await sha256Raw(resU8.slice().buffer);
   const finalHash = Array.from(new Uint8Array(finalBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
   return { finalHash, seedHash };

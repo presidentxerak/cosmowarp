@@ -66,9 +66,14 @@ export async function pullProfile(address: string): Promise<WarpWallet | null> {
 
 /**
  * Sync a newly minted or updated wart to Supabase + upload media.
+ * Retries once on failure to ensure global visibility.
  */
 export async function syncWart(wart: Wart): Promise<void> {
-  if (!isBackendAvailable()) return;
+  if (!isBackendAvailable()) {
+    // Queue for later sync when backend becomes available
+    queuePendingSync('wart', wart.id);
+    return;
+  }
   setSyncStatus('syncing');
   try {
     // Upload media to Supabase Storage
@@ -87,6 +92,54 @@ export async function syncWart(wart: Wart): Promise<void> {
   } catch (err) {
     console.error('[Sync] syncWart failed:', err instanceof Error ? err.message : err);
     setSyncStatus('error');
+    // Retry once after 2 seconds
+    setTimeout(async () => {
+      if (!isBackendAvailable()) return;
+      try {
+        const mediaPath = await media.uploadMedia(wart.imageData, wart.id, 'main');
+        const audioCoverPath = wart.audioCover
+          ? await media.uploadMedia(wart.audioCover, wart.id, 'cover')
+          : undefined;
+        await db.upsertWart(wart, mediaPath || undefined, audioCoverPath || undefined);
+        setSyncStatus('idle');
+      } catch {
+        // Silent retry failure — will sync on next full sync
+      }
+    }, 2000);
+  }
+}
+
+// ─── Pending Sync Queue ─────────────────────────────────────
+
+const PENDING_SYNC_KEY = 'strangrz_pending_syncs';
+
+function queuePendingSync(type: string, id: string): void {
+  try {
+    const raw = localStorage.getItem(PENDING_SYNC_KEY) || '[]';
+    const queue: Array<{ type: string; id: string; ts: number }> = JSON.parse(raw);
+    if (!queue.some(q => q.type === type && q.id === id)) {
+      queue.push({ type, id, ts: Date.now() });
+      localStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(queue.slice(-50)));
+    }
+  } catch { /* ignore */ }
+}
+
+/**
+ * Sync a lazy listing template — metadata only, NO media upload.
+ * Media stays local until a buyer purchases and pays the storage fee.
+ * This ensures the platform never pays for storage — the collector does.
+ */
+export async function syncLazyTemplate(wart: Wart): Promise<void> {
+  if (!isBackendAvailable()) {
+    queuePendingSync('wart', wart.id);
+    return;
+  }
+  try {
+    // Upsert metadata WITHOUT uploading media to Supabase Storage.
+    // The media_path will be null — indicating no cloud media yet.
+    await db.upsertWart(wart, undefined, undefined);
+  } catch {
+    // Non-critical — will re-sync on next visit
   }
 }
 

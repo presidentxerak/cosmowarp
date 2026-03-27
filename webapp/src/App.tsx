@@ -42,6 +42,8 @@ const UserProfileView = lazyRetry(() => import('./components/UserProfileView'));
 const DiscoverView = lazyRetry(() => import('./components/DiscoverView'));
 const VaultView = lazyRetry(() => import('./components/VaultView'));
 const FiatGatewayView = lazyRetry(() => import('./components/FiatGatewayView'));
+const PaymentSuccessView = lazyRetry(() => import('./components/PaymentSuccessView'));
+const CollectionPageView = lazyRetry(() => import('./components/CollectionPageView'));
 
 // ─── URL routing map ─────────────────────────────────────
 const ROUTE_MAP: Record<string, string> = {
@@ -62,6 +64,10 @@ const ROUTE_MAP: Record<string, string> = {
   '/dev': 'dev',
   '/curate': 'curate',
   '/trading': 'trading',
+  '/user-profile': 'user-profile',
+  '/collections': 'collections',
+  '/payment-success': 'payment-success',
+  '/payment-cancel': 'payment-cancel',
 };
 
 const TAB_TO_PATH: Record<string, string> = {};
@@ -115,7 +121,7 @@ class AppErrorBoundary extends Component<
           <div className="text-center max-w-md">
             <p className="text-4xl mb-6">{'\u2B21'}</p>
             <h1 className="text-title-md font-bold mb-3">Strangrz encountered an error</h1>
-            <p className="text-base opacity-50 mb-6">{this.state.error || 'Something went wrong.'}</p>
+            <p className="text-base opacity-60 mb-6">{this.state.error || 'Something went wrong.'}</p>
             <button
               onClick={() => window.location.reload()}
               className="warp-button px-6 py-3 text-base cursor-pointer"
@@ -199,12 +205,12 @@ function App() {
         <BackgroundErrorBoundary>
           <Suspense fallback={null}><CosmicBackground /></Suspense>
         </BackgroundErrorBoundary>
-        <div className="min-h-screen min-h-[100dvh] relative z-10 flex flex-col">
+        <div className="min-h-screen min-h-[-webkit-fill-available] supports-[min-height:100dvh]:min-h-[100dvh] relative z-10 flex flex-col">
           {/* Top bar - sticky search + create */}
           <TopBar onNavigate={navigate} />
 
           {/* Main content area */}
-          <main className="flex-1 px-[10px] pb-16">
+          <main className="flex-1 px-2.5 sm:px-[10px] pb-16">
             <Suspense fallback={<ViewLoader />}>
               {/* Bottom bar tabs */}
               {activeTab === 'wall' && <CosmoChatView />}
@@ -224,6 +230,9 @@ function App() {
               {activeTab === 'user-profile' && <UserProfileView onNavigate={navigate} />}
               {activeTab === 'discover' && <DiscoverView onNavigate={navigate} />}
 
+              {/* Collections (Foundation-style pages) */}
+              {activeTab === 'collections' && <CollectionPageView onNavigate={navigate} />}
+
               {/* Fiat Gateway */}
               {activeTab === 'fiat-gateway' && <FiatGatewayView />}
 
@@ -233,6 +242,19 @@ function App() {
               {/* Curate & Trading — redirect to gallery with tab */}
               {activeTab === 'curate' && (() => { sessionStorage.setItem('strangrz_gallery_tab', 'curate'); return <MarketplaceView />; })()}
               {activeTab === 'trading' && (() => { sessionStorage.setItem('strangrz_gallery_tab', 'trading'); return <MarketplaceView />; })()}
+
+              {/* Payment */}
+              {activeTab === 'payment-success' && <PaymentSuccessView onNavigate={navigate} />}
+              {activeTab === 'payment-cancel' && (
+                <div className="max-w-lg mx-auto py-8 px-4 text-center">
+                  <p className="text-5xl mb-4">{'\u2716'}</p>
+                  <h1 className="text-title-md font-bold font-title mb-2">Paiement annulé</h1>
+                  <p className="opacity-60 text-base mb-6">Aucun montant n'a été débité.</p>
+                  <button onClick={() => navigate('gallery')} className="warp-button px-6 py-3 text-base cursor-pointer">
+                    Retour à la Galerie
+                  </button>
+                </div>
+              )}
 
               {/* Dev */}
               {activeTab === 'dev' && <DevView />}

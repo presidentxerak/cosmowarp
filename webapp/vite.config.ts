@@ -12,6 +12,7 @@ export default defineConfig({
     },
   },
   build: {
+    target: ['es2020', 'safari15'],
     rollupOptions: {
       output: {
         manualChunks: {

@@ -22,7 +22,7 @@ export default function SDKView() {
           <span className="text-title-lg">{'\u2B21'}</span>
           <div>
             <h2 className="text-title-md font-bold opacity-100 font-title">Strangrz SDK</h2>
-            <p className="text-body-sm opacity-40">Developer API & Extension Guide</p>
+            <p className="text-body-sm opacity-60">Developer API & Extension Guide</p>
           </div>
         </div>
         <p className="text-base opacity-50">
@@ -42,7 +42,7 @@ export default function SDKView() {
               className={`px-3 py-1.5 rounded-none text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 tab === t.id
                   ? 'bg-current/10 opacity-80'
-                  : 'opacity-40 hover:opacity-70 hover:bg-current/5'
+                  : 'opacity-60 hover:opacity-70 hover:bg-current/5'
               }`}
             >
               {t.label}
@@ -69,7 +69,7 @@ function CodeBlock({ title, code }: { title?: string; code: string }) {
     <div className="rounded-none bg-current/5 border border-gray-700/20 overflow-hidden mb-4">
       {title && (
         <div className="px-3 py-1.5 border-b border-gray-700/20">
-          <span className="text-label opacity-40">{title}</span>
+          <span className="text-label opacity-60">{title}</span>
         </div>
       )}
       <pre className="p-3 text-[11px] opacity-80 overflow-x-auto whitespace-pre-wrap">{code}</pre>
@@ -85,7 +85,7 @@ function ApiMethod({ name, desc, params, returns }: {
       <code className="text-base opacity-80 font-bold">{name}</code>
       <p className="text-body-sm opacity-50 mt-1 mb-2">{desc}</p>
       {params && params.length > 0 && (
-        <div className="text-label opacity-40 mb-1">
+        <div className="text-label opacity-60 mb-1">
           <span className="opacity-50">Params:</span> {params.join(', ')}
         </div>
       )}
@@ -142,7 +142,7 @@ cosmo.on('balance_changed', (event) => {
           ['Hierarchy Levels', '7'],
         ].map(([k, v]) => (
           <div key={k} className="flex justify-between p-2 rounded-none bg-current/5">
-            <span className="opacity-40">{k}</span>
+            <span className="opacity-60">{k}</span>
             <span className="opacity-80">{v}</span>
           </div>
         ))}
@@ -277,7 +277,7 @@ function EventsTab() {
         ].map(([name, desc]) => (
           <div key={name} className="flex items-center gap-3 p-2 rounded-none bg-current/5 text-body-sm">
             <code className="opacity-80 shrink-0">{name}</code>
-            <span className="opacity-40">{desc}</span>
+            <span className="opacity-60">{desc}</span>
           </div>
         ))}
       </div>

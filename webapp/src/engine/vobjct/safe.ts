@@ -55,12 +55,14 @@ export interface StrangrzSafeConfig {
 
 export type RepairAction =
   | 'repin_ipfs'
+  | 'repin_arweave'
   | 'add_https_mirror'
   | 'reannounce_route'
   | 'revalidate_manifest'
   | 'trigger_mirror_replication'
   | 'restore_from_vault'
-  | 'restore_from_onchain';
+  | 'restore_from_onchain'
+  | 'verify_cid_integrity';
 
 export const FORBIDDEN_ACTIONS = [
   'modify_canonical_asset',
@@ -192,6 +194,9 @@ export function evaluateHealth(
     if (failed.route.network === 'ipfs' && safeConfig.allowed_actions.includes('repin_ipfs')) {
       repairActions.push('repin_ipfs');
     }
+    if (failed.route.network === 'arweave' && safeConfig.allowed_actions.includes('repin_arweave')) {
+      repairActions.push('repin_arweave');
+    }
     if (failed.route.network === 'https' && safeConfig.allowed_actions.includes('add_https_mirror')) {
       repairActions.push('add_https_mirror');
     }
@@ -265,11 +270,14 @@ export class StrangrzSafeEngine {
       },
       allowed_actions: [
         'repin_ipfs',
+        'repin_arweave',
         'add_https_mirror',
         'reannounce_route',
         'revalidate_manifest',
+        'trigger_mirror_replication',
         'restore_from_vault',
         'restore_from_onchain',
+        'verify_cid_integrity',
       ],
       forbidden_actions: [...FORBIDDEN_ACTIONS],
       repair_authority: {

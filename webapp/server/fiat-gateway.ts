@@ -107,7 +107,7 @@ let txCounter = 0;
 
 // ─── Fee Calculation ─────────────────────────────────────
 
-const PLATFORM_FEE_PERCENT = 2.5;
+const PLATFORM_FEE_PERCENT = 5;
 const PROCESSOR_FEES: Record<string, { percent: number; fixed: number }> = {
   card: { percent: 2.9, fixed: 0.30 },
   paypal: { percent: 3.49, fixed: 0.49 },

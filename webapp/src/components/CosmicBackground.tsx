@@ -71,10 +71,12 @@ export default function CosmicBackground() {
       camera.position.set(0, 0, 5);
       camera.lookAt(0, 0, -TUNNEL_LENGTH);
 
+      // Safari: prefer 'low-power' to avoid GPU process crashes on macOS
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
       renderer = new THREE.WebGLRenderer({
         antialias: false,
         alpha: true,
-        powerPreference: mobile ? 'low-power' : 'default',
+        powerPreference: (mobile || isSafari) ? 'low-power' : 'default',
         failIfMajorPerformanceCaveat: false,
       });
       renderer.setSize(window.innerWidth, window.innerHeight);

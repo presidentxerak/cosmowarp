@@ -468,6 +468,30 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
 
   const logoSrc = import.meta.env.BASE_URL + 'strangrz-logo-white.svg';
 
+  // Safari video autoplay fix
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('x-webkit-airplay', 'allow');
+    // Safari requires muted to be set before play() for autoplay policy
+    v.muted = true;
+    v.defaultMuted = true;
+    // Safari may block autoplay; retry on user interaction
+    const tryPlay = () => { v.play().catch(() => {}); };
+    tryPlay();
+    // Safari sometimes needs a slight delay after mount
+    const timer = setTimeout(tryPlay, 300);
+    document.addEventListener('touchstart', tryPlay, { once: true });
+    document.addEventListener('click', tryPlay, { once: true });
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('touchstart', tryPlay);
+      document.removeEventListener('click', tryPlay);
+    };
+  }, []);
+
   // Parallax scroll tracking
   useEffect(() => {
     let ticking = false;
@@ -501,14 +525,16 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         style={{
           background: `rgba(0,0,0,${headerBgOpacity})`,
           backdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
+          WebkitBackdropFilter: scrollY > 50 ? 'blur(16px)' : 'none',
           borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-8 h-16">
           {/* Logo + name */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 cursor-pointer group">
             <img src={logoSrc} alt="Strangrz" className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
-            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-title uppercase">Strangrz</span>
+            <span className="text-base font-bold tracking-wider opacity-90 hidden sm:inline font-logo uppercase">Strangrz</span>
           </button>
 
           {/* Desktop nav */}
@@ -617,18 +643,15 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             style={{ filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))' }}
           />
           <h1
-            className="text-title-xl sm:text-[4rem] lg:text-[5rem] font-bold font-title mb-2 tracking-wide uppercase"
+            className="text-title-xl sm:text-[4rem] lg:text-[5rem] font-bold font-logo mb-2 tracking-wide uppercase"
             style={{ textShadow: '0 0 60px rgba(255,255,255,0.1)' }}
           >
             Strangrz
           </h1>
-          <p className="text-base sm:text-lg opacity-30 mb-4 tracking-[0.2em]">
-            Protocole et marketplace multi-chaîne de certification pour œuvres rares
-          </p>
           <p className="text-base sm:text-lg opacity-70 font-bold mb-3">
             {t('heroSubtitle')}
           </p>
-          <p className="text-sm sm:text-base opacity-40 max-w-xl mx-auto mb-10 leading-relaxed">
+          <p className="text-sm sm:text-base opacity-60 max-w-xl mx-auto mb-10 leading-relaxed">
             {t('heroDesc')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -649,7 +672,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-30 animate-bounce-slow">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-50 animate-bounce-slow">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12l7 7 7-7" />
           </svg>
@@ -660,7 +683,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="concept" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('concept')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">{t('concept')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-6">
               {t('conceptTitle')}
             </h2>
@@ -671,10 +694,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               <p className="text-sm sm:text-base opacity-50 leading-relaxed">
                 {t('conceptDesc')}
               </p>
-              <p className="text-sm sm:text-base opacity-40 leading-relaxed">
+              <p className="text-sm sm:text-base opacity-60 leading-relaxed">
                 {t('conceptDesc2')}
               </p>
-              <p className="text-sm sm:text-base opacity-40 leading-relaxed">
+              <p className="text-sm sm:text-base opacity-60 leading-relaxed">
                 {t('conceptDesc3')}
               </p>
             </div>
@@ -691,9 +714,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-6 sm:p-8 cursor-default landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="block mb-4 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="block mb-4 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-lg font-bold opacity-90 mb-3">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -707,7 +730,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <Reveal>
               <div>
-                <p className="text-label tracking-[0.3em] opacity-30 mb-3">{t('forCreators')}</p>
+                <p className="text-label tracking-[0.3em] opacity-50 mb-3">{t('forCreators')}</p>
                 <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-6">
                   {t('publishWorks')}
                 </h2>
@@ -719,10 +742,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                     { step: '04', title: t('step4'), desc: t('step4Desc') },
                   ].map(s => (
                     <div key={s.step} className="flex gap-4 group">
-                      <span className="text-2xl font-bold opacity-10 shrink-0 w-10 text-right group-hover:opacity-30 transition-opacity">{s.step}</span>
+                      <span className="text-2xl font-bold opacity-10 shrink-0 w-10 text-right group-hover:opacity-50 transition-opacity">{s.step}</span>
                       <div>
                         <h3 className="text-base font-bold opacity-90 mb-1">{s.title}</h3>
-                        <p className="text-sm opacity-40 leading-relaxed">{s.desc}</p>
+                        <p className="text-sm opacity-60 leading-relaxed">{s.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -747,16 +770,16 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="relative p-8 text-center"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <svg className="w-20 h-20 mx-auto mb-4 opacity-20" viewBox="0 0 100 100">
+                  <svg className="w-20 h-20 mx-auto mb-4 opacity-60" viewBox="0 0 100 100">
                     <polygon points="50,2 93,25 93,75 50,98 7,75 7,25" fill="none" stroke="currentColor" strokeWidth="2" />
                     <polygon points="50,18 78,33 78,67 50,82 22,67 22,33" fill="none" stroke="currentColor" strokeWidth="1" />
                   </svg>
                   <p className="text-lg font-bold opacity-60 mb-1">STCERT</p>
-                  <p className="text-xs opacity-30 font-mono">SHA-256 · Ed25519 · Horodaté</p>
+                  <p className="text-xs opacity-50 font-mono">SHA-256 · Ed25519 · Horodaté</p>
                   <div className="mt-4 flex gap-2 justify-center">
-                    <span className="px-2 py-1 text-[10px] opacity-40" style={{ background: 'rgba(255,255,255,0.05)' }}>Signé</span>
-                    <span className="px-2 py-1 text-[10px] opacity-40" style={{ background: 'rgba(255,255,255,0.05)' }}>Vérifié</span>
-                    <span className="px-2 py-1 text-[10px] opacity-40" style={{ background: 'rgba(255,255,255,0.05)' }}>Infalsifiable</span>
+                    <span className="px-2 py-1 text-[10px] opacity-60" style={{ background: 'rgba(255,255,255,0.05)' }}>Signé</span>
+                    <span className="px-2 py-1 text-[10px] opacity-60" style={{ background: 'rgba(255,255,255,0.05)' }}>Vérifié</span>
+                    <span className="px-2 py-1 text-[10px] opacity-60" style={{ background: 'rgba(255,255,255,0.05)' }}>Infalsifiable</span>
                   </div>
                 </TiltCard>
               </div>
@@ -769,11 +792,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="collectionner" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('forCollectors')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">{t('forCollectors')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('collectCertified')}
             </h2>
-            <p className="text-sm sm:text-base opacity-40 text-center max-w-2xl mx-auto mb-12 leading-relaxed">
+            <p className="text-sm sm:text-base opacity-60 text-center max-w-2xl mx-auto mb-12 leading-relaxed">
               {t('collectDesc')}
             </p>
           </Reveal>
@@ -790,9 +813,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-5 sm:p-6 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="block mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="block mb-3 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-2">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -816,11 +839,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="curate" className="relative py-20 sm:py-32 px-4 sm:px-8" style={{ background: 'rgba(212,175,55,0.02)' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3" style={{ color: '#d4af37' }}>{t('forCurators')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3" style={{ color: '#d4af37' }}>{t('forCurators')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('curateTitle')}
             </h2>
-            <p className="text-base opacity-40 text-center max-w-2xl mx-auto mb-12">
+            <p className="text-base opacity-60 text-center max-w-2xl mx-auto mb-12">
               {t('curateDesc')}
             </p>
           </Reveal>
@@ -836,10 +859,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-5 sm:p-6 landing-card group text-center"
                   style={{ background: 'rgba(212,175,55,0.03)', border: '1px solid rgba(212,175,55,0.1)' }}
                 >
-                  <span className="text-[10px] tracking-[0.3em] opacity-20 block mb-3">{card.step}</span>
-                  <span className="flex justify-center mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="text-[10px] tracking-[0.3em] opacity-60 block mb-3">{card.step}</span>
+                  <span className="flex justify-center mb-3 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-2">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -863,11 +886,11 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="trading" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3 flex items-center justify-center gap-2">STRNGRZ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8" /></svg></p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3 flex items-center justify-center gap-2">STRNGRZ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8" /></svg></p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-4">
               {t('tradingTitle')}
             </h2>
-            <p className="text-base opacity-40 text-center max-w-2xl mx-auto mb-12">
+            <p className="text-base opacity-60 text-center max-w-2xl mx-auto mb-12">
               {t('tradingDesc')}
             </p>
           </Reveal>
@@ -884,9 +907,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-4 text-center landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="flex justify-center mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
+                  <span className="flex justify-center mb-2 opacity-60 group-hover:opacity-70 transition-opacity">{item.icon}</span>
                   <p className="text-sm font-bold opacity-80">{item.label}</p>
-                  <p className="text-[10px] opacity-30 mt-1">{item.desc}</p>
+                  <p className="text-[10px] opacity-50 mt-1">{item.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -928,9 +951,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-4 text-center landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="flex justify-center mb-2 opacity-40 group-hover:opacity-70 transition-opacity">{item.icon}</span>
+                  <span className="flex justify-center mb-2 opacity-60 group-hover:opacity-70 transition-opacity">{item.icon}</span>
                   <p className="text-sm font-bold opacity-80">{item.label}</p>
-                  <p className="text-[10px] opacity-30 mt-1">{item.desc}</p>
+                  <p className="text-[10px] opacity-50 mt-1">{item.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -942,7 +965,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <section id="protocole" className="relative py-20 sm:py-32 px-4 sm:px-8">
         <div className="max-w-5xl mx-auto">
           <Reveal>
-            <p className="text-label tracking-[0.3em] opacity-30 text-center mb-3">{t('technology')}</p>
+            <p className="text-label tracking-[0.3em] opacity-50 text-center mb-3">{t('technology')}</p>
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title text-center mb-12">
               {t('protocolTitle')}
             </h2>
@@ -981,9 +1004,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-6 sm:p-8 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="block mb-3 opacity-40 group-hover:opacity-70 transition-opacity">{card.icon}</span>
+                  <span className="block mb-3 opacity-60 group-hover:opacity-70 transition-opacity">{card.icon}</span>
                   <h3 className="text-lg font-bold opacity-90 mb-2">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </TiltCard>
               </Reveal>
             ))}
@@ -1006,7 +1029,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
                 <p className="text-3xl sm:text-4xl font-bold opacity-80 group-hover:opacity-100 transition-opacity">{s.value}</p>
-                <p className="text-[11px] opacity-30 mt-2">{s.label}</p>
+                <p className="text-[11px] opacity-50 mt-2">{s.label}</p>
               </div>
             </Reveal>
           ))}
@@ -1019,7 +1042,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
           <Reveal>
             <div className="text-center mb-12">
               <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-3">{t('whyNotFree')}</h2>
-              <p className="text-sm sm:text-base opacity-40">{t('whyNotFreeDesc')}</p>
+              <p className="text-sm sm:text-base opacity-60">{t('whyNotFreeDesc')}</p>
             </div>
           </Reveal>
 
@@ -1036,9 +1059,9 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                   className="p-6 landing-card group"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="opacity-40 block mb-2">{card.icon}</span>
+                  <span className="opacity-60 block mb-2">{card.icon}</span>
                   <h3 className="text-base font-bold opacity-90 mb-1">{card.title}</h3>
-                  <p className="text-sm opacity-40 leading-relaxed">{card.desc}</p>
+                  <p className="text-sm opacity-60 leading-relaxed">{card.desc}</p>
                 </div>
               </Reveal>
             ))}
@@ -1051,7 +1074,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
               <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <th className="text-left py-3 px-3 opacity-40 font-medium"></th>
+                    <th className="text-left py-3 px-3 opacity-60 font-medium"></th>
                     <th className="py-3 px-3 opacity-90 font-bold">{t('whyCompareStrangrz')}</th>
                     <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareEth')}</th>
                     <th className="py-3 px-3 opacity-50 font-medium">{t('whyCompareTezos')}</th>
@@ -1070,7 +1093,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
                     <tr key={row.label} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
                       <td className="py-2.5 px-3 opacity-50 font-medium">{row.label}</td>
                       {row.vals.map((v, j) => (
-                        <td key={j} className={`py-2.5 px-3 text-center ${j === 0 ? 'opacity-90 font-bold' : 'opacity-40'}`}>{v}</td>
+                        <td key={j} className={`py-2.5 px-3 text-center ${j === 0 ? 'opacity-90 font-bold' : 'opacity-60'}`}>{v}</td>
                       ))}
                     </tr>
                   ))}
@@ -1091,7 +1114,7 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
             <h2 className="text-title-lg sm:text-title-xl font-bold font-title mb-4">
               {t('ctaTitle')}
             </h2>
-            <p className="text-sm sm:text-base opacity-40 mb-8 leading-relaxed">
+            <p className="text-sm sm:text-base opacity-60 mb-8 leading-relaxed">
               {t('ctaDesc')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1117,10 +1140,10 @@ export default function LandingView({ onNavigate }: { onNavigate: (tab: string) 
       <footer className="py-10 px-4 sm:px-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src={logoSrc} alt="Strangrz" className="w-6 h-6 opacity-40" />
-            <span className="text-xs opacity-30">{t('footer')}</span>
+            <img src={logoSrc} alt="Strangrz" className="w-6 h-6 opacity-60" />
+            <span className="text-xs opacity-50">{t('footer')}</span>
           </div>
-          <div className="flex gap-4 text-xs opacity-30">
+          <div className="flex gap-4 text-xs opacity-50">
             <button onClick={() => onNavigate('whitepaper')} className="hover:opacity-80 cursor-pointer transition-opacity">{t('whitePaper')}</button>
             <button onClick={() => onNavigate('legals')} className="hover:opacity-80 cursor-pointer transition-opacity">{t('legal')}</button>
             <button onClick={() => onNavigate('privacy')} className="hover:opacity-80 cursor-pointer transition-opacity">{t('privacy')}</button>

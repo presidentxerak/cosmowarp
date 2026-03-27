@@ -241,6 +241,15 @@ export class PatternDetector {
     const recent = history.filter(h => h.time >= cutoff);
     this.recentTxByAddress.set(from, recent);
 
+    // Periodically prune stale addresses with no recent activity
+    if (this.recentTxByAddress.size > 1000) {
+      for (const [addr, entries] of this.recentTxByAddress) {
+        if (entries.length === 0 || entries.every(e => e.time < cutoff)) {
+          this.recentTxByAddress.delete(addr);
+        }
+      }
+    }
+
     // Pattern 1: Rapid-fire (>5 TX in 10 seconds)
     const last10s = recent.filter(h => h.time >= now - 10000);
     if (last10s.length > 5) {

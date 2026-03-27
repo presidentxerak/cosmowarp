@@ -37,7 +37,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     if (!ADMIN_KEY || adminKey !== ADMIN_KEY) return res.status(403).json({ error: 'Unauthorized' });
 
     const { currency, warpsPerUnit, source } = req.body;
-    if (currency && typeof warpsPerUnit === 'number') {
+    if (currency && typeof warpsPerUnit === 'number' && warpsPerUnit > 0 && Number.isFinite(warpsPerUnit)) {
       rates.set(currency, {
         currency,
         warpsPerUnit,

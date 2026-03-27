@@ -135,6 +135,7 @@ export default function TradingView() {
   const handleViewWart = (wartId: string) => {
     sessionStorage.setItem('strangrz_open_wart', wartId);
     sessionStorage.setItem('strangrz_gallery_tab', 'detail');
+    window.dispatchEvent(new CustomEvent('strangrz_gallery_tab', { detail: 'detail' }));
   };
 
   const navigateToProfile = (address: string) => {
@@ -160,7 +161,7 @@ export default function TradingView() {
               Trading Floor
               <InfoTooltip text="The Strangrz Trading Floor gives you a real-time view of all marketplace activity. Track prices, volume, collection rankings, and manage your portfolio — all powered by STRNGRZ (⬣), the native currency for digital art." />
             </h2>
-            <p className="text-body-sm opacity-40">Powered by STRNGRZ {'\u2B23'}</p>
+            <p className="text-body-sm opacity-60">Powered by STRNGRZ {'\u2B23'}</p>
           </div>
         </div>
 
@@ -173,9 +174,9 @@ export default function TradingView() {
             { label: 'Avg Price', value: `${marketStats.avgPrice.toFixed(1)} \u2B23`, sub: 'per artwork' },
           ].map(stat => (
             <div key={stat.label} className="p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-              <p className="text-[10px] opacity-30 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-wider">{stat.label}</p>
               <p className="text-base font-bold opacity-90 mt-0.5">{stat.value}</p>
-              <p className="text-[10px] opacity-30">{stat.sub}</p>
+              <p className="text-[10px] opacity-50">{stat.sub}</p>
             </div>
           ))}
         </div>
@@ -194,7 +195,7 @@ export default function TradingView() {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-body-sm font-medium transition-all cursor-pointer whitespace-nowrap border-b-2 ${
-              tab === t.id ? 'border-current/20 opacity-80' : 'border-transparent opacity-40 hover:opacity-70'
+              tab === t.id ? 'border-current/20 opacity-80' : 'border-transparent opacity-60 hover:opacity-70'
             }`}
           >
             {t.label}
@@ -207,7 +208,7 @@ export default function TradingView() {
         <div className="pt-4 space-y-4">
           {/* Trending Artworks */}
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase opacity-30 mb-2 px-1">Trending</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-2 px-1">Trending</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {sortedListings.slice(0, 8).map(wart => (
                 <div key={wart.id} className="glass-panel p-2 cursor-pointer hover:border-current/20 transition-all" onClick={() => handleViewWart(wart.id)}>
@@ -215,16 +216,16 @@ export default function TradingView() {
                     <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
                   ) : (
                     <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <span className="text-2xl opacity-20">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                      <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
                     </div>
                   )}
                   <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
                   <div className="flex justify-between items-center mt-0.5">
-                    <p className="text-label opacity-40">{getCreatorName(wart.creator)}</p>
+                    <p className="text-label opacity-60">{getCreatorName(wart.creator)}</p>
                     <p className="text-body-sm font-bold opacity-70">{wart.price} {'\u2B23'}</p>
                   </div>
                   <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/5">
-                    <span className="text-[10px] opacity-30">{'\u2665'} {wart.likes?.length || 0}</span>
+                    <span className="text-[10px] opacity-50">{'\u2665'} {wart.likes?.length || 0}</span>
                     <span className={`text-[10px] px-1 py-0.5 ${RARITY_CONFIG[computeRarity(wart)].color}`}>{computeRarity(wart)}</span>
                   </div>
                 </div>
@@ -234,7 +235,7 @@ export default function TradingView() {
 
           {/* Recent Sales */}
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase opacity-30 mb-2 px-1">Recent Sales</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-2 px-1">Recent Sales</p>
             <div className="space-y-1">
               {recentActivity.filter(a => a.type === 'sale').slice(0, 10).map((act, i) => (
                 <div key={`${act.wart.id}-${i}`} className="glass-panel p-2.5 flex items-center gap-2.5 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => handleViewWart(act.wart.id)}>
@@ -243,16 +244,16 @@ export default function TradingView() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-body-sm font-medium opacity-80 truncate">{act.wart.title}</p>
-                    <p className="text-label opacity-30">{getCreatorName(act.transfer.from)} {'\u2192'} {getCreatorName(act.transfer.to)}</p>
+                    <p className="text-label opacity-50">{getCreatorName(act.transfer.from)} {'\u2192'} {getCreatorName(act.transfer.to)}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-body-sm font-bold opacity-80">{act.transfer.price.toFixed(1)} {'\u2B23'}</p>
-                    <p className="text-[10px] opacity-30">{new Date(act.transfer.timestamp).toLocaleTimeString()}</p>
+                    <p className="text-[10px] opacity-50">{new Date(act.transfer.timestamp).toLocaleTimeString()}</p>
                   </div>
                 </div>
               ))}
               {recentActivity.filter(a => a.type === 'sale').length === 0 && (
-                <p className="text-center py-8 opacity-30 text-body-sm">No recent sales</p>
+                <p className="text-center py-8 opacity-50 text-body-sm">No recent sales</p>
               )}
             </div>
           </div>
@@ -275,7 +276,7 @@ export default function TradingView() {
                 key={s.id}
                 onClick={() => setSortBy(s.id)}
                 className={`px-3 py-1 text-[11px] cursor-pointer transition-all ${
-                  sortBy === s.id ? 'opacity-80 bg-current/10 border border-current/20' : 'opacity-40 border border-current/5 hover:opacity-60'
+                  sortBy === s.id ? 'opacity-80 bg-current/10 border border-current/20' : 'opacity-60 border border-current/5 hover:opacity-60'
                 }`}
               >
                 {s.label}
@@ -285,7 +286,7 @@ export default function TradingView() {
 
           {sortedListings.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No active listings</p>
+              <p className="opacity-60 text-base">No active listings</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -296,13 +297,13 @@ export default function TradingView() {
                       <img src={wart.imageData} alt={wart.title} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <span className="text-lg opacity-20">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                        <span className="text-lg opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleViewWart(wart.id)}>
                     <p className="text-base font-medium opacity-90 truncate">{wart.title}</p>
-                    <div className="flex items-center gap-2 text-label opacity-40">
+                    <div className="flex items-center gap-2 text-label opacity-60">
                       <span>{getCreatorName(wart.creator)}</span>
                       <span className={`px-1 py-0.5 text-[9px] ${RARITY_CONFIG[computeRarity(wart)].color}`}>{computeRarity(wart)}</span>
                       <span>{'\u2665'} {wart.likes?.length || 0}</span>
@@ -321,7 +322,7 @@ export default function TradingView() {
                     ) : (
                       <button
                         onClick={() => delistWart(wart.id)}
-                        className="text-[11px] opacity-40 hover:opacity-70 cursor-pointer mt-1"
+                        className="text-[11px] opacity-60 hover:opacity-70 cursor-pointer mt-1"
                       >
                         Delist
                       </button>
@@ -344,7 +345,7 @@ export default function TradingView() {
                 key={t}
                 onClick={() => setTimeRange(t)}
                 className={`px-3 py-1 text-[11px] cursor-pointer transition-all ${
-                  timeRange === t ? 'opacity-80 bg-current/10 border border-current/20' : 'opacity-40 border border-current/5 hover:opacity-60'
+                  timeRange === t ? 'opacity-80 bg-current/10 border border-current/20' : 'opacity-60 border border-current/5 hover:opacity-60'
                 }`}
               >
                 {t === 'all' ? 'All Time' : t}
@@ -354,7 +355,7 @@ export default function TradingView() {
 
           {recentActivity.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No activity in this period</p>
+              <p className="opacity-60 text-base">No activity in this period</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -371,7 +372,7 @@ export default function TradingView() {
                       <span className="font-medium">{act.wart.title}</span>
                       <span className="opacity-50"> — {act.type === 'sale' ? 'Sold' : act.type === 'mint' ? 'Minted' : 'Transferred'}</span>
                     </p>
-                    <p className="text-label opacity-30">
+                    <p className="text-label opacity-50">
                       {getCreatorName(act.transfer.from)} {'\u2192'} {getCreatorName(act.transfer.to)}
                     </p>
                   </div>
@@ -392,7 +393,7 @@ export default function TradingView() {
       {tab === 'collections' && (
         <div className="pt-4 space-y-2">
           <div className="glass-panel p-3">
-            <div className="grid grid-cols-12 gap-2 text-[10px] opacity-30 uppercase tracking-wider px-1">
+            <div className="grid grid-cols-12 gap-2 text-[10px] opacity-50 uppercase tracking-wider px-1">
               <span className="col-span-1">#</span>
               <span className="col-span-4">Collection</span>
               <span className="col-span-2 text-right">Floor</span>
@@ -403,13 +404,13 @@ export default function TradingView() {
           </div>
           {collectionRankings.length === 0 ? (
             <div className="text-center py-12">
-              <p className="opacity-40 text-base">No collections yet</p>
+              <p className="opacity-60 text-base">No collections yet</p>
             </div>
           ) : (
             collectionRankings.slice(0, 50).map((coll, idx) => (
               <div key={`${coll.creator}-${coll.name}`} className="glass-panel p-3 cursor-pointer hover:bg-current/5 transition-colors" onClick={() => navigateToProfile(coll.creator)}>
                 <div className="grid grid-cols-12 gap-2 items-center">
-                  <span className="col-span-1 text-body-sm font-bold opacity-40">{idx + 1}</span>
+                  <span className="col-span-1 text-body-sm font-bold opacity-60">{idx + 1}</span>
                   <div className="col-span-4 flex items-center gap-2 min-w-0">
                     {coll.items[0]?.imageData && (
                       <img src={coll.items[0].imageData} alt="" className="w-8 h-8 object-cover shrink-0" />
@@ -419,7 +420,7 @@ export default function TradingView() {
                   <p className="col-span-2 text-right text-body-sm opacity-70">{coll.floorPrice !== null ? `${coll.floorPrice} \u2B23` : '—'}</p>
                   <p className="col-span-2 text-right text-body-sm font-bold opacity-80">{coll.volume.toFixed(1)} {'\u2B23'}</p>
                   <p className="col-span-1 text-right text-body-sm opacity-50">{coll.items.length}</p>
-                  <p className="col-span-2 text-right text-label opacity-40 truncate">{getCreatorName(coll.creator)}</p>
+                  <p className="col-span-2 text-right text-label opacity-60 truncate">{getCreatorName(coll.creator)}</p>
                 </div>
               </div>
             ))
@@ -439,7 +440,7 @@ export default function TradingView() {
               { label: 'Unrealized P&L', value: `${portfolioStats.unrealized >= 0 ? '+' : ''}${portfolioStats.unrealized.toFixed(1)} \u2B23` },
             ].map(stat => (
               <div key={stat.label} className="glass-panel p-3 text-center">
-                <p className="text-[10px] opacity-30 uppercase tracking-wider">{stat.label}</p>
+                <p className="text-[10px] opacity-50 uppercase tracking-wider">{stat.label}</p>
                 <p className={`text-base font-bold mt-0.5 ${stat.label === 'Unrealized P&L' ? (portfolioStats.unrealized >= 0 ? 'opacity-80' : 'opacity-70') : 'opacity-90'}`} style={stat.label === 'Unrealized P&L' ? { color: portfolioStats.unrealized >= 0 ? '#51cf66' : '#ff6b6b' } : {}}>
                   {stat.value}
                 </p>
@@ -449,10 +450,10 @@ export default function TradingView() {
 
           {/* Owned items */}
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase opacity-30 mb-2 px-1">Your Collection</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase opacity-50 mb-2 px-1">Your Collection</p>
             {allWarts.filter(w => w.owner === wallet.address).length === 0 ? (
               <div className="text-center py-12">
-                <p className="opacity-40 text-base">No artworks in your portfolio</p>
+                <p className="opacity-60 text-base">No artworks in your portfolio</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -462,7 +463,7 @@ export default function TradingView() {
                       <img src={wart.imageData} alt={wart.title} className="w-full aspect-square object-cover" />
                     ) : (
                       <div className="w-full aspect-square flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <span className="text-2xl opacity-20">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
+                        <span className="text-2xl opacity-40">{wart.mediaType === 'audio' ? '\u266B' : '\u25C8'}</span>
                       </div>
                     )}
                     <p className="text-body-sm font-medium opacity-80 mt-1 truncate">{wart.title}</p>
@@ -472,9 +473,9 @@ export default function TradingView() {
                     </div>
                     <div className="flex gap-1 mt-1.5 pt-1.5 border-t border-current/5">
                       {wart.listed ? (
-                        <button onClick={e => { e.stopPropagation(); delistWart(wart.id); }} className="flex-1 text-[10px] opacity-40 hover:opacity-70 cursor-pointer py-1">Delist</button>
+                        <button onClick={e => { e.stopPropagation(); delistWart(wart.id); }} className="flex-1 text-[10px] opacity-60 hover:opacity-70 cursor-pointer py-1">Delist</button>
                       ) : (
-                        <button onClick={e => { e.stopPropagation(); const p = prompt('List price in STRNGRZ:'); if (p) listWart(wart.id, parseFloat(p)); }} className="flex-1 text-[10px] opacity-40 hover:opacity-70 cursor-pointer py-1">List for sale</button>
+                        <button onClick={e => { e.stopPropagation(); const p = prompt('List price in STRNGRZ:'); if (p) listWart(wart.id, parseFloat(p)); }} className="flex-1 text-[10px] opacity-60 hover:opacity-70 cursor-pointer py-1">List for sale</button>
                       )}
                     </div>
                   </div>

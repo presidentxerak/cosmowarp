@@ -22,7 +22,7 @@ export default function AdminView() {
         <div className="text-3xl mb-3">{'\u26D4'}</div>
         <h2 className="text-title-sm font-bold opacity-70 mb-2 font-title">Access Denied</h2>
         <p className="text-base opacity-50">This section is restricted to the Strangrz administrator.</p>
-        <p className="text-body-sm opacity-40 mt-2">The admin registry is encrypted and only accessible by the creator address.</p>
+        <p className="text-body-sm opacity-60 mt-2">The admin registry is encrypted and only accessible by the creator address.</p>
       </div>
     );
   }
@@ -83,7 +83,7 @@ export default function AdminView() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-title-sm font-bold opacity-60 font-title">{'\u26BF'} Admin Registry</h2>
-            <p className="text-body-sm opacity-40">Encrypted private ledger</p>
+            <p className="text-body-sm opacity-60">Encrypted private ledger</p>
           </div>
           <span className="text-label px-2 py-1 rounded-none bg-current/5 opacity-80 border border-current/10">
             UNLOCKED
@@ -98,32 +98,32 @@ export default function AdminView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-body-sm">
             <div className="glass-panel p-3 text-center bg-current/5">
               <p className="text-title-sm font-bold opacity-80">{supplyInfo.total.toLocaleString()}</p>
-              <p className="text-label opacity-40">TOTAL SUPPLY</p>
+              <p className="text-label opacity-60">TOTAL SUPPLY</p>
             </div>
             <div className="glass-panel p-3 text-center bg-current/5">
               <p className="text-title-sm font-bold opacity-80">{supplyInfo.circulating.toLocaleString()}</p>
-              <p className="text-label opacity-40">CIRCULATING</p>
+              <p className="text-label opacity-60">CIRCULATING</p>
             </div>
             <div className="glass-panel p-3 text-center bg-current/5">
               <p className="text-title-sm font-bold opacity-80">{supplyInfo.totalMined.toLocaleString()}</p>
-              <p className="text-label opacity-40">TOTAL MINED</p>
+              <p className="text-label opacity-60">TOTAL MINED</p>
             </div>
             <div className="glass-panel p-3 text-center bg-current/5">
               <p className="text-title-sm font-bold opacity-80">{supplyInfo.totalAirdropped.toLocaleString()}</p>
-              <p className="text-label opacity-40">AIRDROPPED</p>
+              <p className="text-label opacity-60">AIRDROPPED</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-body-sm">
             <div>
-              <span className="opacity-40">Creator Locked:</span>
+              <span className="opacity-60">Creator Locked:</span>
               <span className="opacity-60 ml-1">{supplyInfo.creatorLocked.toLocaleString()}</span>
             </div>
             <div>
-              <span className="opacity-40">Mining Pool:</span>
+              <span className="opacity-60">Mining Pool:</span>
               <span className="opacity-80 ml-1">{supplyInfo.miningPoolRemaining.toLocaleString()}</span>
             </div>
             <div>
-              <span className="opacity-40">Airdrop Pool:</span>
+              <span className="opacity-60">Airdrop Pool:</span>
               <span className="opacity-80 ml-1">{supplyInfo.airdropPoolRemaining.toLocaleString()}</span>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function AdminView() {
       {/* Creator Token Unlock */}
       <div className="glass-panel p-4">
         <h3 className="text-base font-bold opacity-70 mb-3">Creator Token Unlock</h3>
-        <p className="text-body-sm opacity-40 mb-3">
+        <p className="text-body-sm opacity-60 mb-3">
           Locked: <span className="opacity-60">{supplyInfo?.creatorLocked.toLocaleString() || 0} STZ</span>
         </p>
         <div className="flex gap-2">
@@ -163,28 +163,28 @@ export default function AdminView() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-body-sm">
               <div className="glass-panel p-3 text-center bg-current/5">
                 <p className="text-title-sm font-bold opacity-80">{adminDashboard.totalAccounts}</p>
-                <p className="text-label opacity-40">ACCOUNTS</p>
+                <p className="text-label opacity-60">ACCOUNTS</p>
               </div>
               <div className="glass-panel p-3 text-center bg-current/5">
                 <p className="text-title-sm font-bold opacity-80">{adminDashboard.totalTransactions}</p>
-                <p className="text-label opacity-40">TOTAL TXs</p>
+                <p className="text-label opacity-60">TOTAL TXs</p>
               </div>
               <div className="glass-panel p-3 text-center bg-current/5">
                 <p className="text-title-sm font-bold opacity-80">{adminDashboard.activeLast24h}</p>
-                <p className="text-label opacity-40">ACTIVE 24H</p>
+                <p className="text-label opacity-60">ACTIVE 24H</p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 text-body-sm">
               <div>
-                <span className="opacity-40">24h TXs:</span>
+                <span className="opacity-60">24h TXs:</span>
                 <span className="opacity-80 ml-1">{adminDashboard.transactions24h}</span>
               </div>
               <div>
-                <span className="opacity-40">24h Volume:</span>
+                <span className="opacity-60">24h Volume:</span>
                 <span className="opacity-80 ml-1">{adminDashboard.volume24h.toLocaleString()} STZ</span>
               </div>
               <div>
-                <span className="opacity-40">Critical Events:</span>
+                <span className="opacity-60">Critical Events:</span>
                 <span className={`ml-1 ${adminDashboard.unresolvedCritical > 0 ? 'opacity-70' : 'opacity-80'}`}>
                   {adminDashboard.unresolvedCritical}
                 </span>
@@ -197,7 +197,7 @@ export default function AdminView() {
             <h3 className="text-base font-bold opacity-70 mb-3">Recent Security Events</h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {adminDashboard.recentEvents.length === 0 ? (
-                <p className="text-body-sm opacity-40 text-center py-2">No events</p>
+                <p className="text-body-sm opacity-60 text-center py-2">No events</p>
               ) : (
                 adminDashboard.recentEvents.map(event => (
                   <div key={event.id} className={`text-[11px] p-2 rounded-none ${
@@ -214,11 +214,11 @@ export default function AdminView() {
                         {event.severity === 'critical' ? '\u26A0' : event.severity === 'warning' ? '\u26A1' : '\u25CE'}
                       </span>
                       <span className="opacity-70 font-medium">{event.type.replace(/_/g, ' ')}</span>
-                      <span className="opacity-30 ml-auto text-label">
+                      <span className="opacity-50 ml-auto text-label">
                         {new Date(event.timestamp).toLocaleTimeString()}
                       </span>
                     </div>
-                    <p className="opacity-40 mt-1">{event.details}</p>
+                    <p className="opacity-60 mt-1">{event.details}</p>
                   </div>
                 ))
               )}

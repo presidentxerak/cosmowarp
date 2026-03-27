@@ -43,7 +43,7 @@ export default function FiatGatewayView() {
           <p className="text-5xl mb-4">{'€'}</p>
           <h2 className="text-title-sm font-bold mb-1 font-title">Strangrz Coin</h2>
           <p className="opacity-50 text-base">Déverrouillez votre wallet pour accéder à Strangrz Coin</p>
-          <p className="opacity-30 text-body-sm mt-1">Achetez et vendez des Strangrz en monnaie fiat (EUR, USD, GBP...)</p>
+          <p className="opacity-50 text-body-sm mt-1">Achetez et vendez des Strangrz en monnaie fiat (EUR, USD, GBP...)</p>
         </div>
       </div>
     );
@@ -133,17 +133,17 @@ export default function FiatGatewayView() {
       {/* Header */}
       <div className="glass-panel p-5 text-center">
         <h2 className="text-title-sm font-bold font-title">{'\u2B23'} Strangrz Coin</h2>
-        <p className="text-body-sm opacity-40 mt-1">
+        <p className="text-body-sm opacity-60 mt-1">
           Passerelle fiat/crypto pour acheter et vendre des Strangrz ({'\u2B23'}) en monnaie traditionnelle.
         </p>
-        <div className="text-[11px] opacity-50 mt-2 space-y-0.5 max-w-md mx-auto text-left">
+        <div className="text-base opacity-50 mt-2 space-y-0.5 text-left">
           <p><span className="opacity-60 font-bold">Comment ça marche :</span> Strangrz Coin est la passerelle officielle qui permet de convertir votre monnaie fiat (EUR, USD, GBP...) en tokens {'\u2B23'} et inversement.</p>
           <p><span className="opacity-60 font-bold">Rôle dans le système :</span> Cette passerelle alimente la liquidité du protocole Strangrz. Chaque achat injecte de la valeur réelle dans l'écosystème, permettant aux créateurs de monétiser leurs oeuvres et aux collectionneurs d'acquérir des Strangrz certifiées. Les frais de transaction (2.5%) financent le développement et la maintenance du protocole.</p>
         </div>
         <p className="text-label opacity-50 mt-2">Paiement sécurisé via Stripe — Carte, PayPal, SEPA</p>
         <div className="flex justify-center gap-3 mt-3">
           <span className="text-base font-bold opacity-80">{wallet.balance.toFixed(2)} {'⬣'}</span>
-          <span className="text-base opacity-40">|</span>
+          <span className="text-base opacity-60">|</span>
           <span className="text-base opacity-60">{'≈'} {formatFiatPrice(gateway.warpsToFiat(wallet.balance, currency), currency)}</span>
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function FiatGatewayView() {
             key={c}
             onClick={() => setCurrency(c)}
             className={`flex-1 py-1.5 text-body-sm font-medium transition-all cursor-pointer ${
-              currency === c ? 'bg-current/10 opacity-90' : 'opacity-40 hover:opacity-70'
+              currency === c ? 'bg-current/10 opacity-90' : 'opacity-60 hover:opacity-70'
             }`}
           >
             {getCurrencySymbol(c)} {c}
@@ -186,7 +186,7 @@ export default function FiatGatewayView() {
           <h3 className="text-base font-bold opacity-70">Acheter des Strangrz en {currency}</h3>
 
           <div>
-            <label className="text-label opacity-40 block mb-1">MONTANT ({getCurrencySymbol(currency)})</label>
+            <label className="text-label opacity-60 block mb-1">MONTANT ({getCurrencySymbol(currency)})</label>
             <input
               className="warp-input text-title-sm text-center"
               type="number"
@@ -211,12 +211,12 @@ export default function FiatGatewayView() {
               {buyFees && (
                 <>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Frais plateforme (2,5%)</span>
-                    <span className="opacity-40">{getCurrencySymbol(currency)}{buyFees.platformFee.toFixed(2)}</span>
+                    <span className="opacity-60">Frais plateforme (2,5%)</span>
+                    <span className="opacity-60">{getCurrencySymbol(currency)}{buyFees.platformFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Frais processeur</span>
-                    <span className="opacity-40">{getCurrencySymbol(currency)}{buyFees.processorFee.toFixed(2)}</span>
+                    <span className="opacity-60">Frais processeur</span>
+                    <span className="opacity-60">{getCurrencySymbol(currency)}{buyFees.processorFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between pt-1 border-t border-current/10">
                     <span className="opacity-60 font-medium">Total</span>
@@ -228,7 +228,7 @@ export default function FiatGatewayView() {
           )}
 
           <div>
-            <label className="text-label opacity-40 block mb-2">MOYEN DE PAIEMENT</label>
+            <label className="text-label opacity-60 block mb-2">MOYEN DE PAIEMENT</label>
             <div className="grid grid-cols-3 gap-2">
               {paymentMethods.map(m => (
                 <button
@@ -237,7 +237,7 @@ export default function FiatGatewayView() {
                   className={`py-2 text-body-sm transition-all cursor-pointer border ${
                     buyMethod === m.id
                       ? 'border-current/20 opacity-90 bg-current/5'
-                      : 'border-current/10 opacity-40 hover:opacity-70'
+                      : 'border-current/10 opacity-60 hover:opacity-70'
                   }`}
                 >
                   <span className="text-base block">{m.icon}</span>
@@ -267,7 +267,7 @@ export default function FiatGatewayView() {
           <h3 className="text-base font-bold opacity-70">Vendre des Strangrz en {currency}</h3>
 
           <div>
-            <label className="text-label opacity-40 block mb-1">MONTANT ({'⬣'})</label>
+            <label className="text-label opacity-60 block mb-1">MONTANT ({'⬣'})</label>
             <input
               className="warp-input text-title-sm text-center"
               type="number"
@@ -277,7 +277,7 @@ export default function FiatGatewayView() {
               min="0"
               step="0.01"
             />
-            <p className="text-label opacity-30 mt-1 text-right">Balance: {wallet.balance.toFixed(2)} {'⬣'}</p>
+            <p className="text-label opacity-50 mt-1 text-right">Balance: {wallet.balance.toFixed(2)} {'⬣'}</p>
           </div>
 
           {sellWarpAmount > 0 && (
@@ -289,12 +289,12 @@ export default function FiatGatewayView() {
               {sellFees && (
                 <>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Frais plateforme (2,5%)</span>
-                    <span className="opacity-40">-{getCurrencySymbol(currency)}{sellFees.platformFee.toFixed(2)}</span>
+                    <span className="opacity-60">Frais plateforme (2,5%)</span>
+                    <span className="opacity-60">-{getCurrencySymbol(currency)}{sellFees.platformFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-40">Frais processeur</span>
-                    <span className="opacity-40">-{getCurrencySymbol(currency)}{sellFees.processorFee.toFixed(2)}</span>
+                    <span className="opacity-60">Frais processeur</span>
+                    <span className="opacity-60">-{getCurrencySymbol(currency)}{sellFees.processorFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between pt-1 border-t border-current/10">
                     <span className="opacity-60 font-medium">Vous recevez</span>
@@ -306,7 +306,7 @@ export default function FiatGatewayView() {
           )}
 
           <div>
-            <label className="text-label opacity-40 block mb-2">MÉTHODE DE RETRAIT</label>
+            <label className="text-label opacity-60 block mb-2">MÉTHODE DE RETRAIT</label>
             <div className="grid grid-cols-3 gap-2">
               {paymentMethods.filter(m => ['sepa', 'paypal', 'bank_transfer'].includes(m.id)).map(m => (
                 <button
@@ -315,7 +315,7 @@ export default function FiatGatewayView() {
                   className={`py-2 text-body-sm transition-all cursor-pointer border ${
                     sellMethod === m.id
                       ? 'border-current/20 opacity-90 bg-current/5'
-                      : 'border-current/10 opacity-40 hover:opacity-70'
+                      : 'border-current/10 opacity-60 hover:opacity-70'
                   }`}
                 >
                   <span className="text-base block">{m.icon}</span>
@@ -344,7 +344,7 @@ export default function FiatGatewayView() {
         <div className="space-y-3">
           <div className="glass-panel p-5">
             <h3 className="text-base font-bold opacity-70 mb-3">Taux de change</h3>
-            <p className="text-label opacity-30 mb-4">1 unité fiat = X Strangrz ({'⬣'})</p>
+            <p className="text-label opacity-50 mb-4">1 unité fiat = X Strangrz ({'⬣'})</p>
             <div className="space-y-2">
               {rates.map(r => (
                 <div key={r.currency} className="flex items-center justify-between py-2 border-b border-current/5">
@@ -354,7 +354,7 @@ export default function FiatGatewayView() {
                   </div>
                   <div className="text-right">
                     <span className="text-base font-bold opacity-90">{r.warpsPerUnit} {'⬣'}</span>
-                    <p className="text-label opacity-30">
+                    <p className="text-label opacity-50">
                       1 {'⬣'} = {getCurrencySymbol(r.currency)}{(1 / r.warpsPerUnit).toFixed(4)}
                     </p>
                   </div>
@@ -397,7 +397,7 @@ export default function FiatGatewayView() {
           {transactions.length === 0 ? (
             <div className="glass-panel p-10 text-center">
               <p className="text-base opacity-50">Aucune transaction</p>
-              <p className="text-body-sm opacity-30 mt-1">Achetez ou vendez des Strangrz pour voir votre historique</p>
+              <p className="text-body-sm opacity-50 mt-1">Achetez ou vendez des Strangrz pour voir votre historique</p>
             </div>
           ) : (
             transactions.map(tx => (
@@ -409,12 +409,12 @@ export default function FiatGatewayView() {
                     </span>
                     <span className={`text-label px-1.5 py-0.5 ${
                       tx.status === 'completed' ? 'bg-current/5 opacity-60' :
-                      tx.status === 'failed' ? 'opacity-40' : 'opacity-40'
+                      tx.status === 'failed' ? 'opacity-60' : 'opacity-60'
                     }`}>
                       {tx.status}
                     </span>
                   </div>
-                  <span className="text-label opacity-30">
+                  <span className="text-label opacity-50">
                     {new Date(tx.timestamp).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
@@ -422,12 +422,12 @@ export default function FiatGatewayView() {
                   <span className="opacity-60">{tx.warpAmount.toFixed(2)} {'⬣'}</span>
                   <span className="opacity-60">{formatFiatPrice(tx.fiatAmount, tx.fiatCurrency)}</span>
                 </div>
-                <div className="flex justify-between text-label opacity-30 mt-1">
+                <div className="flex justify-between text-label opacity-50 mt-1">
                   <span>via {tx.paymentMethod}</span>
                   <span>Fee: {getCurrencySymbol(tx.fiatCurrency)}{(tx.platformFeeAmount + tx.processorFeeAmount).toFixed(2)}</span>
                 </div>
                 {tx.wartTitle && (
-                  <p className="text-label opacity-40 mt-1">Strangrz: {tx.wartTitle}</p>
+                  <p className="text-label opacity-60 mt-1">Strangrz: {tx.wartTitle}</p>
                 )}
               </div>
             ))

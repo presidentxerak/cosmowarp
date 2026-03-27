@@ -157,7 +157,7 @@ export default function ConsoleView() {
   };
 
   return (
-    <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100dvh - 140px)', minHeight: '250px', maxHeight: '85dvh' }}>
+    <div className="glass-panel p-3 sm:p-4 flex flex-col" style={{ height: 'calc(100vh - 140px)', minHeight: '250px', maxHeight: '85vh' }}>
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-base font-bold opacity-80">{'\u25B7'} StrangrzCode Console</h2>
         <button className="warp-button text-label px-2 py-1" onClick={() => { setLines(WELCOME); setBuffer([]); }}>
@@ -175,13 +175,13 @@ export default function ConsoleView() {
             line.type === 'input' ? 'opacity-80' :
             line.type === 'output' ? 'opacity-80' :
             line.type === 'error' ? 'opacity-70' :
-            'opacity-40'
+            'opacity-60'
           }>
             {line.text || '\u00A0'}
           </div>
         ))}
         {buffer.length > 0 && (
-          <div className="opacity-40">... {buffer.length} lines buffered</div>
+          <div className="opacity-60">... {buffer.length} lines buffered</div>
         )}
       </div>
 
@@ -189,7 +189,7 @@ export default function ConsoleView() {
         <span className="opacity-80 text-base">{'\u276F'}</span>
         <input
           ref={inputRef}
-          className="flex-1 bg-transparent border-none outline-none text-base opacity-100 placeholder:opacity-30"
+          className="flex-1 bg-transparent border-none outline-none text-base opacity-100 placeholder:opacity-50"
           placeholder="Text to hash, or /help"
           value={input}
           onChange={e => setInput(e.target.value)}

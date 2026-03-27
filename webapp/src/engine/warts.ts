@@ -62,6 +62,80 @@ export interface WartCertificate {
   title: string;
 }
 
+// ─── Lazy Minting (Buyer-Pays-All) ──────────────────────
+//
+// Le créateur ne paie RIEN. Il crée un template (blueprint) gratuit.
+// Le mint réel ne se produit que lorsqu'un acheteur achète.
+// L'acheteur paie : prix affiché + frais de service plateforme.
+// Le créateur reçoit 100% du prix affiché (première vente).
+//
+// Flow:
+//   1. Créateur → createLazyListing() → template stocké (gratuit)
+//   2. Acheteur → buyLazyMint() → mint + transfert + paiement
+//   3. Acheteur paie: price + (price × SERVICE_FEE_PERCENT)
+
+/** Service fee charged to the buyer on top of the listed price (2.5%) */
+export const BUYER_SERVICE_FEE_PERCENT = 2.5;
+
+/**
+ * Storage fee tiers — the buyer pays for permanent storage.
+ * Based on media size in bytes. Covers Supabase + IPFS pinning costs.
+ *
+ * Rationale:
+ *   < 1MB  →  50 STZ  (€5)  — small images, SVGs
+ *   < 5MB  → 100 STZ (€10)  — standard images, short audio
+ *   < 25MB → 250 STZ (€25)  — high-res images, video clips
+ *   < 50MB → 500 STZ (€50)  — full videos, large audio
+ */
+export const STORAGE_FEE_TIERS: Array<{ maxBytes: number; fee: number }> = [
+  { maxBytes: 1 * 1024 * 1024,   fee: 50 },   // < 1MB
+  { maxBytes: 5 * 1024 * 1024,   fee: 100 },  // < 5MB
+  { maxBytes: 25 * 1024 * 1024,  fee: 250 },  // < 25MB
+  { maxBytes: 50 * 1024 * 1024,  fee: 500 },  // < 50MB
+];
+
+/** Calculate storage fee based on media data size */
+export function calculateStorageFee(mediaData: string): number {
+  const sizeBytes = new TextEncoder().encode(mediaData).length;
+  for (const tier of STORAGE_FEE_TIERS) {
+    if (sizeBytes <= tier.maxBytes) return tier.fee;
+  }
+  return STORAGE_FEE_TIERS[STORAGE_FEE_TIERS.length - 1].fee; // max tier
+}
+
+export interface LazyMintTemplate {
+  id: string;                    // Template ID (LAZY_<hash>_<timestamp>)
+  title: string;
+  description: string;
+  imageData: string;             // Media data (base64)
+  mediaType: 'image' | 'audio' | 'video' | 'svg' | 'cards';
+  audioCover?: string;
+  creator: string;               // Creator address
+  creatorSignature?: string;     // Ed25519 signature proving creator intent
+  price: number;                 // Listed price in ⬣ (what creator receives)
+  priceFiat?: number;
+  fiatCurrency?: FiatCurrency;
+  royaltyPercent: number;        // Royalties on future resales
+  editionType: 'unique' | 'limited' | 'unlimited';
+  maxEditions: number | null;
+  mintedEditions: number;        // How many editions have been minted so far
+  availableUntil: number | null; // Expiration timestamp
+  createdAt: number;
+  active: boolean;               // Can still be purchased
+  contentFingerprint: string;    // SHA-256 of media
+  mintChain?: 'strangrz' | 'ethereum';
+}
+
+/** Calculate the total cost for the buyer (price + service fee + storage fee) */
+export function calculateBuyerTotal(
+  price: number,
+  mediaData?: string,
+): { price: number; serviceFee: number; storageFee: number; total: number } {
+  const serviceFee = Math.round(price * BUYER_SERVICE_FEE_PERCENT / 100 * 100) / 100;
+  const storageFee = mediaData ? calculateStorageFee(mediaData) : 0;
+  return { price, serviceFee, storageFee, total: price + serviceFee + storageFee };
+}
+
 export interface Wart {
   id: string;                    // Internal wart ID (FNV hash-based)
   title: string;
@@ -173,6 +247,7 @@ export function formatDateFR(timestamp: number): string {
 // ─── Storage ─────────────────────────────────────────────
 
 const STORAGE_KEY = 'strangrz_warts';
+const LAZY_TEMPLATES_KEY = 'strangrz_lazy_templates';
 const CERT_REGISTRY_KEY = 'strangrz_cert_registry';
 const MEDIA_STORE_PREFIX = 'cw_media_';
 
@@ -216,6 +291,7 @@ export function lookupCertificate(certId: string): WartCertificate | null {
 
 export class WartEngine {
   private warts: Map<string, Wart> = new Map();
+  private lazyTemplates: Map<string, LazyMintTemplate> = new Map();
   private vault: CosmoVault;
   private contracts: ContractEngine;
   private fiatGateway: FiatGateway;
@@ -236,6 +312,14 @@ export class WartEngine {
           WartEngine.normalizeWart(w);
           engine.warts.set(w.id, w);
         }
+      } catch { /* corrupt data, start fresh */ }
+    }
+    // Load lazy mint templates
+    const lazyRaw = storage.getItem(LAZY_TEMPLATES_KEY);
+    if (lazyRaw) {
+      try {
+        const arr: LazyMintTemplate[] = JSON.parse(lazyRaw);
+        for (const t of arr) engine.lazyTemplates.set(t.id, t);
       } catch { /* corrupt data, start fresh */ }
     }
     return engine;
@@ -1036,6 +1120,263 @@ export class WartEngine {
    */
   getActiveAuctions(): CosmoContract[] {
     return this.contracts.getActiveAuctions();
+  }
+
+  // ─── Lazy Minting (Buyer-Pays-All) ───────────────────
+  //
+  // Creator creates a template for FREE. No mint happens.
+  // When a buyer purchases, the actual mint occurs and
+  // the buyer pays: listed price + service fee.
+  // Creator receives 100% of listed price.
+
+  private saveLazyTemplates(): void {
+    const arr = Array.from(this.lazyTemplates.values());
+    // Store metadata without imageData to save space
+    const meta = arr.map(t => {
+      const { imageData, audioCover, ...rest } = t;
+      return rest;
+    });
+    try {
+      storage.setItem(LAZY_TEMPLATES_KEY, JSON.stringify(meta));
+    } catch { /* quota exceeded */ }
+    // Persist media to IndexedDB
+    for (const t of arr) {
+      if (t.imageData) {
+        storeMedia('lazy_' + t.id, t.imageData, t.audioCover);
+      }
+    }
+  }
+
+  /**
+   * Create a lazy listing — creator pays NOTHING.
+   * The artwork is stored as a template. No actual Wart is minted.
+   * The buyer will trigger the mint when purchasing.
+   */
+  async createLazyListing(params: {
+    creator: string;
+    title: string;
+    description: string;
+    imageData: string;
+    price: number;
+    royaltyPercent?: number;
+    editionType?: 'unique' | 'limited' | 'unlimited';
+    maxEditions?: number | null;
+    durationHours?: number | null;
+    mediaType?: 'image' | 'audio' | 'video' | 'svg' | 'cards';
+    audioCover?: string;
+    privateKey?: string;
+    priceFiat?: number;
+    fiatCurrency?: FiatCurrency;
+    mintChain?: 'strangrz' | 'ethereum';
+  }): Promise<LazyMintTemplate> {
+    const {
+      creator, title, description, imageData, price,
+      royaltyPercent = 5,
+      editionType = 'unique',
+      maxEditions = null,
+      durationHours = null,
+      mediaType = 'image',
+      audioCover, privateKey, priceFiat, fiatCurrency,
+      mintChain,
+    } = params;
+
+    if (!title.trim()) throw new Error('Title required');
+    if (!imageData) throw new Error('Media required');
+    if (price < 100) throw new Error('Minimum price is 100 ⬣');
+    if (royaltyPercent < 0 || royaltyPercent > 50) throw new Error('Royalty must be 0-50%');
+    if (editionType === 'limited' && (maxEditions === null || maxEditions < 1)) {
+      throw new Error('Limited editions require a max count');
+    }
+
+    const timestamp = Date.now();
+
+    // Generate template ID
+    const idSource = `${creator}:${timestamp}:${title}:lazy`;
+    let h = 0x811c9dc5;
+    for (let i = 0; i < idSource.length; i++) {
+      h ^= idSource.charCodeAt(i);
+      h = Math.imul(h, 0x01000193);
+    }
+    const id = 'LAZY_' + Math.abs(h >>> 0).toString(16).padStart(8, '0') + '_' + timestamp.toString(36);
+
+    // Content fingerprint for integrity
+    const contentFingerprint = await sha256(imageData);
+
+    // Creator signs to prove intent (optional but recommended)
+    let creatorSignature: string | undefined;
+    if (privateKey) {
+      try {
+        const signSource = `LAZY_MINT:${creator}:${contentFingerprint}:${price}:${timestamp}`;
+        creatorSignature = await signTransaction(signSource, privateKey);
+      } catch { /* signing non-critical */ }
+    }
+
+    const template: LazyMintTemplate = {
+      id,
+      title: title.trim(),
+      description: description.trim(),
+      imageData,
+      mediaType,
+      audioCover,
+      creator,
+      creatorSignature,
+      price,
+      priceFiat,
+      fiatCurrency,
+      royaltyPercent,
+      editionType,
+      maxEditions: editionType === 'unique' ? 1 : maxEditions,
+      mintedEditions: 0,
+      availableUntil: durationHours !== null ? timestamp + durationHours * 3600000 : null,
+      createdAt: timestamp,
+      active: true,
+      contentFingerprint,
+      mintChain: mintChain || 'strangrz',
+    };
+
+    this.lazyTemplates.set(id, template);
+    this.saveLazyTemplates();
+    return template;
+  }
+
+  /**
+   * Buy from a lazy listing — buyer pays price + service fee.
+   * The actual Wart is minted at this moment and transferred to the buyer.
+   * Returns the minted Wart and the fee breakdown.
+   */
+  async buyLazyMint(
+    templateId: string,
+    buyerAddress: string,
+    buyerPrivateKey?: string,
+  ): Promise<{ wart: Wart; fees: { price: number; serviceFee: number; total: number } } | null> {
+    const template = this.lazyTemplates.get(templateId);
+    if (!template || !template.active) return null;
+    if (template.creator === buyerAddress) return null; // Can't buy your own
+
+    // Check expiration
+    if (template.availableUntil !== null && Date.now() > template.availableUntil) {
+      template.active = false;
+      this.saveLazyTemplates();
+      return null;
+    }
+
+    // Check edition limits
+    if (template.editionType === 'unique' && template.mintedEditions >= 1) {
+      template.active = false;
+      this.saveLazyTemplates();
+      return null;
+    }
+    if (template.editionType === 'limited' && template.maxEditions !== null
+        && template.mintedEditions >= template.maxEditions) {
+      template.active = false;
+      this.saveLazyTemplates();
+      return null;
+    }
+
+    // Calculate buyer's total cost (includes storage fee — buyer pays for all storage)
+    const fees = calculateBuyerTotal(template.price, template.imageData);
+
+    // ─── ACTUAL MINT happens here (triggered by buyer) ───
+    const wart = await this.mint(
+      template.creator,
+      template.title,
+      template.description,
+      template.imageData,
+      null, // Not listed after mint (buyer already owns it)
+      template.royaltyPercent,
+      template.editionType,
+      template.maxEditions,
+      null, // No duration on minted copy
+      template.mediaType,
+      template.audioCover,
+      buyerPrivateKey,
+      template.mintChain,
+    );
+
+    // Transfer ownership to buyer immediately
+    wart.owner = buyerAddress;
+    wart.listed = false;
+    wart.price = null;
+    wart.history.push({
+      from: template.creator,
+      to: buyerAddress,
+      price: template.price,
+      timestamp: Date.now(),
+      txId: `lazy_${templateId}_${Date.now().toString(36)}`,
+    });
+
+    // Update edition count
+    template.mintedEditions += 1;
+    if (template.editionType === 'unique') {
+      template.active = false;
+    } else if (template.editionType === 'limited' && template.maxEditions !== null
+        && template.mintedEditions >= template.maxEditions) {
+      template.active = false;
+    }
+
+    this.save();
+    this.saveLazyTemplates();
+
+    return { wart, fees };
+  }
+
+  /**
+   * Cancel a lazy listing (creator only).
+   */
+  cancelLazyListing(templateId: string, creatorAddress: string): boolean {
+    const template = this.lazyTemplates.get(templateId);
+    if (!template || template.creator !== creatorAddress) return false;
+    template.active = false;
+    this.saveLazyTemplates();
+    return true;
+  }
+
+  /**
+   * Get all active lazy listings (marketplace).
+   */
+  getLazyListings(): LazyMintTemplate[] {
+    const now = Date.now();
+    return Array.from(this.lazyTemplates.values())
+      .filter(t => t.active && (t.availableUntil === null || t.availableUntil > now))
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  /**
+   * Get lazy listings by a specific creator.
+   */
+  getLazyListingsByCreator(creatorAddress: string): LazyMintTemplate[] {
+    return Array.from(this.lazyTemplates.values())
+      .filter(t => t.creator === creatorAddress)
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  /**
+   * Get a single lazy template.
+   */
+  getLazyTemplate(templateId: string): LazyMintTemplate | undefined {
+    return this.lazyTemplates.get(templateId);
+  }
+
+  /** Rehydrate lazy template media from IndexedDB */
+  async rehydrateLazyMedia(): Promise<boolean> {
+    let changed = false;
+    try {
+      const allMedia = await retrieveAllMedia();
+      for (const [id, template] of this.lazyTemplates) {
+        const media = allMedia.get('lazy_' + id);
+        if (media) {
+          if (!template.imageData || template.imageData === '') {
+            template.imageData = media.imageData;
+            changed = true;
+          }
+          if (!template.audioCover && media.audioCover) {
+            template.audioCover = media.audioCover;
+            changed = true;
+          }
+        }
+      }
+    } catch { /* IndexedDB unavailable */ }
+    return changed;
   }
 
   getStats(): { total: number; listed: number; totalVolume: number; onChainCount: number; totalCompressionRatio: number } {

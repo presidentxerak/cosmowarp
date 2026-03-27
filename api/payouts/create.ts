@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { warpAmount, currency, paymentMethod, sellerAddress } = req.body;
 
   if (!warpAmount || !currency || !sellerAddress) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ error: 'Missing required fields: warpAmount, currency, sellerAddress' });
   }
 
   if (typeof warpAmount !== 'number' || warpAmount <= 0 || !Number.isFinite(warpAmount)) {

@@ -7,6 +7,7 @@ export interface UserProfile {
   alias: string;
   bio: string;
   profileImage: string;   // base64 custom avatar
+  bannerImage: string;     // base64 custom banner
   joinedAt: number;
   following: string[];     // addresses this user follows
   followers: string[];     // addresses following this user
@@ -44,6 +45,7 @@ function loadProfiles(): UserProfile[] {
     return profiles.map(p => ({
       ...p,
       profileImage: p.profileImage || '',
+      bannerImage: p.bannerImage || '',
       website: p.website || '',
       instagram: p.instagram || '',
       twitter: p.twitter || '',
@@ -103,6 +105,7 @@ export class SocialEngine {
         alias: safeAlias || address.slice(0, 10),
         bio: '',
         profileImage: '',
+        bannerImage: '',
         joinedAt: Date.now(),
         following: [],
         followers: [],
@@ -147,6 +150,14 @@ export class SocialEngine {
     const profile = this.profiles.find(p => p.address === address);
     if (!profile) return false;
     profile.profileImage = imageData;
+    this.save();
+    return true;
+  }
+
+  updateBannerImage(address: string, imageData: string): boolean {
+    const profile = this.profiles.find(p => p.address === address);
+    if (!profile) return false;
+    profile.bannerImage = imageData;
     this.save();
     return true;
   }

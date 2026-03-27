@@ -69,7 +69,7 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
     <div className="space-y-3 pb-4">
       <div className="px-1 pt-2">
         <h2 className="text-title-sm font-bold opacity-100 font-title">Discover</h2>
-        <p className="text-body-sm opacity-40">Find artists and collectors to follow</p>
+        <p className="text-body-sm opacity-60">Find artists and collectors to follow</p>
       </div>
 
       {/* Search */}
@@ -86,16 +86,16 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
       {/* Suggestions */}
       {!searchQuery && suggestions.length > 0 && (
         <div className="px-1">
-          <p className="text-body-sm opacity-40 mb-2">Suggested for you</p>
+          <p className="text-body-sm opacity-60 mb-2">Suggested for you</p>
         </div>
       )}
 
       {displayUsers.length === 0 ? (
         <div className="text-center py-12">
-          <p className="opacity-40 text-base">
+          <p className="opacity-60 text-base">
             {searchQuery ? 'No users found' : 'No users to discover yet'}
           </p>
-          <p className="opacity-30 text-body-sm mt-1">
+          <p className="opacity-50 text-body-sm mt-1">
             Post on the Wall to let others find you
           </p>
         </div>
@@ -111,11 +111,11 @@ export default function DiscoverView({ onNavigate }: { onNavigate: (tab: string)
                 className="flex-1 min-w-0 text-left cursor-pointer"
               >
                 <p className="text-base font-medium opacity-90 truncate">{user.alias}</p>
-                <p className="text-label opacity-40 truncate">{shortAddress(user.address)}</p>
+                <p className="text-label opacity-60 truncate">{shortAddress(user.address)}</p>
                 {user.bio && (
                   <p className="text-[11px] opacity-50 mt-0.5 truncate">{user.bio}</p>
                 )}
-                <p className="text-label opacity-30 mt-0.5">
+                <p className="text-label opacity-50 mt-0.5">
                   {user.followers.length} followers
                 </p>
               </button>
