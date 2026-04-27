@@ -23,7 +23,7 @@
     "@irys/upload": "^0.0.15",
     "@irys/upload-ethereum": "^0.0.16",
     "stripe": "^17.5.0",
-    "@supabase/supabase-js": "^2.99.0"
+    "@supabase/supabase-js": "^2.104.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
